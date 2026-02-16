@@ -324,3 +324,50 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - [x] Implement robust source with permission-tolerant fallback chain.
 - [x] Add parser tests with captured host output style (`ioreg` PerformanceStatistics).
 - [ ] Expand fixtures to three distinct Mac configurations (still pending).
+
+## QA cycle update — 2026-02-16 18:00 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (6 tests; includes GPU + OpenClaw parser coverage).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds and emits usage + GPU-populated telemetry.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains intentionally unconfigured in local QA environment (local-only stdout/NDJSON validation).
+
+### Telemetry validation snapshot (latest sample)
+
+- `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"` with `gpuConfidence: "high"`.
+- `tokensPerMin`: populated (`~32.9k` to `~34.1k` in this cycle).
+- `openclawModel`: populated (`gpt-5.3-codex`).
+- `openclawTotalTokens`: populated (`19563`).
+- `openclawSessionId` / `openclawAgentId` / `openclawUsageTs`: populated and stable.
+- `openclawUsageAgeMs`: `~33.3s` to `~34.6s` (below stale threshold).
+- `source.usageIntegrationStatus`: `ok`.
+- `source.usageCommand`: `openclaw status --json`.
+- `source.usageStaleMsThreshold`: `60000`.
+
+### Bugs / feature gaps (current)
+
+1. **Multi-host GPU fixture coverage still incomplete (Medium, regression confidence)**
+   - AGX parsing is now validated on this host, but fixture corpus still lacks Intel and alternate Apple Silicon profile captures.
+   - Keep P1 acceptance item open until 3-host fixture matrix is complete.
+
+2. **Distribution trust pipeline still optional/manual (High, release readiness)**
+   - App and DMG build are stable, but artifact remains unsigned when `MACOS_CODESIGN_IDENTITY` is unset.
+   - Notarization/stapling remains opt-in via `MACOS_NOTARY_PROFILE`; no CI-enforced trusted artifact path yet.
+
+3. **Firebase integration not exercised in QA loop (Medium, E2E confidence)**
+   - Current cycle validates local telemetry generation only.
+   - Need one credentialed QA pass to confirm Firestore write path, schema integrity, and failure handling.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signing + notarization is automated and verified in CI.
+- ⚠️ Clean-machine install evidence is still missing (Apple Silicon + Intel/Rosetta scenarios).
+
+### OpenClaw integration gap status
+
+- ✅ Integration remains healthy on host (`openclaw status --json`, non-stale usage, stable IDs).
+- ⚠️ No CI boundary test yet for stale-threshold behavior around long-running packaging/QA windows.
