@@ -371,3 +371,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Integration remains healthy on host (`openclaw status --json`, non-stale usage, stable IDs).
 - ⚠️ No CI boundary test yet for stale-threshold behavior around long-running packaging/QA windows.
+
+## Implementation cycle update — 2026-02-16 18:14 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added macOS memory pressure enrichment sourced from `memory_pressure -Q` with telemetry fields:
+  - `memPressurePct`
+  - `memPressureClass` (`normal|warning|critical|unavailable`)
+  - `source.memPressureSource`
+- ✅ Added backward-compatible memory semantics by explicitly emitting both `memPct` and `memUsedPct`.
+- ✅ Added deterministic unit tests for memory pressure parsing and failure fallback (`test/memory.test.mjs`).
+- ✅ Updated README metric semantics for memory fields and source provenance.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (10 tests total, now including memory pressure coverage).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated memory pressure fields on this host (`memPressurePct`, `memPressureClass`, `source.memPressureSource`).
+
+### Acceptance criteria updates
+
+- [x] Add `memUsedPct` plus macOS-aware pressure indicator (class/value).
+- [x] Document metric definitions and caveats in README/skill docs.
+- [ ] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.

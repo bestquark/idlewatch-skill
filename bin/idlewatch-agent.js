@@ -7,6 +7,7 @@ import { execSync } from 'child_process'
 import admin from 'firebase-admin'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
+import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 
 function printHelp() {
   console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
@@ -123,12 +124,22 @@ function cpuPct() {
   return pct ?? 0
 }
 
-function memPct() {
-  return Number((((os.totalmem() - os.freemem()) / os.totalmem()) * 100).toFixed(2))
-}
-
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)
+const MEM_PRESSURE_TTL_MS = Math.max(INTERVAL_MS, 30000)
 let openClawUsageCache = { at: 0, value: null }
+let memPressureCache = { at: 0, value: { pct: null, cls: 'unavailable', source: 'unavailable' } }
+
+function loadMemPressure() {
+  if (process.platform !== 'darwin') {
+    return { pct: null, cls: 'unavailable', source: 'unsupported' }
+  }
+
+  const now = Date.now()
+  if (now - memPressureCache.at < MEM_PRESSURE_TTL_MS) return memPressureCache.value
+  const sampled = memoryPressureDarwin()
+  memPressureCache = { at: now, value: sampled }
+  return sampled
+}
 
 function loadOpenClawUsage() {
   if (OPENCLAW_USAGE_MODE === 'off') return null
@@ -202,12 +213,17 @@ async function collectSample() {
   const gpu = process.platform === 'darwin'
     ? gpuSampleDarwin()
     : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null }
+  const memPressure = loadMemPressure()
+  const usedMemPct = memUsedPct()
 
   const row = {
     host: HOST,
     ts: nowMs,
     cpuPct: cpuPct(),
-    memPct: memPct(),
+    memPct: usedMemPct,
+    memUsedPct: usedMemPct,
+    memPressurePct: memPressure.pct,
+    memPressureClass: memPressure.cls,
     gpuPct: gpu.pct,
     gpuSource: gpu.source,
     gpuConfidence: gpu.confidence,
@@ -227,7 +243,8 @@ async function collectSample() {
           : (usage?.integrationStatus ?? 'ok')
         : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
       usageCommand: usage?.sourceCommand ?? null,
-      usageStaleMsThreshold: USAGE_STALE_MS
+      usageStaleMsThreshold: USAGE_STALE_MS,
+      memPressureSource: memPressure.source
     }
   }
   return row

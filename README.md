@@ -28,6 +28,7 @@ npx idlewatch-skill --dry-run
 - Non-overlapping scheduler loop (prevents concurrent sample overlap when host is busy)
 - Non-blocking CPU sampling using per-tick CPU deltas (no `Atomics.wait` stall)
 - Darwin GPU probing fallback chain (AGX/IOGPU `ioreg` → `powermetrics` → `top` grep) with provenance fields (`gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`)
+- macOS memory pressure enrichment via `memory_pressure -Q` (`memPressurePct`, `memPressureClass`, `source.memPressureSource`)
 
 ## Firebase wiring
 
@@ -71,6 +72,12 @@ Source metadata fields:
 - `source.usageIntegrationStatus`: `ok | partial | stale | disabled | unavailable`
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
+- `source.memPressureSource`: `memory_pressure | unavailable | unsupported`.
+
+Memory field semantics:
+- `memPct` and `memUsedPct`: host memory used percent (`(total - free) / total`) retained for backward compatibility.
+- `memPressurePct`: macOS pressure estimate derived from `memory_pressure -Q` output when available.
+- `memPressureClass`: `normal | warning | critical | unavailable` using thresholds `<75`, `75-89.99`, `>=90`.
 
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
