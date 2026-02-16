@@ -64,6 +64,53 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ---
 
+## QA cycle update — 2026-02-16 17:20 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (OpenClaw parser fixture coverage still green).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits usage-populated rows.
+- ✅ `npm run package:macos --silent` builds `dist/IdleWatch.app` successfully.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged scaffold.
+- ✅ `npm run package:dmg --silent` builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ GPU telemetry remains unavailable on this host (`gpuPct: null`, `gpuSource: "unavailable"`, `gpuConfidence: "none"`).
+
+### Telemetry validation snapshot (latest)
+
+- `tokensPerMin`: populated (range observed this cycle: ~17.5k–20.4k)
+- `openclawModel`: populated (`gpt-5.3-codex`)
+- `openclawTotalTokens`: populated (`22956`)
+- `openclawSessionId` / `openclawAgentId` / `openclawUsageTs`: populated and stable
+- `source.usageIntegrationStatus`: `ok`
+- `source.usageCommand`: `openclaw status --json`
+
+### Bugs / feature gaps identified this cycle
+
+1. **GPU signal absent on this Mac in all probes (High, data quality)**
+   - Current fallback chain still yields no usable GPU value in local runs.
+   - Need captured raw command output fixtures from this exact host profile to tune parser/probe order.
+
+2. **No staleness guardrail for usage timestamps (Medium, observability)**
+   - `openclawUsageTs` is populated, but no threshold check/warning is emitted when usage data becomes stale.
+   - Add derived field (e.g., `openclawUsageAgeMs`) + warn state for alerting.
+
+3. **Unsigned distribution remains the only generated installer (High, distribution trust)**
+   - DMG output is explicitly unsigned (`-unsigned.dmg`), with signing/notarization still manual/TODO.
+   - Gatekeeper friction remains unresolved for real-user distribution.
+
+### DMG packaging risk status (current)
+
+- ✅ Build reliability: app scaffold + unsigned DMG generation is reproducible locally.
+- ⚠️ Trust/compliance: no automated codesign/notarize/staple pipeline yet.
+- ⚠️ Install QA: no clean-machine validation evidence captured (Apple Silicon + Intel/Rosetta).
+- ⚠️ Runtime dependency: launcher still assumes Node availability (or pre-provisioned runtime) on target machine.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Usage collection path is functional on this host via `openclaw status --json`.
+- ⚠️ Integration resilience gap: no explicit stale-usage health classification beyond `usageIntegrationStatus`.
+- ⚠️ Contract gap: no CI assertion yet for acceptable freshness window of `openclawUsageTs`.
+
 ## Prioritized findings
 
 ## QA cycle update — 2026-02-16 17:00 America/Toronto
