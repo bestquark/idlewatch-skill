@@ -27,6 +27,8 @@ Environment:
 
 - `IDLEWATCH_HOST` optional custom host label
 - `IDLEWATCH_INTERVAL_MS` sampling interval (default 10000)
+- `IDLEWATCH_LOCAL_LOG_PATH` optional local NDJSON durability log path
+- `IDLEWATCH_OPENCLAW_USAGE` usage lookup mode (`auto` or `off`)
 - `FIREBASE_PROJECT_ID`
 - `FIREBASE_SERVICE_ACCOUNT_JSON` (preferred)
 - `FIREBASE_SERVICE_ACCOUNT_B64` (legacy)
@@ -36,4 +38,6 @@ Output fields:
 - `cpuPct`
 - `memPct`
 - `gpuPct` (darwin best-effort)
-- `tokensPerMin` (placeholder until direct OpenClaw usage integration)
+- `tokensPerMin` (OpenClaw usage when available)
+- `openclawModel`
+- `openclawTotalTokens`

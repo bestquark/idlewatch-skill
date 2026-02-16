@@ -12,7 +12,9 @@
     "validate:bin": "node scripts/validate-bin.mjs",
     "smoke:help": "node bin/idlewatch-agent.js --help",
     "smoke:dry-run": "node bin/idlewatch-agent.js --dry-run",
-    "test": "npm run validate:bin && npm run smoke:help"
+    "package:macos": "./scripts/package-macos.sh",
+    "package:dmg": "./scripts/build-dmg.sh",
+    "test": "npm run validate:bin && npm run smoke:help && npm run smoke:dry-run"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"
