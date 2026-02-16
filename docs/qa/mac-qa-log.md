@@ -12,30 +12,53 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ## Evidence gathered
 
-- `npm test` passes after dependency install (`validate:bin`, `smoke:help`).
+- `npm test` passes (`validate:bin`, `smoke:help`, `smoke:dry-run`).
 - `node bin/idlewatch-agent.js --dry-run` runs and emits one sample row.
-- Current dry-run row includes `tokensPerMin` random placeholder and often `gpuPct: null` on macOS.
+- Current dry-run row still often reports `gpuPct: null` on macOS.
+- OpenClaw usage fields remain `null` in dry-run (`source.usage: "unavailable"`).
 - CI currently runs on `ubuntu-latest` only (Node 20/22), no macOS CI coverage.
+
+## QA cycle update — 2026-02-16 16:40 America/Toronto
+
+### What changed since prior pass
+
+- ✅ `tokensPerMin` is no longer random mock data in code. Collector now attempts real usage via OpenClaw CLI commands and emits `null` when unavailable.
+- ⚠️ Integration is still incomplete in practice because current command/JSON parsing path does not yield tokens/model on this host.
+- ⚠️ Packaging scaffolding exists (`scripts/package-macos.sh`, `scripts/build-dmg.sh`, `docs/packaging/macos-dmg.md`) but launcher/signing/notarization remain TODOs.
+
+### Telemetry validation checks (this cycle)
+
+- Test suite: **pass**.
+- Dry-run sample: **pass** for basic collection and local NDJSON write.
+- CPU/memory fields populated: **pass**.
+- GPU field populated on this host: **fail** (`gpuPct: null`).
+- OpenClaw usage populated on this host: **fail** (`tokensPerMin`, `openclawModel`, `openclawTotalTokens` are null; source=`unavailable`).
+
+### OpenClaw integration gaps (current)
+
+- CLI probe order is brittle vs actual installed command surface (`openclaw session_status --json` currently errors with unknown command).
+- Parser does not currently map nested fields present in `openclaw status --json` (`sessions.defaults.model`, etc.), so model/tokens remain unresolved.
+- No explicit integration health metric is emitted beyond `source.usage` string; hard to alert on partial integration failure.
 
 ---
 
 ## Prioritized findings
 
-### P0 — Blocker: OpenClaw usage metric is synthetic (not shippable)
+### P0 — Blocker: OpenClaw usage integration still does not produce live usage on host
 
 **Finding**
-- `tokensPerMin` uses `tokensPerMinMock()` (random number), not real OpenClaw usage/session data.
-- This makes dashboard conclusions invalid and prevents trust in usage analytics.
+- Mock/random usage has been removed, but runtime still emits `tokensPerMin/openclaw* = null` with `source.usage: "unavailable"` on this host.
+- Collector probes `openclaw session_status --json`, `openclaw session status --json`, then `openclaw status --json`; current CLI surface/JSON shape does not satisfy parser expectations.
 
 **Risk**
-- Product/ops decisions based on fake LLM usage data.
-- Cannot claim OpenClaw integration completeness.
+- Dashboard remains blind for LLM usage despite integration code path existing.
+- Operators may assume telemetry is complete when usage is silently unavailable.
 
 **Acceptance criteria (must pass before ship)**
 - [ ] Replace mock function with real collector wired to OpenClaw session/usage source.
 - [ ] Emit stable identifiers: `sessionId`, `agentId` (or equivalent), and timestamp alignment fields.
 - [ ] Document exact semantics for each usage field (prompt tokens, completion tokens, total tokens, requests/min).
-- [ ] Add unit/integration test proving non-random deterministic behavior under fixed fixture input.
+- [ ] Add integration test fixtures for actual `openclaw` command outputs used in production (`session status`/`status --json`) and ensure parser maps fields correctly.
 - [ ] Fail-safe behavior documented for missing OpenClaw source (explicit `null` + `integrationStatus`, no synthetic fallback).
 
 ---
