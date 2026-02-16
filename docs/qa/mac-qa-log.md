@@ -86,6 +86,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Bugs / feature gaps identified this cycle
 
+## Implementation cycle update — 2026-02-16 17:31 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added OpenClaw usage staleness guardrail: `openclawUsageAgeMs`, configurable `IDLEWATCH_USAGE_STALE_MS`, and `source.usageIntegrationStatus='stale'` when age exceeds threshold.
+- ✅ Added stale-threshold telemetry metadata: `source.usageStaleMsThreshold`.
+- ✅ Packaging scripts now support optional signing and notarization via env vars:
+  - `MACOS_CODESIGN_IDENTITY` signs/verifies `IdleWatch.app` in `package-macos.sh`
+  - `MACOS_NOTARY_PROFILE` notarizes + staples DMG in `build-dmg.sh`
+- ✅ Packaging docs updated with signing/notarization invocation and output naming semantics (`-signed` vs `-unsigned` DMG).
+
+### Acceptance criteria status (incremental)
+
+- [x] Add derived usage freshness signal (`openclawUsageAgeMs`) and explicit stale classification for alerting.
+- [x] Add script-level path for optional codesign/notarize/staple automation (when credentials are supplied).
+
+### Bugs / feature gaps identified this cycle
+
 1. **GPU signal absent on this Mac in all probes (High, data quality)**
    - Current fallback chain still yields no usable GPU value in local runs.
    - Need captured raw command output fixtures from this exact host profile to tune parser/probe order.

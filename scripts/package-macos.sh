@@ -8,6 +8,7 @@ CONTENTS_DIR="$APP_DIR/Contents"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "import('./package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version))")"
+CODESIGN_IDENTITY="${MACOS_CODESIGN_IDENTITY:-}"
 
 rm -rf "$APP_DIR" "$DIST_DIR/dmg-root"
 mkdir -p "$RESOURCES_DIR" "$MACOS_DIR"
@@ -54,6 +55,14 @@ exec npx --yes --package "$TGZ" idlewatch-agent "$@"
 SH
 chmod +x "$MACOS_DIR/IdleWatch"
 
+if [[ -n "$CODESIGN_IDENTITY" ]]; then
+  echo "Codesigning IdleWatch.app with identity: $CODESIGN_IDENTITY"
+  codesign --deep --force --options runtime --sign "$CODESIGN_IDENTITY" "$APP_DIR"
+  codesign --verify --deep --strict "$APP_DIR"
+else
+  echo "MACOS_CODESIGN_IDENTITY not set; leaving app unsigned."
+fi
+
 mkdir -p "$DIST_DIR/dmg-root"
 cp -R "$APP_DIR" "$DIST_DIR/dmg-root/"
 ln -s /Applications "$DIST_DIR/dmg-root/Applications"
@@ -63,7 +72,8 @@ Mac app scaffold package complete.
 Next steps:
   1) Test: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
   2) Build DMG: ./scripts/build-dmg.sh
-  3) Codesign + notarize artifact in CI/release job
+  3) Optional signing: export MACOS_CODESIGN_IDENTITY="Developer ID Application: ..." then rerun package-macos
+  4) Optional notarize+staple DMG: set MACOS_NOTARY_PROFILE and rerun build-dmg
 EOF
 
 popd >/dev/null

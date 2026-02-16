@@ -35,6 +35,10 @@ for CI wiring and local dry-runs.
 
 ## Current scaffold commands
 
+Optional environment variables:
+- `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
+- `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
+
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
   - Bundles the generated `idlewatch-skill-<version>.tgz`
@@ -42,7 +46,8 @@ for CI wiring and local dry-runs.
     - `npx --yes --package <bundled-tgz> idlewatch-agent ...`
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
-  - Creates `dist/IdleWatch-<version>-unsigned.dmg` from `dist/dmg-root`
+  - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
+  - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
 
 ## CI integration suggestion
 

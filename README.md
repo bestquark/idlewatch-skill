@@ -52,10 +52,14 @@ If Firebase vars are omitted entirely, it runs in local-only mode and prints tel
 By default (`IDLEWATCH_OPENCLAW_USAGE=auto`), the agent attempts to read OpenClaw
 session usage from local CLI JSON endpoints when available, then enriches samples with:
 
+- `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
+  (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
+
 - `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
 - `openclawModel`: active model name (from the selected recent session or defaults).
 - `openclawTotalTokens`: total tokens for the selected recent session.
 - `openclawSessionId`, `openclawAgentId`, `openclawUsageTs`: stable identifiers + timestamp alignment fields.
+- `openclawUsageAgeMs`: derived age of usage snapshot (`sampleTs - openclawUsageTs`) when available.
 
 Selection logic for `openclaw status --json`:
 1. Pick the freshest recent session with non-null `totalTokens` and `totalTokensFresh !== false`.
@@ -64,8 +68,9 @@ Selection logic for `openclaw status --json`:
 
 Source metadata fields:
 - `source.usage`: `openclaw | disabled | unavailable`
-- `source.usageIntegrationStatus`: `ok | partial | disabled | unavailable`
+- `source.usageIntegrationStatus`: `ok | partial | stale | disabled | unavailable`
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
+- `source.usageStaleMsThreshold`: threshold used for stale classification.
 
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
