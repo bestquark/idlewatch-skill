@@ -11,7 +11,7 @@ import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor(stale*0.75))\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
 }
 
 const args = new Set(process.argv.slice(2))
@@ -43,6 +43,17 @@ const USAGE_STALE_MS = process.env.IDLEWATCH_USAGE_STALE_MS
 
 if (!Number.isFinite(USAGE_STALE_MS) || USAGE_STALE_MS <= 0) {
   console.error(`Invalid IDLEWATCH_USAGE_STALE_MS: ${process.env.IDLEWATCH_USAGE_STALE_MS}. Expected a positive number.`)
+  process.exit(1)
+}
+
+const USAGE_NEAR_STALE_MS = process.env.IDLEWATCH_USAGE_NEAR_STALE_MS
+  ? Number(process.env.IDLEWATCH_USAGE_NEAR_STALE_MS)
+  : Math.floor(USAGE_STALE_MS * 0.75)
+
+if (!Number.isFinite(USAGE_NEAR_STALE_MS) || USAGE_NEAR_STALE_MS < 0) {
+  console.error(
+    `Invalid IDLEWATCH_USAGE_NEAR_STALE_MS: ${process.env.IDLEWATCH_USAGE_NEAR_STALE_MS}. Expected a non-negative number.`
+  )
   process.exit(1)
 }
 
@@ -193,7 +204,7 @@ async function publish(row, retries = 2) {
 async function collectSample() {
   const nowMs = Date.now()
   const usage = loadOpenClawUsage()
-  const usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS)
+  const usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS)
   const gpu = process.platform === 'darwin'
     ? gpuSampleDarwin()
     : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null }
@@ -226,8 +237,11 @@ async function collectSample() {
           ? 'stale'
           : (usage?.integrationStatus ?? 'ok')
         : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+      usageFreshnessState: usage ? usageFreshness.freshnessState : null,
+      usageNearStale: usage ? usageFreshness.isNearStale : false,
       usageCommand: usage?.sourceCommand ?? null,
       usageStaleMsThreshold: USAGE_STALE_MS,
+      usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
       memPressureSource: memPressure.source
     }
   }

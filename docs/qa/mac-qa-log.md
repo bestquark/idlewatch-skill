@@ -512,3 +512,27 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Integration remains functional with real usage fields and deterministic stale classification.
 - ⚠️ CI still lacks end-to-end timing assertions that model longer packaging windows where stale transitions are expected.
 
+
+## Implementation cycle update — 2026-02-16 18:51 America/Toronto
+
+### Completed this cycle
+
+- ✅ Improved OpenClaw session selection reliability by choosing the **most recently updated** eligible session (not first-match) when parsing `openclaw status --json` recent sessions.
+- ✅ Added usage freshness early-warning metadata to reduce stale-alert flapping risk:
+  - new env var `IDLEWATCH_USAGE_NEAR_STALE_MS` (default `floor(stale*0.75)`)
+  - new telemetry fields `source.usageFreshnessState` and `source.usageNearStale`
+  - exported threshold metadata via `source.usageNearStaleMsThreshold`
+- ✅ Added CI trusted distribution workflow `.github/workflows/release-macos-trusted.yml` for signed/notarized DMG builds when secrets are configured.
+- ✅ Updated packaging docs/README with required secrets and trusted-release pipeline details.
+- ✅ Expanded parser/freshness tests for newest-session selection and aging/stale state boundaries.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes after parser and freshness logic updates.
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with new freshness metadata fields present.
+
+### Acceptance criteria updates
+
+- [x] Add artifact build/sign/notarize workflow (with secrets in repo settings).
+- [x] Improve OpenClaw usage selection resilience for multi-session `status --json` payloads.
+- [x] Add explicit near-stale health signal to reduce stale-threshold observability noise.

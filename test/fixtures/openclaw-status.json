@@ -24,6 +24,17 @@
         "totalTokens": 67980,
         "totalTokensFresh": true,
         "model": "gpt-5.3-codex"
+      },
+      {
+        "agentId": "main",
+        "sessionId": "90d2a820-6d77-42f0-8db4-12b90f9f7203",
+        "updatedAt": 1771278893678,
+        "age": 11000,
+        "inputTokens": 1200,
+        "outputTokens": 210,
+        "totalTokens": 70500,
+        "totalTokensFresh": true,
+        "model": "gpt-5.3-codex"
       }
     ]
   }

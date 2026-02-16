@@ -1,0 +1,93 @@
+name: Release macOS trusted artifact
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  macos-trusted-release:
+    name: macOS signed + notarized DMG
+    runs-on: macos-latest
+    env:
+      CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+      P12_B64: ${{ secrets.APPLE_DEVELOPER_ID_APP_P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_APP_P12_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.APPLE_BUILD_KEYCHAIN_PASSWORD }}
+      NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+      NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
+      NOTARY_API_KEY_P8: ${{ secrets.APPLE_NOTARY_API_KEY_P8 }}
+    steps:
+      - name: Assert required release secrets
+        run: |
+          required=(CODESIGN_IDENTITY P12_B64 P12_PASSWORD KEYCHAIN_PASSWORD NOTARY_KEY_ID NOTARY_ISSUER_ID NOTARY_API_KEY_P8)
+          missing=0
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "Missing required secret/env: $name" >&2
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            echo "Configure required GitHub Actions secrets before running trusted release workflow." >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --silent
+
+      - name: Import Developer ID certificate into temporary keychain
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/idlewatch-build.keychain-db"
+          CERT_PATH="$RUNNER_TEMP/developer-id-application.p12"
+          python - <<'PY'
+import base64, os, pathlib
+cert_b64 = os.environ['P12_B64']
+out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'developer-id-application.p12'
+out.write_bytes(base64.b64decode(cert_b64))
+print(f'wrote {out}')
+PY
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/[\"]//g')
+          security default-keychain -s "$KEYCHAIN_PATH"
+
+      - name: Configure notarytool profile
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${NOTARY_KEY_ID}.p8"
+          printf "%s" "$NOTARY_API_KEY_P8" > "$KEY_PATH"
+          xcrun notarytool store-credentials idlewatch-ci \
+            --key "$KEY_PATH" \
+            --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER_ID"
+
+      - name: Build signed app + notarized DMG
+        env:
+          MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+          MACOS_NOTARY_PROFILE: idlewatch-ci
+        run: |
+          npm run package:macos --silent
+          npm run package:dmg --silent
+
+      - name: Upload trusted DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: idlewatch-macos-dmg-trusted
+          path: dist/IdleWatch-*-signed.dmg
+          if-no-files-found: error

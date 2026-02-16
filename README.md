@@ -55,6 +55,8 @@ session usage from local CLI JSON endpoints when available, then enriches sample
 
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
+- `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
+  (default: `floor(IDLEWATCH_USAGE_STALE_MS*0.75)`).
 
 - `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
 - `openclawModel`: active model name (from the selected recent session or defaults).
@@ -63,15 +65,18 @@ session usage from local CLI JSON endpoints when available, then enriches sample
 - `openclawUsageAgeMs`: derived age of usage snapshot (`sampleTs - openclawUsageTs`) when available.
 
 Selection logic for `openclaw status --json`:
-1. Pick the freshest recent session with non-null `totalTokens` and `totalTokensFresh !== false`.
-2. Fallback to any recent session with non-null tokens.
-3. Fallback to the most recent session entry.
+1. Pick the most recently updated session among entries with non-null `totalTokens` and `totalTokensFresh !== false`.
+2. Fallback to the most recently updated session among entries with non-null tokens.
+3. Fallback to the most recently updated session entry.
 
 Source metadata fields:
 - `source.usage`: `openclaw | disabled | unavailable`
 - `source.usageIntegrationStatus`: `ok | partial | stale | disabled | unavailable`
+- `source.usageFreshnessState`: `fresh | aging | stale | unknown`
+- `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
+- `source.usageNearStaleMsThreshold`: threshold used for aging classification.
 - `source.memPressureSource`: `memory_pressure | unavailable | unsupported`.
 
 Memory field semantics:
@@ -100,3 +105,14 @@ DMG release scaffolding is included:
 - `docs/packaging/macos-dmg.md`
 - `scripts/package-macos.sh`
 - `scripts/build-dmg.sh`
+- `.github/workflows/release-macos-trusted.yml` (signed + notarized CI path)
+
+Trusted-release workflow required secrets:
+
+- `MACOS_CODESIGN_IDENTITY`
+- `APPLE_DEVELOPER_ID_APP_P12_BASE64`
+- `APPLE_DEVELOPER_ID_APP_P12_PASSWORD`
+- `APPLE_BUILD_KEYCHAIN_PASSWORD`
+- `APPLE_NOTARY_KEY_ID`
+- `APPLE_NOTARY_ISSUER_ID`
+- `APPLE_NOTARY_API_KEY_P8`

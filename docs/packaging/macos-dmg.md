@@ -49,14 +49,19 @@ Optional environment variables:
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
 
-## CI integration suggestion
+## CI integration
 
-```yaml
-# .github/workflows/release.yml
-- run: npm ci
-- run: npm test
-- run: ./scripts/package-macos.sh
-- run: ./scripts/build-dmg.sh
-```
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job)
+- Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
-Add secrets for signing and notarization before enabling release uploads.
+Trusted release workflow expects these repository secrets:
+
+- `MACOS_CODESIGN_IDENTITY`
+- `APPLE_DEVELOPER_ID_APP_P12_BASE64`
+- `APPLE_DEVELOPER_ID_APP_P12_PASSWORD`
+- `APPLE_BUILD_KEYCHAIN_PASSWORD`
+- `APPLE_NOTARY_KEY_ID`
+- `APPLE_NOTARY_ISSUER_ID`
+- `APPLE_NOTARY_API_KEY_P8`
+
+When present, the workflow imports a temporary build keychain, signs `IdleWatch.app`, notarizes/staples the DMG, and uploads `IdleWatch-*-signed.dmg`.

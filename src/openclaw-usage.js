@@ -22,19 +22,32 @@ function deriveTokensPerMinute(session) {
   return Number((totalTokens / minutes).toFixed(2))
 }
 
+function pickNewestSession(sessions = []) {
+  return sessions.reduce((best, candidate) => {
+    if (!best) return candidate
+    const bestTs = pickNumber(best?.updatedAt, best?.ts)
+    const candidateTs = pickNumber(candidate?.updatedAt, candidate?.ts)
+    if (candidateTs === null) return best
+    if (bestTs === null || candidateTs > bestTs) return candidate
+    return best
+  }, null)
+}
+
 function pickBestRecentSession(recent = []) {
   if (!Array.isArray(recent) || recent.length === 0) return null
 
-  const freshWithTokens = recent.find((session) => {
+  const withFreshTokens = recent.filter((session) => {
     const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens)
     return totalTokens !== null && session?.totalTokensFresh !== false
   })
-  if (freshWithTokens) return freshWithTokens
+  const freshestWithTokens = pickNewestSession(withFreshTokens)
+  if (freshestWithTokens) return freshestWithTokens
 
-  const anyWithTokens = recent.find((session) => pickNumber(session?.totalTokens, session?.total_tokens) !== null)
-  if (anyWithTokens) return anyWithTokens
+  const anyWithTokens = recent.filter((session) => pickNumber(session?.totalTokens, session?.total_tokens) !== null)
+  const newestWithTokens = pickNewestSession(anyWithTokens)
+  if (newestWithTokens) return newestWithTokens
 
-  return recent[0]
+  return pickNewestSession(recent) || recent[0]
 }
 
 function parseFromStatusJson(parsed) {
