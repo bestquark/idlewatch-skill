@@ -293,3 +293,48 @@ Reasoning:
 - [ ] Telemetry schema versioned and validated (`cpuPct`, `mem*`, `gpu*`, usage/session fields).
 - [ ] macOS compatibility validation completed on target OS/hardware matrix.
 - [ ] Operational docs complete: install, autostart, logs, uninstall, troubleshooting.
+
+## QA cycle update — 2026-02-16 17:40 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (3/3 parser tests green).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds and emits local NDJSON row.
+- ✅ `npm run package:macos --silent` succeeds and builds `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged app scaffold.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ GPU telemetry still unavailable on this host (`gpuPct: null`, `gpuSource: "unavailable"`, `gpuConfidence: "none"`).
+
+### Telemetry validation snapshot (latest sample)
+
+- `tokensPerMin`: populated (`20657.02`; earlier samples this cycle ~`25.3k`–`26.3k`)
+- `openclawModel`: populated (`gpt-5.3-codex`)
+- `openclawTotalTokens`: populated (`19210`)
+- `openclawSessionId` / `openclawAgentId` / `openclawUsageTs`: populated and stable
+- `openclawUsageAgeMs`: populated (`~42.7s` to `~54.6s` in this cycle)
+- `source.usageIntegrationStatus`: `ok`
+- `source.usageCommand`: `openclaw status --json`
+- `source.usageStaleMsThreshold`: `60000`
+
+### Bugs / feature notes (this cycle)
+
+1. **Usage freshness is near stale threshold during manual QA loops (Medium, observability noise risk)**
+   - During packaging + command runs, `openclawUsageAgeMs` climbed to ~54.6s against a 60s stale threshold.
+   - Status remained `ok` in this cycle, but CI/QA timings could intermittently flip to `stale` without product regression.
+   - Suggested follow-up: add a small tolerance/notes in test assertions for long-running QA pipelines.
+
+2. **GPU signal remains unresolved on this Mac profile (High, telemetry completeness)**
+   - Reconfirmed `gpuPct` stays null across direct CLI and packaged app dry-runs.
+   - Need host-captured command fixtures + parser/probe tuning to improve coverage.
+
+### DMG packaging risk status
+
+- ✅ Local artifact generation remains reproducible (`.app` + unsigned `.dmg`).
+- ⚠️ Distribution trust gap persists: code signing not applied (`MACOS_CODESIGN_IDENTITY` unset).
+- ⚠️ Notarization/stapling remains optional/manual (`MACOS_NOTARY_PROFILE` unset).
+- ⚠️ Clean-machine install QA evidence still missing.
+
+### OpenClaw integration gap status
+
+- ✅ Command integration remains healthy via `openclaw status --json` with populated usage/session fields.
+- ⚠️ No CI guard yet that validates behavior around stale-threshold boundary conditions (`openclawUsageAgeMs` near/over threshold).
