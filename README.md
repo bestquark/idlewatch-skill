@@ -79,6 +79,12 @@ Memory field semantics:
 - `memPressurePct`: macOS pressure estimate derived from `memory_pressure -Q` output when available.
 - `memPressureClass`: `normal | warning | critical | unavailable` using thresholds `<75`, `75-89.99`, `>=90`.
 
+Alerting guidance (recommended):
+- Prefer `memPressureClass` as the primary memory alert signal.
+- Suggested warning threshold: trigger when `memPressureClass=warning` for 3+ consecutive samples.
+- Suggested critical threshold: trigger immediately when `memPressureClass=critical`, or when `memPressurePct>=90` for 2+ consecutive samples.
+- Keep `memPct`/`memUsedPct` as informational context only (do not page solely on these).
+
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
 - `tokensPerMin`: reported directly by OpenClaw when available; otherwise derived from `openclawTotalTokens / session age minutes`.

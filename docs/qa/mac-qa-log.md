@@ -393,7 +393,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - [x] Add `memUsedPct` plus macOS-aware pressure indicator (class/value).
 - [x] Document metric definitions and caveats in README/skill docs.
-- [ ] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
+- [x] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
 
 ## QA cycle update — 2026-02-16 18:20 America/Toronto
 
@@ -442,3 +442,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Integration remains healthy on host (`openclaw status --json`, usage fields populated, `usageIntegrationStatus: ok`).
 - ⚠️ CI does not yet include boundary tests for `openclawUsageAgeMs` near stale threshold.
+## Implementation cycle update — 2026-02-16 18:32 America/Toronto
+
+### Completed this cycle
+
+- ✅ Extracted OpenClaw usage freshness/staleness logic into `src/usage-freshness.js` for deterministic unit coverage.
+- ✅ Added boundary-focused tests (`test/usage-freshness.test.mjs`) covering:
+  - exact-threshold behavior (`age == staleMs` stays `ok`)
+  - stale transition (`age > staleMs` becomes `stale`)
+  - invalid/future timestamp and invalid-threshold safety fallbacks.
+- ✅ Wired runtime collector to shared freshness helper (no behavior drift between code/test paths).
+- ✅ Added explicit memory alert threshold guidance to README to close P2 memory-pressure observability gap.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (13/13 tests, including new freshness boundary suite).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds after freshness refactor.
+
+### Acceptance criteria updates
+
+- [x] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
+- [x] Add CI-level deterministic coverage for stale-threshold boundary behavior (`openclawUsageAgeMs` classification).
+
