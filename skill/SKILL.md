@@ -8,7 +8,7 @@ description: Collect host CPU/memory/GPU and token telemetry and stream to Fireb
 Install (npm package):
 
 ```bash
-npx idlewatch-skill
+npx idlewatch-skill --help
 ```
 
 Run collector:
@@ -17,12 +17,19 @@ Run collector:
 idlewatch-agent
 ```
 
+Dry-run once (no Firestore write):
+
+```bash
+idlewatch-agent --dry-run
+```
+
 Environment:
 
 - `IDLEWATCH_HOST` optional custom host label
 - `IDLEWATCH_INTERVAL_MS` sampling interval (default 10000)
 - `FIREBASE_PROJECT_ID`
-- `FIREBASE_SERVICE_ACCOUNT_B64` base64 JSON service account
+- `FIREBASE_SERVICE_ACCOUNT_JSON` (preferred)
+- `FIREBASE_SERVICE_ACCOUNT_B64` (legacy)
 
 Output fields:
 
