@@ -464,3 +464,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - [x] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
 - [x] Add CI-level deterministic coverage for stale-threshold boundary behavior (`openclawUsageAgeMs` classification).
 
+## QA cycle update — 2026-02-16 18:40 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (13/13).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with populated CPU/memory/GPU/OpenClaw fields.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged app scaffold.
+- ⚠️ Firebase remains unconfigured in local QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run (`bin/idlewatch-agent.js`):
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`29`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`28184.14`).
+  - `openclawUsageAgeMs`: `43484` with `source.usageIntegrationStatus: "ok"`.
+- Packaged app dry-run (`IdleWatch.app` launcher):
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`.
+  - `tokensPerMin`: populated (`18722.32`).
+  - `openclawUsageAgeMs`: `66068` with `source.usageIntegrationStatus: "stale"` (threshold `60000`).
+
+### Bugs / feature gaps (current)
+
+1. **Stale-status flapping remains reproducible during packaging/runtime loops (Medium, observability noise)**
+   - In this cycle, packaged app dry-run crossed threshold (`openclawUsageAgeMs=66068`) and correctly emitted `usageIntegrationStatus: stale`.
+   - Behavior is correct, but operationally noisy for longer QA/build steps unless downstream alerts tolerate transient stale states.
+
+2. **Trusted distribution path still optional/manual (High, release readiness)**
+   - App/DMG generation is stable, but artifacts are unsigned unless `MACOS_CODESIGN_IDENTITY` is set.
+   - Notarization/stapling still requires `MACOS_NOTARY_PROFILE`; no CI-enforced trusted artifact path yet.
+
+3. **Firebase write path still not exercised in active QA loop (Medium, E2E confidence)**
+   - Local telemetry generation remains healthy.
+   - One credentialed validation pass is still needed to verify Firestore write path and failure-handling behavior.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk remains until signing + notarization are automated and validated in CI.
+- ⚠️ Clean-machine install evidence is still pending (Apple Silicon + Intel/Rosetta scenarios).
+
+### OpenClaw integration gap status
+
+- ✅ Integration remains functional with real usage fields and deterministic stale classification.
+- ⚠️ CI still lacks end-to-end timing assertions that model longer packaging windows where stale transitions are expected.
+
