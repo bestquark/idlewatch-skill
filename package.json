@@ -1,0 +1,17 @@
+{
+  "name": "idlewatch-skill",
+  "version": "0.1.0",
+  "description": "Host telemetry collector for IdleWatch",
+  "type": "module",
+  "bin": {
+    "idlewatch-agent": "bin/idlewatch-agent.js",
+    "idlewatch-skill": "bin/idlewatch-agent.js"
+  },
+  "scripts": {
+    "start": "node bin/idlewatch-agent.js",
+    "test": "node -e \"console.log('ok')\""
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}
