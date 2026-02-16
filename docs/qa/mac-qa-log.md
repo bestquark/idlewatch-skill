@@ -66,22 +66,35 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ## Prioritized findings
 
-### P0 — Blocker: OpenClaw usage integration still does not produce live usage on host
+## QA cycle update — 2026-02-16 17:00 America/Toronto
 
-**Finding**
-- Mock/random usage has been removed, but runtime still emits `tokensPerMin/openclaw* = null` with `source.usage: "unavailable"` on this host.
-- Collector probes `openclaw session_status --json`, `openclaw session status --json`, then `openclaw status --json`; current CLI surface/JSON shape does not satisfy parser expectations.
+### Validation checks run this cycle
 
-**Risk**
-- Dashboard remains blind for LLM usage despite integration code path existing.
-- Operators may assume telemetry is complete when usage is silently unavailable.
+- ✅ `npm test --silent` passes (parser fixtures and null-handling).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits telemetry samples with live OpenClaw usage.
+- ✅ OpenClaw status probe works on host via `openclaw status --json`.
+- ⚠️ GPU remains null on host (`gpuPct: null`).
+- ⚠️ Firebase not configured in local QA env; telemetry currently validated in local-only/stdout mode.
 
-**Acceptance criteria (must pass before ship)**
-- [ ] Replace mock function with real collector wired to OpenClaw session/usage source.
-- [ ] Emit stable identifiers: `sessionId`, `agentId` (or equivalent), and timestamp alignment fields.
-- [ ] Document exact semantics for each usage field (prompt tokens, completion tokens, total tokens, requests/min).
-- [ ] Add integration test fixtures for actual `openclaw` command outputs used in production (`session status`/`status --json`) and ensure parser maps fields correctly.
-- [ ] Fail-safe behavior documented for missing OpenClaw source (explicit `null` + `integrationStatus`, no synthetic fallback).
+### Telemetry validation snapshot (sample)
+
+- `tokensPerMin`: populated (e.g., `32822.64`)
+- `openclawModel`: populated (`gpt-5.3-codex`)
+- `openclawTotalTokens`: populated (`21745`)
+- `openclawSessionId`/`openclawAgentId`/`openclawUsageTs`: populated
+- `source.usageIntegrationStatus`: `ok`
+- `source.usageCommand`: `openclaw status --json`
+
+### OpenClaw integration status
+
+- ✅ Prior P0 blocker is **closed** for this host/runtime.
+- Remaining risk is observability quality (no trend/alert test yet for stale usage timestamps) rather than data absence.
+
+### DMG packaging risk check (this cycle)
+
+- ⚠️ `scripts/package-macos.sh` / `scripts/build-dmg.sh` scaffolding exists, but signing/notarization/stapling are still not automated in CI.
+- ⚠️ No clean-machine install verification evidence captured yet (Apple Silicon + Intel/Rosetta).
+- ⚠️ Launcher depends on Node presence unless runtime is bundled; this is a distribution friction risk for non-technical users.
 
 ---
 
