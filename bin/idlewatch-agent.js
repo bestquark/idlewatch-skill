@@ -6,6 +6,7 @@ import process from 'process'
 import { execSync } from 'child_process'
 import admin from 'firebase-admin'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
+import { gpuSampleDarwin } from '../src/gpu.js'
 
 function printHelp() {
   console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
@@ -124,47 +125,6 @@ function cpuPct() {
 
 function memPct() {
   return Number((((os.totalmem() - os.freemem()) / os.totalmem()) * 100).toFixed(2))
-}
-
-function parseFirstPercent(text) {
-  const m = text.match(/(\d+\.?\d*)\s*%/)
-  return m ? Number(m[1]) : null
-}
-
-function gpuSampleDarwin() {
-  const probes = [
-    { cmd: 'top -l 1 -stats gpu | tail -n +2', source: 'top-stats', confidence: 'medium' },
-    { cmd: "top -l 1 | grep -i 'GPU'", source: 'top-grep', confidence: 'low' },
-    { cmd: 'powermetrics --samplers gpu_power -n 1 -i 1000', source: 'powermetrics', confidence: 'high' }
-  ]
-
-  for (const probe of probes) {
-    try {
-      const out = execSync(probe.cmd, {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-        timeout: 1500
-      })
-      const pct = parseFirstPercent(out)
-      if (pct !== null) {
-        return {
-          pct,
-          source: probe.source,
-          confidence: probe.confidence,
-          sampleWindowMs: probe.source === 'powermetrics' ? 1000 : null
-        }
-      }
-    } catch {
-      // ignore and continue
-    }
-  }
-
-  return {
-    pct: null,
-    source: 'unavailable',
-    confidence: 'none',
-    sampleWindowMs: null
-  }
 }
 
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)

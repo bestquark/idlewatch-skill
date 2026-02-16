@@ -27,7 +27,7 @@ npx idlewatch-skill --dry-run
 - Retry-once+ for transient Firestore write failures
 - Non-overlapping scheduler loop (prevents concurrent sample overlap when host is busy)
 - Non-blocking CPU sampling using per-tick CPU deltas (no `Atomics.wait` stall)
-- Darwin GPU probing fallback chain with provenance fields (`gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`)
+- Darwin GPU probing fallback chain (AGX/IOGPU `ioreg` → `powermetrics` → `top` grep) with provenance fields (`gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`)
 
 ## Firebase wiring
 

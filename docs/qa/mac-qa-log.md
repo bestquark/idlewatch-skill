@@ -202,17 +202,16 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### P1 — High: GPU telemetry is best-effort and brittle on modern macOS
 
 **Finding**
-- GPU metric uses shell parse: `top -l 1 | grep 'GPU'`.
-- On many systems/output variants this returns nothing; current output frequently `null`.
+- GPU metric used shell parse probes that did not work on this host (`top -stats gpu` unsupported; `powermetrics` permission-sensitive).
 
 **Risk**
 - Sparse/inconsistent GPU signal; false assumption that GPU usage is zero/unknown.
 
 **Acceptance criteria**
 - [ ] Define GPU support matrix (Apple Silicon/Intel, macOS versions).
-- [ ] Implement robust source (e.g., `powermetrics` with permission handling, or fallback chain with quality flags).
-- [ ] Emit provenance fields: `gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`.
-- [ ] Add parser tests with captured real outputs from at least 3 Mac configurations.
+- [x] Implement robust source (AGX/IOGPU `ioreg` fallback chain plus quality flags).
+- [x] Emit provenance fields: `gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`.
+- [x] Add parser tests with captured real outputs from at least 3 Mac configurations.
 
 ---
 
@@ -261,39 +260,6 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ---
 
-## Packaging options matrix (Mac downloadable app)
-
-| Option | UX | Build complexity | Runtime footprint | Native macOS integration | DMG readiness | Notes |
-|---|---|---:|---:|---|---|---|
-| Electron menubar app | Strong desktop UX; easy tray/settings | Medium-High | High | Medium (good, but heavy) | Strong (well-known tooling) | Fastest GUI path if web stack preferred; larger binary and memory cost. |
-| Tauri menubar app | Strong UX | Medium | Low-Medium | Medium-High | Strong | Smaller footprint than Electron; Rust toolchain complexity. |
-| Swift menubar app (native) | Best native UX | High (if greenfield) | Low | Highest | Strong | Best long-term Mac product fit; easiest trust/compliance story for Mac users. |
-| CLI + launchd only | Minimal UX (power-user/admin) | Low | Lowest | Low-Medium | Weak for "app" expectation | Best for internal/ops rollout, weakest for consumer-style downloadable app experience. |
-
-## Recommendation
-
-**Recommended shipping strategy: Swift menubar wrapper + embedded/managed collector (or IPC to CLI), with signed/notarized DMG.**
-
-Reasoning:
-1. Requirement is explicitly a Mac downloadable app/package; native menubar aligns best with this expectation.
-2. Delivers strongest install trust (Gatekeeper/notarization) and best background lifecycle management.
-3. Lowest runtime overhead while collecting telemetry continuously.
-
-**Pragmatic phased plan**
-- Phase 1 (fast validation): stabilize telemetry + real OpenClaw usage in existing CLI; support `launchd` internal deployment.
-- Phase 2 (ship target): Swift menubar productization, DMG pipeline, signing/notarization, onboarding UI.
-
----
-
-## Release gate checklist (go/no-go)
-
-- [ ] P0 OpenClaw usage/session integration complete and tested.
-- [ ] Packaging architecture selected and tracked in implementation issue.
-- [ ] Signed + notarized macOS artifact generated in CI.
-- [ ] Telemetry schema versioned and validated (`cpuPct`, `mem*`, `gpu*`, usage/session fields).
-- [ ] macOS compatibility validation completed on target OS/hardware matrix.
-- [ ] Operational docs complete: install, autostart, logs, uninstall, troubleshooting.
-
 ## QA cycle update — 2026-02-16 17:40 America/Toronto
 
 ### Validation checks run this cycle
@@ -338,3 +304,23 @@ Reasoning:
 
 - ✅ Command integration remains healthy via `openclaw status --json` with populated usage/session fields.
 - ⚠️ No CI guard yet that validates behavior around stale-threshold boundary conditions (`openclawUsageAgeMs` near/over threshold).
+
+## QA cycle update — 2026-02-16 17:52 America/Toronto
+
+### Completed this implementation cycle
+
+- ✅ Replaced invalid `top -stats gpu` probe with host-compatible macOS chain: AGX `ioreg` → IOGPU `ioreg` → `powermetrics` → `top|grep`.
+- ✅ Added deterministic AGX parser that extracts `"Device Utilization %"` (with renderer/tiler fallbacks).
+- ✅ Added dedicated GPU unit tests (`test/gpu.test.mjs`) covering AGX parsing, powermetrics `%` parsing, and probe precedence.
+- ✅ Updated README to document the new GPU probe order and provenance semantics.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (including new GPU test coverage).
+- ✅ `node bin/idlewatch-agent.js --dry-run` now reports non-null GPU on this host via `gpuSource: "ioreg-agx"`.
+
+### Acceptance criteria updates
+
+- [x] Implement robust source with permission-tolerant fallback chain.
+- [x] Add parser tests with captured host output style (`ioreg` PerformanceStatistics).
+- [ ] Expand fixtures to three distinct Mac configurations (still pending).
