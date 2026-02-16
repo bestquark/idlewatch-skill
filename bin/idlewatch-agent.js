@@ -80,23 +80,37 @@ function appendLocal(row) {
   }
 }
 
-function cpuPct(sampleMs = 400) {
-  const a = os.cpus().map((c) => ({ ...c.times }))
-  const sleep = new Int32Array(new SharedArrayBuffer(4))
-  Atomics.wait(sleep, 0, 0, sampleMs)
-  const b = os.cpus().map((c) => ({ ...c.times }))
+function snapshotCpuTimes() {
+  return os.cpus().map((c) => ({ ...c.times }))
+}
+
+function cpuPctFromDeltas(previous, current) {
+  if (!previous || !current || previous.length !== current.length) return null
   let idle = 0
   let total = 0
-  for (let i = 0; i < a.length; i++) {
-    const da = b[i]
-    const db = a[i]
-    const didle = da.idle - db.idle
-    const dtotal = (da.user - db.user) + (da.nice - db.nice) + (da.sys - db.sys) + (da.irq - db.irq) + didle
+  for (let i = 0; i < previous.length; i++) {
+    const before = previous[i]
+    const after = current[i]
+    const didle = after.idle - before.idle
+    const dtotal =
+      (after.user - before.user) +
+      (after.nice - before.nice) +
+      (after.sys - before.sys) +
+      (after.irq - before.irq) +
+      didle
     idle += didle
     total += dtotal
   }
-  if (total <= 0) return 0
+  if (total <= 0) return null
   return Math.max(0, Math.min(100, Number((100 * (1 - idle / total)).toFixed(2))))
+}
+
+let previousCpuSnapshot = snapshotCpuTimes()
+function cpuPct() {
+  const current = snapshotCpuTimes()
+  const pct = cpuPctFromDeltas(previousCpuSnapshot, current)
+  previousCpuSnapshot = current
+  return pct ?? 0
 }
 
 function memPct() {
@@ -108,18 +122,40 @@ function parseFirstPercent(text) {
   return m ? Number(m[1]) : null
 }
 
-function gpuPctDarwin() {
-  const commands = ["top -l 1 | grep -i 'GPU'", 'top -l 1 -stats gpu | tail -n +2']
-  for (const cmd of commands) {
+function gpuSampleDarwin() {
+  const probes = [
+    { cmd: 'top -l 1 -stats gpu | tail -n +2', source: 'top-stats', confidence: 'medium' },
+    { cmd: "top -l 1 | grep -i 'GPU'", source: 'top-grep', confidence: 'low' },
+    { cmd: 'powermetrics --samplers gpu_power -n 1 -i 1000', source: 'powermetrics', confidence: 'high' }
+  ]
+
+  for (const probe of probes) {
     try {
-      const out = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      const out = execSync(probe.cmd, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 1500
+      })
       const pct = parseFirstPercent(out)
-      if (pct !== null) return pct
+      if (pct !== null) {
+        return {
+          pct,
+          source: probe.source,
+          confidence: probe.confidence,
+          sampleWindowMs: probe.source === 'powermetrics' ? 1000 : null
+        }
+      }
     } catch {
       // ignore and continue
     }
   }
-  return null
+
+  return {
+    pct: null,
+    source: 'unavailable',
+    confidence: 'none',
+    sampleWindowMs: null
+  }
 }
 
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)
@@ -175,12 +211,19 @@ async function publish(row, retries = 2) {
 
 async function collectSample() {
   const usage = loadOpenClawUsage()
+  const gpu = process.platform === 'darwin'
+    ? gpuSampleDarwin()
+    : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null }
+
   const row = {
     host: HOST,
     ts: Date.now(),
     cpuPct: cpuPct(),
     memPct: memPct(),
-    gpuPct: process.platform === 'darwin' ? gpuPctDarwin() : null,
+    gpuPct: gpu.pct,
+    gpuSource: gpu.source,
+    gpuConfidence: gpu.confidence,
+    gpuSampleWindowMs: gpu.sampleWindowMs,
     tokensPerMin: usage?.tokensPerMin ?? null,
     openclawModel: usage?.model ?? null,
     openclawTotalTokens: usage?.totalTokens ?? null,

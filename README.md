@@ -26,7 +26,8 @@ npx idlewatch-skill --dry-run
 - Local NDJSON durability log at `logs/<host>-metrics.ndjson` (override via `IDLEWATCH_LOCAL_LOG_PATH`)
 - Retry-once+ for transient Firestore write failures
 - Non-overlapping scheduler loop (prevents concurrent sample overlap when host is busy)
-- Darwin GPU usage probing across multiple command shapes
+- Non-blocking CPU sampling using per-tick CPU deltas (no `Atomics.wait` stall)
+- Darwin GPU probing fallback chain with provenance fields (`gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`)
 
 ## Firebase wiring
 

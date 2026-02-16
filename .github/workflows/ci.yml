@@ -5,11 +5,18 @@ on:
   pull_request:
 
 jobs:
-  node:
-    runs-on: ubuntu-latest
+  node-tests:
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [20, 22]
+        include:
+          - os: ubuntu-latest
+            node-version: 20
+          - os: ubuntu-latest
+            node-version: 22
+          - os: macos-latest
+            node-version: 22
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,5 +35,35 @@ jobs:
       - name: Lint (if present)
         run: npm run lint --if-present
 
+      - name: Unit tests
+        run: npm run test:unit
+
       - name: Smoke: CLI help
         run: npm run smoke:help
+
+      - name: Smoke: dry run
+        run: npm run smoke:dry-run
+
+  macos-packaging-smoke:
+    name: macOS packaging scaffold smoke
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install
+
+      - name: Build macOS app scaffold
+        run: npm run package:macos
+
+      - name: App scaffold dry-run
+        run: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
+
+      - name: Build unsigned DMG
+        run: npm run package:dmg

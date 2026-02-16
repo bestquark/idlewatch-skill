@@ -96,6 +96,23 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ⚠️ No clean-machine install verification evidence captured yet (Apple Silicon + Intel/Rosetta).
 - ⚠️ Launcher depends on Node presence unless runtime is bundled; this is a distribution friction risk for non-technical users.
 
+## Implementation cycle update — 2026-02-16 17:11 America/Toronto
+
+### Completed this cycle
+
+- ✅ Replaced blocking CPU sampler (`Atomics.wait`) with non-blocking per-tick CPU delta sampling.
+- ✅ Added GPU provenance fields to telemetry rows: `gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`.
+- ✅ Added GPU probe fallback chain (`top -stats gpu`, `top|grep GPU`, `powermetrics`) with bounded timeouts.
+- ✅ Expanded CI matrix to include `macos-latest` with parser/unit + smoke (`--help`, `--dry-run`) coverage.
+- ✅ Added dedicated macOS packaging smoke workflow job: app scaffold build, app dry-run, unsigned DMG build.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes.
+- ✅ `npm run package:macos` produces `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` runs successfully.
+- ✅ `npm run package:dmg` produces versioned unsigned DMG.
+
 ---
 
 ### P1 — High: Mac app/package distribution path not implemented
@@ -152,13 +169,13 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### P2 — Medium: Sampling approach blocks event loop during CPU measurement
 
 **Finding**
-- `cpuPct()` uses `Atomics.wait` sleep window (blocking) each sample.
+- `cpuPct()` used `Atomics.wait` sleep window (blocking) each sample.
 
 **Risk**
 - Can delay other tasks and reduce responsiveness if collector expands.
 
 **Acceptance criteria**
-- [ ] Replace with non-blocking delta sampling between ticks or async scheduler.
+- [x] Replace with non-blocking delta sampling between ticks or async scheduler.
 - [ ] Verify jitter and sampling overhead under 1s and 10s intervals.
 - [ ] Add performance test documenting collector overhead budget (<1% CPU on idle machine target).
 
@@ -167,13 +184,13 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### P2 — Medium: CI lacks macOS validation and packaging checks
 
 **Finding**
-- CI runs only Ubuntu and does not execute dry-run telemetry assertions.
+- CI previously ran only Ubuntu and did not execute dry-run telemetry assertions.
 
 **Risk**
 - Mac-specific regressions undetected; packaging pipeline breaks late.
 
 **Acceptance criteria**
-- [ ] Add `macos-latest` job for smoke + dry-run + parser tests.
+- [x] Add `macos-latest` job for smoke + dry-run + parser tests.
 - [ ] Add artifact build/sign/notarize workflow (with secrets in repo settings).
 - [ ] Gate merges on telemetry schema validation and deterministic integration tests.
 
