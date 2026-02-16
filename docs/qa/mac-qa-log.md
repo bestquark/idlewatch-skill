@@ -40,6 +40,28 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Parser does not currently map nested fields present in `openclaw status --json` (`sessions.defaults.model`, etc.), so model/tokens remain unresolved.
 - No explicit integration health metric is emitted beyond `source.usage` string; hard to alert on partial integration failure.
 
+## Implementation cycle update — 2026-02-16 16:53 America/Toronto
+
+### Completed this cycle
+
+- ✅ OpenClaw probe order now prioritizes `openclaw status --json` (supported on this host), then falls back.
+- ✅ Added parser support for nested `openclaw status --json` session payloads (`sessions.recent`, `sessions.defaults`) with deterministic recent-session selection.
+- ✅ Added usage identity/alignment fields to telemetry row: `openclawSessionId`, `openclawAgentId`, `openclawUsageTs`.
+- ✅ Added explicit integration health markers: `source.usageIntegrationStatus` and `source.usageCommand`.
+- ✅ Added deterministic parser tests with fixtures for real `openclaw status --json` shape and generic usage shape.
+- ✅ Packaging scripts updated to build a runnable app scaffold launcher (`npx --package <bundled-tgz> idlewatch-agent`) and versioned DMG output naming.
+- ✅ Packaging docs updated to reflect current scaffold behavior and Node runtime requirement.
+
+### Acceptance criteria status (updated)
+
+#### P0 — OpenClaw usage integration
+
+- [x] Replace mock function with real collector wired to OpenClaw session/usage source.
+- [x] Emit stable identifiers: `sessionId`, `agentId` (or equivalent), and timestamp alignment fields.
+- [x] Document exact semantics for each usage field (prompt tokens, completion tokens, total tokens, requests/min).
+- [x] Add integration test fixtures for actual `openclaw` command outputs used in production (`session status`/`status --json`) and ensure parser maps fields correctly.
+- [x] Fail-safe behavior documented for missing OpenClaw source (explicit `null` + `integrationStatus`, no synthetic fallback).
+
 ---
 
 ## Prioritized findings

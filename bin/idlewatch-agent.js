@@ -5,6 +5,7 @@ import path from 'path'
 import process from 'process'
 import { execSync } from 'child_process'
 import admin from 'firebase-admin'
+import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 
 function printHelp() {
   console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
@@ -108,10 +109,7 @@ function parseFirstPercent(text) {
 }
 
 function gpuPctDarwin() {
-  const commands = [
-    "top -l 1 | grep -i 'GPU'",
-    "top -l 1 -stats gpu | tail -n +2"
-  ]
+  const commands = ["top -l 1 | grep -i 'GPU'", 'top -l 1 -stats gpu | tail -n +2']
   for (const cmd of commands) {
     try {
       const out = execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
@@ -127,63 +125,15 @@ function gpuPctDarwin() {
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)
 let openClawUsageCache = { at: 0, value: null }
 
-function pickNumber(...vals) {
-  for (const val of vals) {
-    if (typeof val === 'number' && Number.isFinite(val)) return val
-  }
-  return null
-}
-
-function pickString(...vals) {
-  for (const val of vals) {
-    if (typeof val === 'string' && val.trim()) return val
-  }
-  return null
-}
-
-function parseOpenClawUsage(raw) {
-  if (!raw) return null
-  let parsed
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return null
-  }
-
-  const usage = parsed.usage || parsed.sessionUsage || parsed.stats || parsed
-  const model = pickString(parsed.model, usage.model, usage.modelName, parsed.default_model)
-  const totalTokens = pickNumber(
-    usage.totalTokens,
-    usage.total_tokens,
-    usage.tokens,
-    usage.tokenCount,
-    usage.inputTokens && usage.outputTokens ? usage.inputTokens + usage.outputTokens : null
-  )
-  const tokensPerMin = pickNumber(
-    usage.tokensPerMinute,
-    usage.tokens_per_minute,
-    usage.tpm,
-    usage.tokenRate
-  )
-
-  if (model === null && totalTokens === null && tokensPerMin === null) return null
-
-  return {
-    model,
-    totalTokens,
-    tokensPerMin
-  }
-}
-
 function loadOpenClawUsage() {
   if (OPENCLAW_USAGE_MODE === 'off') return null
   const now = Date.now()
   if (now - openClawUsageCache.at < OPENCLAW_USAGE_TTL_MS) return openClawUsageCache.value
 
   const commands = [
-    'openclaw session_status --json',
+    'openclaw status --json',
     'openclaw session status --json',
-    'openclaw status --json'
+    'openclaw session_status --json'
   ]
 
   for (const cmd of commands) {
@@ -195,8 +145,8 @@ function loadOpenClawUsage() {
       })
       const parsed = parseOpenClawUsage(out)
       if (parsed) {
-        openClawUsageCache = { at: now, value: parsed }
-        return parsed
+        openClawUsageCache = { at: now, value: { ...parsed, sourceCommand: cmd } }
+        return openClawUsageCache.value
       }
     } catch {
       // ignore and try next command
@@ -234,8 +184,13 @@ async function collectSample() {
     tokensPerMin: usage?.tokensPerMin ?? null,
     openclawModel: usage?.model ?? null,
     openclawTotalTokens: usage?.totalTokens ?? null,
+    openclawSessionId: usage?.sessionId ?? null,
+    openclawAgentId: usage?.agentId ?? null,
+    openclawUsageTs: usage?.usageTimestampMs ?? null,
     source: {
-      usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'
+      usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
+      usageIntegrationStatus: usage?.integrationStatus ?? (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+      usageCommand: usage?.sourceCommand ?? null
     }
   }
   return row

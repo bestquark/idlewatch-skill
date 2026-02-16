@@ -8,6 +8,7 @@ for CI wiring and local dry-runs.
 ## Prerequisites
 
 - Xcode Command Line Tools (`xcode-select --install`)
+- Node.js 20+ on target host (current scaffold launcher depends on `npx`)
 - Apple Developer signing identity (for production)
 - Notary API key/profile configured in keychain (for production)
 - Optional tools for polished DMG UX:
@@ -35,11 +36,13 @@ for CI wiring and local dry-runs.
 ## Current scaffold commands
 
 - `scripts/package-macos.sh`
-  - Creates `dist/` structure
-  - Produces a placeholder tarball payload
-  - Writes TODO markers where signing/notarization should be inserted
+  - Creates `dist/IdleWatch.app`
+  - Bundles the generated `idlewatch-skill-<version>.tgz`
+  - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
+    - `npx --yes --package <bundled-tgz> idlewatch-agent ...`
+  - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
-  - Creates unsigned DMG from staged `dist/dmg-root`
+  - Creates `dist/IdleWatch-<version>-unsigned.dmg` from `dist/dmg-root`
 
 ## CI integration suggestion
 

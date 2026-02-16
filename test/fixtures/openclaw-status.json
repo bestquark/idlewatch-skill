@@ -1,0 +1,30 @@
+{
+  "sessions": {
+    "defaults": {
+      "model": "gpt-5.3-codex",
+      "contextTokens": 272000
+    },
+    "recent": [
+      {
+        "agentId": "main",
+        "sessionId": "781280ba-01a6-49d9-9c75-09519f28f709",
+        "updatedAt": 1771278795632,
+        "age": 29308,
+        "totalTokens": null,
+        "totalTokensFresh": false,
+        "model": "gpt-5.3-codex"
+      },
+      {
+        "agentId": "main",
+        "sessionId": "45f23527-d596-469a-882c-9bba6dc8b5a0",
+        "updatedAt": 1771278693678,
+        "age": 131262,
+        "inputTokens": 1036,
+        "outputTokens": 96,
+        "totalTokens": 67980,
+        "totalTokensFresh": true,
+        "model": "gpt-5.3-codex"
+      }
+    ]
+  }
+}

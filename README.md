@@ -51,11 +51,27 @@ If Firebase vars are omitted entirely, it runs in local-only mode and prints tel
 By default (`IDLEWATCH_OPENCLAW_USAGE=auto`), the agent attempts to read OpenClaw
 session usage from local CLI JSON endpoints when available, then enriches samples with:
 
-- `tokensPerMin`
-- `openclawModel`
-- `openclawTotalTokens`
+- `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
+- `openclawModel`: active model name (from the selected recent session or defaults).
+- `openclawTotalTokens`: total tokens for the selected recent session.
+- `openclawSessionId`, `openclawAgentId`, `openclawUsageTs`: stable identifiers + timestamp alignment fields.
 
-If OpenClaw stats are unavailable, these fields are emitted as `null` and collection continues.
+Selection logic for `openclaw status --json`:
+1. Pick the freshest recent session with non-null `totalTokens` and `totalTokensFresh !== false`.
+2. Fallback to any recent session with non-null tokens.
+3. Fallback to the most recent session entry.
+
+Source metadata fields:
+- `source.usage`: `openclaw | disabled | unavailable`
+- `source.usageIntegrationStatus`: `ok | partial | disabled | unavailable`
+- `source.usageCommand`: command used (`openclaw status --json`, etc.)
+
+Usage field semantics:
+- `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
+- `tokensPerMin`: reported directly by OpenClaw when available; otherwise derived from `openclawTotalTokens / session age minutes`.
+- Prompt/completion token fields and request/min are **not currently exposed as first-class metrics** in IdleWatch rows; keep `null`/absent rather than synthesizing fake values.
+
+If OpenClaw stats are unavailable, usage fields are emitted as `null` and collection continues.
 Set `IDLEWATCH_OPENCLAW_USAGE=off` to disable lookup.
 
 ## Packaging scaffold

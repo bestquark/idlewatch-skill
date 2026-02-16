@@ -7,7 +7,9 @@ APP_DIR="$DIST_DIR/IdleWatch.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
+VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "import('./package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version))")"
 
+rm -rf "$APP_DIR" "$DIST_DIR/dmg-root"
 mkdir -p "$RESOURCES_DIR" "$MACOS_DIR"
 
 pushd "$ROOT_DIR" >/dev/null
@@ -15,7 +17,7 @@ npm pack --silent >/dev/null
 PKG_TGZ="$(ls -t idlewatch-skill-*.tgz | head -n1)"
 cp "$PKG_TGZ" "$RESOURCES_DIR/"
 
-cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
+cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -23,8 +25,8 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <key>CFBundleName</key><string>IdleWatch</string>
   <key>CFBundleDisplayName</key><string>IdleWatch</string>
   <key>CFBundleIdentifier</key><string>com.idlewatch.agent</string>
-  <key>CFBundleVersion</key><string>0.1.0</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>CFBundleVersion</key><string>${VERSION}</string>
+  <key>CFBundleShortVersionString</key><string>${VERSION}</string>
   <key>CFBundleExecutable</key><string>IdleWatch</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
 </dict>
@@ -37,25 +39,31 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
 TGZ="$(ls "$RESOURCES_DIR"/idlewatch-skill-*.tgz | head -n1)"
+
+if ! command -v npx >/dev/null 2>&1; then
+  echo "IdleWatch requires Node.js (npx not found). Install Node.js 20+ and retry." >&2
+  exit 1
+fi
+
 if [[ -z "${TGZ:-}" ]]; then
   echo "IdleWatch package payload missing" >&2
   exit 1
 fi
 
-echo "TODO: expand package payload and launch idlewatch-agent"
-exit 0
+exec npx --yes --package "$TGZ" idlewatch-agent "$@"
 SH
 chmod +x "$MACOS_DIR/IdleWatch"
 
 mkdir -p "$DIST_DIR/dmg-root"
 cp -R "$APP_DIR" "$DIST_DIR/dmg-root/"
+ln -s /Applications "$DIST_DIR/dmg-root/Applications"
 
 cat <<'EOF'
-Scaffold package complete.
+Mac app scaffold package complete.
 Next steps:
-  1) Add app runtime bootstrap in Contents/MacOS/IdleWatch
-  2) Add codesign and notarization steps
-  3) Run ./scripts/build-dmg.sh
+  1) Test: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
+  2) Build DMG: ./scripts/build-dmg.sh
+  3) Codesign + notarize artifact in CI/release job
 EOF
 
 popd >/dev/null
