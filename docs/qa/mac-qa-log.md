@@ -809,3 +809,46 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add clean-machine-like installer validation to CI (mount DMG, copy app, run launcher dry-run schema check).
+
+## QA cycle update — 2026-02-16 20:35 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14) including GPU, memory-pressure, and OpenClaw usage parser fixtures.
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits one local sample and appends NDJSON.
+- ✅ `npm run package:macos --silent` builds `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` runs from packaged scaffold.
+- ✅ `npm run package:dmg --silent` builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+
+### Telemetry validation snapshot (this host)
+
+- CPU/memory/memory-pressure fields: populated (`cpuPct`, `memPct`, `memUsedPct`, `memPressurePct`, `memPressureClass`).
+- GPU field: populated this run (`gpuPct: 0`, `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`).
+- OpenClaw usage fields: **unavailable** this run (`tokensPerMin`, `openclawModel`, `openclawTotalTokens`, session identifiers all `null`).
+- Integration state flags: `source.usageIntegrationStatus: "unavailable"`, `source.usageCommand: null`.
+
+### Bugs / feature gaps identified this cycle
+
+1. **OpenClaw usage ingestion still environment-sensitive (High, observability reliability)**
+   - Parser coverage is green, but live collector still regularly produces `usageIntegrationStatus=unavailable` depending on runtime context.
+   - Need explicit QA matrix for execution context (interactive shell vs OpenClaw cron/agent session) and command availability expectations.
+
+2. **Distribution artifact remains unsigned by default (High, trust/distribution)**
+   - DMG generated successfully but remains `-unsigned`; signing/notarization path is optional and credential-gated.
+   - Gatekeeper friction risk remains for non-technical installs unless trusted artifact enforcement is enabled in release process.
+
+3. **No release gate tying telemetry health to packaging output (Medium, regression risk)**
+   - Packaging can succeed while usage telemetry is unavailable.
+   - Add CI/release policy gate requiring acceptable `source.usageIntegrationStatus` in a representative macOS runtime before publishing installer artifacts.
+
+### DMG packaging risk status (current)
+
+- ✅ Build reproducibility: app scaffold + unsigned DMG still reproducible.
+- ⚠️ Trust path: unsigned by default unless `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` are provided.
+- ⚠️ Runtime dependency: Node still required on target unless runtime bundling strategy changes.
+
+### OpenClaw integration gap status (current)
+
+- ✅ JSON parser/test contract appears stable.
+- ⚠️ Runtime integration remains inconsistent in real execution contexts (`usageIntegrationStatus` can flip to `unavailable`).
+- ⚠️ Missing alerting/escalation policy for prolonged unavailable usage ingestion.
