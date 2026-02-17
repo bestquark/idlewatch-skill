@@ -43,6 +43,7 @@ Optional environment variables:
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
+- `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` — explicit CI-only bypass for tag builds; disables new auto-strict guard that otherwise blocks unsigned `refs/tags/*` packaging.
 
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
@@ -83,4 +84,5 @@ When present, the workflow imports a temporary build keychain, signs `IdleWatch.
 Release policy gate:
 - Trusted release workflow enforces packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload via `npm run validate:packaged-usage-health`.
 - Trusted release workflow additionally enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` so packaged rows fail if usage age is excessively stale at validation time.
+- Packaging scripts now auto-enable strict trusted requirements on CI tag refs (`refs/tags/*`) to prevent accidental unsigned release artifacts; set `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` only for deliberate break-glass exceptions.
 - All packaged validators (`validate:packaged-dry-run-schema`, `validate:packaged-usage-health`, `validate:packaged-usage-age-slo`) auto-run `package:macos` first so checks always target fresh packaged bits.

@@ -11,6 +11,18 @@ VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "i
 CODESIGN_IDENTITY="${MACOS_CODESIGN_IDENTITY:-}"
 REQUIRE_TRUSTED="${IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION:-0}"
 NODE_RUNTIME_DIR="${IDLEWATCH_NODE_RUNTIME_DIR:-}"
+ALLOW_UNSIGNED_TAG_RELEASE="${IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE:-0}"
+
+if [[ "$REQUIRE_TRUSTED" != "1" && "${GITHUB_ACTIONS:-}" == "true" ]]; then
+  REF_NAME="${GITHUB_REF:-}"
+  REF_TYPE="${GITHUB_REF_TYPE:-}"
+  if [[ "$REF_TYPE" == "tag" || "$REF_NAME" == refs/tags/* ]]; then
+    if [[ "$ALLOW_UNSIGNED_TAG_RELEASE" != "1" ]]; then
+      REQUIRE_TRUSTED="1"
+      echo "Detected CI tag build; enforcing trusted distribution requirements (set IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1 to bypass intentionally)."
+    fi
+  fi
+fi
 
 if [[ "$REQUIRE_TRUSTED" == "1" && -z "$CODESIGN_IDENTITY" ]]; then
   echo "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 requires MACOS_CODESIGN_IDENTITY to be set." >&2

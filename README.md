@@ -185,6 +185,8 @@ Strict packaging mode:
 - In strict mode, `package-macos.sh` requires `MACOS_CODESIGN_IDENTITY`.
 - In strict mode, `build-dmg.sh` requires both `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
 - `npm run package:trusted` now runs `npm run validate:trusted-prereqs` first to fail fast when local keychain/notary setup is missing.
+- CI safety guard: tag builds (`refs/tags/*`) now auto-enforce strict trusted requirements even if `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION` is unset.
+- Emergency bypass (explicit): set `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` to allow unsigned tag packaging in CI.
 
 Trusted-release workflow required secrets:
 

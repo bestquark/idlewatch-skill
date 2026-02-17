@@ -2169,3 +2169,21 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add optional packaging path to reduce runtime dependency friction on hosts without globally installed Node by allowing explicit bundled runtime injection.
+
+## Implementation cycle update — 2026-02-17 01:37 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added CI tag-release trust guardrails in packaging scripts:
+  - `scripts/package-macos.sh` and `scripts/build-dmg.sh` now auto-enable strict trusted requirements when running under GitHub Actions on `refs/tags/*`.
+  - This blocks accidental unsigned tag artifacts unless signing/notary prerequisites are present.
+- ✅ Added explicit break-glass override `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` for deliberate emergency exceptions.
+- ✅ Updated operator docs/config references (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`) with new tag-guard behavior and override semantics.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (111/111 assertions) after packaging-script guardrail changes.
+
+### Acceptance criteria updates
+
+- [x] Add default-safe release guard that prevents accidental unsigned macOS tag artifacts in CI unless an explicit break-glass override is set.
