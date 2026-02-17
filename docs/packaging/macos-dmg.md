@@ -65,7 +65,14 @@ Optional environment variables:
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
+  - Writes SHA-256 checksum to `dist/IdleWatch-<version>-<signed|unsigned>.dmg.sha256`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
+- `scripts/validate-dmg-checksum.sh`
+  - Verifies checksum integrity for latest DMG (or explicit path)
+- `npm run validate:dmg-checksum`
+  - Runs `scripts/validate-dmg-checksum.sh` for artifact integrity checks in local/release workflows
+- `npm run package:release`
+  - Runs `package:trusted` and checksum validation in one command (safe for production-ready artifact preparation)
 - `scripts/install-macos-launch-agent.sh`
   - Writes `~/Library/LaunchAgents/<label>.plist`
   - Loads `LaunchAgent` under current user sandbox, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s), background mode, stdout/stderr logs
@@ -86,7 +93,7 @@ Optional environment variables:
 
 ## CI integration
 
-- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes bundled-runtime launcher validation via `npm run validate:packaged-bundled-runtime`, packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, and DMG install validation via `npm run validate:dmg-install`)
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes bundled-runtime launcher validation via `npm run validate:packaged-bundled-runtime`, packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, checksum validation via `npm run validate:dmg-checksum`, and DMG install validation via `npm run validate:dmg-install`)
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:

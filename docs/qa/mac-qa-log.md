@@ -2453,3 +2453,28 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe still resolves to `/opt/homebrew/bin/openclaw status --json` and parses session/model/token signals successfully.
 - ⚠️ Usage staleness transitions remain highly visible in longer run windows; monitoring should treat repeated `stale`+`notice` near thresholds as expected unless usage feed is truly inactive for prolonged periods.
 - ⚠️ End-to-end usage-health policy remains untested in a separate isolated OpenClaw process context (outside current shell environment).
+
+## Implementation cycle update — 2026-02-17 03:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ Improved OpenClaw probe ingestion reliability in non-zero-exit scenarios by accepting JSON from captured stdout even when OpenClaw exits with non-zero status (e.g., noisy wrapper/banners that still emit status JSON):
+  - `bin/idlewatch-agent.js` now attempts parse on `execFileSync` stdout both on success and on command-failed/non-zero exits when stdout is present.
+  - Ingested samples remain `usageProbeResult: "ok"` with `usageProbeError` populated only when stderr/non-zero context is available, preserving telemetry continuity instead of flipping to parse failure.
+- ✅ Added deterministic DMG artifact integrity checking:
+  - `scripts/build-dmg.sh` now emits `dist/IdleWatch-<version>-<signed|unsigned>.dmg.sha256` using SHA-256.
+  - Added `scripts/validate-dmg-checksum.sh` and `npm run validate:dmg-checksum`.
+  - Added `npm run package:release` as a trust-oriented one-shot flow (`package:trusted` + checksum validation).
+  - CI macOS packaging smoke now includes checksum validation after `package:dmg`.
+- ✅ Updated packaging docs (`README.md`, `docs/packaging/macos-dmg.md`) to document checksum output, checksum validation command, and release flow.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes.
+- ✅ `npm run validate:dmg-checksum` passes (after `npm run package:dmg`).
+- ✅ Packaging CI was updated to validate DMG checksum as an artifact integrity checkpoint in local smoke flow.
+- ✅ OpenClaw sample parsing tests pass (`npm test --silent`), including additional noisy/noise-tolerant parser fixtures already in place.
+
+### Notes on remaining gaps
+
+- High-priority remaining from the previous cycles remains the same: local default flows are still unsigned unless trusted mode/credentials are explicitly enabled, and credentialed Firebase production write-path QA remains pending until credentials are available.

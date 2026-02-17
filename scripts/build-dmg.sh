@@ -49,6 +49,11 @@ hdiutil create \
   -format UDZO \
   "$OUT_DMG"
 
+if command -v shasum >/dev/null 2>&1; then
+  shasum -a 256 "$OUT_DMG" > "$OUT_DMG.sha256"
+  echo "Wrote checksum: $OUT_DMG.sha256"
+fi
+
 if [[ -n "$NOTARY_PROFILE" ]]; then
   echo "Submitting DMG for notarization with profile: $NOTARY_PROFILE"
   xcrun notarytool submit "$OUT_DMG" --keychain-profile "$NOTARY_PROFILE" --wait

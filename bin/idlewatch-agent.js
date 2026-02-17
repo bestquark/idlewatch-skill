@@ -350,6 +350,28 @@ function loadOpenClawUsage(forceRefresh = false) {
     ['session_status', '--json']
   ]
 
+  function runProbe(binPath, args) {
+    try {
+      const out = execFileSync(binPath, args, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: OPENCLAW_PROBE_TIMEOUT_MS
+      })
+      return { out, error: null, status: 'ok' }
+    } catch (err) {
+      const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
+      const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
+      const cmdStatus = err?.status
+      if (typeof stdoutText === 'string' && stdoutText.trim()) {
+        return { out: stdoutText, error: `command-exited-${String(cmdStatus || 'nonzero')}: ${stderrText ? stderrText.trim().split('\n')[0].slice(0, 120) : 'non-zero-exit'}`, status: 'ok-with-stderr' }
+      }
+      if (err?.code === 'ENOENT') {
+        return { out: null, error: 'openclaw-not-found', status: 'command-error' }
+      }
+      return { out: null, error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed', status: 'command-error' }
+    }
+  }
+
   let attempts = 0
   let sweeps = 0
   let sawCommandError = false
@@ -362,34 +384,39 @@ function loadOpenClawUsage(forceRefresh = false) {
       for (const args of subcommands) {
         attempts += 1
         const cmdText = `${binPath} ${args.join(' ')}`
-        try {
-          const out = execFileSync(binPath, args, {
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-            timeout: OPENCLAW_PROBE_TIMEOUT_MS
-          })
-          const parsed = parseOpenClawUsage(out)
+        const probeRun = runProbe(binPath, args)
+
+        if (probeRun.out !== null) {
+          const parsed = parseOpenClawUsage(probeRun.out)
           if (parsed) {
             const usage = { ...parsed, sourceCommand: cmdText }
             const value = {
               usage,
-              probe: { result: 'ok', attempts, sweeps, command: cmdText, error: null, usedFallbackCache: false, fallbackAgeMs: null, fallbackCacheSource: null }
+              probe: {
+                result: 'ok',
+                attempts,
+                sweeps,
+                command: cmdText,
+                error: probeRun.status === 'ok-with-stderr' ? probeRun.error : null,
+                usedFallbackCache: false,
+                fallbackAgeMs: null,
+                fallbackCacheSource: null
+              }
             }
             lastGoodOpenClawUsage = { at: now, usage, source: 'memory' }
             persistLastGoodUsageSnapshot(OPENCLAW_LAST_GOOD_CACHE_PATH, { at: now, usage })
             openClawUsageCache = { at: now, value }
             return value
           }
-
           sawParseError = true
           lastError = 'unrecognized-json-shape'
-        } catch (err) {
-          if (err?.code === 'ENOENT') {
-            lastError = 'openclaw-not-found'
+        } else if (probeRun.status === 'command-error') {
+          if (probeRun.error === 'openclaw-not-found') {
+            lastError = probeRun.error
             continue
           }
           sawCommandError = true
-          lastError = err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed'
+          lastError = probeRun.error
         }
       }
     }

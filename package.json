@@ -25,6 +25,7 @@
     "validate:firebase-write-required-once": "IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
     "validate:dmg-install": "./scripts/validate-dmg-install.sh",
     "validate:packaged-bundled-runtime": "./scripts/validate-packaged-bundled-runtime.sh",
+    "validate:dmg-checksum": "./scripts/validate-dmg-checksum.sh",
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:usage-alert-rate-e2e": "node scripts/validate-usage-alert-rate-e2e.mjs",
     "validate:packaged-usage-recovery-e2e": "node scripts/validate-packaged-usage-recovery-e2e.mjs",
@@ -32,6 +33,7 @@
     "package:macos": "./scripts/package-macos.sh",
     "package:dmg": "./scripts/build-dmg.sh",
     "package:trusted": "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 npm run validate:trusted-prereqs --silent && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/package-macos.sh && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/build-dmg.sh",
+    "package:release": "npm run package:trusted && npm run validate:dmg-checksum",
     "install:macos-launch-agent": "./scripts/install-macos-launch-agent.sh",
     "uninstall:macos-launch-agent": "./scripts/uninstall-macos-launch-agent.sh",
     "test": "npm run validate:bin && npm run test:unit && npm run smoke:help && npm run smoke:dry-run && npm run smoke:once"
