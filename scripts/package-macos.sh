@@ -126,26 +126,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
 NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
-# Backward-compatible OpenClaw launcher hint precedence:
-# 1) IDLEWATCH_OPENCLAW_BIN  (runtime override)
-# 2) IDLEWATCH_OPENCLAW_BIN_HINT (legacy launcher hint)
-# 3) packaging metadata fallback (build-time hint)
-OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN:-${IDLEWATCH_OPENCLAW_BIN_HINT:-}}"
-if [[ -z "$OPENCLAW_BIN_HINT" && -f "$RESOURCES_DIR/packaging-metadata.json" ]]; then
-  OPENCLAW_BIN_HINT="$(python3 - "$RESOURCES_DIR/packaging-metadata.json" <<'PY'
-import json
-import sys
-path = sys.argv[1]
-try:
-    data = json.loads(open(path, 'r', encoding='utf8').read())
-    hint = data.get('openclawBinHint', '')
-    if hint:
-        print(hint)
-except Exception:
-    pass
-PY
-)"
-fi
 if [[ -z "$NODE_BIN" ]]; then
   BUNDLED_NODE_BIN="$RESOURCES_DIR/runtime/node/bin/node"
   if [[ -x "$BUNDLED_NODE_BIN" ]]; then
@@ -165,6 +145,15 @@ if [[ -z "$NODE_MAJOR" || "$NODE_MAJOR" -lt 20 ]]; then
   NODE_VERSION="$($NODE_BIN -v 2>/dev/null || echo "unknown")"
   echo "IdleWatch requires Node.js 20+ (found $NODE_VERSION at $NODE_BIN). Upgrade Node.js or set IDLEWATCH_NODE_BIN to a compatible runtime." >&2
   exit 1
+fi
+
+# Backward-compatible OpenClaw launcher hint precedence:
+# 1) IDLEWATCH_OPENCLAW_BIN  (runtime override)
+# 2) IDLEWATCH_OPENCLAW_BIN_HINT (legacy launcher hint)
+# 3) packaging metadata fallback (build-time hint)
+OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN:-${IDLEWATCH_OPENCLAW_BIN_HINT:-}}"
+if [[ -z "$OPENCLAW_BIN_HINT" && -f "$RESOURCES_DIR/packaging-metadata.json" ]]; then
+  OPENCLAW_BIN_HINT="$($NODE_BIN -e 'const fs = require("fs"); const filePath = process.argv[1]; try { const data = JSON.parse(fs.readFileSync(filePath, "utf8")); const hint = data && data.openclawBinHint ? data.openclawBinHint : ""; if (hint) process.stdout.write(String(hint)); } catch (_) {}' "$RESOURCES_DIR/packaging-metadata.json")"
 fi
 
 if [[ -n "$OPENCLAW_BIN_HINT" && -x "$OPENCLAW_BIN_HINT" ]]; then

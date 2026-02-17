@@ -1,0 +1,19 @@
+{
+  "sessions": {
+    "defaults": {
+      "model": "gpt-4o-mini"
+    },
+    "recent": [
+      {
+        "agentId": "agent-007",
+        "sessionId": "sess-1",
+        "updatedAt": 1739703000,
+        "model": "gpt-5.3-codex-spark",
+        "totalTokens": 21737,
+        "ageMs": 45000,
+        "totalTokensFresh": true,
+        "tokensPerMinute": 32502.31
+      }
+    ]
+  }
+}

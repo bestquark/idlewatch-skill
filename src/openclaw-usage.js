@@ -6,6 +6,9 @@ function pickNumber(...vals) {
       if (!normalized) continue
       const parsed = Number(normalized)
       if (Number.isFinite(parsed)) return parsed
+
+      const asDate = Date.parse(normalized)
+      if (!Number.isNaN(asDate)) return asDate
     }
   }
   return null
@@ -165,7 +168,7 @@ function parseFromStatusJson(parsed) {
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {
-    const defaultsModel = pickString(defaults.model, defaults.defaultModel, parsed?.default_model, defaults?.default_model, parsed?.defaultModel)
+    const defaultsModel = pickString(defaults.model, defaults.defaultModel, defaults?.default_model, parsed?.defaultModel, parsed?.default_model)
     if (!defaultsModel) return null
     return {
       model: defaultsModel,

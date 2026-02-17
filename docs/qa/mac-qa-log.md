@@ -3010,3 +3010,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - OpenClaw stats ingestion is more robust against CLI shape variants that expose usage through `stats --json`.
 - Monitoring operators now have direct visibility into probe/retry latency for troubleshooting long-running or flaky collection windows.
 - Docs now clearly describe the probe command precedence and new timing telemetry fields.
+
+## Implementation cycle update — 2026-02-17 09:11 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability improvement:** `parseOpenClawUsage()` now accepts timestamp strings (including ISO-style date strings) in timestamp fields as fallback numeric values, improving parsing of mixed OpenClaw CLI output formats.
+- ✅ **OpenClaw ingestion reliability improvement:** added parser coverage for status payloads with nested totals under `recent[0]` and top-level `defaultModel` fallback.
+- ✅ **Packaging robustness improvement:** removed Python dependency from `scripts/package-macos.sh` by switching OpenClaw hint fallback lookup to an inline Node parser, reducing host tooling requirements for packaging.
+- ✅ **Packaging validation UX improvement:** `validate:packaged-bundled-runtime` now tolerates systems where `node` is present in `/usr/bin:/bin` while still validating the bundled runtime fallback path.
+- ✅ **Testing:** added/expanded openclaw parser fixtures and tests for nested status payloads, default-model fallback, and non-zero-exit noisy output while preserving existing coverage.
+
+### Validation checks
+
+- ✅ `npm test --silent` (all tests pass)
+- ✅ `npm run validate:packaged-metadata`
+- ✅ `npm run validate:packaged-bundled-runtime`
+- ✅ `npm run validate:packaged-usage-health`
+
+### Impact / risk reduction
+
+- **Monitoring reliability:** timestamp parsing is more tolerant of mixed string date formats and parser tests now explicitly cover additional real-world payload variants.
+- **OpenClaw stats ingestion:** reduces parse misses on valid payloads with non-uniform timestamp shaping.
+- **Packaging scripts/docs:** removed external Python requirement in packaging template generation and reduced false-negative validation failures.

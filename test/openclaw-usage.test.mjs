@@ -94,3 +94,32 @@ test('parses stats payloads with nested usage totals', () => {
   assert.equal(usage.usageTimestampMs, 1771279012345)
   assert.equal(usage.integrationStatus, 'ok')
 })
+
+test('parses status payload with nested sessions object and totals in totals.nested field', () => {
+  const raw = fixture('openclaw-status-nested-recent.json')
+  const usage = parseOpenClawUsage(raw)
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex-spark')
+  assert.equal(usage.totalTokens, 21737)
+  assert.equal(usage.tokensPerMin, 32502.31)
+  assert.equal(usage.sessionId, 'sess-1')
+  assert.equal(usage.agentId, 'agent-007')
+  assert.equal(usage.usageTimestampMs, 1739703000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
+test('uses top-level default model when no sessions are available', () => {
+  const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
+  const usage = parseOpenClawUsage(sample)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, null)
+  assert.equal(usage.integrationStatus, 'partial')
+})
+
+test('parses stderr payload even when command exits non-zero', () => {
+  const sample = '{"not": "json"}\n{ "sessions": { "recent": [ { "model": "gpt", "totalTokens": 1 } ] } }'
+  const got = parseOpenClawUsage(sample)
+  assert.equal(got.model, 'gpt')
+  assert.equal(got.totalTokens, 1)
+  assert.equal(got.integrationStatus, 'ok')
+})
