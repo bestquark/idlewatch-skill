@@ -1033,3 +1033,48 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 2. **Credentialed Firebase E2E validation still pending (Medium, delivery confidence)**
    - Local/stdout schema + packaging validations remain green; Firestore write-path QA still needs credentialed validation.
+
+## QA cycle update — 2026-02-16 21:40 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + probe metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged app schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ⚠️ Firebase remains unconfigured in QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run sample (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`10`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`25012.11`).
+  - `openclawUsageAgeMs`: `43844` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "fresh"`, `usageNearStale: false`, `usagePastStaleThreshold: false`.
+  - Probe diagnostics: `usageProbeResult: "ok"`, `usageProbeAttempts: 1`, `usageUsedFallbackCache: false`, `usageCommand: "/opt/homebrew/bin/openclaw status --json"`.
+
+### Bugs / feature gaps (current)
+
+1. **Trusted distribution remains credential-gated by environment (High, release readiness)**
+   - Packaging is reproducible, but artifacts remain unsigned/not notarized unless `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE` are configured.
+
+2. **Credentialed Firebase E2E validation still pending (Medium, delivery confidence)**
+   - Local telemetry/schema/packaging validations are green in this cycle.
+   - Firestore write path still needs one credentialed validation pass.
+
+3. **Manual first-install UX coverage remains limited (Medium, distribution confidence)**
+   - CI-level DMG install validation exists, but real user-facing clean-machine install checks are still sparse.
+
+### DMG packaging risk status
+
+- ✅ Local packaging remains reproducible (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk remains until signing + notarization are executed with valid Apple credentials.
+- ⚠️ Manual clean-machine UX evidence remains limited outside harnessed CI checks.
+
+### OpenClaw integration gap status
+
+- ✅ Runtime usage probe is healthy in this cycle (`usageProbeResult: ok`, no fallback cache use).
+- ✅ Freshness metadata and deterministic freshness E2E validation remain coherent.
+- ⚠️ Representative production-like E2E (with Firebase credentials) is still pending.
