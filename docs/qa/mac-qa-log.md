@@ -1923,3 +1923,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - [x] Improve OpenClaw stats ingestion reliability by enabling proactive near-stale forced refresh attempts (configurable, schema-validated).
 - [x] Improve packaged runtime robustness with explicit Node-version guardrail and clearer install-time diagnostics.
+
+## QA cycle update — 2026-02-17 00:41 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (102/102 assertions).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + probe metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA environment (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run:
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`13`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`15092.76`), `openclawModel`: populated (`gpt-5.3-codex`), `openclawTotalTokens`: populated (`19566`).
+  - `openclawUsageAgeMs`: `76549` with `source.usageIntegrationStatus: "stale"`, `usageActivityStatus: "stale"`, `usagePastStaleThreshold: true`.
+  - `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+  - `source.usageRefreshAttempted: true`, `source.usageRefreshRecovered: false` (near-stale proactive refresh attempted but did not recover to fresh).
+- One-shot disabled-mode contract check remains coherent in schema validator (`source.usage=disabled`, `usageIntegrationStatus=disabled`, `usageAlertLevel=off`).
+
+### Bugs / feature gaps (current)
+
+1. **OpenClaw usage freshness still drifts past stale+grace in overnight QA windows (Medium, observability reliability)**
+   - This cycle recorded `openclawUsageAgeMs=76549` against thresholds `usageStaleMsThreshold=60000`, `usageStaleGraceMs=10000`.
+   - Proactive near-stale refresh executed (`usageRefreshAttempted=true`) but did not recover freshness (`usageRefreshRecovered=false`).
+
+2. **Trusted distribution still optional unless strict mode + credentials are configured (High, release readiness)**
+   - Packaged output remains unsigned by default (`IdleWatch-0.1.0-unsigned.dmg`).
+   - Notarization/stapling remains skipped when `MACOS_NOTARY_PROFILE` is unset.
+
+3. **Firebase write-path E2E still not exercised in active QA loop (Medium, delivery confidence)**
+   - Local schema and packaging checks are green.
+   - Credentialed publish-path validation remains pending.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced under trusted credentials.
+- ⚠️ Runtime dependency risk persists for hosts without compatible Node runtime.
+
+### OpenClaw integration gap status
+
+- ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
+- ✅ Integration metadata remains rich and consistent (`usageProbe*`, freshness states, refresh-attempt telemetry).
+- ⚠️ Freshness recovery under low-activity windows still needs tuning or policy adjustment to avoid recurring stale-state noise in overnight QA cycles.
