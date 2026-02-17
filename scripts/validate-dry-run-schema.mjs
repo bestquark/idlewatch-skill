@@ -87,7 +87,7 @@ function validateRow(row) {
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
   assert.ok(source.usageFallbackCacheSource === null || ['memory', 'disk'].includes(source.usageFallbackCacheSource), 'source.usageFallbackCacheSource must be memory|disk|null')
   assert.ok(['ok', 'notice', 'warning', 'critical', 'off'].includes(source.usageAlertLevel), 'source.usageAlertLevel invalid')
-  assert.ok(['healthy', 'activity-idle', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
+  assert.ok(['healthy', 'activity-idle', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'activity-no-new-usage', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
   assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')
   assert.ok(Number.isFinite(source.usageStaleMsThreshold), 'source.usageStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageNearStaleMsThreshold), 'source.usageNearStaleMsThreshold must be number')
@@ -126,6 +126,13 @@ function validateRow(row) {
     assert.ok(source.usageRefreshAttempts <= source.usageRefreshReprobes + 1, 'usageRefreshAttempts cannot exceed configured reprobes + 1')
   } else {
     assert.equal(source.usageRefreshAttempts, 0, 'usageRefreshAttempts must be 0 when refresh not attempted')
+  }
+
+  if (source.usageAlertReason === 'activity-no-new-usage') {
+    assert.equal(source.usageIngestionStatus, 'ok', 'activity-no-new-usage requires ingestionStatus=ok')
+    assert.equal(source.usageActivityStatus, 'stale', 'activity-no-new-usage requires activityStatus=stale')
+    assert.equal(source.usageRefreshAttempted, true, 'activity-no-new-usage requires usageRefreshAttempted=true')
+    assert.equal(source.usageRefreshRecovered, false, 'activity-no-new-usage requires usageRefreshRecovered=false')
   }
 
   if (source.usage === 'unavailable') {

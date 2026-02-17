@@ -12,6 +12,16 @@ test('returns warning when activity is stale', () => {
   assert.deepEqual(result, { level: 'warning', reason: 'activity-stale' })
 })
 
+test('downgrades stale to notice when refresh attempts could not recover fresher usage', () => {
+  const result = deriveUsageAlert({
+    usageIngestionStatus: 'ok',
+    usageActivityStatus: 'stale',
+    usageRefreshAttempted: true,
+    usageRefreshRecovered: false
+  })
+  assert.deepEqual(result, { level: 'notice', reason: 'activity-no-new-usage' })
+})
+
 test('returns warning when past stale threshold in grace window', () => {
   const result = deriveUsageAlert({ usageIngestionStatus: 'ok', usageActivityStatus: 'aging', usagePastStaleThreshold: true })
   assert.deepEqual(result, { level: 'warning', reason: 'activity-past-threshold' })

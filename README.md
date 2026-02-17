@@ -90,6 +90,7 @@ Binary resolution order for the OpenClaw probe:
 - `IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE` triggers proactive refresh when usage is near-stale
   to reduce stale flips in long packaging/QA loops (default: `1`).
 - `IDLEWATCH_USAGE_IDLE_AFTER_MS` downgrades stale activity alerts to `activity-idle`
+- stale usage after a failed freshness refresh now downgrades to `activity-no-new-usage` (ingestion healthy, but no newer usage observed)
   notice state after prolonged inactivity (default: `21600000` = 6h).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
@@ -113,7 +114,7 @@ Source metadata fields:
 - `source.usageIngestionStatus`: `ok | disabled | unavailable` (probe/path health independent of usage age).
 - `source.usageActivityStatus`: `fresh | aging | stale | unknown | disabled | unavailable` (age-based activity state).
 - `source.usageAlertLevel`: `ok | notice | warning | critical | off` (operator-facing alert severity derived from ingestion + activity semantics).
-- `source.usageAlertReason`: `healthy | activity-idle | activity-near-stale | activity-past-threshold | activity-stale | ingestion-unavailable | usage-disabled`.
+- `source.usageAlertReason`: `healthy | activity-idle | activity-near-stale | activity-past-threshold | activity-stale | activity-no-new-usage | ingestion-unavailable | usage-disabled`.
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).

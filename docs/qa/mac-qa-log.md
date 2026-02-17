@@ -2050,3 +2050,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
 - ✅ Usage probe metadata remains rich and consistent across direct + packaged runs (`usageProbe*`, freshness, refresh-attempt fields).
 - ⚠️ Freshness recovery under low-activity windows remains unresolved; stale classification is correct but still frequent in overnight QA cycles.
+
+## Implementation cycle update — 2026-02-17 00:57 America/Toronto
+
+### Completed this cycle
+
+- ✅ Reduced overnight stale-alert noise when ingestion is healthy but refresh cannot obtain newer usage:
+  - `deriveUsageAlert` now emits `source.usageAlertLevel: "notice"` with `source.usageAlertReason: "activity-no-new-usage"` when `usageActivityStatus=stale`, `usageRefreshAttempted=true`, and `usageRefreshRecovered=false`.
+- ✅ Extended alert contract validation in `scripts/validate-dry-run-schema.mjs`:
+  - added `activity-no-new-usage` to allowed reason enum
+  - added consistency checks tying the reason to stale + attempted/unrecovered refresh state.
+- ✅ Added unit coverage for the new alert path in `test/usage-alert.test.mjs`.
+- ✅ Updated README alert semantics to document `activity-no-new-usage` behavior and reason enum.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (109/109 assertions).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+
+### Acceptance criteria updates
+
+- [x] Reduce false-positive stale warning noise in low-activity windows where OpenClaw probes are healthy but no newer usage snapshot exists.
