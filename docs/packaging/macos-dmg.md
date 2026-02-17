@@ -36,6 +36,7 @@ for CI wiring and local dry-runs.
 ## Current scaffold commands
 
 Optional environment variables:
+- `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -70,3 +71,6 @@ Trusted release workflow expects these repository secrets:
 - `APPLE_NOTARY_API_KEY_P8`
 
 When present, the workflow imports a temporary build keychain, signs `IdleWatch.app`, notarizes/staples the DMG, and uploads `IdleWatch-*-signed.dmg`.
+
+Optional repository variable:
+- `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1` to enforce packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload.

@@ -852,3 +852,42 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ JSON parser/test contract appears stable.
 - ⚠️ Runtime integration remains inconsistent in real execution contexts (`usageIntegrationStatus` can flip to `unavailable`).
 - ⚠️ Missing alerting/escalation policy for prolonged unavailable usage ingestion.
+
+## Implementation cycle update — 2026-02-16 20:43 America/Toronto
+
+### Completed this cycle
+
+- ✅ Hardened OpenClaw runtime probe path for packaged/non-interactive contexts:
+  - switched to `execFileSync` argv execution (no shell parsing dependency)
+  - added binary resolution chain: `IDLEWATCH_OPENCLAW_BIN` → `/opt/homebrew/bin/openclaw` → `/usr/local/bin/openclaw` → `openclaw` (PATH)
+- ✅ Added explicit OpenClaw probe diagnostics to telemetry source metadata:
+  - `source.usageProbeResult`
+  - `source.usageProbeAttempts`
+  - `source.usageProbeError`
+- ✅ Extended dry-run schema contract to enforce probe/source consistency (including unavailable-path explainability).
+- ✅ Added strict release gate path for telemetry health in representative environments:
+  - `IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1` support in schema validator
+  - `npm run validate:packaged-usage-health` entrypoint
+  - optional trusted-release workflow gate via repo variable `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1`
+- ✅ Updated operator docs (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`) with binary pinning and release-gate usage.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14).
+- ✅ `npm run validate:dry-run-schema --silent` passes with probe metadata checks.
+- ✅ `npm run package:macos --silent` succeeds.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` succeeds.
+- ✅ Host dry-run snapshot now resolves OpenClaw command explicitly as `/opt/homebrew/bin/openclaw status --json` in `source.usageCommand` when available.
+
+### Acceptance criteria updates
+
+- [x] Add release-policy gate path tying packaged artifact validation to OpenClaw usage health in representative runtime (`validate:packaged-usage-health`, workflow toggle).
+- [x] Improve runtime observability for unavailable usage ingestion with explicit probe diagnostics (`usageProbe*` fields).
+
+### Remaining high-priority gaps
+
+1. **Trusted distribution remains credential-gated by environment (High, release readiness)**
+   - Signed/notarized path exists, but successful trusted artifact generation still depends on configured Apple credentials.
+
+2. **Credentialed Firebase E2E pass still pending (Medium, delivery confidence)**
+   - Local/stdout schema + packaging validations are green; Firestore write-path QA still requires credentials.

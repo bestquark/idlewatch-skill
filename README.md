@@ -51,8 +51,15 @@ If Firebase vars are omitted entirely, it runs in local-only mode and prints tel
 ## OpenClaw usage ingestion (best effort)
 
 By default (`IDLEWATCH_OPENCLAW_USAGE=auto`), the agent attempts to read OpenClaw
-session usage from local CLI JSON endpoints when available, then enriches samples with:
+session usage from local CLI JSON endpoints when available, then enriches samples with.
 
+Binary resolution order for the OpenClaw probe:
+1. `IDLEWATCH_OPENCLAW_BIN` (if set)
+2. `/opt/homebrew/bin/openclaw`
+3. `/usr/local/bin/openclaw`
+4. `openclaw` (PATH lookup)
+
+- `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
@@ -78,6 +85,9 @@ Source metadata fields:
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
+- `source.usageProbeResult`: `ok | disabled | command-missing | command-error | parse-error | unavailable`.
+- `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
+- `source.usageProbeError`: compact failure reason when probing fails.
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
 - `source.usageNearStaleMsThreshold`: threshold used for aging classification.
 - `source.usageStaleGraceMs`: grace window before stale status activation.
@@ -128,3 +138,6 @@ Trusted-release workflow required secrets:
 - `APPLE_NOTARY_KEY_ID`
 - `APPLE_NOTARY_ISSUER_ID`
 - `APPLE_NOTARY_API_KEY_P8`
+
+Optional release variable:
+- `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1` enables a strict gate in trusted release workflow that requires packaged dry-runs to report `source.usage=openclaw`.

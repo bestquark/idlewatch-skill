@@ -3,7 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import process from 'process'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import admin from 'firebase-admin'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
@@ -149,7 +149,18 @@ function cpuPct() {
 
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)
 const MEM_PRESSURE_TTL_MS = Math.max(INTERVAL_MS, 30000)
-let openClawUsageCache = { at: 0, value: null }
+let openClawUsageCache = {
+  at: 0,
+  value: {
+    usage: null,
+    probe: {
+      result: OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
+      attempts: 0,
+      command: null,
+      error: null
+    }
+  }
+}
 let memPressureCache = { at: 0, value: { pct: null, cls: 'unavailable', source: 'unavailable' } }
 
 function loadMemPressure() {
@@ -164,36 +175,90 @@ function loadMemPressure() {
   return sampled
 }
 
+function resolveOpenClawBinaries() {
+  const explicit = process.env.IDLEWATCH_OPENCLAW_BIN?.trim()
+  const bins = [
+    explicit,
+    '/opt/homebrew/bin/openclaw',
+    '/usr/local/bin/openclaw',
+    'openclaw'
+  ].filter(Boolean)
+  return [...new Set(bins)]
+}
+
 function loadOpenClawUsage() {
-  if (OPENCLAW_USAGE_MODE === 'off') return null
-  const now = Date.now()
-  if (now - openClawUsageCache.at < OPENCLAW_USAGE_TTL_MS) return openClawUsageCache.value
-
-  const commands = [
-    'openclaw status --json',
-    'openclaw session status --json',
-    'openclaw session_status --json'
-  ]
-
-  for (const cmd of commands) {
-    try {
-      const out = execSync(cmd, {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-        timeout: 2500
-      })
-      const parsed = parseOpenClawUsage(out)
-      if (parsed) {
-        openClawUsageCache = { at: now, value: { ...parsed, sourceCommand: cmd } }
-        return openClawUsageCache.value
-      }
-    } catch {
-      // ignore and try next command
+  if (OPENCLAW_USAGE_MODE === 'off') {
+    return {
+      usage: null,
+      probe: { result: 'disabled', attempts: 0, command: null, error: null }
     }
   }
 
-  openClawUsageCache = { at: now, value: null }
-  return null
+  const now = Date.now()
+  if (now - openClawUsageCache.at < OPENCLAW_USAGE_TTL_MS) return openClawUsageCache.value
+
+  const binaries = resolveOpenClawBinaries()
+  const subcommands = [
+    ['status', '--json'],
+    ['session', 'status', '--json'],
+    ['session_status', '--json']
+  ]
+
+  let attempts = 0
+  let sawCommandError = false
+  let sawParseError = false
+  let lastError = null
+
+  for (const binPath of binaries) {
+    for (const args of subcommands) {
+      attempts += 1
+      const cmdText = `${binPath} ${args.join(' ')}`
+      try {
+        const out = execFileSync(binPath, args, {
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+          timeout: 2500
+        })
+        const parsed = parseOpenClawUsage(out)
+        if (parsed) {
+          const value = {
+            usage: { ...parsed, sourceCommand: cmdText },
+            probe: { result: 'ok', attempts, command: cmdText, error: null }
+          }
+          openClawUsageCache = { at: now, value }
+          return value
+        }
+
+        sawParseError = true
+        lastError = 'unrecognized-json-shape'
+      } catch (err) {
+        if (err?.code === 'ENOENT') {
+          lastError = 'openclaw-not-found'
+          continue
+        }
+        sawCommandError = true
+        lastError = err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed'
+      }
+    }
+  }
+
+  const result = sawParseError
+    ? 'parse-error'
+    : sawCommandError
+      ? 'command-error'
+      : 'command-missing'
+
+  const value = {
+    usage: null,
+    probe: {
+      result,
+      attempts,
+      command: null,
+      error: lastError
+    }
+  }
+  openClawUsageCache = { at: now, value }
+  return value
 }
 
 async function publish(row, retries = 2) {
@@ -214,7 +279,8 @@ async function publish(row, retries = 2) {
 
 async function collectSample() {
   const nowMs = Date.now()
-  const usage = loadOpenClawUsage()
+  const usageProbe = loadOpenClawUsage()
+  const usage = usageProbe.usage
   const usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   const gpu = process.platform === 'darwin'
     ? gpuSampleDarwin()
@@ -248,6 +314,9 @@ async function collectSample() {
           ? 'stale'
           : (usage?.integrationStatus ?? 'ok')
         : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+      usageProbeResult: usageProbe.probe.result,
+      usageProbeAttempts: usageProbe.probe.attempts,
+      usageProbeError: usageProbe.probe.error,
       usageFreshnessState: usage ? usageFreshness.freshnessState : null,
       usageNearStale: usage ? usageFreshness.isNearStale : false,
       usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
