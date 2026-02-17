@@ -3,6 +3,80 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 16:00 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes.
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays okay; boundary states escalate notice -> warning`).
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ❌ `npm run validate:packaged-bundled-runtime --silent` fails (no output path from both OpenClaw-enabled and OpenClaw-disabled dry-runs when launched via validator; exits as timeout/no JSON capture).
+- ❌ `npm run validate:dmg-install --silent` fails (validator exits before JSON capture for the same underlying dry-run reason).
+
+### Bugs / features completed
+
+- ✅ **Feature:** Added a fresh telemetry capture pass for this cycle from both host and packaged launchers for longitudinal tracking (see below).
+- 🐛 **Open issue (high):** `validate-dry-run-schema.mjs` still reports schema failures under constrained PATH modes (`PATH=/usr/bin:/bin`), including:
+  - `source.usageProbeDurationMs must be number or null` when OpenClaw probe succeeds via cached fallback path.
+  - `source.usageFreshnessState invalid` in the `IDLEWATCH_OPENCLAW_USAGE=off` constrained-path run.
+  - Result is that `validate:packaged-bundled-runtime` and `validate:dmg-install` cannot be treated as reliable pass/fail gates until validator/parser guardrails are harmonized.
+- ✅ **Ongoing:** Bundled runtime remains symlinked into app payload (`runtime/node -> ../Cellar/node/25.6.1/bin/node`) and continues to work on host paths where Homebrew exists.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `cpuPct`: `20.09`
+  - `memUsedPct`: `88.96`
+  - `memPressurePct`: `50` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `3005.15`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `22189`
+  - `openclawUsageAgeMs`: `446,265`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Packaged launcher `--dry-run` (direct shell, constrained PATH):
+  - `cpuPct`: `12.44`
+  - `memUsedPct`: `88.85`
+  - `memPressurePct`: `51` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `3444.98`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `22189`
+  - `openclawUsageAgeMs`: `414,983`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageProbeResult`: `fallback-cache` (disk, 80 attempts)
+  - `usageProbeError`: `openclaw-not-found`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json (cached)`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized; Gatekeeper friction still expected on untuned endpoints.
+2. **High:** Packaged Node runtime is still a symlink (`-> ../Cellar/node/25.6.1/bin/node`), coupling release artifact to host Homebrew layout.
+3. **High:** Validation reliability gap — `validate:packaged-bundled-runtime` and `validate:dmg-install` are currently non-deterministic/fail due dry-run validator/schema behavior under constrained PATH; prevents treating this cycle as green.
+4. **Medium:** `IDLEWATCH_OPENCLAW_USAGE=off` constrained-path validation path has a separate schema rejection mode (`usageFreshnessState`) that needs hardening.
+
+### OpenClaw integration gaps
+
+1. **Gap:** CLI shape dependency (`openclaw status --json`) remains required for telemetry provenance when available.
+2. **Gap:** `openclaw-not-found` fallback path is common in constrained PATH, producing delayed/cache-only telemetry and warning-level alerting.
+3. **Gap:** Firebase write path remains unexercised in this environment (local-only mode by design).
+4. **Gap:** Long-idle windows continue to trend toward `stale` + `warning` without local usage activity.
+
+### Follow-up / action items
+
+1. Resolve validator constraints for constrained PATH + `dry-run` (null-safe `usageProbeDurationMs` handling and usage freshness state assertions for off-mode rows).
+2. Switch packaging to copy a self-contained node runtime instead of symlinking into app payload.
+3. Add an explicit one-shot timeout-bounded assertion path for packaged smoke installs so these checks are deterministic in automation.
+
 ## QA cycle update — 2026-02-17 15:40 America/Toronto
 
 ### Validation checks run
