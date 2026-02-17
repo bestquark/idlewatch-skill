@@ -1523,3 +1523,53 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Eliminate packaged schema-validation stale-artifact mismatch risk by auto-rebuilding `IdleWatch.app` in packaged validation entrypoints.
+
+## QA cycle update — 2026-02-16 23:21 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated OpenClaw usage telemetry.
+- ✅ `npm run package:macos --silent` builds `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds.
+- ✅ `npm run package:dmg --silent` builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA env (local-only/stdout mode).
+
+### Telemetry validation snapshot (host sample)
+
+- `cpuPct`: populated (`18.49`)
+- `memPct` / `memPressurePct`: populated (`84.02` / `12`, class=`normal`)
+- `gpuPct`: populated (`0`) with `gpuSource="ioreg-agx"`, `gpuConfidence="high"`
+- `tokensPerMin`: populated (`32581.16`)
+- `openclawModel`: populated (`gpt-5.3-codex`)
+- `openclawTotalTokens`: populated (`28502`)
+- `openclawSessionId` / `openclawAgentId` / `openclawUsageTs`: populated
+- `source.usageIntegrationStatus`: `ok`
+- `source.usageActivityStatus`: `aging`
+- `source.usageAlertLevel`: `notice` (`activity-near-stale`)
+
+### Bugs / feature gaps identified this cycle
+
+1. **OpenClaw freshness warning is frequent at current thresholds (Medium, signal quality)**
+   - Observed near-stale classification in normal local operation (`usageActivityStatus='aging'`) with age around ~51s.
+   - Suggest validating whether `IDLEWATCH_USAGE_NEAR_STALE_MS` default (45s) is too aggressive for real session cadence.
+
+2. **Distribution artifacts still unsigned/unnotarized by default (High, release readiness)**
+   - Build output remains `IdleWatch-0.1.0-unsigned.dmg` without `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+   - Gatekeeper friction persists until signing/notarization credentials are supplied and CI path is enforced.
+
+3. **No Firebase-backed end-to-end validation in QA cycle (Medium, integration confidence)**
+   - Current checks confirm local collection and packaging only.
+   - Need one emulator or staging Firestore publish verification to close telemetry ingestion confidence gap.
+
+### DMG packaging risk status (current)
+
+- ✅ Reproducible local app + DMG generation.
+- ⚠️ Trusted distribution not guaranteed (unsigned + non-notarized artifacts by default).
+- ⚠️ No clean-machine installation evidence recorded in this cycle.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Usage collection active and field mapping remains healthy on this host.
+- ⚠️ Freshness classification may be too noisy under normal workloads.
+- ⚠️ No contract test asserting acceptable near-stale/stale rates under expected session rhythm.
