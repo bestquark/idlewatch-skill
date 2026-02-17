@@ -26,14 +26,39 @@ if [[ ! -x "$DIST_LAUNCHER" ]]; then
 fi
 
 if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
-  echo "Note: node found in PATH during validation. This script still validates that the packaged launcher resolves and runs from the bundled runtime fallback." >&2
+  echo "Note: node found in PATH during validation. Script continues by verifying launcher can run from a restricted PATH that intentionally omits typical package-manager Node locations." >&2
 fi
 
 npm run validate:packaged-metadata --silent
-JSON_LINE="$(PATH="/usr/bin:/bin" "$DIST_LAUNCHER" --dry-run 2>/dev/null | tail -n 1)"
+
+CLEAN_OUTPUT="$(env -i HOME="$HOME" PATH="/usr/bin:/bin" "$DIST_LAUNCHER" --dry-run 2>/dev/null || true)"
+
+JSON_LINE="$(printf '%s\n' "$CLEAN_OUTPUT" | "$NODE_BIN" -e '
+const fs = require("fs");
+const text = fs.readFileSync(0, "utf8");
+const lines = text.split(/\r?\n/);
+for (let i = lines.length - 1; i >= 0; i--) {
+  const line = String(lines[i] || "").trim();
+  if (!line) continue;
+  try {
+    JSON.parse(line);
+    process.stdout.write(line);
+    process.exit(0);
+  } catch {
+    // ignore non-JSON lines
+  }
+}
+process.exit(1);
+' )"
 
 if [[ -z "$JSON_LINE" ]]; then
-  echo "Bundled runtime validation failed: launcher produced no dry-run JSON output." >&2
+  echo "Bundled runtime validation failed: launcher produced no parseable dry-run JSON row under a restricted PATH." >&2
+  if [[ -n "$CLEAN_OUTPUT" ]]; then
+    echo "Launcher output (tail):" >&2
+    printf '%s\n' "$CLEAN_OUTPUT" | tail -n 20 >&2
+  else
+    echo "(no output captured)" >&2
+  fi
   exit 1
 fi
 
@@ -43,7 +68,7 @@ let row;
 try {
   row = JSON.parse(line);
 } catch (err) {
-  console.error("Bundled runtime validation failed: last output line is not JSON.");
+  console.error("Bundled runtime validation failed: selected output row is not JSON.");
   process.exit(1);
 }
 if (!row || typeof row !== "object" || !row.host || !row.ts) {

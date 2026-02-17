@@ -187,6 +187,18 @@ test('ignores metadata defaults key in session maps and still selects most recen
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses data.current stats wrapper payloads', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 987)
+  assert.equal(usage.tokensPerMin, 12.34)
+  assert.equal(usage.sessionId, 'current-wrapper-session')
+  assert.equal(usage.agentId, 'agent-current')
+  assert.equal(usage.usageTimestampMs, 1771290000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)

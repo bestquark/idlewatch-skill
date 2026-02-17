@@ -10,6 +10,30 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 11:23 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** hardened `parseOpenClawUsage()` for direct `current`-style stats payloads, including top-level and wrapped `data.current` / `result.current` aliases.
+  - Added coverage fixture `test/fixtures/openclaw-stats-current-wrapper.json` and `test/openclaw-usage.test.mjs` assertions.
+
+- ✅ **OpenClaw stats ingestion:** improved generic parser fallback path to treat `current` payloads as valid usage roots (not only status-style session maps), preventing missed ingestion for alternate `openclaw stats --json` response shapes.
+
+- ✅ **Packaging scripts/docs:** made `validate-packaged-bundled-runtime` stricter and cleaner for clean-machine checks.
+  - Launcher is executed with an environment scrub (`env -i HOME=... PATH=/usr/bin:/bin`) to avoid host PATH pollution.
+  - The script now extracts the final parseable JSON row from output, preventing false positives if startup logs appear before JSON.
+  - Docs now call out this constrained-PATH dry-run behavior explicitly.
+
+### Validation checks
+
+- ✅ `npm test --silent` (all parser/unit tests, including new fixture coverage)
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+
+### Notes
+
+- Clean-machine install UX remains environment-dependent for external host observations, but this cycle materially strengthens the scripted guard by verifying launcher output under constrained PATH.
+
 ## QA cycle update — 2026-02-17 11:02 America/Toronto
 
 ### Completed this cycle

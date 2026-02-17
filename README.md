@@ -223,7 +223,7 @@ Alerting guidance (recommended):
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
 - `tokensPerMin`: reported directly by OpenClaw when available; otherwise derived from `openclawTotalTokens / session age minutes`.
-- Additional parser compatibility covered for data-wrapper stats payloads and alternate field aliases (for example `token_count`, `session_id`, `agent_id`, `usage_timestamp`, `tsMs`, `total_tokens`) so common OpenClaw CLI variants map into a stable row shape.
+- Additional parser compatibility covered for data-wrapper/session wrapper stats payloads (`data.result`, `data.stats`, `result`), direct `current` payloads (`current`, `data.current`, `result.current`), and alternate field aliases (for example `token_count`, `session_id`, `agent_id`, `usage_timestamp`, `tsMs`, `total_tokens`) so common OpenClaw CLI variants map into a stable row shape.
 - Prompt/completion token fields and request/min are **not currently exposed as first-class metrics** in IdleWatch rows; keep `null`/absent rather than synthesizing fake values.
 
 If OpenClaw stats are unavailable, usage fields are emitted as `null` and collection continues.

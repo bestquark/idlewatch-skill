@@ -206,8 +206,10 @@ function hasAnySessionSignal(value) {
 
   const directSignals = [
     value.sessionId,
+    value.session_id,
     value.id,
     value.agentId,
+    value.agent_id,
     value.model,
     value.modelName,
     value.totalTokens,
@@ -475,7 +477,7 @@ function parseFromStatusJson(parsed) {
 }
 
 function parseGenericUsage(parsed) {
-  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats || parsed?.session || parsed
+  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats || parsed?.current || parsed?.session || parsed?.result?.current || parsed?.data?.current || parsed?.result?.session || parsed?.data?.session || parsed
   const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
   const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model)
   const totalTokens = pickNumber(

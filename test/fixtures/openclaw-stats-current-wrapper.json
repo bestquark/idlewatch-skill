@@ -1,0 +1,12 @@
+{
+  "data": {
+    "current": {
+      "model": "claude-opus-4-6",
+      "sessionId": "current-wrapper-session",
+      "agentId": "agent-current",
+      "totalTokens": 987,
+      "tokensPerMinute": 12.34,
+      "updatedAt": 1771290000000
+    }
+  }
+}
