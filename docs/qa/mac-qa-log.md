@@ -908,3 +908,57 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Improve monitoring reliability against transient OpenClaw CLI probe failures by reusing bounded last-good usage snapshots with explicit provenance.
+
+## QA cycle update — 2026-02-16 21:00 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14 tests).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged app schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`8`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`33275.15`).
+  - `openclawUsageAgeMs`: `49304` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageNearStale: true`, `usagePastStaleThreshold: false`.
+- Packaged app dry-run (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`.
+  - `tokensPerMin`: populated (`27400.38`).
+  - `openclawUsageAgeMs`: `60212` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageNearStale: true`, `usagePastStaleThreshold: true` (still within stale grace window).
+- Usage probe diagnostics remain healthy:
+  - `source.usageProbeResult`: `"ok"`
+  - `source.usageProbeAttempts`: `1`
+  - `source.usageUsedFallbackCache`: `false`
+  - `source.usageCommand`: `"/opt/homebrew/bin/openclaw status --json"`
+
+### Bugs / feature gaps (current)
+
+1. **Trusted distribution remains credential-gated and opt-in (High, release readiness)**
+   - Artifacts are still unsigned/not notarized in default local runs.
+   - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` exists but is not enabled by default in local QA loops.
+
+2. **OpenClaw usage age repeatedly crosses stale threshold during longer loops (Medium, observability tuning)**
+   - Packaged run reached `openclawUsageAgeMs=60212` (above 60s threshold) while still `ok` due `usageStaleGraceMs=10000`.
+   - Classifier behavior is correct; downstream alerting should key on `usagePastStaleThreshold` + grace semantics to avoid false positives.
+
+3. **Credentialed Firebase E2E pass still pending (Medium, delivery confidence)**
+   - Local telemetry generation and schema validation are green.
+   - Firestore write-path validation with real credentials remains outstanding.
+
+### DMG packaging risk status
+
+- ✅ Local packaging remains reproducible (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signing + notarization run with valid Apple credentials.
+- ⚠️ Clean-machine install evidence is now CI-harnessed, but manual user-level install UX checks remain limited.
+
+### OpenClaw integration gap status
+
+- ✅ Runtime probe and parser path remains healthy with explicit diagnostics and non-fallback usage ingestion.
+- ✅ Freshness metadata remains coherent across direct + packaged runs (`usageNearStale`, `usagePastStaleThreshold`, grace window fields).
+- ⚠️ No dedicated long-window E2E harness yet to assert expected state transitions from `aging` to `stale` under sustained packaging/load conditions.
