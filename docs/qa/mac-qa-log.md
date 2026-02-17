@@ -1787,3 +1787,53 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add CI-level packaged-runtime guardrail for excessively stale OpenClaw usage age to catch ingestion drift/regressions beyond freshness-grace tuning.
+
+## QA cycle update — 2026-02-17 00:20 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (34/34 tests).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema contract + probe metadata).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA environment (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`12`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`31753.24`).
+  - `openclawModel`: populated (`gpt-5.3-codex`), `openclawTotalTokens`: populated (`28679`).
+  - `openclawUsageAgeMs`: `52893` with `source.usageIntegrationStatus: "ok"`, `usageIngestionStatus: "ok"`, `usageActivityStatus: "fresh"`.
+  - `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+- Packaged schema dry-run gate (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - schema validation passes in packaged context.
+  - validator's one-shot disabled-mode check remains coherent (`source.usage=disabled`, `usageIntegrationStatus=disabled`) when usage is intentionally turned off for contract coverage.
+
+### Bugs / feature gaps (current)
+
+1. **Trusted distribution still optional unless strict mode/credentials are set (High, release readiness)**
+   - This cycle produced a fresh unsigned installer (`IdleWatch-0.1.0-unsigned.dmg`).
+   - Signing/notarization remains credential-gated (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`) and non-default.
+
+2. **Firebase write-path E2E still not exercised in active QA loop (Medium, delivery confidence)**
+   - All local schema/packaging checks are green.
+   - One credentialed run (`IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` + project creds/emulator) is still needed for publish-path sign-off.
+
+3. **Node runtime dependency remains explicit for current scaffold distribution (Medium, install UX)**
+   - DMG footprint continues to indicate launcher/scaffold packaging rather than bundled runtime.
+   - Installer docs should continue to call out Node requirement until runtime bundling strategy changes.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced under trusted-release inputs.
+- ⚠️ Runtime dependency risk persists for non-Node hosts.
+
+### OpenClaw integration gap status
+
+- ✅ Integration remains healthy on this host in direct dry-run (`usageIntegrationStatus=ok`, populated usage/session fields).
+- ✅ Probe diagnostics remain explicit and actionable (`usageProbeResult`, `usageProbeAttempts`, `usageCommand`).
+- ⚠️ Still missing a credentialed end-to-end Firebase+OpenClaw combined publish validation in this QA stream.
