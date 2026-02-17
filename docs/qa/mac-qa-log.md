@@ -3,6 +3,81 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 17:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation parity pass:** full local QA gate sweep continues to pass (`npm test`, `dry-run schema`, `packaged metadata`, `dmg checksum`, `usage freshness`, `usage alert-rate`).
+- ✅ **Packaging health:** `validate:dmg-install` now passes consistently in this run, confirming DMG mount/copy/launch path is stable.
+- ✅ **OpenClaw recovery behavior:** `validate:openclaw-cache-recovery-e2e` passes (`fallback-cache` path recovers to fresh state after forced reprobe).
+- ⚠️ **OpenClaw recovery gate regression:** `validate:packaged-usage-recovery-e2e` fails in the local pipeline due a packaging-cleanup side effect from `package:macos` (`rm ... Directory not empty`).
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent` (`fresh → aging → post-threshold-in-grace → stale`)
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` (`typical cadence stays ok; boundary escalates notice → warning`)
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (**result:** launchability path healthy; dry-run output capture timed out under current `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, but validation no longer hard-fails)
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ❌ `npm run validate:packaged-usage-recovery-e2e --silent` (fails while running `npm run package:macos` cleanup)
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+
+### Bugs
+
+- ✅ **Closed (monitoring):** one-shot stale-state behavior remains healthy; active samples continue to collect and report deterministic usage freshness transitions.
+- 🐛 **Open:** packaged usage-recovery E2E path may leave staged artifacts under `dist/dmg-root`, triggering `rm ... Directory not empty` and causing false-fail during macOS packaging in automation.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `ts`: `1771368196897`
+  - `cpuPct`: `15.07`
+  - `memUsedPct`: `83.86`
+  - `memPressurePct`: `49` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `7661.05`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `24718`
+  - `openclawUsageAgeMs`: `196864`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageProbeResult`: `ok`
+  - `usageProbeAttempts`: `1`
+  - `usageRefreshAttempted`: `true`
+  - `usageRefreshRecovered`: `false`
+  - `usageRefreshAttempts`: `2`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off --dry-run --json`:
+  - `openclawModel`: `null`
+  - `openclawTotalTokens`: `null`
+  - `usage`: `disabled`
+  - `usageFreshnessState`: `disabled`
+  - `usageAlertLevel`: `off`
+  - `usageAlertReason`: `usage-disabled`
+
+### DMG packaging risks
+
+1. **High:** DMG artifacts remain unsigned/unnotarized in local environment (`MACOS_CODESIGN_IDENTITY`/notary not configured).
+2. **Medium:** `validate:packaged-bundled-runtime` capture timeout remains non-deterministic under default timeout settings, causing JSON validation to rely on partial-row fallback.
+3. **High:** `validate:packaged-usage-recovery-e2e` fails due packaging cleanup behavior.
+
+### OpenClaw integration gaps
+
+1. **Persistent:** clean machine/path-constrained launch still depends on cached or absent binary discovery; constrained PATH can still create warning-labeled stale telemetry unless fallback behavior re-probes quickly.
+2. **Open:** Firebase write path remains unexercised in this local QA loop (local-only mode in this environment).
+3. **Open:** Packaging tests still depend on robust `package:macos` cleanup semantics for repeated CI runs.
+
+### Follow-up / action items
+
+1. Fix packaging cleanup robustness in `package:macos.sh`/invocation flow so `dist/dmg-root` is reliably removed before repackage.
+2. Consider dedicated `--once` + shorter timeout profile for bundled-runtime validators to eliminate the current partial-capture branch.
+3. Re-run `validate:packaged-usage-recovery-e2e` after cleanup fix and close false-fail.
+
 ## QA cycle update — 2026-02-17 17:26 America/Toronto
 
 ### Completed this cycle
