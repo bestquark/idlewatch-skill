@@ -3,6 +3,85 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 14:50 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes (`180/180`).
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `node bin/idlewatch-agent.js --dry-run --once --json` emits populated host telemetry.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ⚠️ `npm run validate:packaged-usage-age-slo --silent` (not completed in-session because `validate:packaged-usage-age-slo` launches a non-terminating dry-run loop path in this environment).
+- ✅ `npm run package:dmg --silent` rebuilt `dist/IdleWatch-0.1.0-unsigned.dmg` and checksum.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` one-shot capture works for both packaged and installed launcher paths.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ✅ Manual packaged DMG smoke validation passed (`hdiutil` mount + launch `--dry-run` JSON capture).
+
+### Bugs / features completed
+
+- ✅ **Feature:** Refreshed Mac QA gates and refreshed packaging artifacts without code changes.
+- ✅ **Feature:** Captured fresh host + packaged/install telemetry for this cycle with OpenClaw provenance populated.
+- ✅ **Open item / risk:** `node ... --dry-run` still emits non-terminating output in this environment; packaging validation helpers that spawn dry-run binaries should enforce timeout/one-shot capture to avoid hangs.
+
+### Telemetry validation checks (host + packaged samples)
+
+- Host `--dry-run` sample:
+  - `cpuPct`: `29.16`
+  - `memUsedPct`: `94.75`
+  - `memPressurePct`: `47` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `23094.17`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31104`
+  - `openclawUsageAgeMs`: `84,013`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Packaged launcher `--dry-run` sample:
+  - `cpuPct`: `20.31`
+  - `memUsedPct`: `94.39`
+  - `memPressurePct`: `47` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `14696.08`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31104`
+  - `openclawUsageAgeMs`: `130,172`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Installed-app smoke sample:
+  - `cpuPct`: `16.95`
+  - `memUsedPct`: `92.46`
+  - `memPressurePct`: `47` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `10564.02`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31104`
+  - `openclawUsageAgeMs`: `179,889`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset), so Gatekeeper friction remains possible on strict endpoints.
+2. **High:** Trust-hardening/no-staple path still not exercised (`MACOS_NOTARY_PROFILE` / notarize flow unavailable).
+3. **Medium:** Validation scripts that call packaged `--dry-run` still rely on non-terminating launcher behavior unless externally bounded, which can stall automated QA if not handled.
+4. **Low:** No explicit Apple Silicon vs Intel runtime matrix in this cycle; packaged rebuild used current host defaults.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Usage depends on availability and shape of local `openclaw` command output (`openclaw status --json` compatibility).
+2. **Gap:** Cloud/firestore write path remains local-only in this environment (Firebase creds/emulator not enabled).
+3. **Gap:** Long-idle windows still show `stale` + `warning` transitions with sample age drift (`openclawUsageAgeMs` ~80k–180k ms in this cycle).
+4. **Gap:** Packaged `usage-age-slo` CI path still hard to run with current shell harness because launcher dry-run is open-ended.
+
 ## QA cycle update — 2026-02-17 14:30 America/Toronto
 
 ### Validation checks run
