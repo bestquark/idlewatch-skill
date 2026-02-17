@@ -1277,3 +1277,52 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Improve OpenClaw observability semantics so stale usage age can be distinguished from probe/ingestion outages in alert policy.
+
+## QA cycle update — 2026-02-16 22:40 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (20/20).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + usage status consistency).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged app schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:dmg-install --silent` passes (mounted-DMG install + launcher dry-run schema check).
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`9`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`203443.81`).
+  - `openclawUsageAgeMs`: `41808` with `source.usageIntegrationStatus: "ok"`, `source.usageIngestionStatus: "ok"`, `source.usageActivityStatus: "fresh"`, `source.usageNearStale: false`, `source.usagePastStaleThreshold: false`.
+  - Probe diagnostics: `usageProbeResult: "ok"`, `usageProbeAttempts: 1`, `usageProbeSweeps: 1`, `usageProbeRetries: 1`, `usageProbeTimeoutMs: 2500`, `usageUsedFallbackCache: false`, `usageCommand: "/opt/homebrew/bin/openclaw status --json"`.
+- Packaged app dry-run (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `tokensPerMin`: populated (`141327.06`).
+  - `openclawUsageAgeMs`: `60661` with `source.usageIntegrationStatus: "ok"`, `source.usageIngestionStatus: "ok"`, `source.usageActivityStatus: "aging"`, `source.usageNearStale: true`, `source.usagePastStaleThreshold: true` (still within stale grace window).
+
+### Bugs / feature gaps (current)
+
+1. **Packaged-run usage age still crosses stale threshold in QA loops (Medium, observability tuning)**
+   - This cycle reproduced post-threshold age in packaged run (`openclawUsageAgeMs=60661`) while ingestion remained healthy (`usageIngestionStatus=ok`).
+   - Alerting should continue to page on ingestion failures and treat age-only threshold crossings with grace semantics.
+
+2. **Trusted distribution remains credential-gated (High, release readiness)**
+   - Packaging and install validation are green, but artifacts remain unsigned/not notarized without configured `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+
+3. **Production-credentialed Firebase write-path validation still pending (Medium, E2E confidence)**
+   - Emulator/local validation is healthy, but one pass against real Firebase project credentials is still needed.
+
+### DMG packaging risk status
+
+- ✅ Packaging and installer validation remain reproducible locally (`IdleWatch.app`, unsigned DMG, mounted-DMG install check).
+- ⚠️ Gatekeeper/trust risk persists until signing + notarization execute successfully with real Apple credentials.
+
+### OpenClaw integration gap status
+
+- ✅ Probe diagnostics and ingestion status remain healthy in both direct and packaged runs (`usageIngestionStatus: ok`, `usageProbeResult: ok`).
+- ✅ New ingestion/activity status split is producing coherent signals for alert policy (`ok` ingestion with `fresh/aging` activity states).
+- ⚠️ Packaged runtime still reaches post-threshold age during longer loops; downstream policy tuning should continue to rely on activity + grace semantics instead of threshold crossing alone.
