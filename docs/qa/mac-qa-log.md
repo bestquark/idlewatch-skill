@@ -1505,3 +1505,21 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Usage probe and alert-routing metadata are present and coherent in direct dry-run output.
 - ✅ Disabled-usage branch remains explicit and machine-readable (`off` alert level in `--once` validation).
 - ⚠️ Activity staleness remains common during low-traffic windows; downstream alert policy should continue prioritizing ingestion failures over stale-only activity states.
+
+## Implementation cycle update — 2026-02-16 23:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ Fixed packaged-schema validation order dependency by making packaged validators self-refresh the app bundle before schema checks:
+  - `validate:packaged-dry-run-schema` now runs `package:macos` first.
+  - `validate:packaged-usage-health` now runs `package:macos` first.
+- ✅ Updated operator docs (`README.md`, `docs/packaging/macos-dmg.md`) to document fresh-artifact auto-rebuild behavior for packaged validators.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes with auto-rebuild flow.
+
+### Acceptance criteria updates
+
+- [x] Eliminate packaged schema-validation stale-artifact mismatch risk by auto-rebuilding `IdleWatch.app` in packaged validation entrypoints.

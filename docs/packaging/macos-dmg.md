@@ -77,3 +77,4 @@ When present, the workflow imports a temporary build keychain, signs `IdleWatch.
 
 Release policy gate:
 - Trusted release workflow enforces packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload via `npm run validate:packaged-usage-health`.
+- Both packaged validators (`validate:packaged-dry-run-schema`, `validate:packaged-usage-health`) now auto-run `package:macos` first so checks always target fresh packaged bits.
