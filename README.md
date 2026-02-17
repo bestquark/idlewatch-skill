@@ -55,6 +55,7 @@ export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 
 If Firebase env vars are incomplete or invalid, the CLI exits with a clear configuration error.
 If Firebase vars are omitted entirely, it runs in local-only mode and prints telemetry to stdout.
+`firebase-admin` is loaded lazily only when Firebase publish mode is configured, so dry-run/local-only flows remain resilient in minimal packaged/runtime environments.
 Set `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` to fail fast when running `--once` without a working Firebase publish path.
 
 Validation helpers:

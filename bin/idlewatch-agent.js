@@ -4,17 +4,22 @@ import os from 'os'
 import path from 'path'
 import process from 'process'
 import { execFileSync } from 'child_process'
-import admin from 'firebase-admin'
+import { createRequire } from 'module'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
 import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 import { deriveUsageAlert } from '../src/usage-alert.js'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
+import { runEnrollmentWizard } from '../src/enrollment.js'
+import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
+import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
 }
+
+const require = createRequire(import.meta.url)
 
 const args = new Set(process.argv.slice(2))
 if (args.has('--help') || args.has('-h')) {
@@ -152,6 +157,18 @@ const OPENCLAW_LAST_GOOD_CACHE_PATH = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_C
 
 let appReady = false
 let firebaseConfigError = null
+let admin = null
+
+function loadFirebaseAdmin() {
+  if (admin) return admin
+  try {
+    admin = require('firebase-admin')
+    return admin
+  } catch (err) {
+    firebaseConfigError = `Failed to load firebase-admin runtime dependency: ${err.message}`
+    return null
+  }
+}
 
 if (PROJECT_ID || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HOST) {
   if (!PROJECT_ID) {
@@ -159,24 +176,30 @@ if (PROJECT_ID || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HOST) {
       'FIREBASE_PROJECT_ID is missing. Set FIREBASE_PROJECT_ID plus FIREBASE_SERVICE_ACCOUNT_JSON (preferred) or FIREBASE_SERVICE_ACCOUNT_B64. For emulator-only mode, set FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST.'
   } else if (!CREDS_JSON && !CREDS_B64) {
     if (FIRESTORE_EMULATOR_HOST) {
-      try {
-        admin.initializeApp({ projectId: PROJECT_ID })
-        appReady = true
-      } catch (err) {
-        firebaseConfigError = `Failed to initialize Firebase emulator mode: ${err.message}`
+      const firebaseAdmin = loadFirebaseAdmin()
+      if (firebaseAdmin) {
+        try {
+          firebaseAdmin.initializeApp({ projectId: PROJECT_ID })
+          appReady = true
+        } catch (err) {
+          firebaseConfigError = `Failed to initialize Firebase emulator mode: ${err.message}`
+        }
       }
     } else {
       firebaseConfigError =
         'Firebase credentials are missing. Set FIREBASE_SERVICE_ACCOUNT_JSON (preferred) or FIREBASE_SERVICE_ACCOUNT_B64. For emulator-only mode, set FIRESTORE_EMULATOR_HOST.'
     }
   } else {
-    try {
-      const credsRaw = CREDS_JSON || Buffer.from(CREDS_B64, 'base64').toString('utf8')
-      const creds = JSON.parse(credsRaw)
-      admin.initializeApp({ credential: admin.credential.cert(creds), projectId: PROJECT_ID })
-      appReady = true
-    } catch (err) {
-      firebaseConfigError = `Failed to initialize Firebase credentials: ${err.message}`
+    const firebaseAdmin = loadFirebaseAdmin()
+    if (firebaseAdmin) {
+      try {
+        const credsRaw = CREDS_JSON || Buffer.from(CREDS_B64, 'base64').toString('utf8')
+        const creds = JSON.parse(credsRaw)
+        firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(creds), projectId: PROJECT_ID })
+        appReady = true
+      } catch (err) {
+        firebaseConfigError = `Failed to initialize Firebase credentials: ${err.message}`
+      }
     }
   }
 }
@@ -524,7 +547,13 @@ async function collectSample() {
     openclawUsageAgeMs: usageFreshness.usageAgeMs,
     source
   }
-  return row
+
+  return enrichWithOpenClawFleetTelemetry(row, {
+    host: HOST,
+    collectedAtMs: nowMs,
+    collector: 'idlewatch-agent',
+    collectorVersion: pkg.version
+  })
 }
 
 async function tick() {

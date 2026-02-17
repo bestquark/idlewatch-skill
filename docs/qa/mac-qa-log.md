@@ -2187,3 +2187,21 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add default-safe release guard that prevents accidental unsigned macOS tag artifacts in CI unless an explicit break-glass override is set.
+
+## Implementation cycle update — 2026-02-17 01:46 America/Toronto
+
+### Completed this cycle
+
+- ✅ Hardened packaged runtime reliability by making `firebase-admin` loading lazy/conditional in `bin/idlewatch-agent.js`.
+  - `firebase-admin` is now required only when Firebase publishing is actually configured.
+  - Local-only and dry-run telemetry paths no longer hard-fail on startup if the Firebase dependency is missing from a packaged payload.
+- ✅ Added explicit loader error surfacing (`Failed to load firebase-admin runtime dependency`) when Firebase is requested but dependency resolution fails.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (111/111 assertions).
+- ✅ `npm run validate:dmg-install --silent` passes (mounted DMG → copied app → launcher dry-run schema check).
+
+### Acceptance criteria updates
+
+- [x] Improve monitoring startup resilience by removing unconditional Firebase runtime dependency for local-only/dry-run execution paths.
