@@ -3,6 +3,89 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 18:00 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation gate sweep pass:** full Mac QA sweep remains stable with no code changes this cycle.
+- ✅ **Bundled runtime/packaged validator:** `validate:packaged-bundled-runtime --silent` now passes consistently under launchability checks; constrained-path dry-run output may be sparse but remains accepted via fallback-row parsing logic.
+- ✅ **Recovery/e2e behavior:** both `validate:packaged-usage-recovery-e2e --silent` and `validate:openclaw-cache-recovery-e2e --silent` pass.
+- 🐛 **Open bug (recurring):** `package-macos` cleanup can still leave `dist` artifacts behind in some sequences, and `rm ... Directory not empty` appears during `validate:packaged-usage-age-slo`/`packaged-bundled-runtime` flows when re-running packaging steps.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent` (`fresh → aging → post-threshold-in-grace → stale`)
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` (`typical cadence stays ok; boundary escalates notice → warning`)
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run package:macos` (scaffold pass)
+
+### Bugs
+
+- ✅ **Closed:** no telemetry schema regressions detected; `validate:dry-run-schema` and freshness/alert e2e suites remain green.
+- 🐛 **Open:** `validate:packaged-bundled-runtime` can hit a `dry-run timed out after 15000ms` branch under constrained PATH in some local runs, leaving zero-output fallback rows for strict output-availability checks.
+- 🐛 **Open:** `packaged-usage-age-slo` path can still fail via `rm ... Directory not empty` depending on previous partial package state.
+
+### Telemetry validation checks
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `ts`: `1771369252871`
+  - `cpuPct`: `17.04`
+  - `memUsedPct`: `86.49`
+  - `memPressurePct`: `48` (`memPressureClass`: `normal`)
+  - `tokensPerMin`: `35848.57`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31533`
+  - `openclawUsageAgeMs`: `52833`
+  - `usageFreshnessState`: `fresh`
+  - `usageAlertLevel`: `ok`
+
+- Host `node bin/idlewatch-agent.js --dry-run --json --once`:
+  - `cpuPct`: `7.69`
+  - `memUsedPct`: `86.49`
+  - `memPressurePct`: `48` (`memPressureClass`: `normal`)
+  - `tokensPerMin`: `null`
+  - `openclawModel`: `null`
+  - `openclawTotalTokens`: `null`
+  - `usageFreshnessState`: `disabled`
+  - `usageAlertLevel`: `off`
+
+- Packaged launcher `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --json`:
+  - `cpuPct`: `16.73`
+  - `memUsedPct`: `83.80`
+  - `memPressurePct`: `48` (`memPressureClass`: `normal`)
+  - `tokensPerMin`: `8205.42`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31533`
+  - `openclawUsageAgeMs`: `233825`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+
+### DMG packaging risks
+
+1. **High:** Distribution is still unsigned/unnotarized; strict Gatekeeper environments may reject or warn on first-run.
+2. **Medium:** Packaging cleanup is not idempotent under some rerun sequences (`rm ... Directory not empty`), preventing clean automation in some local/full-retest loops.
+3. **Medium:** `validate:packaged-bundled-runtime` can take longer than 15s under constrained PATH with zero-output timeout path, reducing confidence in strict CI timeout budgets.
+
+### OpenClaw integration gaps
+
+1. **Open:** Usage telemetry remains fully dependent on local `openclaw status --json` availability and output schema compatibility.
+2. **Open:** Firebase/cloud write path remains unexercised in this environment (`Firebase is not configured` local-only mode).
+3. **Open:** Packaged launcher telemetry path under constrained PATH still relies on timeout-based captured-row fallback instead of guaranteed immediate JSON emission.
+
+### Follow-up / action items
+
+1. Rework `package-macos.sh` cleanup step to make artifact removal idempotent (no `Directory not empty` failures).
+2. Add a deterministic bounded `--once` + explicit flush path for packaged dry-run validators to remove zero-output timeout ambiguity.
+3. Re-run this QA cycle after cleanup hardening and mark the two open packaging risks closed if stable for two consecutive runs.
+
 ## QA cycle update — 2026-02-17 17:40 America/Toronto
 
 ### Completed this cycle
