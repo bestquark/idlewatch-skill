@@ -1,8 +1,11 @@
-export function deriveUsageAlert(source) {
+export function deriveUsageAlert(source, options = {}) {
   const ingestion = source?.usageIngestionStatus
   const activity = source?.usageActivityStatus
   const nearStale = source?.usageNearStale === true
   const pastStaleThreshold = source?.usagePastStaleThreshold === true
+  const usageAgeMs = Number.isFinite(options?.usageAgeMs) ? options.usageAgeMs : null
+  const idleAfterMs = Number.isFinite(options?.idleAfterMs) && options.idleAfterMs > 0 ? options.idleAfterMs : null
+  const isIdle = idleAfterMs !== null && usageAgeMs !== null && usageAgeMs >= idleAfterMs
 
   if (ingestion === 'disabled') {
     return { level: 'off', reason: 'usage-disabled' }
@@ -10,6 +13,10 @@ export function deriveUsageAlert(source) {
 
   if (ingestion === 'unavailable') {
     return { level: 'critical', reason: 'ingestion-unavailable' }
+  }
+
+  if (isIdle) {
+    return { level: 'notice', reason: 'activity-idle' }
   }
 
   if (activity === 'stale') {

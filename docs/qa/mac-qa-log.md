@@ -1971,3 +1971,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
 - ✅ Integration metadata remains rich and consistent (`usageProbe*`, freshness states, refresh-attempt telemetry).
 - ⚠️ Freshness recovery under low-activity windows still needs tuning or policy adjustment to avoid recurring stale-state noise in overnight QA cycles.
+
+## Implementation cycle update — 2026-02-17 00:49 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added idle-aware OpenClaw alert suppression control to reduce overnight stale noise:
+  - new env var `IDLEWATCH_USAGE_IDLE_AFTER_MS` (default `21600000` / 6h)
+  - usage alerts now downgrade to `source.usageAlertLevel: "notice"` with `source.usageAlertReason: "activity-idle"` when usage age exceeds the idle threshold while ingestion remains healthy.
+- ✅ Added explicit idle observability metadata to each sample:
+  - `source.usageIdle` (boolean)
+  - `source.usageIdleAfterMsThreshold`
+- ✅ Extended schema validation contract to enforce new idle metadata and alert reason enum.
+- ✅ Added unit coverage for idle alert behavior (`test/usage-alert.test.mjs`).
+- ✅ Updated operator docs/help/config references (`README.md`, `.env.example`, CLI `--help`) for idle-threshold tuning.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (104/104 assertions).
+- ✅ `npm run validate:dry-run-schema --silent` passes with idle metadata + reason contract checks.
+
+### Acceptance criteria updates
+
+- [x] Reduce false-positive stale alert noise in low-activity windows without masking ingestion failures.

@@ -89,6 +89,8 @@ Binary resolution order for the OpenClaw probe:
   (default: `250`).
 - `IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE` triggers proactive refresh when usage is near-stale
   to reduce stale flips in long packaging/QA loops (default: `1`).
+- `IDLEWATCH_USAGE_IDLE_AFTER_MS` downgrades stale activity alerts to `activity-idle`
+  notice state after prolonged inactivity (default: `21600000` = 6h).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH` persists/reuses the last-good OpenClaw usage snapshot
@@ -111,7 +113,7 @@ Source metadata fields:
 - `source.usageIngestionStatus`: `ok | disabled | unavailable` (probe/path health independent of usage age).
 - `source.usageActivityStatus`: `fresh | aging | stale | unknown | disabled | unavailable` (age-based activity state).
 - `source.usageAlertLevel`: `ok | notice | warning | critical | off` (operator-facing alert severity derived from ingestion + activity semantics).
-- `source.usageAlertReason`: `healthy | activity-near-stale | activity-past-threshold | activity-stale | ingestion-unavailable | usage-disabled`.
+- `source.usageAlertReason`: `healthy | activity-idle | activity-near-stale | activity-past-threshold | activity-stale | ingestion-unavailable | usage-disabled`.
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
@@ -121,6 +123,7 @@ Source metadata fields:
 - `source.usageRefreshReprobes`: configured extra forced reprobes (`IDLEWATCH_USAGE_REFRESH_REPROBES`).
 - `source.usageRefreshDelayMs`: configured delay between reprobes (`IDLEWATCH_USAGE_REFRESH_DELAY_MS`).
 - `source.usageRefreshOnNearStale`: whether near-stale proactive refresh is enabled (`IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE`).
+- `source.usageIdle`: boolean indicating usage age crossed idle window (`IDLEWATCH_USAGE_IDLE_AFTER_MS`).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
@@ -133,6 +136,7 @@ Source metadata fields:
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
 - `source.usageNearStaleMsThreshold`: threshold used for aging classification.
 - `source.usageStaleGraceMs`: grace window before stale status activation.
+- `source.usageIdleAfterMsThreshold`: threshold used to classify prolonged inactivity.
 - `source.memPressureSource`: `memory_pressure | unavailable | unsupported`.
 
 Memory field semantics:

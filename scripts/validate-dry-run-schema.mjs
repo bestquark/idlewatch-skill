@@ -76,6 +76,7 @@ function validateRow(row) {
   assert.ok(Number.isInteger(source.usageRefreshReprobes) && source.usageRefreshReprobes >= 0, 'source.usageRefreshReprobes must be integer >= 0')
   assert.ok(Number.isFinite(source.usageRefreshDelayMs) && source.usageRefreshDelayMs >= 0, 'source.usageRefreshDelayMs must be number >= 0')
   assert.equal(typeof source.usageRefreshOnNearStale, 'boolean', 'source.usageRefreshOnNearStale must be boolean')
+  assert.equal(typeof source.usageIdle, 'boolean', 'source.usageIdle must be boolean')
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
@@ -86,11 +87,12 @@ function validateRow(row) {
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
   assert.ok(source.usageFallbackCacheSource === null || ['memory', 'disk'].includes(source.usageFallbackCacheSource), 'source.usageFallbackCacheSource must be memory|disk|null')
   assert.ok(['ok', 'notice', 'warning', 'critical', 'off'].includes(source.usageAlertLevel), 'source.usageAlertLevel invalid')
-  assert.ok(['healthy', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
+  assert.ok(['healthy', 'activity-idle', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
   assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')
   assert.ok(Number.isFinite(source.usageStaleMsThreshold), 'source.usageStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageNearStaleMsThreshold), 'source.usageNearStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageStaleGraceMs), 'source.usageStaleGraceMs must be number')
+  assert.ok(Number.isFinite(source.usageIdleAfterMsThreshold), 'source.usageIdleAfterMsThreshold must be number')
   assert.ok(typeof source.memPressureSource === 'string', 'source.memPressureSource must be string')
 
   if (source.usage === 'openclaw') {

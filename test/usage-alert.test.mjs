@@ -31,3 +31,19 @@ test('returns ok when usage is healthy', () => {
   const result = deriveUsageAlert({ usageIngestionStatus: 'ok', usageActivityStatus: 'fresh', usageNearStale: false })
   assert.deepEqual(result, { level: 'ok', reason: 'healthy' })
 })
+
+test('downgrades stale to idle notice when usage age exceeds idle threshold', () => {
+  const result = deriveUsageAlert(
+    { usageIngestionStatus: 'ok', usageActivityStatus: 'stale' },
+    { usageAgeMs: 3600000, idleAfterMs: 1800000 }
+  )
+  assert.deepEqual(result, { level: 'notice', reason: 'activity-idle' })
+})
+
+test('does not emit idle notice when ingestion is unavailable', () => {
+  const result = deriveUsageAlert(
+    { usageIngestionStatus: 'unavailable', usageActivityStatus: 'stale' },
+    { usageAgeMs: 3600000, idleAfterMs: 1800000 }
+  )
+  assert.deepEqual(result, { level: 'critical', reason: 'ingestion-unavailable' })
+})
