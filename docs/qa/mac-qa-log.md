@@ -10,6 +10,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 11:49 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** expanded `parseOpenClawUsage()` to handle `status`-enveloped wrappers and reduce misclassification between status/session and stats payloads (`status`, `status.result`, `status.current`, `status.data`, and `data.result` nested session/current variants).
+- ✅ **OpenClaw stats ingestion:** added parser coverage for `status.current` and `data.result` current-session wrappers; improved discriminator logic to avoid treating stats-only responses as status payloads when no explicit session envelope exists.
+- ✅ **Packaging/docs:** updated OpenClaw parser compatibility notes in `README.md` and added dedicated test fixture + unit coverage for `status.current` parsing.
+
+### Validation checks
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+
+### Notes
+
+- No environment-dependent production tasks (Firebase write-path, Gatekeeper trust policy, clean external-device install UX) were changed in this cycle; those remain in the same deferred-risk category.
+
 ## QA cycle update — 2026-02-17 11:23 America/Toronto
 
 ### Completed this cycle

@@ -267,6 +267,110 @@ function coerceSessionCandidates(value, options = {}) {
   return null
 }
 
+function isExplicitSessionEnvelope(value) {
+  if (!value || typeof value !== 'object') return false
+  return !!(
+    value.sessions ||
+    value.session ||
+    value.activeSession ||
+    value.currentSession ||
+    value.current ||
+    value.active ||
+    value.recentSessions ||
+    value.recent ||
+    value.activeSessions ||
+    value.result?.sessions ||
+    value.result?.session ||
+    value.result?.activeSession ||
+    value.result?.currentSession ||
+    value.result?.active ||
+    value.result?.recentSessions ||
+    value.result?.recent ||
+    value.result?.activeSessions ||
+    value.result?.data?.sessions ||
+    value.result?.data?.recentSessions ||
+    value.result?.data?.recent ||
+    value.result?.data?.activeSessions ||
+    value.result?.data?.active ||
+    value.data?.sessions ||
+    value.data?.session ||
+    value.data?.activeSession ||
+    value.data?.currentSession ||
+    value.data?.current ||
+    value.data?.active ||
+    value.data?.recentSessions ||
+    value.data?.recent ||
+    value.data?.activeSessions ||
+    value.data?.result?.sessions ||
+    value.data?.result?.session ||
+    value.data?.result?.activeSession ||
+    value.data?.result?.currentSession ||
+    value.data?.result?.active ||
+    value.data?.result?.recentSessions ||
+    value.data?.result?.recent ||
+    value.data?.result?.activeSessions ||
+    value.status?.sessions ||
+    value.status?.session ||
+    value.status?.activeSession ||
+    value.status?.currentSession ||
+    value.status?.current ||
+    value.status?.active ||
+    value.status?.recentSessions ||
+    value.status?.recent ||
+    value.status?.activeSessions ||
+    value.status?.result?.sessions ||
+    value.status?.result?.session ||
+    value.status?.result?.activeSession ||
+    value.status?.result?.currentSession ||
+    value.status?.result?.active ||
+    value.status?.result?.recentSessions ||
+    value.status?.result?.recent ||
+    value.status?.result?.activeSessions ||
+    value.status?.result?.data?.sessions ||
+    value.status?.result?.data?.recentSessions ||
+    value.status?.result?.data?.recent ||
+    value.status?.result?.data?.activeSessions ||
+    value.status?.result?.data?.active
+  )
+}
+
+function looksLikeStatsOrCurrentPayload(parsed) {
+  if (!parsed || typeof parsed !== 'object') return false
+
+  return !!(
+    parsed.stats ||
+    parsed.sessionUsage ||
+    parsed.usage ||
+    parsed.current ||
+    parsed.session ||
+    parsed.result?.stats ||
+    parsed.result?.sessionUsage ||
+    parsed.result?.usage ||
+    parsed.result?.current ||
+    parsed.result?.session ||
+    parsed.data?.stats ||
+    parsed.data?.sessionUsage ||
+    parsed.data?.usage ||
+    parsed.data?.current ||
+    parsed.data?.session ||
+    parsed.data?.result?.stats ||
+    parsed.data?.result?.sessionUsage ||
+    parsed.data?.result?.usage ||
+    parsed.data?.result?.current ||
+    parsed.data?.result?.session ||
+    parsed.status?.stats ||
+    parsed.status?.sessionUsage ||
+    parsed.status?.usage ||
+    parsed.status?.current ||
+    parsed.status?.session ||
+    parsed.status?.result?.stats ||
+    parsed.status?.result?.sessionUsage ||
+    parsed.status?.result?.usage ||
+    parsed.status?.result?.current ||
+    parsed.status?.result?.session
+  )
+}
+
 function collectStatusSessionCandidates(parsed) {
   const candidateRoots = [
     parsed?.sessions?.recent,
@@ -318,11 +422,6 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.result?.data?.currentSession,
     parsed?.result?.data,
     parsed?.result,
-    parsed?.data?.result?.session,
-    parsed?.data?.result?.active,
-    parsed?.data?.result?.activeSession,
-    parsed?.data?.result?.current,
-    parsed?.data?.result?.currentSession,
     parsed?.data?.result?.sessions?.recent,
     parsed?.data?.result?.sessions?.recentSessions,
     parsed?.data?.result?.sessions?.activeSessions,
@@ -331,24 +430,107 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.data?.result?.sessions?.activeSession,
     parsed?.data?.result?.sessions?.current,
     parsed?.data?.result?.sessions?.currentSession,
-    parsed?.data?.sessions?.recent,
-    parsed?.data?.sessions?.recentSessions,
-    parsed?.data?.sessions?.activeSessions,
-    parsed?.data?.sessions?.active,
-    parsed?.data?.sessions?.session,
-    parsed?.data?.sessions?.activeSession,
-    parsed?.data?.sessions?.current,
-    parsed?.data?.sessions?.currentSession,
-    parsed?.data?.recentSessions,
-    parsed?.data?.activeSessions,
-    parsed?.data?.active,
-    parsed?.data?.recent,
-    parsed?.data?.session,
-    parsed?.data?.activeSession,
-    parsed?.data?.current,
-    parsed?.data?.currentSession,
-    parsed?.data?.sessions,
-    parsed?.sessions
+    parsed?.data?.result?.sessions,
+    parsed?.data?.result?.recent,
+    parsed?.data?.result?.recentSessions,
+    parsed?.data?.result?.activeSessions,
+    parsed?.data?.result?.active,
+    parsed?.data?.result?.activeSession,
+    parsed?.data?.result?.session,
+    parsed?.data?.result?.current,
+    parsed?.data?.result?.currentSession,
+    parsed?.data?.result?.data,
+    parsed?.data?.result,
+    parsed?.data?.result?.data?.sessions?.recent,
+    parsed?.data?.result?.data?.sessions?.recentSessions,
+    parsed?.data?.result?.data?.sessions?.activeSessions,
+    parsed?.data?.result?.data?.sessions?.active,
+    parsed?.data?.result?.data?.sessions?.session,
+    parsed?.data?.result?.data?.sessions?.activeSession,
+    parsed?.data?.result?.data?.sessions?.current,
+    parsed?.data?.result?.data?.sessions?.currentSession,
+    parsed?.data?.result?.data?.sessions,
+    parsed?.data?.result?.data?.recent,
+    parsed?.data?.result?.data?.recentSessions,
+    parsed?.data?.result?.data?.activeSessions,
+    parsed?.data?.result?.data?.active,
+    parsed?.data?.result?.data?.activeSession,
+    parsed?.data?.result?.data?.session,
+    parsed?.data?.result?.data?.current,
+    parsed?.data?.result?.data?.currentSession,
+    parsed?.data?.result?.data,
+    parsed?.data?.result?.data,
+    parsed?.data,
+    parsed?.status?.sessions?.recent,
+    parsed?.status?.sessions?.recentSessions,
+    parsed?.status?.sessions?.activeSessions,
+    parsed?.status?.sessions?.active,
+    parsed?.status?.sessions?.session,
+    parsed?.status?.sessions?.activeSession,
+    parsed?.status?.sessions?.current,
+    parsed?.status?.sessions?.currentSession,
+    parsed?.status?.sessions,
+    parsed?.status?.recentSessions,
+    parsed?.status?.activeSessions,
+    parsed?.status?.active,
+    parsed?.status?.activeSession,
+    parsed?.status?.session,
+    parsed?.status?.active,
+    parsed?.status?.recent,
+    parsed?.status?.current,
+    parsed?.status?.currentSession,
+    parsed?.status?.result?.sessions?.recent,
+    parsed?.status?.result?.sessions?.recentSessions,
+    parsed?.status?.result?.sessions?.activeSessions,
+    parsed?.status?.result?.sessions?.active,
+    parsed?.status?.result?.sessions?.session,
+    parsed?.status?.result?.sessions?.activeSession,
+    parsed?.status?.result?.sessions?.current,
+    parsed?.status?.result?.sessions?.currentSession,
+    parsed?.status?.result?.sessions,
+    parsed?.status?.result?.recentSessions,
+    parsed?.status?.result?.activeSessions,
+    parsed?.status?.result?.active,
+    parsed?.status?.result?.activeSession,
+    parsed?.status?.result?.session,
+    parsed?.status?.result?.current,
+    parsed?.status?.result?.currentSession,
+    parsed?.status?.result?.data?.sessions?.recent,
+    parsed?.status?.result?.data?.sessions?.recentSessions,
+    parsed?.status?.result?.data?.sessions?.activeSessions,
+    parsed?.status?.result?.data?.sessions?.active,
+    parsed?.status?.result?.data?.sessions?.session,
+    parsed?.status?.result?.data?.sessions?.activeSession,
+    parsed?.status?.result?.data?.sessions?.current,
+    parsed?.status?.result?.data?.sessions?.currentSession,
+    parsed?.status?.result?.data?.recentSessions,
+    parsed?.status?.result?.data?.activeSessions,
+    parsed?.status?.result?.data?.active,
+    parsed?.status?.result?.data?.activeSession,
+    parsed?.status?.result?.data?.session,
+    parsed?.status?.result?.data?.current,
+    parsed?.status?.result?.data?.currentSession,
+    parsed?.status?.result?.data,
+    parsed?.status?.result,
+    parsed?.status?.data?.sessions?.recent,
+    parsed?.status?.data?.sessions?.recentSessions,
+    parsed?.status?.data?.sessions?.activeSessions,
+    parsed?.status?.data?.sessions?.active,
+    parsed?.status?.data?.sessions?.session,
+    parsed?.status?.data?.sessions?.activeSession,
+    parsed?.status?.data?.sessions?.current,
+    parsed?.status?.data?.sessions?.currentSession,
+    parsed?.status?.data?.recentSessions,
+    parsed?.status?.data?.activeSessions,
+    parsed?.status?.data?.active,
+    parsed?.status?.data?.recent,
+    parsed?.status?.data?.session,
+    parsed?.status?.data?.activeSession,
+    parsed?.status?.data?.current,
+    parsed?.status?.data?.currentSession,
+    parsed?.status?.data?.sessions,
+    parsed?.sessions,
+    parsed?.data
   ]
 
   for (const root of candidateRoots) {
@@ -359,16 +541,25 @@ function collectStatusSessionCandidates(parsed) {
   return null
 }
 
+
 function parseFromStatusJson(parsed) {
+  if (!isExplicitSessionEnvelope(parsed) && looksLikeStatsOrCurrentPayload(parsed)) {
+    return null
+  }
+
   const sessionsRoot = collectStatusSessionCandidates(parsed)
-  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults || parsed?.data?.defaults ||
+  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults || parsed?.data?.defaults || parsed?.status?.defaults ||
     (parsed?.result?.defaultModel || parsed?.result?.default_model
       ? { model: parsed.result.defaultModel || parsed.result.default_model }
       : parsed?.result?.data?.defaultModel || parsed?.result?.data?.default_model
         ? { model: parsed.result.data.defaultModel || parsed.result.data.default_model }
-        : parsed?.config?.defaultModel || parsed?.config?.default_model
-          ? { model: parsed.config.defaultModel || parsed.config.default_model }
-          : {})
+        : parsed?.status?.defaultModel || parsed?.status?.default_model
+          ? { model: parsed.status.defaultModel || parsed.status.default_model }
+          : parsed?.status?.data?.defaultModel || parsed?.status?.data?.default_model
+            ? { model: parsed.status.data.defaultModel || parsed.status.data.default_model }
+            : parsed?.config?.defaultModel || parsed?.config?.default_model
+              ? { model: parsed.config.defaultModel || parsed.config.default_model }
+              : {})
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {
@@ -382,6 +573,10 @@ function parseFromStatusJson(parsed) {
       defaults?.default_model,
       parsed?.defaultModel,
       parsed?.default_model,
+      parsed?.status?.defaultModel,
+      parsed?.status?.default_model,
+      parsed?.status?.data?.defaultModel,
+      parsed?.status?.data?.default_model,
       parsed?.result?.defaultModel,
       parsed?.result?.default_model,
       parsed?.data?.defaultModel,
@@ -406,6 +601,10 @@ function parseFromStatusJson(parsed) {
     parsed?.default_model,
     session?.usage?.model,
     parsed?.defaultModel,
+    parsed?.status?.model,
+    parsed?.status?.modelName,
+    parsed?.status?.defaultModel,
+    parsed?.status?.default_model,
     parsed?.result?.defaultModel,
     parsed?.result?.default_model,
     parsed?.data?.defaultModel,
@@ -459,7 +658,14 @@ function parseFromStatusJson(parsed) {
       parsed?.usage_timestamp,
       parsed?.updatedAt,
       parsed?.updated_at,
-      parsed?.updatedAtMs
+      parsed?.updatedAtMs,
+      parsed?.status?.updatedAt,
+      parsed?.status?.updated_at,
+      parsed?.status?.updatedAtMs,
+      parsed?.status?.timestamp,
+      parsed?.status?.time,
+      parsed?.status?.ts,
+      parsed?.status?.tsMs
     ) ??
     (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.timestamp))
 
@@ -477,9 +683,12 @@ function parseFromStatusJson(parsed) {
 }
 
 function parseGenericUsage(parsed) {
-  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats || parsed?.current || parsed?.session || parsed?.result?.current || parsed?.data?.current || parsed?.result?.session || parsed?.data?.session || parsed
+  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats ||
+    parsed?.current || parsed?.session || parsed?.result?.current || parsed?.data?.current || parsed?.result?.session || parsed?.data?.session ||
+    parsed?.data?.result?.current || parsed?.data?.result?.session || parsed?.data?.result?.currentSession ||
+    parsed?.status?.current || parsed?.status?.data?.current || parsed?.status?.session || parsed?.status?.result?.current || parsed?.status?.result?.session || parsed
   const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
-  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model)
+  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model)
   const totalTokens = pickNumber(
     usage?.totalTokens,
     usage?.total_tokens,
@@ -560,7 +769,14 @@ function parseGenericUsage(parsed) {
       parsed?.usage_timestamp,
       parsed?.updatedAt,
       parsed?.updated_at,
-      parsed?.updatedAtMs
+      parsed?.updatedAtMs,
+      parsed?.status?.updatedAt,
+      parsed?.status?.updated_at,
+      parsed?.status?.updatedAtMs,
+      parsed?.status?.timestamp,
+      parsed?.status?.time,
+      parsed?.status?.ts,
+      parsed?.status?.tsMs
     ),
     integrationStatus: 'ok'
   }

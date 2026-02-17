@@ -67,6 +67,17 @@ test('parses generic usage payloads', () => {
   })
 })
 
+test('parses status wrapper payloads under status.current', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-status-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex-spark')
+  assert.equal(usage.totalTokens, 4321)
+  assert.equal(usage.sessionId, 'status-wrap-session')
+  assert.equal(usage.agentId, 'agent-status-wrap')
+  assert.equal(usage.usageTimestampMs, 1771300100000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('returns null for invalid payload', () => {
   assert.equal(parseOpenClawUsage('not-json'), null)
 })

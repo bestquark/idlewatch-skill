@@ -1,0 +1,13 @@
+{
+  "status": {
+    "current": {
+      "model": "gpt-5.3-codex-spark",
+      "totalTokens": 4321,
+      "sessionId": "status-wrap-session",
+      "agent_id": "agent-status-wrap",
+      "updatedAt": 1771300100,
+      "updatedAtMs": 1771300100
+    },
+    "defaultModel": "gpt-5.3-codex-spark"
+  }
+}
