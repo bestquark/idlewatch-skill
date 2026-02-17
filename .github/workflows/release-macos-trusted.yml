@@ -18,7 +18,6 @@ jobs:
       NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
       NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
       NOTARY_API_KEY_P8: ${{ secrets.APPLE_NOTARY_API_KEY_P8 }}
-      REQUIRE_OPENCLAW_USAGE_HEALTH: ${{ vars.IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH }}
     steps:
       - name: Assert required release secrets
         run: |
@@ -86,8 +85,7 @@ PY
           npm run package:macos --silent
           npm run package:dmg --silent
 
-      - name: Optional strict OpenClaw usage-health gate
-        if: ${{ env.REQUIRE_OPENCLAW_USAGE_HEALTH == '1' }}
+      - name: Enforce OpenClaw usage-health gate
         env:
           IDLEWATCH_REQUIRE_OPENCLAW_USAGE: '1'
         run: npm run validate:packaged-usage-health --silent

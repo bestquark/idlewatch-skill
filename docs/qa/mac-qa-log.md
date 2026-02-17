@@ -1012,4 +1012,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Runtime probe path remains healthy in this cycle with explicit diagnostics and non-fallback ingestion.
 - ✅ Freshness-state behavior remains coherent and validated in deterministic E2E harness.
-- ⚠️ Still no production-enforced policy gate requiring usage-health in every release path (available via optional `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1`).
+- ✅ Production trusted-release path now enforces usage-health gate by default (see 21:31 implementation update).
+
+## Implementation cycle update — 2026-02-16 21:31 America/Toronto
+
+### Completed this cycle
+
+- ✅ Enforced OpenClaw usage-health as a **default required gate** in trusted release workflow (`.github/workflows/release-macos-trusted.yml`).
+- ✅ Removed optional workflow toggle (`vars.IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH`) to avoid accidental policy bypass in production release runs.
+- ✅ Updated release documentation (`README.md`, `docs/packaging/macos-dmg.md`) to reflect always-on usage-health enforcement before trusted artifact upload.
+
+### Acceptance criteria updates
+
+- [x] Enforce production release policy gate requiring packaged OpenClaw usage health on trusted release path.
+
+### Remaining high-priority gaps (updated)
+
+1. **Trusted distribution remains credential-gated by environment (High, release readiness)**
+   - Signed/notarized path is now policy-gated for usage health, but artifact trust still depends on configured Apple credentials.
+
+2. **Credentialed Firebase E2E validation still pending (Medium, delivery confidence)**
+   - Local/stdout schema + packaging validations remain green; Firestore write-path QA still needs credentialed validation.

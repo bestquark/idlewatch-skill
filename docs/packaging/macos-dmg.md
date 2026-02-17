@@ -72,5 +72,5 @@ Trusted release workflow expects these repository secrets:
 
 When present, the workflow imports a temporary build keychain, signs `IdleWatch.app`, notarizes/staples the DMG, and uploads `IdleWatch-*-signed.dmg`.
 
-Optional repository variable:
-- `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1` to enforce packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload.
+Release policy gate:
+- Trusted release workflow enforces packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload via `npm run validate:packaged-usage-health`.

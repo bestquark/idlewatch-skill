@@ -144,5 +144,5 @@ Trusted-release workflow required secrets:
 - `APPLE_NOTARY_ISSUER_ID`
 - `APPLE_NOTARY_API_KEY_P8`
 
-Optional release variable:
-- `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1` enables a strict gate in trusted release workflow that requires packaged dry-runs to report `source.usage=openclaw`.
+Trusted release workflow policy:
+- OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health` before artifact upload.
