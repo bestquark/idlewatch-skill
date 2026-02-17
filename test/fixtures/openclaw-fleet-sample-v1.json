@@ -1,0 +1,68 @@
+{
+  "schemaFamily": "idlewatch.openclaw.fleet",
+  "schemaVersion": "1.0.0",
+  "schemaCompat": ["0.x-flat-row"],
+  "host": "mac-mini-1",
+  "ts": 1771278899999,
+  "cpuPct": 12.5,
+  "memPct": 63.2,
+  "memUsedPct": 63.2,
+  "memPressurePct": 42,
+  "memPressureClass": "normal",
+  "tokensPerMin": 128.4,
+  "openclawModel": "gpt-5.3-codex",
+  "openclawTotalTokens": 70500,
+  "openclawSessionId": "90d2a820-6d77-42f0-8db4-12b90f9f7203",
+  "openclawAgentId": "main",
+  "openclawUsageTs": 1771278893678,
+  "openclawUsageAgeMs": 6321,
+  "source": {
+    "usage": "openclaw",
+    "usageIntegrationStatus": "ok",
+    "usageIngestionStatus": "ok",
+    "usageActivityStatus": "fresh",
+    "usageFreshnessState": "fresh",
+    "usageAlertLevel": "ok",
+    "usageAlertReason": "healthy",
+    "usageCommand": "openclaw status --json",
+    "usageProbeResult": "ok",
+    "usageProbeAttempts": 1,
+    "usageUsedFallbackCache": false,
+    "usageFallbackCacheSource": null
+  },
+  "fleet": {
+    "host": "mac-mini-1",
+    "collectedAtMs": 1771278899999,
+    "resources": {
+      "cpuPct": 12.5,
+      "memUsedPct": 63.2,
+      "memPressurePct": 42,
+      "memPressureClass": "normal"
+    },
+    "usage": {
+      "model": "gpt-5.3-codex",
+      "totalTokens": 70500,
+      "tokensPerMin": 128.4,
+      "sessionId": "90d2a820-6d77-42f0-8db4-12b90f9f7203",
+      "agentId": "main",
+      "usageTimestampMs": 1771278893678,
+      "usageAgeMs": 6321,
+      "freshnessState": "fresh",
+      "integrationStatus": "ok",
+      "ingestionStatus": "ok",
+      "activityStatus": "fresh",
+      "alertLevel": "ok",
+      "alertReason": "healthy"
+    },
+    "provenance": {
+      "collector": "idlewatch-agent",
+      "collectorVersion": "0.1.0",
+      "usageSource": "openclaw",
+      "usageCommand": "openclaw status --json",
+      "usageProbeResult": "ok",
+      "usageProbeAttempts": 1,
+      "usageUsedFallbackCache": false,
+      "usageFallbackCacheSource": null
+    }
+  }
+}
