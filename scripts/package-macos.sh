@@ -28,6 +28,19 @@ rm -rf "$PAYLOAD_DIR"
 mkdir -p "$PAYLOAD_DIR"
 tar -xzf "$RESOURCES_DIR/$PKG_TGZ" -C "$PAYLOAD_DIR"
 
+PAYLOAD_PKG_DIR="$PAYLOAD_DIR/package"
+if [[ ! -f "$PAYLOAD_PKG_DIR/package.json" ]]; then
+  echo "IdleWatch package payload missing package.json ($PAYLOAD_PKG_DIR/package.json)" >&2
+  exit 1
+fi
+
+# Ensure runtime dependencies are present inside the packaged payload so DMG installs
+# run without relying on workspace-level node_modules.
+(
+  cd "$PAYLOAD_PKG_DIR"
+  npm install --omit=dev --ignore-scripts --no-audit --no-fund --silent
+)
+
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

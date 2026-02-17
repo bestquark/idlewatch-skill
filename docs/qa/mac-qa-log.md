@@ -2130,3 +2130,23 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
 - ✅ Usage probe metadata remains rich and consistent across direct + packaged dry-runs.
 - ⚠️ Overnight/idle windows still frequently produce stale activity (`usageAlertReason=activity-no-new-usage`), which is reduced to notice but remains operational noise.
+
+## Implementation cycle update — 2026-02-17 01:23 America/Toronto
+
+### Completed this cycle
+
+- ✅ Fixed DMG runtime dependency closure regression in `scripts/package-macos.sh`:
+  - after unpacking `idlewatch-skill-<version>.tgz`, packaging now runs `npm install --omit=dev --ignore-scripts --no-audit --no-fund` inside `Contents/Resources/payload/package`.
+  - packaged launcher no longer depends on workspace-level `node_modules` for required runtime modules (e.g. `firebase-admin`).
+- ✅ Updated packaging docs (`docs/packaging/macos-dmg.md`) to explicitly document bundled payload dependency installation semantics.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (111/111 assertions).
+- ✅ `npm run package:macos --silent` succeeds with new dependency installation step.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:dmg-install --silent` now passes end-to-end (mounted DMG → copied app → launcher dry-run schema validation).
+
+### Acceptance criteria updates
+
+- [x] Resolve DMG install validation blocker caused by missing packaged runtime dependency (`firebase-admin`).
