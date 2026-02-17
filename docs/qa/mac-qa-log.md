@@ -18,6 +18,44 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - OpenClaw usage fields remain `null` in dry-run (`source.usage: "unavailable"`).
 - CI currently runs on `ubuntu-latest` only (Node 20/22), no macOS CI coverage.
 
+## QA cycle update — 2026-02-17 03:50 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (127/127).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row with OpenClaw+GPU.
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes (unsigned scaffold + usage probing).
+- ✅ `npm run package:macos --silent` builds `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` builds `dist/IdleWatch-0.1.0-unsigned.dmg` and SHA256.
+- ✅ `npm run validate:dmg-install --silent` passes.
+
+### Telemetry validation checks (this cycle)
+
+- CPU / mem / memPressure: pass.
+- GPU: pass on this host (`gpuPct=0`, `gpuSource="ioreg-agx"`, `gpuConfidence="high"`).
+- OpenClaw usage: pass (`tokensPerMin`, `openclawModel`, `openclawTotalTokens`, IDs present).
+- Freshness/health: pass (`source.usageIntegrationStatus="ok"`, `usageFreshnessState="fresh"`, `usageNearStale=false`).
+- Packaging + schema checks: pass for local unsigned artifact and packaged launcher dry-run schema.
+
+### OpenClaw integration gaps (current)
+
+1. **Usage probing parity still environment-fragile**: collector now reports usable values in both direct and packaged paths, but requires `openclaw` discoverability; CI/local contexts should pin `IDLEWATCH_OPENCLAW_BIN` when needed.
+2. **Transient freshness transitions**: `near-stale`/`stale` flips can still occur during longer packaging/validation loops; this is expected by design but needs alert policy tuning.
+
+### DMG packaging risks (current)
+
+1. **High:** Unsigned/unnotarized artifacts remain default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset), so Gatekeeper trust risk persists.
+2. **Medium:** Runtime dependency still present (target requires Node or explicit runtime bundle in packaged output).
+3. **Medium:** No clean-room cross-machine install evidence in this cycle (Apple Silicon + Intel/Rosetta scenarios not exercised).
+
+### Bugs / feature notes (this cycle)
+
+1. ⚠️ `validate:packaged-usage-health` regenerates the app scaffold each run, which is functional but can add extra cycle time.
+2. ⚠️ Local default packaging still emits only unsigned DMG unless trusted mode is explicitly enabled.
+3. ✅ Feature win: schema + packaged-flow validator now creates stable regression checks for the Mac distribution and OpenClaw usage health path.
+
 ## QA cycle update — 2026-02-16 16:40 America/Toronto
 
 ### What changed since prior pass
