@@ -10,6 +10,69 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 10:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Full QA sweep executed:** Ran full Mac packaging + OpenClaw/telemetry guardrail pass for this interval.
+- ✅ **Tests:** `npm test --silent` (168 tests, pass).
+- ✅ **Validation checks executed:**
+  - `validate:packaged-metadata`
+  - `validate:packaged-usage-health`
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:openclaw-cache-recovery-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+  - `validate:packaged-usage-age-slo`
+  - `package:dmg`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Packaging output:** `dist/IdleWatch-0.1.0-unsigned.dmg` regenerated + checksum verified.
+
+### Bugs / features completed in this cycle
+
+- ✅ **Feature:** OpenClaw stale/refresh semantics remained stable in packaged dry-run with warning/reprobe transitions captured (`usageFreshnessState: stale`, `usageAlertLevel: warning`, `usageRefreshAttempted: true`).
+- ✅ **Feature:** Re-ran all e2e/packaging validators successfully from a single workflow-style pass.
+- ⚠️ **Open item:** Packaged host still marks usage as stale after ~100s in long-running execution windows, which is expected by policy but can trip any aggressive SLO in unattended QA windows.
+
+### Telemetry validation checks (latest sample)
+
+- Host sample (`bin/idlewatch-agent.js --dry-run`):
+  - `cpuPct`: `12.32`
+  - `memUsedPct`: `90`
+  - `memPressurePct`: `43` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `39059.01`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31339`
+  - `openclawUsageAgeMs`: `48,199`
+  - `usageFreshnessState`: `fresh`
+  - `usageAlertLevel`: `ok`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Packaged artifact sample (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `openclawUsageAgeMs`: `100,710`
+  - `usageIntegrationStatus`: `stale`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset), so Gatekeeper friction remains possible.
+2. **Medium:** No notary/staple path exercised in this run (`MACOS_NOTARY_PROFILE` remains unset).
+3. **Medium:** Node runtime dependency behavior is still environment-sensitive unless runtime is bundled or `IDLEWATCH_NODE_RUNTIME_DIR` is configured.
+4. **Low:** No additional Apple Silicon vs Intel matrix in this cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Usage freshness policy remains permissive for long idle windows; repeated stale state and warning transitions are normal but should be monitored against any stricter fleet SLO.
+2. **Gap:** Integration still depends on availability and JSON compatibility of local `openclaw status --json`.
+3. **Gap:** Cloud/firestore write path not exercised in this local run (`Firebase is not configured`, local-only NDJSON/STDOUT mode).
+
+
 ## QA cycle update — 2026-02-17 10:30 America/Toronto
 
 ### Completed this cycle
