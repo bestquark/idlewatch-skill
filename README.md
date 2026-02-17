@@ -91,7 +91,9 @@ Selection logic for `openclaw status --json`:
 
 Source metadata fields:
 - `source.usage`: `openclaw | disabled | unavailable`
-- `source.usageIntegrationStatus`: `ok | partial | stale | disabled | unavailable`
+- `source.usageIntegrationStatus`: `ok | stale | disabled | unavailable`
+- `source.usageIngestionStatus`: `ok | disabled | unavailable` (probe/path health independent of usage age).
+- `source.usageActivityStatus`: `fresh | aging | stale | unknown | disabled | unavailable` (age-based activity state).
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
@@ -118,6 +120,7 @@ Alerting guidance (recommended):
 - Suggested warning threshold: trigger when `memPressureClass=warning` for 3+ consecutive samples.
 - Suggested critical threshold: trigger immediately when `memPressureClass=critical`, or when `memPressurePct>=90` for 2+ consecutive samples.
 - Keep `memPct`/`memUsedPct` as informational context only (do not page solely on these).
+- For OpenClaw reliability alerts, page on `source.usageIngestionStatus=unavailable` (or sustained probe failures), not on `usageActivityStatus=stale` alone.
 
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.

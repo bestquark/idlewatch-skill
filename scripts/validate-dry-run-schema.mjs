@@ -57,6 +57,8 @@ function validateRow(row) {
   const source = row.source
   assert.ok(['openclaw', 'disabled', 'unavailable'].includes(source.usage), 'source.usage invalid')
   assert.ok(['ok', 'stale', 'disabled', 'unavailable'].includes(source.usageIntegrationStatus), 'source.usageIntegrationStatus invalid')
+  assert.ok(['ok', 'disabled', 'unavailable'].includes(source.usageIngestionStatus), 'source.usageIngestionStatus invalid')
+  assert.ok(['fresh', 'aging', 'stale', 'unknown', 'disabled', 'unavailable'].includes(source.usageActivityStatus), 'source.usageActivityStatus invalid')
   assert.ok(source.usageFreshnessState === null || ['fresh', 'aging', 'stale', 'unknown'].includes(source.usageFreshnessState), 'source.usageFreshnessState invalid')
   assert.equal(typeof source.usageNearStale, 'boolean', 'source.usageNearStale must be boolean')
   assert.equal(typeof source.usagePastStaleThreshold, 'boolean', 'source.usagePastStaleThreshold must be boolean')
@@ -79,10 +81,14 @@ function validateRow(row) {
     assert.ok(row.openclawUsageTs, 'openclawUsageTs required when source.usage=openclaw')
     assert.ok(source.usageFreshnessState, 'usageFreshnessState required when source.usage=openclaw')
     assert.ok(['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must be ok or fallback-cache when source.usage=openclaw')
+    assert.equal(source.usageIngestionStatus, 'ok', 'usageIngestionStatus must be ok when source.usage=openclaw')
+    assert.ok(['fresh', 'aging', 'stale', 'unknown'].includes(source.usageActivityStatus), 'usageActivityStatus must reflect freshness when source.usage=openclaw')
   }
 
   if (source.usage === 'disabled') {
     assert.equal(source.usageProbeResult, 'disabled', 'usageProbeResult must be disabled when source.usage=disabled')
+    assert.equal(source.usageIngestionStatus, 'disabled', 'usageIngestionStatus must be disabled when source.usage=disabled')
+    assert.equal(source.usageActivityStatus, 'disabled', 'usageActivityStatus must be disabled when source.usage=disabled')
   }
 
   if (source.usageProbeAttempts === 0) {
@@ -95,6 +101,8 @@ function validateRow(row) {
   if (source.usage === 'unavailable') {
     assert.ok(!['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must explain unavailable usage')
     assert.ok(source.usageProbeAttempts > 0 || source.usageProbeResult === 'disabled', 'usageProbeAttempts should be > 0 when unavailable')
+    assert.equal(source.usageIngestionStatus, 'unavailable', 'usageIngestionStatus must be unavailable when source.usage=unavailable')
+    assert.equal(source.usageActivityStatus, 'unavailable', 'usageActivityStatus must be unavailable when source.usage=unavailable')
   }
 
   if (source.usageProbeResult === 'fallback-cache') {

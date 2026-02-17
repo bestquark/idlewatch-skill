@@ -1255,3 +1255,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Probe diagnostics and usage schema remain healthy in direct CLI runs (`usageProbeResult: ok`, populated usage/session fields).
 - ⚠️ Packaged runtime can still enter `stale` during longer loops; tuning/policy alignment is still needed for alerting behavior in distribution QA pipelines.
+
+## Implementation cycle update — 2026-02-16 22:36 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added explicit OpenClaw ingestion-vs-activity health split to reduce stale-alert ambiguity:
+  - new `source.usageIngestionStatus` (`ok|disabled|unavailable`) reflects probe-path reliability.
+  - new `source.usageActivityStatus` (`fresh|aging|stale|unknown|disabled|unavailable`) reflects age/activity state.
+- ✅ Kept backward-compatible `source.usageIntegrationStatus` behavior unchanged, while exposing clearer downstream alert dimensions.
+- ✅ Extended dry-run schema validation to enforce the new status fields and consistency with `source.usage` state.
+- ✅ Updated README source-metadata docs and alert guidance to page on ingestion failures, not age-only staleness.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (20/20).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and refreshes packaged launcher.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes with new source status fields.
+
+### Acceptance criteria updates
+
+- [x] Improve OpenClaw observability semantics so stale usage age can be distinguished from probe/ingestion outages in alert policy.

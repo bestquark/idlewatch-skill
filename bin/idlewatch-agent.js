@@ -384,6 +384,14 @@ async function collectSample() {
           ? 'stale'
           : (usage?.integrationStatus ?? 'ok')
         : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+      usageIngestionStatus: OPENCLAW_USAGE_MODE === 'off'
+        ? 'disabled'
+        : usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
+          ? 'ok'
+          : 'unavailable',
+      usageActivityStatus: usage
+        ? usageFreshness.freshnessState
+        : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
       usageProbeResult: usageProbe.probe.result,
       usageProbeAttempts: usageProbe.probe.attempts,
       usageProbeSweeps: usageProbe.probe.sweeps,
