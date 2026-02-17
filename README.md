@@ -223,7 +223,7 @@ Alerting guidance (recommended):
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
 - `tokensPerMin`: reported directly by OpenClaw when available; otherwise derived from `openclawTotalTokens / session age minutes`.
-- Additional parser compatibility covered for data-wrapper/session wrapper stats payloads (`data.result`, `data.stats`, `result`), direct `current` payloads (`current`, `data.current`, `result.current`, `status.current`), and alternate field aliases (for example `token_count`, `session_id`, `agent_id`, `usage_timestamp`, `tsMs`, `total_tokens`) so common OpenClaw CLI variants map into a stable row shape.
+- Additional parser compatibility covered for data-wrapper/session wrapper stats payloads (`payload`, `data.result`, `data.stats`, `result`), direct `current` payloads (`current`, `data.current`, `result.current`, `status.current`, `payload.current`), and alternate field aliases (for example `token_count`, `session_id`, `agent_id`, `usage_timestamp`, `tsMs`, `total_tokens`) so common OpenClaw CLI variants map into a stable row shape.
 - Prompt/completion token fields and request/min are **not currently exposed as first-class metrics** in IdleWatch rows; keep `null`/absent rather than synthesizing fake values.
 
 If OpenClaw stats are unavailable, usage fields are emitted as `null` and collection continues.
@@ -248,6 +248,9 @@ DMG release scaffolding is included:
 - Usage alert-rate quality gate via `npm run validate:usage-alert-rate-e2e` (asserts typical low-traffic ages stay `usageAlertLevel=ok`, with deterministic boundary escalation)
 - Packaged usage alert-rate gate via `npm run validate:packaged-usage-alert-rate-e2e` (verifies alert transitions in packaged launcher runtime path)
 - Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
+- Dry-run gate timeout via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` (default: `15000`)
+  - Applied by `scripts/validate-dry-run-schema.mjs` to all `--dry-run` schema checks (direct and packaged).
+  - On timeout, validators keep the latest captured row and still validate it when possible, preventing hangs on non-terminating launcher output.
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)

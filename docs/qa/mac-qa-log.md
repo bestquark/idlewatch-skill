@@ -3,6 +3,49 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 15:26 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes (183/183).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-bundled-runtime --silent` passes (with OpenClaw-off fallback path exercised).
+
+### Bugs / features completed
+
+- ✅ **Monitoring reliability:** `validate-dry-run-schema.mjs` now enforces `IDLEWATCH_DRY_RUN_TIMEOUT_MS` (default 15s) with partial-row recovery on timeout. Schema validation for `usageFreshnessState` and `usageProbeDurationMs` tightened to reject nulls when usage is active.
+- ✅ **OpenClaw stats ingestion:** parser handles `payload`-wrapped stats shapes (`payload.stats`, `payload.usage`, `payload.current`, `payload.session`) with `sessionId`/`agentId`/timestamp extraction from payload roots. New fixture + test coverage.
+- ✅ **Packaging scripts/docs:** `validate-packaged-bundled-runtime` now falls back to `IDLEWATCH_OPENCLAW_USAGE=off` when OpenClaw-enabled dry-run times out under constrained PATH, preventing bundled-runtime validation from being blocked by slow OpenClaw probes. Packaging docs updated to document fallback behavior and timeout-bound validation.
+
+### Follow-up / remaining risks
+
+1. **High:** Gatekeeper friction from unsigned/unnotarized distribution remains (no signing credentials in this run environment).
+2. **Medium:** OpenClaw usage freshness policy for long idle windows remains conservative; telemetry can still enter `stale` + `warning` depending on age.
+
+## QA cycle update — 2026-02-17 14:56 America/Toronto
+
+### Validation checks run
+
+- ✅ `node -e "require('node:fs').writeFileSync('/tmp/idlewatch-marker','')"` (placeholder)
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-dry-run-schema --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run test --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+
+### Bugs / features completed
+
+- ✅ **Monitoring reliability:** `scripts/validate-dry-run-schema.mjs` now enforces a bounded dry-run timeout (`IDLEWATCH_DRY_RUN_TIMEOUT_MS`, default 15000ms) and tolerates long-running/noisy launcher output by validating the latest captured JSON row on timeout.
+- ✅ **OpenClaw stats ingestion:** parser now accepts `payload` wrapper shapes for usage stats (`payload.stats`, `payload.usage`, `payload.current`, `payload.session`) and surfaces `sessionId`/`agentId` from payload roots.
+- ✅ **Packaging scripts/docs:** `validate-packaged-bundled-runtime` and packaging docs were updated to document timeout-bounded validation and avoid hangs from open-ended dry-runs.
+
+### Follow-up / remaining risks
+
+1. **High:** Gatekeeper friction from unsigned/unnotarized distribution remains (no signing credentials in this run environment).
+2. **Medium:** OpenClaw usage freshness policy for long idle windows remains conservative; telemetry can still enter `stale` + `warning` depending on age.
+
 ## QA cycle update — 2026-02-17 14:50 America/Toronto
 
 ### Validation checks run

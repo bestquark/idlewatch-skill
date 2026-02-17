@@ -210,6 +210,18 @@ test('parses data.current stats wrapper payloads', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses payload wrapper stats payloads', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats-payload-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex-spark')
+  assert.equal(usage.totalTokens, 9876)
+  assert.equal(usage.tokensPerMin, null)
+  assert.equal(usage.sessionId, 'payload-wrap-session')
+  assert.equal(usage.agentId, 'agent-payload')
+  assert.equal(usage.usageTimestampMs, 1771302500000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)

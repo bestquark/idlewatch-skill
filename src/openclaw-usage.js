@@ -683,12 +683,14 @@ function parseFromStatusJson(parsed) {
 }
 
 function parseGenericUsage(parsed) {
-  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats ||
+  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.payload?.usage || parsed?.payload?.sessionUsage || parsed?.payload?.stats ||
+    parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats ||
     parsed?.current || parsed?.session || parsed?.result?.current || parsed?.data?.current || parsed?.result?.session || parsed?.data?.session ||
+    parsed?.payload?.current || parsed?.payload?.session || parsed?.payload?.result?.current || parsed?.payload?.result?.session ||
     parsed?.data?.result?.current || parsed?.data?.result?.session || parsed?.data?.result?.currentSession ||
     parsed?.status?.current || parsed?.status?.data?.current || parsed?.status?.session || parsed?.status?.result?.current || parsed?.status?.result?.session || parsed
   const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
-  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model)
+  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
   const totalTokens = pickNumber(
     usage?.totalTokens,
     usage?.total_tokens,
@@ -736,8 +738,23 @@ function parseGenericUsage(parsed) {
     model,
     totalTokens,
     tokensPerMin,
-    sessionId: pickString(parsed?.sessionId, parsed?.session_id, usage?.sessionId, usage?.session_id, usage?.id),
-    agentId: pickString(parsed?.agentId, parsed?.agent_id, usage?.agentId, usage?.agent_id),
+    sessionId: pickString(
+      parsed?.sessionId,
+      parsed?.session_id,
+      parsed?.payload?.sessionId,
+      parsed?.payload?.session_id,
+      usage?.sessionId,
+      usage?.session_id,
+      usage?.id
+    ),
+    agentId: pickString(
+      parsed?.agentId,
+      parsed?.agent_id,
+      parsed?.payload?.agentId,
+      parsed?.payload?.agent_id,
+      usage?.agentId,
+      usage?.agent_id
+    ),
     usageTimestampMs: pickTimestamp(
       usage?.updatedAt,
       usage?.updated_at,
@@ -760,6 +777,16 @@ function parseGenericUsage(parsed) {
       usageTotals?.tsMs,
       usageTotals?.usageTs,
       usageTotals?.usage_timestamp,
+      parsed?.payload?.updatedAt,
+      parsed?.payload?.updated_at,
+      parsed?.payload?.updatedAtMs,
+      parsed?.payload?.ts,
+      parsed?.payload?.time,
+      parsed?.payload?.timestamp,
+      parsed?.payload?.tsMs,
+      parsed?.payload?.usageTs,
+      parsed?.payload?.usage_timestamp,
+      parsed?.payload?.usageTimestampMs,
       parsed?.ts,
       parsed?.time,
       parsed?.timestamp,

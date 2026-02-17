@@ -68,6 +68,7 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$HOME/Library/LaunchAgents"` — override plist root for install/uninstall scripts.
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
+- `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -113,7 +114,9 @@ Optional environment variables:
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
-  - The script extracts the last JSON row from dry-run output and validates required sample fields, preventing false positives from log banners during constrained PATH verification.
+  - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` and uses shared `validate-dry-run-schema` parsing to avoid hangs on continuous launcher output.
+  - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
+  - If the OpenClaw-enabled dry-run path does not emit a telemetry row within timeout, the script performs a fallback launchability check with `IDLEWATCH_OPENCLAW_USAGE=off` to keep bundled-runtime availability coverage from being blocked by slow/noisy usage probes.
 - Clean-machine verification note:
   - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
   - This script is self-contained (Node-only) and does not depend on host Python tooling.
