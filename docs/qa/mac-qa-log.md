@@ -3,6 +3,75 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 15:40 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes (183/183).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ❌ `npm run validate:packaged-bundled-runtime --silent` **FAILS** — both OpenClaw-enabled and OpenClaw-disabled dry-runs emit no captured output within 30s timeout via `execFileSync` pipes, even though the same launcher produces valid JSON when invoked directly from shell.
+
+### Bugs found
+
+- 🐛 **NEW — High: Bundled-runtime validation stdio capture regression.** `validate-dry-run-schema.mjs` uses `execFileSync` with `stdio: ['ignore', 'pipe', 'pipe']` to capture launcher output. Under constrained PATH, the packaged launcher successfully runs (confirmed via direct shell invocation), but `execFileSync` captures zero bytes before the SIGINT timeout kills the process. Root cause hypothesis: the launcher's 80 OpenClaw probe attempts (`usageProbeAttempts: 80`) with `openclaw-not-found` error under constrained PATH causes the process to spend the full timeout on probes before emitting JSON. The fallback `IDLEWATCH_OPENCLAW_USAGE=off` path also fails, suggesting the issue is in stdio buffering or process teardown timing, not probe duration alone. The bundled node is a **symlink** (`-> ../Cellar/node/25.6.1/bin/node`), which works for direct execution but may interact with `execFileSync` cleanup differently.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `cpuPct`: `18.58`
+  - `memUsedPct`: `95.74`
+  - `memPressurePct`: `51` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `2104.61`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `26937`
+  - `openclawUsageAgeMs`: `771,305`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Packaged launcher (direct shell, constrained PATH):
+  - `cpuPct`: `7.57`
+  - `memUsedPct`: `95.34`
+  - `memPressurePct`: `51` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `2095.60`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `26937`
+  - `openclawUsageAgeMs`: `794,158`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageProbeResult`: `fallback-cache` (disk cache, age 24s)
+  - `usageProbeAttempts`: `80`
+  - `usageProbeError`: `openclaw-not-found`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json (cached)`
+
+### DMG packaging risks
+
+1. **High:** Distribution unsigned/unnotarized — Gatekeeper friction remains.
+2. **High:** Bundled node runtime is a symlink (`-> ../Cellar/node/25.6.1/bin/node`), not a copied binary. This breaks portability on machines without Homebrew and causes validation harness issues with `execFileSync` stdio capture.
+3. **Medium:** 80 probe attempts under constrained PATH with `openclaw-not-found` add significant latency to packaged dry-runs before fallback cache kicks in.
+4. **Low:** No arm64/Intel matrix in this cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** CLI shape dependency — `openclaw status --json` compatibility required.
+2. **Gap:** Firebase/cloud write path not exercised (local-only).
+3. **Gap:** Long-idle windows show `stale` + `warning` (usage age ~771–794s this cycle).
+4. **Gap:** Packaged launcher under constrained PATH falls back to disk cache with `openclaw-not-found`; direct probe path unavailable.
+
+### Follow-up / action items
+
+1. **Fix bundled-runtime validation** — investigate why `execFileSync` captures zero bytes when killing the launcher subprocess. Consider adding `--once` flag to dry-run or flushing stdout before probe sweeps.
+2. **Copy node binary instead of symlinking** — `package-macos.sh` should `cp` instead of `ln -s` for distribution portability.
+3. **Reduce probe attempts under constrained PATH** — 80 attempts is excessive when `openclaw` is absent; add early-exit on `command-missing`.
+
 ## QA cycle update — 2026-02-17 15:26 America/Toronto
 
 ### Validation checks run
