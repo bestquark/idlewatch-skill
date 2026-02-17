@@ -1,3 +1,28 @@
+## QA cycle update — 2026-02-17 05:50 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (135/135).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON only).
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct`: `15.2`, `memPct`: `91.0`, `memPressurePct`: `27` (`normal`).
+- `gpuPct`: `0` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- `tokensPerMin`: `25,096.49`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `29,869`.
+- `openclawUsageAgeMs`: `74,354` with `usageFreshnessState: "stale"`, `usageAlertLevel: "warning"`.
+
+### Notes
+
+- 5:50 AM overnight cycle. All validation gates green; no new regressions since 05:40 cycle.
+- Test count stable at 135.
+- Usage freshness shows `stale` in this sample due to age drift in low-activity overnight window; ingestion probe remains healthy (`usageProbeResult: ok`).
+- Remaining gaps unchanged and all require external resources (Apple signing creds, Firebase creds, external hardware): no feasible improvements to ship this cycle.
+
 ## QA cycle update — 2026-02-17 05:40 America/Toronto
 
 ### Validation checks run this cycle
