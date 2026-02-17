@@ -2321,3 +2321,54 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - [x] Add `openclaw` parser support for real-world noisy output and additional session payload shapes.
 - [x] Include LaunchAgent/SMAppService startup behavior and uninstall path.
+
+## QA cycle update — 2026-02-17 02:50 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (121/121 assertions).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits telemetry and writes local NDJSON (`localLog` path active).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and rebuilds `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes (mount/copy/run-launcher smoke).
+
+### Telemetry validation snapshot (latest)
+
+- Direct CLI dry-run sample (host sample row):
+  - `cpuPct: 18.27`, `memPct: 91.69`, `memUsedPct: 91.69`, `memPressurePct: 26`, `memPressureClass: normal`
+  - `gpuPct: 3` via `gpuSource: "ioreg-agx"`, `gpuConfidence: high`
+  - `tokensPerMin: 45932`, `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28461`
+  - `openclawSessionId: 7b17d185-2608-4b36-86da-660a457dd604`
+  - `openclawUsageAgeMs: 35831`, `usageIntegrationStatus: "ok"`, `usageFreshnessState: "fresh"`, `usageNearStale: false`
+  - `source.usageCommand: /opt/homebrew/bin/openclaw status --json`
+- Packaged app dry-run sample:
+  - `gpuPct: 0` via `gpuSource: "ioreg-agx"`, `gpuConfidence: high`
+  - `tokensPerMin: 22757.88`, `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28461`
+  - `openclawUsageAgeMs: 73779` with `usageIntegrationStatus: "stale"`, `usageFreshnessState: "stale"`, `usageNearStale: true`, `usagePastStaleThreshold: true`, `usageRefreshAttempted: true`, `usageAlertLevel: notice`
+  - demonstrates expected near-stale/stale behavior during local packaging loops.
+
+### Bugs / feature notes (this cycle)
+
+1. **Freshness transition observed in packaged runtime under longer local loops (Medium, observability noise)**
+   - Packaged dry-run crossed stale threshold (`openclawUsageAgeMs` > 60s) and surfaced `usageIntegrationStatus: "stale"` with notice-level activity alert.
+   - This is expected from configured thresholds but should remain in alert playbooks as a controlled condition (refresh-retry path observed active).
+
+2. **Local Firebase write path still not exercised (Medium, delivery confidence)**
+   - Run remains local-only (`FIREBASE_PROJECT_ID`/service credentials not set), so write-path behavior still lacks end-to-end credentialed validation.
+
+3. **Distribution trust continues to rely on opt-in signing/notarization (High, release readiness)**
+   - Local run still produces unsigned DMG and reports skipped notarization (`MACOS_NOTARY_PROFILE` unset), confirming trusted pipeline is not defaulted in non-strict mode.
+
+### DMG packaging risk status (current)
+
+- ✅ Local packaging reproducibility remains stable (`IdleWatch.app` + unsigned DMG generated and install-smoke validated).
+- ⚠️ Trust/compliance risk remains until signed+notarized artifact mode is enforced via release gating/credentials (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`, strict mode).
+- ⚠️ No fresh clean-machine install telemetry was collected this cycle beyond in-repo DMG mount/copy smoke.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Core integration and probe path healthy in this runtime (`/opt/homebrew/bin/openclaw status --json` resolves and parses).
+- ✅ Parser and freshness metadata behavior remains consistent across direct + packaged entrypoints.
+- ⚠️ OpenClaw usage freshness noise in packaged loops should continue to be monitored (near-stale/stale transitions are more visible in longer QA windows).
