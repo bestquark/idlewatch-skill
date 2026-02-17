@@ -1,3 +1,51 @@
+## QA cycle update — 2026-02-17 08:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ `npm test --silent` passes (135/135).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row and local NDJSON sample.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ⚠️ `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` remain unset in this QA environment.
+
+### Bugs / features validated this cycle
+
+- ✅ **Feature:** OpenClaw probe chain remains stable on this host (`/opt/homebrew/bin/openclaw status --json`), with full fleet-provenance metadata emitted (`usageProbeDurationMs`, `usagePastStaleThreshold`, `usageRefreshOnNearStale`, etc.).
+- ✅ **Feature:** DMG packaging pipeline still reproducible for unsigned distribution; checksum generation/verification remains deterministic.
+- ⚠️ **Open issue:** No new functional regressions found, but telemetry still relies on local binary availability for OpenClaw and unsigned DMG trust signals are unavailable without signing/notarization.
+
+### Telemetry validation checks (latest sample)
+
+- `cpuPct`: `11.23`
+- `memPct`: `91.99`
+- `memUsedPct`: `91.99`
+- `memPressurePct`: `27` (`normal`)
+- `gpuPct`: `0`, `gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`
+- `tokensPerMin`: `34,754.56`
+- `openclawModel`: `gpt-5.3-codex-spark`
+- `openclawTotalTokens`: `28,497`
+- `openclawUsageAgeMs`: `49,246`
+- `usageFreshnessState`: `fresh`
+- `usageActivityStatus`: `fresh`, `usageAlertLevel`: `ok`
+- `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### DMG packaging risks
+
+1. **High:** Distribution artifacts are unsigned/unnotarized by default; can trigger Gatekeeper friction in recipient environments.
+2. **Medium:** No clean-room install/staple verification for non-developer machines in this cycle.
+3. **Medium:** Optional runtime bundling for Node-free Macs remains manual (`IDLEWATCH_NODE_RUNTIME_DIR` workflow), introducing install-risk when users lack matching Node setup.
+
+### OpenClaw integration gaps
+
+1. **Dependency availability:** Requires `openclaw` command access on target hosts; if command is absent, usage telemetry remains disabled.
+2. **End-to-end cloud write path not exercised here:** Firestore/Firebase writes remain local-only in this QA environment, so integration resilience beyond local NDJSON still needs a credentialed run.
+3. **Freshness alert policy:** Current classifier is healthy in this cycle, but threshold behavior still needs periodic review as usage windows and stale policy evolve in production.
+
 ## QA cycle update — 2026-02-17 05:50 America/Toronto
 
 ### Validation checks run this cycle
