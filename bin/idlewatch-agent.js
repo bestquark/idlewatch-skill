@@ -190,28 +190,26 @@ if (PROJECT_ID || CREDS_FILE || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HO
   if (!PROJECT_ID) {
     firebaseConfigError =
       'FIREBASE_PROJECT_ID is missing. Set FIREBASE_PROJECT_ID plus FIREBASE_SERVICE_ACCOUNT_FILE (preferred) or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64. For emulator-only mode, set FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST.'
-  } else if (!CREDS_FILE && !CREDS_JSON && !CREDS_B64) {
-    if (FIRESTORE_EMULATOR_HOST) {
-      const firebaseAdmin = loadFirebaseAdmin()
-      if (firebaseAdmin) {
-        try {
-          firebaseAdmin.initializeApp({ projectId: PROJECT_ID })
-          appReady = true
-        } catch (err) {
-          firebaseConfigError = `Failed to initialize Firebase emulator mode: ${err.message}`
-        }
+  } else if (FIRESTORE_EMULATOR_HOST) {
+    const firebaseAdmin = loadFirebaseAdmin()
+    if (firebaseAdmin) {
+      try {
+        firebaseAdmin.initializeApp({ projectId: PROJECT_ID })
+        appReady = true
+      } catch (err) {
+        firebaseConfigError = `Failed to initialize Firebase emulator mode: ${err.message}`
       }
-    } else {
-      firebaseConfigError =
-        'Firebase credentials are missing. Set FIREBASE_SERVICE_ACCOUNT_FILE (preferred) or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64. For emulator-only mode, set FIRESTORE_EMULATOR_HOST.'
     }
+  } else if (!CREDS_FILE && !CREDS_JSON && !CREDS_B64) {
+    firebaseConfigError =
+      'Firebase credentials are missing. Set FIREBASE_SERVICE_ACCOUNT_FILE (preferred) or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64. For emulator-only mode, set FIRESTORE_EMULATOR_HOST.'
   } else {
     const firebaseAdmin = loadFirebaseAdmin()
     if (firebaseAdmin) {
       try {
         const credsRaw = CREDS_FILE
-        ? fs.readFileSync(path.resolve(CREDS_FILE), 'utf8')
-        : (CREDS_JSON || Buffer.from(CREDS_B64, 'base64').toString('utf8'))
+          ? fs.readFileSync(path.resolve(CREDS_FILE), 'utf8')
+          : (CREDS_JSON || Buffer.from(CREDS_B64, 'base64').toString('utf8'))
         const creds = JSON.parse(credsRaw)
         firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(creds), projectId: PROJECT_ID })
         appReady = true

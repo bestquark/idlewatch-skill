@@ -13,11 +13,15 @@ With npx (after publish):
 
 ```bash
 npx idlewatch-skill --help
+npx idlewatch-skill quickstart
 npx idlewatch-skill --dry-run
 ```
 
+`quickstart` runs a first-run enrollment wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key in a user config directory (`~/Library/Application Support/IdleWatch` on macOS).
+
 ## CLI options
 
+- `quickstart`: run first-run enrollment wizard
 - `--help`: show usage
 - `--dry-run`: collect one sample and exit (no Firebase write)
 - `--once`: collect one sample, publish to Firebase when configured, then exit
@@ -33,16 +37,36 @@ npx idlewatch-skill --dry-run
 
 ## Firebase wiring
 
-Copy `.env.example` and set:
+### Recommended: guided enrollment (external users)
+
+```bash
+npx idlewatch-skill quickstart
+```
+
+The wizard supports:
+- **Production mode**: prompts for project id + service-account JSON file path, validates it, copies credentials to a local secure path (0600), and writes `FIREBASE_SERVICE_ACCOUNT_FILE=...`.
+- **Emulator mode**: writes `FIREBASE_PROJECT_ID` + `FIRESTORE_EMULATOR_HOST` only.
+- **Local-only mode**: writes no Firebase credentials.
+
+Then load generated env and run:
+
+```bash
+set -a; source "$HOME/Library/Application Support/IdleWatch/idlewatch.env"; set +a
+idlewatch-agent --once
+```
+
+### Manual wiring
 
 ```bash
 export FIREBASE_PROJECT_ID=your-project
-export FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+export FIREBASE_SERVICE_ACCOUNT_FILE="$HOME/Library/Application Support/IdleWatch/credentials/your-project-service-account.json"
 ```
 
-Legacy (still supported):
+Raw JSON and base64 are still supported for compatibility, but **file-path credentials are preferred**:
 
 ```bash
+export FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+# or
 export FIREBASE_SERVICE_ACCOUNT_B64=$(base64 -i serviceAccount.json)
 ```
 
@@ -53,12 +77,18 @@ export FIREBASE_PROJECT_ID=idlewatch-dev
 export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 ```
 
+Least-privilege guidance:
+- Create a dedicated IdleWatch writer service account per environment/project.
+- Grant only the Firestore write scope needed for `metrics` ingestion (avoid Owner/Editor roles).
+- Store credentials as a file with user-only permissions (`chmod 600`) and reference via `FIREBASE_SERVICE_ACCOUNT_FILE`.
+
 If Firebase env vars are incomplete or invalid, the CLI exits with a clear configuration error.
 If Firebase vars are omitted entirely, it runs in local-only mode and prints telemetry to stdout.
 `firebase-admin` is loaded lazily only when Firebase publish mode is configured, so dry-run/local-only flows remain resilient in minimal packaged/runtime environments.
 Set `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` to fail fast when running `--once` without a working Firebase publish path.
 
 Validation helpers:
+- `npm run validate:onboarding` validates non-interactive quickstart enrollment output (env + secure credential copy).
 - `npm run validate:firebase-emulator-mode` verifies emulator-only config wiring in dry-run mode.
 - `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
 - `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
@@ -167,6 +197,7 @@ Set `IDLEWATCH_OPENCLAW_USAGE=off` to disable lookup.
 
 DMG release scaffolding is included:
 
+- `docs/onboarding-external.md` (external-user quickstart + signed DMG rollout)
 - `docs/packaging/macos-dmg.md`
 - `scripts/package-macos.sh`
 - `scripts/build-dmg.sh`

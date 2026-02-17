@@ -9,7 +9,9 @@
   },
   "scripts": {
     "start": "node bin/idlewatch-agent.js",
+    "quickstart": "node bin/idlewatch-agent.js quickstart",
     "validate:bin": "node scripts/validate-bin.mjs",
+    "validate:onboarding": "node scripts/validate-onboarding.mjs",
     "test:unit": "node --test",
     "smoke:help": "node bin/idlewatch-agent.js --help",
     "smoke:dry-run": "node bin/idlewatch-agent.js --dry-run",
