@@ -10,6 +10,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 11:02 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** hardened OpenClaw parser for broader CLI variant token/ID/timestamp aliases and data-wrapper stats payload shape.
+  - Expanded `parseOpenClawUsage()` to accept additional aliases (`session_id`, `agent_id`, `token_count`, `token_usage.total`, `cumulativeTokens`, `tsMs`, `usage_timestamp`, etc.) that appear in real-world `openclaw status|stats` variants.
+  - Added fixture + unit coverage for `data.stats` wrapper payload (`test/fixtures/openclaw-stats-data-wrapper.json`, `test/openclaw-usage.test.mjs`).
+
+- ✅ **OpenClaw stats ingestion:** improved compatibility for `stats --json` variants where usage payload is nested under `data.stats`.
+
+- ✅ **Packaging scripts/docs:** removed external Python dependency from `scripts/validate-packaged-bundled-runtime.sh` and added explicit metadata validation in the bundled-runtime gate.
+  - runtime path is now derived with Node (no Python runtime required), and the script now calls `npm run validate:packaged-metadata --silent` before dry-run assertion.
+  - Packaging documentation updated (`docs/packaging/macos-dmg.md`) to reflect the cleaner clean-machine runtime gate and parser/metadata checks.
+
+### Validation checks
+
+- ✅ `npm test --silent` (all parser/unit tests)
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (bundled runtime + package metadata + clean PATH dry-run path)
+- ✅ `npm run validate:packaged-metadata --silent`
+
+### OpenClaw integration gap status (current)
+
+- ✅ Expanded parser compatibility lowers false negatives when OpenClaw CLI returns `data.stats` wrapper payloads or alternate token/metadata key naming.
+- ⚠️ External dependencies remain: credentialed Firebase write-path QA and production trust policy confirmation still need environment credentials.
+- ⚠️ Clean-machine install UX remains partially under-sampled on truly fresh user systems; the bundled-runtime validator now strengthens that guard but cross-account install sweeps are still an external observation.
+
 ## QA cycle update — 2026-02-17 10:50 America/Toronto
 
 ### Completed this cycle

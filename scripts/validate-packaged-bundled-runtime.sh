@@ -10,15 +10,7 @@ if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
   exit 1
 fi
 
-NODE_REAL="$(python3 - <<'PY'
-import os, pathlib, shutil
-node = shutil.which('node')
-if not node:
-    raise SystemExit(1)
-print(pathlib.Path(node).resolve())
-PY
-)"
-RUNTIME_DIR="$(cd "$(dirname "$NODE_REAL")/.." && pwd)"
+RUNTIME_DIR="$($NODE_BIN -e 'const path = require("path"); console.log(path.resolve(process.argv[1], "..", ".."))' "$NODE_BIN")"
 
 if [[ ! -x "$RUNTIME_DIR/bin/node" ]]; then
   echo "Resolved runtime dir is invalid (missing executable bin/node): $RUNTIME_DIR" >&2
@@ -37,6 +29,7 @@ if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
   echo "Note: node found in PATH during validation. This script still validates that the packaged launcher resolves and runs from the bundled runtime fallback." >&2
 fi
 
+npm run validate:packaged-metadata --silent
 JSON_LINE="$(PATH="/usr/bin:/bin" "$DIST_LAUNCHER" --dry-run 2>/dev/null | tail -n 1)"
 
 if [[ -z "$JSON_LINE" ]]; then

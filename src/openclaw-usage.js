@@ -74,17 +74,24 @@ function pickNestedTotalsTokens(candidate) {
     totalsRoot?.tokens?.total,
     totalsRoot?.tokens?.sum,
     totalsRoot?.tokenCount,
+    totalsRoot?.token_count,
+    totalsRoot?.count,
+    totalsRoot?.cumulativeTokens,
+    totalsRoot?.usageTokens,
+    totalsRoot?.cumulative,
     candidate.totalTokens,
     candidate.total_tokens,
+    candidate.total_tokens_count,
     usageTotals.totalTokens,
     usageTotals.total_tokens,
     usageTotals.tokenCount,
     usageTotals.total,
     usageTotals.tokens?.total,
     usageTotals.tokens?.sum,
-    candidate.tokens,
     usageTotals.inputTokens && usageTotals.outputTokens ? usageTotals.inputTokens + usageTotals.outputTokens : null,
-    candidate.inputTokens && candidate.outputTokens ? candidate.inputTokens + candidate.outputTokens : null
+    candidate.inputTokens && candidate.outputTokens ? candidate.inputTokens + candidate.outputTokens : null,
+    candidate.tokenUsage?.total,
+    candidate.token_usage?.total
   )
 }
 
@@ -214,7 +221,10 @@ function hasAnySessionSignal(value) {
     value.updatedAtMs,
     value.ts,
     value.time,
-    value.timestamp
+    value.timestamp,
+    value.timestampMs,
+    value.tsMs,
+    value.usageTs
   ]
 
   if (directSignals.some((field) => Number.isFinite(Number(field)) || (typeof field === 'string' && field.trim().length > 0) || field === true || field === false)) {
@@ -332,16 +342,15 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.data?.active,
     parsed?.data?.recent,
     parsed?.data?.session,
-    parsed?.data?.active,
     parsed?.data?.activeSession,
     parsed?.data?.current,
     parsed?.data?.currentSession,
-    parsed?.data?.session,
+    parsed?.data?.sessions,
     parsed?.sessions
   ]
 
   for (const root of candidateRoots) {
-    const normalized = coerceSessionCandidates(root, { skipKeys: ['defaults', 'metadata'] })
+    const normalized = coerceSessionCandidates(root, { skipKeys: ['defaults', 'metadata', 'config'] })
     if (normalized && normalized.length > 0) return normalized
   }
 
@@ -361,7 +370,21 @@ function parseFromStatusJson(parsed) {
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {
-    const defaultsModel = pickString(defaults.model, defaults.defaultModel, defaults?.default_model, parsed?.defaultModel, parsed?.default_model)
+    if (parsed?.stats || parsed?.usage || parsed?.sessionUsage || parsed?.data?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage) {
+      return null
+    }
+
+    const defaultsModel = pickString(
+      defaults.model,
+      defaults.defaultModel,
+      defaults?.default_model,
+      parsed?.defaultModel,
+      parsed?.default_model,
+      parsed?.result?.defaultModel,
+      parsed?.result?.default_model,
+      parsed?.data?.defaultModel,
+      parsed?.data?.default_model
+    )
     if (!defaultsModel) return null
     return {
       model: defaultsModel,
@@ -369,13 +392,32 @@ function parseFromStatusJson(parsed) {
       tokensPerMin: null,
       sessionId: null,
       agentId: null,
-      usageTimestampMs: pickTimestamp(parsed?.ts, parsed?.time),
+      usageTimestampMs: pickTimestamp(parsed?.ts, parsed?.time, parsed?.timestamp, parsed?.tsMs, parsed?.timestampMs, parsed?.usageTs, parsed?.usageTimestampMs, parsed?.usage_timestamp),
       integrationStatus: 'partial'
     }
   }
 
-  const model = pickString(session.model, session.modelName, defaults.model, parsed?.default_model, session?.usage?.model, parsed?.defaultModel, parsed?.result?.defaultModel)
-  const totalTokens = pickNumber(session.totalTokens, session.total_tokens, pickNestedTotalsTokens(session), session?.usage?.totalTokens, session?.usage?.total_tokens)
+  const model = pickString(
+    session.model,
+    session.modelName,
+    defaults.model,
+    parsed?.default_model,
+    session?.usage?.model,
+    parsed?.defaultModel,
+    parsed?.result?.defaultModel,
+    parsed?.result?.default_model,
+    parsed?.data?.defaultModel,
+    parsed?.data?.default_model
+  )
+  const totalTokens = pickNumber(
+    session.totalTokens,
+    session.total_tokens,
+    pickNestedTotalsTokens(session),
+    session?.usage?.totalTokens,
+    session?.usage?.total_tokens,
+    session?.usage?.tokenCount,
+    session?.usage?.token_count
+  )
   const tokensPerMin = pickNumber(
     session.tokensPerMinute,
     session.tokens_per_minute,
@@ -396,16 +438,28 @@ function parseFromStatusJson(parsed) {
       session.updatedAtMs,
       session.timestamp,
       session.time,
+      session.usageTs,
+      session.tsMs,
       session?.usage?.updatedAt,
       session?.usage?.updated_at,
       session?.usage?.updatedAtMs,
+      session?.usage?.timestamp,
+      session?.usage?.ts,
+      session?.usage?.tsMs,
+      session?.usage?.time,
+      session?.usage?.usageTs,
       parsed?.ts,
       parsed?.time,
+      parsed?.timestamp,
+      parsed?.tsMs,
+      parsed?.timestampMs,
+      parsed?.usageTs,
+      parsed?.usage_timestamp,
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs
     ) ??
-    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs))
+    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.timestamp))
 
   const hasStrongUsage = model !== null || totalTokens !== null || tokensPerMin !== null
 
@@ -413,27 +467,41 @@ function parseFromStatusJson(parsed) {
     model,
     totalTokens,
     tokensPerMin,
-    sessionId: pickString(session.sessionId, session.id, session?.usage?.sessionId, session?.usage?.id),
-    agentId: pickString(session.agentId, session?.usage?.agentId),
+    sessionId: pickString(session.sessionId, session.id, session?.usage?.sessionId, session?.usage?.id, session?.session_id),
+    agentId: pickString(session.agentId, session?.usage?.agentId, session?.agent_id),
     usageTimestampMs,
     integrationStatus: hasStrongUsage ? 'ok' : 'partial'
   }
 }
 
 function parseGenericUsage(parsed) {
-  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed
-  const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals
-  const model = pickString(parsed?.model, usage?.model, usage?.modelName, usageTotals?.model, parsed?.default_model)
+  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats || parsed?.session || parsed
+  const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
+  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model)
   const totalTokens = pickNumber(
     usage?.totalTokens,
     usage?.total_tokens,
-    usage?.tokens,
     usage?.tokenCount,
+    usage?.token_count,
+    usage?.tokens,
+    usage?.tokenUsage?.total,
+    usage?.token_usage?.total,
+    usage?.tokens?.total,
+    usage?.tokens?.sum,
     usage?.inputTokens && usage?.outputTokens ? usage.inputTokens + usage.outputTokens : null,
+    usage?.input_tokens && usage?.output_tokens ? usage.input_tokens + usage.output_tokens : null,
     usageTotals?.total,
     usageTotals?.totalTokens,
     usageTotals?.total_tokens,
-    usageTotals?.tokens?.total
+    usageTotals?.tokenCount,
+    usageTotals?.token_count,
+    usageTotals?.tokens?.total,
+    usageTotals?.tokens?.sum,
+    usageTotals?.inputTokens && usageTotals?.outputTokens ? usageTotals.inputTokens + usageTotals.outputTokens : null,
+    usageTotals?.input_tokens && usageTotals?.output_tokens ? usageTotals.input_tokens + usageTotals.output_tokens : null,
+    parsed?.totals?.total,
+    parsed?.totals?.tokenCount,
+    parsed?.totals?.total_tokens
   )
   const tokensPerMin = pickNumber(
     usage?.tokensPerMinute,
@@ -441,9 +509,14 @@ function parseGenericUsage(parsed) {
     usage?.tpm,
     usage?.tokenRate,
     usage?.requestsPerMinute,
+    usage?.rps,
     usage?.tokens?.perMin,
+    usage?.tokens?.perMinute,
     usageTotals?.tokensPerMinute,
-    usageTotals?.tokens_per_minute
+    usageTotals?.tokens_per_minute,
+    usageTotals?.rps,
+    parsed?.rps,
+    parsed?.requestsPerMinute
   )
 
   if (model === null && totalTokens === null && tokensPerMin === null) return null
@@ -452,8 +525,8 @@ function parseGenericUsage(parsed) {
     model,
     totalTokens,
     tokensPerMin,
-    sessionId: pickString(parsed?.sessionId, usage?.sessionId, usage?.id),
-    agentId: pickString(parsed?.agentId, usage?.agentId),
+    sessionId: pickString(parsed?.sessionId, parsed?.session_id, usage?.sessionId, usage?.session_id, usage?.id),
+    agentId: pickString(parsed?.agentId, parsed?.agent_id, usage?.agentId, usage?.agent_id),
     usageTimestampMs: pickTimestamp(
       usage?.updatedAt,
       usage?.updated_at,
@@ -461,17 +534,31 @@ function parseGenericUsage(parsed) {
       usage?.ts,
       usage?.time,
       usage?.timestamp,
+      usage?.tsMs,
+      usage?.timestampMs,
+      usage?.usageTs,
+      usage?.usage_timestamp,
+      usage?.usageTimestampMs,
       usageTotals?.updatedAt,
       usageTotals?.updated_at,
       usageTotals?.updatedAtMs,
       usageTotals?.ts,
       usageTotals?.time,
       usageTotals?.timestamp,
+      usageTotals?.timestampMs,
+      usageTotals?.tsMs,
+      usageTotals?.usageTs,
+      usageTotals?.usage_timestamp,
+      parsed?.ts,
+      parsed?.time,
+      parsed?.timestamp,
+      parsed?.tsMs,
+      parsed?.timestampMs,
+      parsed?.usageTs,
+      parsed?.usage_timestamp,
       parsed?.updatedAt,
       parsed?.updated_at,
-      parsed?.updatedAtMs,
-      parsed?.ts,
-      parsed?.time
+      parsed?.updatedAtMs
     ),
     integrationStatus: 'ok'
   }

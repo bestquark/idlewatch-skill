@@ -1,0 +1,21 @@
+{
+  "data": {
+    "stats": {
+      "model": "gpt-5.3-codex-spark",
+      "session_id": "data-wrap-session",
+      "agent_id": "agent-data-wrap",
+      "totals": {
+        "total_tokens": 999,
+        "tokens": {
+          "total": 999
+        }
+      },
+      "tokens_per_minute": 88.75,
+      "usage_timestamp": 1771281010000
+    },
+    "defaults": {
+      "model": "gpt-5.3-codex-spark"
+    },
+    "ts": 1771281020000
+  }
+}
