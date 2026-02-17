@@ -42,14 +42,21 @@ local testing and release preparation.
 
 IdleWatch writes packaging metadata (`Contents/Resources/packaging-metadata.json`) during `package-macos` with the `openclawBinHint` used at build time.
 
-When the packaged launcher starts, it uses `IDLEWATCH_OPENCLAW_BIN` directly if set, otherwise it falls back to a bundled/runtime-hint path from `packaging-metadata.json` before PATH lookup. This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
+When the packaged launcher starts, it resolves the OpenClaw binary in this order:
+
+1. `IDLEWATCH_OPENCLAW_BIN` (explicit runtime override, preferred)
+2. `IDLEWATCH_OPENCLAW_BIN_HINT` (legacy launcher hint, supported)
+3. `openclawBinHint` from `packaging-metadata.json`
+4. `openclaw` via normal `PATH`
+
+This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
 
 
 Each packaged app includes `Contents/Resources/packaging-metadata.json` with build provenance (version, signing/runtime hints, payload filename, and launcher settings) to support supportability checks and deterministic QA.
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
-  - If unset at runtime, packaged launcher will fall back to `openclawBinHint` captured in `packaging-metadata.json` during packaging.
+- `IDLEWATCH_OPENCLAW_BIN_HINT="/opt/homebrew/bin/openclaw"` — legacy launcher hint (supported for compatibility).
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
 - `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.

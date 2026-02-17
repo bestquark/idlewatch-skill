@@ -114,11 +114,13 @@ session usage from local CLI JSON endpoints when available, then enriches sample
 
 Binary resolution order for the OpenClaw probe:
 1. `IDLEWATCH_OPENCLAW_BIN` (if set)
-2. `/opt/homebrew/bin/openclaw`
-3. `/usr/local/bin/openclaw`
-4. `openclaw` (PATH lookup)
+2. `IDLEWATCH_OPENCLAW_BIN_HINT` (legacy packaged-launcher hint)
+3. `/opt/homebrew/bin/openclaw`
+4. `/usr/local/bin/openclaw`
+5. `openclaw` (PATH lookup)
 
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
+- `IDLEWATCH_OPENCLAW_BIN_HINT` is also supported for launcher compatibility in existing packaged flows.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
 - `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps

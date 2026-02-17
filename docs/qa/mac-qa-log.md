@@ -18,6 +18,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - OpenClaw usage fields remain `null` in dry-run (`source.usage: "unavailable"`).
 - CI currently runs on `ubuntu-latest` only (Node 20/22), no macOS CI coverage.
 
+## QA cycle update — 2026-02-17 04:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ Fixed packaged launcher OpenClaw override compatibility in runtime discovery:
+  - `scripts/package-macos.sh` now supports both `IDLEWATCH_OPENCLAW_BIN` and legacy `IDLEWATCH_OPENCLAW_BIN_HINT` in launcher resolution order before falling back to `packaging-metadata.json` and PATH.
+- ✅ Updated packaging docs for packaged discoverability precedence and compatibility:
+  - `docs/packaging/macos-dmg.md`
+  - `README.md` (binary resolution list)
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes.
+- ✅ `npm run validate:packaged-metadata --silent` remains green after launcher/env fix.
+
+### Monitoring impact
+
+- Reduced packaging-time/runtime mismatch risk where `IDLEWATCH_OPENCLAW_BIN` was previously ignored by launcher fallback logic.
+
 ## QA cycle update — 2026-02-17 04:05 America/Toronto
 
 ### Completed this cycle

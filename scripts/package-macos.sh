@@ -115,7 +115,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
 NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
-OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN_HINT:-}"
+# Backward-compatible OpenClaw launcher hint precedence:
+# 1) IDLEWATCH_OPENCLAW_BIN  (runtime override)
+# 2) IDLEWATCH_OPENCLAW_BIN_HINT (legacy launcher hint)
+# 3) packaging metadata fallback (build-time hint)
+OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN:-${IDLEWATCH_OPENCLAW_BIN_HINT:-}}"
 if [[ -z "$OPENCLAW_BIN_HINT" && -f "$RESOURCES_DIR/packaging-metadata.json" ]]; then
   OPENCLAW_BIN_HINT="$(python3 - "$RESOURCES_DIR/packaging-metadata.json" <<'PY'
 import json
