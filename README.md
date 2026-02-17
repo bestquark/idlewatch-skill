@@ -103,6 +103,8 @@ Source metadata fields:
 - `source.usageIntegrationStatus`: `ok | stale | disabled | unavailable`
 - `source.usageIngestionStatus`: `ok | disabled | unavailable` (probe/path health independent of usage age).
 - `source.usageActivityStatus`: `fresh | aging | stale | unknown | disabled | unavailable` (age-based activity state).
+- `source.usageAlertLevel`: `ok | notice | warning | critical | off` (operator-facing alert severity derived from ingestion + activity semantics).
+- `source.usageAlertReason`: `healthy | activity-near-stale | activity-past-threshold | activity-stale | ingestion-unavailable | usage-disabled`.
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
@@ -135,6 +137,7 @@ Alerting guidance (recommended):
 - Suggested critical threshold: trigger immediately when `memPressureClass=critical`, or when `memPressurePct>=90` for 2+ consecutive samples.
 - Keep `memPct`/`memUsedPct` as informational context only (do not page solely on these).
 - For OpenClaw reliability alerts, page on `source.usageIngestionStatus=unavailable` (or sustained probe failures), not on `usageActivityStatus=stale` alone.
+- If you want one-field routing in dashboards, use `source.usageAlertLevel`: page on `critical`, ticket on sustained `warning`, and keep `notice` informational.
 
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.

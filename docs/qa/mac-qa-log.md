@@ -1437,3 +1437,27 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Runtime probe path is healthy in both direct and packaged runs (`usageProbeResult: ok`, binary resolved to `/opt/homebrew/bin/openclaw`).
 - ✅ Ingestion/activity split is behaving as designed (`usageIngestionStatus: ok` while `usageActivityStatus: stale` in low-traffic window).
 - ⚠️ Still need downstream policy calibration to avoid noisy stale-only alerts during idle periods.
+
+## Implementation cycle update — 2026-02-16 23:08 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added explicit OpenClaw alert-routing metadata to reduce stale-only noise in downstream systems:
+  - `source.usageAlertLevel`: `ok | notice | warning | critical | off`
+  - `source.usageAlertReason`: `healthy | activity-near-stale | activity-past-threshold | activity-stale | ingestion-unavailable | usage-disabled`
+- ✅ Alert derivation now cleanly separates outage paging from age-only activity states:
+  - ingestion unavailable ⇒ `critical`
+  - stale/past-threshold activity with healthy ingestion ⇒ `warning`
+  - near-stale activity ⇒ `notice`
+- ✅ Added deterministic unit coverage for alert derivation (`test/usage-alert.test.mjs`).
+- ✅ Extended dry-run schema validator to enforce alert field enums and consistency constraints.
+- ✅ Updated README source metadata + alerting guidance to document one-field routing on `usageAlertLevel`.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `npm run validate:dry-run-schema --silent` passes with new alert metadata checks.
+
+### Acceptance criteria updates
+
+- [x] Add explicit usage alert-level metadata so downstream monitoring can page on ingestion outages without over-alerting on stale activity windows.

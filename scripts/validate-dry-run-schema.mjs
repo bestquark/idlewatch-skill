@@ -75,6 +75,8 @@ function validateRow(row) {
   assert.ok(Number.isFinite(source.usageProbeTimeoutMs) && source.usageProbeTimeoutMs > 0, 'source.usageProbeTimeoutMs must be number > 0')
   assert.ok(source.usageProbeError === null || typeof source.usageProbeError === 'string', 'source.usageProbeError must be string or null')
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
+  assert.ok(['ok', 'notice', 'warning', 'critical', 'off'].includes(source.usageAlertLevel), 'source.usageAlertLevel invalid')
+  assert.ok(['healthy', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
   assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')
   assert.ok(Number.isFinite(source.usageStaleMsThreshold), 'source.usageStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageNearStaleMsThreshold), 'source.usageNearStaleMsThreshold must be number')
@@ -94,6 +96,8 @@ function validateRow(row) {
     assert.equal(source.usageProbeResult, 'disabled', 'usageProbeResult must be disabled when source.usage=disabled')
     assert.equal(source.usageIngestionStatus, 'disabled', 'usageIngestionStatus must be disabled when source.usage=disabled')
     assert.equal(source.usageActivityStatus, 'disabled', 'usageActivityStatus must be disabled when source.usage=disabled')
+    assert.equal(source.usageAlertLevel, 'off', 'usageAlertLevel must be off when source.usage=disabled')
+    assert.equal(source.usageAlertReason, 'usage-disabled', 'usageAlertReason must be usage-disabled when source.usage=disabled')
   }
 
   if (source.usageProbeAttempts === 0) {
@@ -117,6 +121,8 @@ function validateRow(row) {
     assert.ok(source.usageProbeAttempts > 0 || source.usageProbeResult === 'disabled', 'usageProbeAttempts should be > 0 when unavailable')
     assert.equal(source.usageIngestionStatus, 'unavailable', 'usageIngestionStatus must be unavailable when source.usage=unavailable')
     assert.equal(source.usageActivityStatus, 'unavailable', 'usageActivityStatus must be unavailable when source.usage=unavailable')
+    assert.equal(source.usageAlertLevel, 'critical', 'usageAlertLevel must be critical when source.usage=unavailable')
+    assert.equal(source.usageAlertReason, 'ingestion-unavailable', 'usageAlertReason must be ingestion-unavailable when source.usage=unavailable')
   }
 
   if (source.usageProbeResult === 'fallback-cache') {
@@ -125,6 +131,10 @@ function validateRow(row) {
   } else {
     assert.equal(source.usageUsedFallbackCache, false, 'usageUsedFallbackCache must be false unless fallback-cache')
     assert.equal(source.usageFallbackCacheAgeMs, null, 'usageFallbackCacheAgeMs must be null unless fallback-cache')
+  }
+
+  if (source.usageIngestionStatus === 'ok') {
+    assert.ok(['ok', 'notice', 'warning'].includes(source.usageAlertLevel), 'ingestion ok cannot emit critical/off alert level')
   }
 
   if (REQUIRE_OPENCLAW_USAGE) {

@@ -9,6 +9,7 @@ import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
 import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
+import { deriveUsageAlert } from '../src/usage-alert.js'
 
 function printHelp() {
   console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor(stale*0.75))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
@@ -411,6 +412,48 @@ async function collectSample() {
   const memPressure = loadMemPressure()
   const usedMemPct = memUsedPct()
 
+  const source = {
+    usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
+    usageIntegrationStatus: usage
+      ? usageFreshness.isStale
+        ? 'stale'
+        : (usage?.integrationStatus ?? 'ok')
+      : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+    usageIngestionStatus: OPENCLAW_USAGE_MODE === 'off'
+      ? 'disabled'
+      : usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
+        ? 'ok'
+        : 'unavailable',
+    usageActivityStatus: usage
+      ? usageFreshness.freshnessState
+      : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+    usageProbeResult: usageProbe.probe.result,
+    usageProbeAttempts: usageProbe.probe.attempts,
+    usageProbeSweeps: usageProbe.probe.sweeps,
+    usageProbeTimeoutMs: OPENCLAW_PROBE_TIMEOUT_MS,
+    usageProbeRetries: OPENCLAW_PROBE_RETRIES,
+    usageProbeError: usageProbe.probe.error,
+    usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
+    usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
+    usageFreshnessState: usage ? usageFreshness.freshnessState : null,
+    usageNearStale: usage ? usageFreshness.isNearStale : false,
+    usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
+    usageRefreshAttempted,
+    usageRefreshRecovered,
+    usageRefreshAttempts,
+    usageRefreshReprobes: USAGE_REFRESH_REPROBES,
+    usageRefreshDelayMs: USAGE_REFRESH_DELAY_MS,
+    usageCommand: usage?.sourceCommand ?? null,
+    usageStaleMsThreshold: USAGE_STALE_MS,
+    usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
+    usageStaleGraceMs: USAGE_STALE_GRACE_MS,
+    memPressureSource: memPressure.source
+  }
+
+  const usageAlert = deriveUsageAlert(source)
+  source.usageAlertLevel = usageAlert.level
+  source.usageAlertReason = usageAlert.reason
+
   const row = {
     host: HOST,
     ts: nowMs,
@@ -430,43 +473,7 @@ async function collectSample() {
     openclawAgentId: usage?.agentId ?? null,
     openclawUsageTs: usage?.usageTimestampMs ?? null,
     openclawUsageAgeMs: usageFreshness.usageAgeMs,
-    source: {
-      usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
-      usageIntegrationStatus: usage
-        ? usageFreshness.isStale
-          ? 'stale'
-          : (usage?.integrationStatus ?? 'ok')
-        : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
-      usageIngestionStatus: OPENCLAW_USAGE_MODE === 'off'
-        ? 'disabled'
-        : usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
-          ? 'ok'
-          : 'unavailable',
-      usageActivityStatus: usage
-        ? usageFreshness.freshnessState
-        : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
-      usageProbeResult: usageProbe.probe.result,
-      usageProbeAttempts: usageProbe.probe.attempts,
-      usageProbeSweeps: usageProbe.probe.sweeps,
-      usageProbeTimeoutMs: OPENCLAW_PROBE_TIMEOUT_MS,
-      usageProbeRetries: OPENCLAW_PROBE_RETRIES,
-      usageProbeError: usageProbe.probe.error,
-      usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
-      usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
-      usageFreshnessState: usage ? usageFreshness.freshnessState : null,
-      usageNearStale: usage ? usageFreshness.isNearStale : false,
-      usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
-      usageRefreshAttempted,
-      usageRefreshRecovered,
-      usageRefreshAttempts,
-      usageRefreshReprobes: USAGE_REFRESH_REPROBES,
-      usageRefreshDelayMs: USAGE_REFRESH_DELAY_MS,
-      usageCommand: usage?.sourceCommand ?? null,
-      usageStaleMsThreshold: USAGE_STALE_MS,
-      usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
-      usageStaleGraceMs: USAGE_STALE_GRACE_MS,
-      memPressureSource: memPressure.source
-    }
+    source
   }
   return row
 }
