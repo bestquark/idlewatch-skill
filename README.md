@@ -55,10 +55,12 @@ export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 
 If Firebase env vars are incomplete or invalid, the CLI exits with a clear configuration error.
 If Firebase vars are omitted entirely, it runs in local-only mode and prints telemetry to stdout.
+Set `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` to fail fast when running `--once` without a working Firebase publish path.
 
 Validation helpers:
 - `npm run validate:firebase-emulator-mode` verifies emulator-only config wiring in dry-run mode.
 - `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
+- `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
 
 ## OpenClaw usage ingestion (best effort)
 

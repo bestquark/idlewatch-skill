@@ -152,3 +152,40 @@ test('rejects emulator mode when FIREBASE_PROJECT_ID is missing', () => {
   assert.notEqual(run.status, 0)
   assert.match(run.stderr, /FIREBASE_PROJECT_ID is missing/)
 })
+
+test('rejects required Firebase writes when Firebase is not configured', () => {
+  const run = spawnSync(process.execPath, [BIN, '--once'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_REQUIRE_FIREBASE_WRITES: '1',
+      FIREBASE_PROJECT_ID: '',
+      FIRESTORE_EMULATOR_HOST: '',
+      FIREBASE_SERVICE_ACCOUNT_JSON: '',
+      FIREBASE_SERVICE_ACCOUNT_B64: ''
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 requires Firebase to be configured/)
+})
+
+test('accepts required Firebase writes config in emulator mode (dry-run)', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_REQUIRE_FIREBASE_WRITES: '1',
+      FIREBASE_PROJECT_ID: 'idlewatch-dev',
+      FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+      FIREBASE_SERVICE_ACCOUNT_JSON: '',
+      FIREBASE_SERVICE_ACCOUNT_B64: ''
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /firebase=true/)
+})

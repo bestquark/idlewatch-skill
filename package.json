@@ -19,6 +19,7 @@
     "validate:packaged-usage-health": "npm run package:macos --silent && IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1 node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
     "validate:firebase-emulator-mode": "FIREBASE_PROJECT_ID=idlewatch-dev FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run",
     "validate:firebase-write-once": "IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
+    "validate:firebase-write-required-once": "IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
     "validate:dmg-install": "./scripts/validate-dmg-install.sh",
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:usage-alert-rate-e2e": "node scripts/validate-usage-alert-rate-e2e.mjs",

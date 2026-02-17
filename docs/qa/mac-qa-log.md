@@ -1721,3 +1721,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add CI assertion for packaged OpenClaw stale-threshold recovery so usage-age reliability behavior is validated on macOS packaging path.
+
+## Implementation cycle update — 2026-02-16 23:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added strict Firebase publish requirement toggle for deterministic one-shot ingestion validation:
+  - new env var `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`
+  - `--once` now fails fast when Firebase is not configured or publish is skipped.
+- ✅ Added regression coverage for strict Firebase-write gating (`test/openclaw-env.test.mjs`):
+  - rejects required-write mode without Firebase config
+  - accepts required-write config path in emulator mode (`--dry-run` wiring check)
+- ✅ Added strict npm entrypoint for operators/CI:
+  - `npm run validate:firebase-write-required-once`
+- ✅ Updated operator docs/help (`README.md`, `.env.example`, CLI `--help`) with strict Firebase-write validation guidance.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (32/32).
+- ✅ New strict Firebase-write env validation tests pass.
+
+### Acceptance criteria updates
+
+- [x] Add deterministic fail-fast control for one-shot Firebase ingestion validation so credential/config drift cannot silently pass local-only mode.
