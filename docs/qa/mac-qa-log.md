@@ -1,3 +1,29 @@
+## QA cycle update — 2026-02-17 05:15 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (132/132).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON only).
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct`: `14.52`, `memPct`: `89.16`, `memPressurePct`: `27` (`normal`).
+- `gpuPct`: `0` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- `tokensPerMin`: `30,765.31`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `29,768`.
+- `openclawUsageAgeMs`: `58,096` with `usageFreshnessState: "fresh"`, `usageAlertLevel: "ok"`.
+
+### Notes
+
+- 5:15 AM overnight cycle. All validation gates green; no new regressions since 05:10 cycle.
+- Remaining gaps unchanged and all require external resources (Apple signing creds, Firebase creds, external hardware): no feasible improvements to ship this cycle.
+
 ## QA cycle update — 2026-02-17 05:10 America/Toronto
 
 ### Validation checks run this cycle
