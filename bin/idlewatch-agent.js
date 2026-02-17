@@ -76,6 +76,10 @@ if (!Number.isFinite(USAGE_STALE_GRACE_MS) || USAGE_STALE_GRACE_MS < 0) {
   process.exit(1)
 }
 
+const OPENCLAW_LAST_GOOD_MAX_AGE_MS = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS
+  ? Number(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS)
+  : Math.max(USAGE_STALE_MS + USAGE_STALE_GRACE_MS, 120000)
+
 if (process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS && (!Number.isFinite(OPENCLAW_LAST_GOOD_MAX_AGE_MS) || OPENCLAW_LAST_GOOD_MAX_AGE_MS <= 0)) {
   console.error(
     `Invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS: ${process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS}. Expected a positive number.`
@@ -163,9 +167,6 @@ function cpuPct() {
 }
 
 const OPENCLAW_USAGE_TTL_MS = Math.max(INTERVAL_MS, 30000)
-const OPENCLAW_LAST_GOOD_MAX_AGE_MS = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS
-  ? Number(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS)
-  : Math.max(USAGE_STALE_MS + USAGE_STALE_GRACE_MS, 120000)
 const MEM_PRESSURE_TTL_MS = Math.max(INTERVAL_MS, 30000)
 let openClawUsageCache = {
   at: 0,

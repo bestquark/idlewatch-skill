@@ -1148,3 +1148,22 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Runtime probe is healthy in this cycle (`usageProbeResult: ok`, one-attempt resolution, no fallback cache use).
 - ✅ Freshness metadata remains coherent across direct and packaged runs.
 - ⚠️ Representative production-like E2E with Firebase credentials remains pending.
+
+## Implementation cycle update — 2026-02-16 22:11 America/Toronto
+
+### Completed this cycle
+
+- ✅ Fixed a startup reliability bug in `bin/idlewatch-agent.js` where setting `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` could trigger a pre-initialization `ReferenceError` during env validation.
+- ✅ Reordered and centralized `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` parsing so validation always runs against an initialized value.
+- ✅ Added regression coverage (`test/openclaw-env.test.mjs`) for:
+  - valid explicit `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` in `--dry-run`
+  - invalid value rejection (`0`) with explicit error assertion.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (16/16).
+- ✅ New env-validation tests pass and guard both success + failure paths.
+
+### Acceptance criteria updates
+
+- [x] Harden runtime env validation path for OpenClaw fallback-cache max-age tuning (`IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS`) with deterministic tests.
