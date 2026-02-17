@@ -1389,3 +1389,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add configurable multi-attempt stale-threshold refresh controls to reduce packaged-loop stale flapping risk without masking ingestion failures.
+
+## QA cycle update — 2026-02-16 23:01 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (24/24).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run` from test/smoke path):
+  - `gpuPct`: populated (`2`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`11`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`14884.65`).
+  - `openclawUsageAgeMs`: `111946` with `source.usageIntegrationStatus: "stale"`, `source.usageIngestionStatus: "ok"`.
+  - refresh metadata present (`usageRefreshAttempted: true`, `usageRefreshRecovered: false`, `usageRefreshAttempts: 2`).
+- Packaged app dry-run (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `gpuPct`: populated (`3`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `tokensPerMin`: populated (`11898.93`).
+  - `openclawUsageAgeMs`: `140372` with `source.usageIntegrationStatus: "stale"`, `source.usageIngestionStatus: "ok"`, `source.usageActivityStatus: "stale"`.
+  - probe diagnostics stable (`usageProbeResult: "ok"`, `usageProbeAttempts: 1`, `usageCommand: "/opt/homebrew/bin/openclaw status --json"`).
+
+### Bugs / feature gaps (current)
+
+1. **Activity staleness remains common in low-traffic windows (Medium, alerting noise risk)**
+   - In both direct and packaged dry-runs this cycle, ingestion was healthy (`usageIngestionStatus=ok`) while activity classified `stale` due to old `openclawUsageTs`.
+   - Follow-up: ensure alert policy pages primarily on ingestion/probe failures and treats activity staleness as lower-severity when probes are healthy.
+
+2. **Trusted distribution remains credential-gated (High, release readiness)**
+   - DMG build remains reproducible but unsigned/not notarized by default (`MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE` unset).
+
+3. **Firebase production write-path validation still pending (Medium, E2E confidence)**
+   - Local schema and packaging validations are green; one credentialed Firestore pass is still needed.
+
+### DMG packaging risk status
+
+- ✅ Packaging pipeline remains reproducible (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced with real credentials.
+
+### OpenClaw integration gap status
+
+- ✅ Runtime probe path is healthy in both direct and packaged runs (`usageProbeResult: ok`, binary resolved to `/opt/homebrew/bin/openclaw`).
+- ✅ Ingestion/activity split is behaving as designed (`usageIngestionStatus: ok` while `usageActivityStatus: stale` in low-traffic window).
+- ⚠️ Still need downstream policy calibration to avoid noisy stale-only alerts during idle periods.
