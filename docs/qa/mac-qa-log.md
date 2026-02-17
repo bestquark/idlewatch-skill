@@ -1,3 +1,32 @@
+## QA cycle update — 2026-02-17 05:10 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (132/132).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes (mount/copy/launcher dry-run schema check).
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ✅ `npm run validate:packaged-usage-age-slo --silent` passes.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON only).
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct`: `15.85`, `memPct`: `87.6`, `memPressurePct`: `27` (`normal`).
+- `gpuPct`: `0` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- `tokensPerMin`: `34,450.17`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `29,986`.
+- `openclawUsageAgeMs`: `52,267` with `usageIntegrationStatus: "ok"`, `usageIngestionStatus: "ok"`, `usageActivityStatus: "fresh"`, `usageAlertLevel: "ok"`.
+- `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+
+### Notes
+
+- 5:10 AM overnight cycle. All validation gates green; no new regressions.
+- Model shifted to `claude-opus-4-6` in current session (previously `gpt-5.3-codex-spark`); parser handles both correctly.
+- Remaining gaps unchanged: trusted distribution (credential-gated), Firebase E2E (pending creds), clean-machine install UX (limited).
+
 ## QA cycle update — 2026-02-17 04:36 America/Toronto
 
 ### Completed this cycle
