@@ -2396,3 +2396,60 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Monitoring reliability: OpenClaw ingestion is less likely to be classified `unavailable` due parser mis-detection when noisy preambles/suffixes are present in CLI output.
 - Packaging confidence: build artifacts now include deterministic provenance for support and release QA.
 - Docs/operability: operators can quickly confirm packaging context directly in packaged app resources.
+
+## QA cycle update — 2026-02-17 03:10 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (`126/126` assertions).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits telemetry and writes to local NDJSON.
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes (mount/copy/run-launcher smoke).
+- ✅ `npm run validate:packaged-usage-health --silent` passes (with `IDLEWATCH_OPENCLAW_USAGE=auto` defaults in this host).
+
+### Telemetry validation snapshot (latest)
+
+- Direct CLI dry-run sample:
+  - `gpuPct: 0`, `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`
+  - `memPct: 88.31`, `memUsedPct: 88.31`, `memPressurePct: 27`, `memPressureClass: "normal"`
+  - `tokensPerMin: 18399.41`, `openclawModel: "gpt-5.3-codex-spark"`, `openclawTotalTokens: 26516`
+  - `openclawUsageAgeMs: 85159` with `source.usageIntegrationStatus: "stale"`, `usageFreshnessState: "stale"`, `usagePastStaleThreshold: true`, `usageRefreshAttempted: true`, `usageAlertLevel: "notice"`
+- Packaged app dry-run sample:
+  - `gpuPct: 0`, `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`
+  - `tokensPerMin: 17546.51`, `openclawModel: "gpt-5.3-codex-spark"`, `openclawTotalTokens: 26516`
+  - `openclawUsageAgeMs: 89447`, `source.usageIntegrationStatus: "stale"`, `usageFreshnessState: "stale"`, `usageRefreshAttempted: true`
+
+### Feature status / observations
+
+- ✅ Existing behavior remains stable for telemetry schema, freshness classification, and packaged/app-launcher telemetry parity.
+- ✅ `node bin/idlewatch-agent.js --dry-run` and packaged launcher continue to share the same sample contract after fresh packaging.
+- ✅ DMG install validation still executes cleanly in CI-style local flow.
+
+### Bugs / feature gaps identified
+
+1. **Persisting stale-while-idle behavior in packaged runtime during extended loops (Medium, alerting noise)**
+   - Both direct and packaged samples now show `usageIntegrationStatus: "stale"` after ~85–89s with no new usage deltas, despite probe success.
+   - This is expected from current thresholds, but it can generate recurring notice-level alerts in local QA loops.
+
+2. **Distribution trust defaults still optional (High, release readiness)**
+   - Artifact generation defaults to unsigned output unless strict/trusted env vars/secrets are provided.
+   - `MACOS_NOTARY_PROFILE` remains unset, so notarization/stapling is still skipped in this local cycle.
+
+3. **Firebase end-to-end path still unvalidated here (Medium, delivery confidence)**
+   - `FIREBASE_*` production credentials remain unset, so this remains a local-only telemetry validation pass.
+
+### DMG packaging risks (this cycle)
+
+- ✅ Reproducible local artifact generation is healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ✅ Install smoke (`validate:dmg-install`) confirms app launch from mounted DMG.
+- ⚠️ No automated Gatekeeper/compliance proof for unsigned/notarized artifacts in this cycle.
+- ⚠️ No clean-machine or multi-architecture install telemetry was collected in this pass.
+
+### OpenClaw integration gap status (this cycle)
+
+- ✅ Probe still resolves to `/opt/homebrew/bin/openclaw status --json` and parses session/model/token signals successfully.
+- ⚠️ Usage staleness transitions remain highly visible in longer run windows; monitoring should treat repeated `stale`+`notice` near thresholds as expected unless usage feed is truly inactive for prolonged periods.
+- ⚠️ End-to-end usage-health policy remains untested in a separate isolated OpenClaw process context (outside current shell environment).
