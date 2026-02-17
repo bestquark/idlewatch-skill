@@ -63,3 +63,36 @@ test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
   assert.notEqual(run.status, 0)
   assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES/)
 })
+
+test('accepts Firestore emulator mode without service account credentials', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      FIREBASE_PROJECT_ID: 'idlewatch-dev',
+      FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+      FIREBASE_SERVICE_ACCOUNT_JSON: '',
+      FIREBASE_SERVICE_ACCOUNT_B64: ''
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /firebase=true/)
+})
+
+test('rejects emulator mode when FIREBASE_PROJECT_ID is missing', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      FIREBASE_PROJECT_ID: '',
+      FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /FIREBASE_PROJECT_ID is missing/)
+})

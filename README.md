@@ -45,6 +45,13 @@ Legacy (still supported):
 export FIREBASE_SERVICE_ACCOUNT_B64=$(base64 -i serviceAccount.json)
 ```
 
+Firestore emulator mode (no service-account JSON required):
+
+```bash
+export FIREBASE_PROJECT_ID=idlewatch-dev
+export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+```
+
 If Firebase env vars are incomplete or invalid, the CLI exits with a clear configuration error.
 If Firebase vars are omitted entirely, it runs in local-only mode and prints telemetry to stdout.
 

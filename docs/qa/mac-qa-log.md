@@ -1188,3 +1188,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Improve OpenClaw stats ingestion reliability for transient probe failures with configurable retry sweeps and explicit probe retry telemetry.
+
+## Implementation cycle update — 2026-02-16 22:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added Firebase emulator-first ingestion path for local E2E validation without service-account credentials:
+  - when `FIRESTORE_EMULATOR_HOST` is set with `FIREBASE_PROJECT_ID`, collector now initializes Firestore writes in emulator mode.
+- ✅ Improved Firebase configuration error messaging to explicitly document emulator-only mode requirements.
+- ✅ Added regression tests for emulator config behavior (`test/openclaw-env.test.mjs`):
+  - accepts `FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST` without credential JSON
+  - rejects emulator mode when `FIREBASE_PROJECT_ID` is missing
+- ✅ Added operator validation entrypoint: `npm run validate:firebase-emulator-mode`.
+- ✅ Updated `.env.example`, CLI `--help`, and README Firebase wiring docs with emulator mode guidance.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (20/20).
+- ✅ `npm run validate:firebase-emulator-mode --silent` passes (`firebase=true` in dry-run without service-account creds).
+
+### Acceptance criteria updates
+
+- [x] Add credential-free local Firebase E2E path (Firestore emulator) to reduce dependency on production credentials for ingestion validation.

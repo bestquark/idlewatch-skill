@@ -16,6 +16,7 @@
     "validate:dry-run-schema": "node scripts/validate-dry-run-schema.mjs node bin/idlewatch-agent.js --dry-run",
     "validate:packaged-dry-run-schema": "node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
     "validate:packaged-usage-health": "IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1 node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
+    "validate:firebase-emulator-mode": "FIREBASE_PROJECT_ID=idlewatch-dev FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run",
     "validate:dmg-install": "./scripts/validate-dmg-install.sh",
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:trusted-prereqs": "./scripts/validate-trusted-prereqs.sh",
