@@ -10,6 +10,67 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 04:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ Executed full validation sweep including packaging + usage freshness checks:
+  - `npm test --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-usage-health --silent`
+  - `npm run package:dmg --silent`
+  - `npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:packaged-usage-age-slo --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+- ✅ Captured fresh dry-run telemetry row and validated OpenClaw+GPU values now populate in this environment:
+  - `tokensPerMin`: 36,330.17
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: 25,924
+  - `gpuPct`: 0
+  - `gpuSource`: `ioreg-agx` / `gpuConfidence: high`
+
+### Validation checks
+
+- ✅ `npm test --silent` passes (132/132).
+- ✅ `validate:packaged-metadata` passes.
+- ✅ `validate:packaged-usage-health` passes (`source.usage="openclaw"`, `usageIntegrationStatus="ok"`, `usageFreshnessState="fresh"`).
+- ✅ DMG pipeline passes to unsigned baseline:
+  - `dist/IdleWatch-0.1.0-unsigned.dmg` regenerated
+  - `validate:dmg-install` passes
+  - checksum generation and verification passes (`validate:dmg-checksum`).
+- ✅ `validate:packaged-usage-age-slo` passes.
+- ✅ `validate:usage-freshness-e2e` passes (`fresh -> aging -> post-threshold-in-grace -> stale` state transition assertion).
+- ⚠️ `validate:usage-alert-rate-e2e` **failed**: expected `warning` but observed `notice` for alert transition scenario (new fragility).
+
+### Telemetry validation checks
+
+- CPU: valid and in-range (`12.5`–`16.34` in two local samples).
+- Memory: valid (`memUsedPct ~91.13`, `memPressurePct 27`, `memPressureClass normal`).
+- GPU: currently collecting (`gpuPct=0`, source `ioreg-agx`, confidence `high`).
+- OpenClaw usage: currently collecting and non-null in dry-run (model, total tokens, per-minute rate, sessionId/agentId, usage timestamp + age).
+- Freshness status: `usageFreshnessState=fresh`, `usageNearStale=false`, `usageAlertLevel=ok` in active dry-run.
+
+### Bugs / feature notes
+
+1. ⚠️ **Bug:** `validate:usage-alert-rate-e2e` alert-level contract mismatch (observed `notice`, expected `warning`) indicates either a behavior change in classifier or stale test expectation; recommend deciding the intended escalation threshold and updating the fixture/e2e accordingly.
+2. ✅ **Feature stability note:** OpenClaw launch-time discovery remains stable for this host via `/opt/homebrew/bin/openclaw` with env-independent detection (source now reported as first successful path in dry-run).
+3. ✅ **Distribution readiness gain:** Re-ran signed-by-default fallback path with no regressions in packaged metadata checks and DMG install/ checksum verification.
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned; environment lacks `MACOS_CODESIGN_IDENTITY`, so every generated installer is `-unsigned` and will likely trigger Gatekeeper friction in distribution.
+2. **Medium:** No notarization path exercised (`MACOS_NOTARY_PROFILE` unset), so staple/Trust chain can’t be validated end-to-end.
+3. **Medium:** Runtime dependency risk persists for non-developer Macs (node runtime/binary assumptions still documented as required unless `IDLEWATCH_NODE_RUNTIME_DIR` packaging step is used).
+4. **Low:** Usage alerting contract mismatch (`notice` vs `warning`) is unaccounted for in release gates and could become a confidence gap for operational alerting.
+
+### OpenClaw integration gaps
+
+1. **Alert-level contract/telemetry semantics gap:** Need alignment between alert-rate scenario expectations and actual emitted level (`notice` vs `warning`) to keep CI and alerting consistent.
+2. **Dependency availability in CI:** OpenClaw collection still depends on real `openclaw` command availability and behavior shape; packaging/runtime checks are green only on hosts where OpenClaw is installed/accessible.
+3. **Distribution trust + probe behavior coupling:** Freshness probes and alert mapping are validated functionally, but there is no trusted build gate that enforces signed/notarized path simultaneously with usage alert contract checks.
+
+
 ## Evidence gathered
 
 - `npm test` passes (`validate:bin`, `smoke:help`, `smoke:dry-run`).
