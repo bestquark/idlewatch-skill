@@ -50,13 +50,66 @@ function pickBestRecentSession(recent = []) {
   return pickNewestSession(recent) || recent[0]
 }
 
+function extractJson(raw) {
+  const firstBrace = raw.indexOf('{')
+  if (firstBrace < 0) return null
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let i = firstBrace; i < raw.length; i++) {
+    const ch = raw[i]
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === '"') {
+        inString = false
+      }
+      continue
+    }
+
+    if (ch === '"') {
+      inString = true
+      continue
+    }
+
+    if (ch === '{') {
+      depth += 1
+      continue
+    }
+
+    if (ch === '}') {
+      depth -= 1
+      if (depth === 0) {
+        return raw.slice(firstBrace, i + 1)
+      }
+      if (depth < 0) {
+        return null
+      }
+    }
+  }
+
+  return null
+}
+
 function parseFromStatusJson(parsed) {
-  const recent = parsed?.sessions?.recent
-  const defaults = parsed?.sessions?.defaults || {}
-  const session = pickBestRecentSession(recent)
+  const sessionsRoot =
+    parsed?.sessions?.recent ||
+    parsed?.sessions?.recentSessions ||
+    parsed?.sessions?.activeSessions ||
+    parsed?.recentSessions ||
+    parsed?.sessions?.active ||
+    parsed?.activeSessions
+
+  const defaults = parsed?.sessions?.defaults || parsed?.defaults || {}
+  const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {
-    const defaultsModel = pickString(defaults.model, parsed?.default_model)
+    const defaultsModel = pickString(defaults.model, defaults.defaultModel, parsed?.default_model)
     if (!defaultsModel) return null
     return {
       model: defaultsModel,
@@ -64,19 +117,24 @@ function parseFromStatusJson(parsed) {
       tokensPerMin: null,
       sessionId: null,
       agentId: null,
-      usageTimestampMs: null,
+      usageTimestampMs: pickNumber(parsed?.ts, parsed?.time),
       integrationStatus: 'partial'
     }
   }
 
-  const model = pickString(session.model, defaults.model, parsed?.default_model)
+  const model = pickString(session.model, session.modelName, defaults.model, parsed?.default_model)
   const totalTokens = pickNumber(session.totalTokens, session.total_tokens)
   const tokensPerMin = pickNumber(
     session.tokensPerMinute,
     session.tokens_per_minute,
     session.tpm,
+    session.rate,
     deriveTokensPerMinute(session)
   )
+  const sessionAgeMs = pickNumber(session.age, session.ageMs)
+  const usageTimestampMs =
+    pickNumber(session.updatedAt, session.ts, session.timestamp) ??
+    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickNumber(parsed?.ts, parsed?.time))
 
   const hasStrongUsage = model !== null || totalTokens !== null || tokensPerMin !== null
 
@@ -86,7 +144,7 @@ function parseFromStatusJson(parsed) {
     tokensPerMin,
     sessionId: pickString(session.sessionId, session.id),
     agentId: pickString(session.agentId),
-    usageTimestampMs: pickNumber(session.updatedAt, parsed?.ts),
+    usageTimestampMs,
     integrationStatus: hasStrongUsage ? 'ok' : 'partial'
   }
 }
@@ -101,7 +159,13 @@ function parseGenericUsage(parsed) {
     usage?.tokenCount,
     usage?.inputTokens && usage?.outputTokens ? usage.inputTokens + usage.outputTokens : null
   )
-  const tokensPerMin = pickNumber(usage?.tokensPerMinute, usage?.tokens_per_minute, usage?.tpm, usage?.tokenRate)
+  const tokensPerMin = pickNumber(
+    usage?.tokensPerMinute,
+    usage?.tokens_per_minute,
+    usage?.tpm,
+    usage?.tokenRate,
+    usage?.requestsPerMinute
+  )
 
   if (model === null && totalTokens === null && tokensPerMin === null) return null
 
@@ -109,9 +173,9 @@ function parseGenericUsage(parsed) {
     model,
     totalTokens,
     tokensPerMin,
-    sessionId: pickString(parsed?.sessionId, usage?.sessionId),
+    sessionId: pickString(parsed?.sessionId, usage?.sessionId, usage?.id),
     agentId: pickString(parsed?.agentId, usage?.agentId),
-    usageTimestampMs: pickNumber(parsed?.updatedAt, usage?.updatedAt, parsed?.ts),
+    usageTimestampMs: pickNumber(parsed?.updatedAt, usage?.updatedAt, parsed?.ts, parsed?.time),
     integrationStatus: 'ok'
   }
 }
@@ -119,15 +183,19 @@ function parseGenericUsage(parsed) {
 export function parseOpenClawUsage(raw) {
   if (!raw) return null
 
+  const candidate = extractJson(String(raw))
+  if (!candidate) return null
+
   let parsed
   try {
-    parsed = JSON.parse(raw)
+    parsed = JSON.parse(candidate)
   } catch {
     return null
   }
 
-  if (parsed?.sessions?.recent) {
-    return parseFromStatusJson(parsed)
+  const fromStatus = parseFromStatusJson(parsed)
+  if (fromStatus) {
+    return fromStatus
   }
 
   return parseGenericUsage(parsed)

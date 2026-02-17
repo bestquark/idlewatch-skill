@@ -35,6 +35,20 @@ npx idlewatch-skill --dry-run
 - Darwin GPU probing fallback chain (AGX/IOGPU `ioreg` → `powermetrics` → `top` grep) with provenance fields (`gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`)
 - macOS memory pressure enrichment via `memory_pressure -Q` (`memPressurePct`, `memPressureClass`, `source.memPressureSource`)
 
+## macOS GPU support matrix (observed)
+
+The collector is tuned for these macOS probe paths by platform:
+
+- Apple Silicon (AGX/iGPU): prefer `ioreg` performance statistics (`AGX`) first for live GPU utilization.
+- Intel Macs: prefer `powermetrics` if permission profile allows; fall back to `top` parser.
+- Unsupported hosts / older macOS: emit `gpuSource: "unavailable"` with `gpuConfidence: "none"` and clear source metadata.
+
+Use `gpuSource` + `gpuConfidence` in dashboards to decide whether to trust values:
+- `high`: authoritative per-command path for host class
+- `medium`: derived/proxied path with best-effort parsing
+- `low`: constrained probe path
+- `none`: no usable sample for that sample window
+
 ## Firebase wiring
 
 ### Recommended: guided enrollment (external users)
@@ -212,6 +226,10 @@ DMG release scaffolding is included:
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
 - Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
 - Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
+- Background execution lifecycle helpers:
+  - `scripts/install-macos-launch-agent.sh`
+  - `scripts/uninstall-macos-launch-agent.sh`
+  - Install an auto-starting `LaunchAgent` via `IDLEWATCH_APP_PATH`, `IDLEWATCH_LAUNCH_AGENT_LABEL`, `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT`, and `IDLEWATCH_LAUNCH_AGENT_LOG_DIR`.
 
 Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.

@@ -24,6 +24,16 @@ test('parses openclaw status --json output and chooses best recent session', () 
   assert.equal(usage.tokensPerMin, 384545.45)
 })
 
+test('parses noisy openclaw output and alternate sessions key names', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-noisy.txt'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 222)
+  assert.equal(usage.sessionId, 'new')
+  assert.equal(usage.usageTimestampMs, 1771278999999)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses generic usage payloads', () => {
   const usage = parseOpenClawUsage(JSON.stringify({
     usage: {

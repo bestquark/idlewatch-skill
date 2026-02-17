@@ -23,6 +23,20 @@ Wizard output:
 3. User drags app into Applications and launches.
 4. On first run, user executes quickstart from packaged app terminal context to enroll credentials.
 
+### Optional: background startup on macOS
+
+Users can register the packaged app for background startup with LaunchAgent:
+
+```bash
+npm run install:macos-launch-agent
+```
+
+To remove the LaunchAgent later:
+
+```bash
+npm run uninstall:macos-launch-agent
+```
+
 See `docs/packaging/macos-dmg.md` for signing/notarization setup.
 
 ## Credential strategy (least privilege)

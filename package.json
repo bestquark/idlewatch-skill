@@ -32,6 +32,8 @@
     "package:macos": "./scripts/package-macos.sh",
     "package:dmg": "./scripts/build-dmg.sh",
     "package:trusted": "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 npm run validate:trusted-prereqs --silent && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/package-macos.sh && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/build-dmg.sh",
+    "install:macos-launch-agent": "./scripts/install-macos-launch-agent.sh",
+    "uninstall:macos-launch-agent": "./scripts/uninstall-macos-launch-agent.sh",
     "test": "npm run validate:bin && npm run test:unit && npm run smoke:help && npm run smoke:dry-run && npm run smoke:once"
   },
   "dependencies": {

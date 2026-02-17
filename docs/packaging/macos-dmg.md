@@ -1,14 +1,14 @@
-# macOS DMG packaging pipeline (scaffold)
+# macOS DMG packaging pipeline
 
-This repository currently ships a Node CLI, not a notarized macOS app bundle.
-A full DMG release requires signing identities, notarization credentials, and an
-`.app` wrapper. Until those are available, use the scaffold scripts in `scripts/`
-for CI wiring and local dry-runs.
+IdleWatch ships an `.app` scaffold in `dist/` and a DMG installer pipeline.
+Signing/notarization are optional but available when Apple credentials are configured.
+The `scripts/` folder now includes packaging, runtime, and launch lifecycle helpers for
+local testing and release preparation.
 
 ## Prerequisites
 
 - Xcode Command Line Tools (`xcode-select --install`)
-- Node.js 20+ on target host (current scaffold launcher executes bundled payload with local `node`)
+- Node.js 20+ on target host (current launcher executes payload with local `node` or bundled runtime)
 - Apple Developer signing identity (for production)
 - Notary API key/profile configured in keychain (for production)
 - Optional tools for polished DMG UX:
@@ -22,16 +22,19 @@ for CI wiring and local dry-runs.
    - `npm test`
    - `npm pack` to generate tarball
 2. **Create app wrapper skeleton**
-   - Stage Node runtime + CLI into `dist/IdleWatch.app/Contents/Resources/`
+   - Stage Node package + app metadata into `dist/IdleWatch.app/Contents/Resources/`
    - Add launcher script in `Contents/MacOS/IdleWatch`
-3. **Codesign (optional in scaffold)**
-   - Sign binaries with `codesign --deep --force --options runtime ...`
-4. **Notarize (optional in scaffold)**
+3. **Launch lifecycle (optional)**
+   - Install LaunchAgent to keep IdleWatch running in the background:
+     - `scripts/install-macos-launch-agent.sh`
+   - Uninstall: `scripts/uninstall-macos-launch-agent.sh`
+4. **Codesign (optional)**
+   - Sign app with `codesign --deep --force --options runtime ...`
+5. **Notarize (optional)**
    - `xcrun notarytool submit ... --wait`
-   - `xcrun stapler staple IdleWatch.app`
-5. **Build DMG (optional in scaffold)**
-   - `hdiutil create ...` (baseline)
-   - or `create-dmg` for branded layout
+   - `xcrun stapler staple IdleWatch-<ver>-*.dmg`
+6. **Build DMG (baseline)**
+   - `hdiutil create ...` output: `dist/IdleWatch-<version>-unsigned.dmg` or `-signed.dmg`
 
 ## Current scaffold commands
 
@@ -39,11 +42,15 @@ Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
+- `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.
+- `IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent"` — override LaunchAgent label.
+- `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$HOME/Library/LaunchAgents"` — override plist root for install/uninstall scripts.
+- `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
-- `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` — explicit CI-only bypass for tag builds; disables new auto-strict guard that otherwise blocks unsigned `refs/tags/*` packaging.
+- `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` — explicit CI-only bypass for tag builds; disables auto-strict guard that otherwise blocks unsigned `refs/tags/*` packaging.
 
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
@@ -52,19 +59,28 @@ Optional environment variables:
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
     - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
     - Node binary resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime (`Contents/Resources/runtime/node/bin/node`, when `IDLEWATCH_NODE_RUNTIME_DIR` is supplied at package time) → `PATH` (`node`)
-    - Launcher enforces Node.js major version `>=20` and fails with actionable runtime-path/version diagnostics otherwise
+  - Launcher enforces Node.js major version `>=20` and fails with actionable runtime-path/version diagnostics otherwise
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
-- `npm run validate:trusted-prereqs`
-  - Validates local signing identity + notary keychain profile before running trusted packaging
+- `scripts/install-macos-launch-agent.sh`
+  - Writes `~/Library/LaunchAgents/<label>.plist`
+  - Loads `LaunchAgent` under current user sandbox, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s), background mode, stdout/stderr logs
+- `scripts/uninstall-macos-launch-agent.sh`
+  - Unloads and removes `~/Library/LaunchAgents/<label>.plist`
+- `npm run install:macos-launch-agent`
+  - Wrapper for `scripts/install-macos-launch-agent.sh`
+- `npm run uninstall:macos-launch-agent`
+  - Wrapper for `scripts/uninstall-macos-launch-agent.sh`
+- `scripts/validate-trusted-prereqs.sh`
+  - Validates local signing identity + notary keychain profile before trusted packaging
 - `npm run package:trusted`
-  - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that now runs trusted-prereq validation before build/sign/notarize
+  - Strict signed + notarized local path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`)
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
 - `npm run validate:packaged-bundled-runtime`
-  - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime and verifies launcher dry-run works under `PATH=/usr/bin:/bin` (no PATH node), proving bundled-runtime resolution
+  - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime and verifies launcher dry-run works when `PATH=/usr/bin:/bin` (no `node` available in PATH)
 
 ## CI integration
 

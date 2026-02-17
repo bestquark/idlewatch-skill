@@ -1,0 +1,3 @@
+[info] collecting sessions...
+{"status":"ok","sessions":{"defaults":{"model":"gpt-5.3-codex"},"activeSessions":[{"id":"old","agentId":"main","updatedAt":1771278000000,"totalTokens":111,"model":"gpt-5.3-codex","totalTokensFresh":true},{"id":"new","agentId":"main","updatedAt":1771278999999,"totalTokens":222,"model":"gpt-5.3-codex","totalTokensFresh":true}]}}
+warning: cache refresh complete

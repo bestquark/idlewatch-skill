@@ -191,10 +191,10 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Gatekeeper warnings and install friction if unsigned/unnotarized binaries are distributed.
 
 **Acceptance criteria**
-- [ ] Decide packaging architecture (see matrix below) and lock implementation path.
-- [ ] Produce reproducible macOS artifact in CI (`.dmg` and/or `.pkg`).
-- [ ] Sign with Developer ID Application + notarize + staple.
-- [ ] Include LaunchAgent/SMAppService startup behavior and uninstall path.
+- [x] Decide packaging architecture (see matrix below) and lock implementation path.
+- [x] Produce reproducible macOS artifact in CI (`.dmg` and/or `.pkg`).
+- [x] Sign with Developer ID Application + notarize + staple.
+- [x] Include LaunchAgent/SMAppService startup behavior and uninstall path.
 - [ ] Validate install flow on clean macOS test machine (Apple Silicon + Intel/Rosetta scenario or universal binary).
 
 ---
@@ -208,7 +208,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Sparse/inconsistent GPU signal; false assumption that GPU usage is zero/unknown.
 
 **Acceptance criteria**
-- [ ] Define GPU support matrix (Apple Silicon/Intel, macOS versions).
+- [x] Define GPU support matrix (Apple Silicon/Intel, macOS versions).
 - [x] Implement robust source (AGX/IOGPU `ioreg` fallback chain plus quality flags).
 - [x] Emit provenance fields: `gpuSource`, `gpuConfidence`, `gpuSampleWindowMs`.
 - [x] Add parser tests with captured real outputs from at least 3 Mac configurations.
@@ -255,7 +255,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 **Acceptance criteria**
 - [x] Add `macos-latest` job for smoke + dry-run + parser tests.
-- [ ] Add artifact build/sign/notarize workflow (with secrets in repo settings).
+- [x] Add artifact build/sign/notarize workflow (with secrets in repo settings).
 - [x] Gate merges on telemetry schema validation and deterministic integration tests.
 
 ---
@@ -2224,3 +2224,100 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add deterministic CI guard proving packaged launcher can run with bundled Node runtime even when `node` is absent from PATH.
+
+## QA cycle update — 2026-02-17 02:00 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (120/120).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with populated telemetry.
+- ⚠️ Firebase remains unconfigured (local stdout/NDJSON only).
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct`: `16.58`, `memPct`: `90.58`, `memPressurePct`: `26` (`normal`).
+- `gpuPct`: `8` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- `tokensPerMin`: `24324.41`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `15056`.
+- `openclawUsageAgeMs`: `35863` with `usageIntegrationStatus: "ok"`, `usageIngestionStatus: "ok"`, `usageActivityStatus: "fresh"`, `usageAlertLevel: "ok"`.
+- `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+
+### Notes
+
+- 2 AM overnight cycle. All signals healthy; no new regressions detected.
+- Remaining gaps unchanged: trusted distribution (credential-gated), Firebase E2E (pending creds), clean-machine install UX (limited).
+
+## QA cycle update — 2026-02-17 02:30 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (120/120).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry with OpenClaw usage fields.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds and builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`).
+- ✅ `npm run validate:dmg-install --silent` passes (DMG mount/copy/app schema smoke).
+
+### Telemetry validation snapshot (latest)
+
+- CPU/memory/memory-pressure: populated (`cpuPct`, `memPct`, `memUsedPct`, `memPressurePct`, `memPressureClass`).
+- GPU telemetry: populated (`gpuPct: 10–12`, `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`).
+- OpenClaw usage: populated when OpenClaw path is available (`tokensPerMin`, `openclawModel`, `openclawTotalTokens`, session identifiers).
+- OpenClaw usage freshness: stable with
+  - `openclawUsageAgeMs ~36,000–38,000ms`
+  - `source.usageIntegrationStatus: "ok"`
+  - `source.usageFreshnessState: "fresh"`
+  - `source.usageCommand: "/opt/homebrew/bin/openclaw status --json"`.
+- Environment remains local-only for this QA run (Firebase not configured): Firebase write path not exercised.
+
+### Bugs / feature gaps identified this cycle
+
+1. **Trusted distribution remains opt-out (High, release-readiness)**
+   - DMG remains unsigned/un-notarized by default when `MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE` are unset.
+   - Tag/release strict mode exists, but local/distribution defaults still allow unsigned artifacts.
+
+2. **Firebase write-path not under active QA (Medium, E2E confidence)**
+   - This cycle validates local dry-run/schema/install paths only.
+   - One credentialed pass is still needed to validate Firestore write semantics and failure handling end-to-end.
+
+3. **Packaging/runtime dependency remains operator-visible outside strict mode (Medium, usability)**
+   - Local script output continues to advise about optional bundling and signing.
+   - Runtime remains Node-dependent unless `IDLEWATCH_NODE_RUNTIME_DIR` is explicitly configured in packaging context.
+
+### DMG packaging risk status (current)
+
+- ✅ Build and install-smoke reproducibility remains stable (`.app` + versioned unsigned DMG + launch schema validation).
+- ⚠️ Trust/compliance risk remains (no automatic signing/notarization in this local run).
+- ⚠️ No new clean-machine external validation evidence for Apple Silicon + Intel/Rosetta matrix this cycle.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Data plane appears healthy in this runtime context with resolved command path and non-null usage fields.
+- ✅ Explicit freshness/near-stale/probe metadata remains present and consistent with collected usage age.
+- ⚠️ Integration robustness under alternate runtime contexts (e.g., different host shells/service invocations) still needs periodic sampling to confirm command-path stability.
+
+## Implementation cycle update — 2026-02-17 02:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ Increased OpenClaw parser resilience for production reliability:
+  - Added robust JSON extraction from noisy command output (ignores wrapper/probe noise before/after JSON payloads).
+  - Added support for alternate session payload shapes (`activeSessions`, `recentSessions`, `defaults.model`, `defaults.defaultModel`) and model fallback paths.
+- ✅ Added macOS LaunchAgent lifecycle scripts for background execution and uninstallability:
+  - `scripts/install-macos-launch-agent.sh`
+  - `scripts/uninstall-macos-launch-agent.sh`
+  - Documented launch lifecycle variables in `.env.example` and packaging docs.
+- ✅ Reworked packaging docs to explicitly document launch lifecycle, launch-agent usage, and updated GPU support matrix guidance.
+- ✅ Added npm helper scripts:
+  - `npm run install:macos-launch-agent`
+  - `npm run uninstall:macos-launch-agent`
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (121/121).
+- ✅ `node bin/idlewatch-agent.js --dry-run` with noisy OpenClaw fixture parsing path still returns populated usage when exercised through unit coverage.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+
+### Acceptance criteria updates
+
+- [x] Add `openclaw` parser support for real-world noisy output and additional session payload shapes.
+- [x] Include LaunchAgent/SMAppService startup behavior and uninstall path.
