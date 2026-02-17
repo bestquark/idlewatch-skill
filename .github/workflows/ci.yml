@@ -83,6 +83,9 @@ jobs:
       - name: Validate packaged OpenClaw usage age SLO gate
         run: npm run validate:packaged-usage-age-slo
 
+      - name: Validate packaged OpenClaw parser resilience for non-zero-exit noisy probes
+        run: npm run validate:packaged-usage-probe-noise-e2e
+
       - name: Validate packaged OpenClaw usage stale-threshold recovery
         run: npm run validate:packaged-usage-recovery-e2e
 

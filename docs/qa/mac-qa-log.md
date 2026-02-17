@@ -2547,3 +2547,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
    - Release pipeline can enforce trust, but local/default flows still support unsigned artifacts unless trusted mode is enabled.
 3. **Clean-machine install UX remains under-sampled (Medium, distribution confidence)**
    - CI harness exists, but external hardware matrix is still not yet captured in this cycle.
+
+## Implementation cycle update — 2026-02-17 03:28 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added **packaged OpenClaw probe-noise E2E** coverage for resilient ingestion:
+  - New validator `scripts/validate-packaged-usage-probe-noise-e2e.mjs` forces the packaged launcher to execute a mock OpenClaw CLI that emits valid JSON but exits non-zero with stderr.
+  - Confirms `source.usageProbeResult === "ok"` and parsed usage remains available (`usageIngestionStatus=ok`, `usageIntegrationStatus=ok`) when stdout is valid despite command status.
+- ✅ Wired this new validator into release smoke:
+  - Added `npm run validate:packaged-usage-probe-noise-e2e` script.
+  - Added CI step in `macos-packaging-smoke`.
+- ✅ Updated packaging docs to include the new probe-noise guardrail in the smoke checklist.
+
+### Validation checks run this cycle
+
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e`
+- ✅ `npm test --silent`
+
+### Risk impact
+
+- **Monitoring reliability:** improves confidence that transient wrapper/non-zero-exit command noise does not incorrectly flip OpenClaw ingestion to failed state.
+- **Packaging readiness:** adds deterministic packaged validation for one more real-world failure mode before DMG build/checksum/install gates.
+- **Doc readiness:** operators and future QA agents can see this guardrail in the documented packaging pipeline.
