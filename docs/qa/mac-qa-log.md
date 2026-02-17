@@ -3,7 +3,45 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
-## QA cycle update — 2026-02-17 16:20 America/Toronto
+## QA cycle update — 2026-02-17 16:47 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability — early-exit on command-missing:** Probe sweep now uses `existsSync` / PATH scan (`isBinaryAvailable()`) to skip non-existent absolute binary paths and short-circuit when no executable is found on any PATH entry. This reduces probe attempts from ~80 to ~6 under constrained PATH where `openclaw` is absent, eliminating the excessive latency that was the root cause of `validate:packaged-bundled-runtime` stdio capture timeouts.
+- ✅ **Packaging — symlink dereference:** `package-macos.sh` now uses `cp -R -L` when copying the bundled Node runtime, so symlinked Homebrew layouts are dereferenced into a portable tree. Fixes the high-priority DMG portability risk where the bundled runtime was a symlink pointing back into `/opt/homebrew/Cellar/...`.
+- ✅ **Packaging — deterministic bundled-runtime validation:** `validate-packaged-bundled-runtime.sh` now passes `--dry-run --once` instead of `--dry-run` alone, so the launcher exits after one sample instead of looping, producing deterministic stdio capture within the timeout window.
+- ✅ **Packaging docs:** Updated `docs/packaging/macos-dmg.md` to document symlink dereference behavior and `--dry-run --once` validation mode.
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes (183/183).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `usageProbeAttempts`: `6` (down from `80` in prior cycles under constrained PATH)
+  - `usageProbeResult`: `ok`
+  - `usageProbeDurationMs`: `1470`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+
+### Bugs closed
+
+- ✅ **CLOSED — High:** 80-attempt probe sweep under constrained PATH now short-circuits via `isBinaryAvailable()` pre-check. Probe attempts reduced to ~6.
+- ✅ **CLOSED — High:** Bundled Node runtime symlink portability — `cp -R -L` dereferences symlinks at package time.
+- ✅ **CLOSED — High:** `validate:packaged-bundled-runtime` non-deterministic failure — `--once` flag ensures deterministic one-shot exit.
+
+### Follow-up / remaining risks
+
+1. **High:** Distribution unsigned/unnotarized; Gatekeeper friction on strict endpoints.
+2. **Medium:** Memory usage elevated this cycle but pressure class remains `normal`.
+3. **Gap:** Firebase write path unexercised (local-only mode).
+
+
 
 ### Validation checks run
 

@@ -50,6 +50,8 @@ When the packaged launcher starts, it resolves the OpenClaw binary in this order
    (packaging writes this value from the same `IDLEWATCH_OPENCLAW_BIN` / `IDLEWATCH_OPENCLAW_BIN_HINT` inputs used during build)
 4. `openclaw` via normal `PATH`
 
+When bundling a Node runtime, `package-macos.sh` dereferences symlinks while copying runtime files, so packaged layouts are portable even when the host runtime is a symlink.
+
 OpenClaw command probing in the packaged runtime uses the same command preference list as local runs:
 `status --json`, `usage --json`, `session status --json`, `session_status --json`, `stats --json`.
 
@@ -69,6 +71,7 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
+  - Packaged runtime validation now executes `--dry-run --once` for deterministic one-shot output capture.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.

@@ -41,7 +41,7 @@ run_packaged_dry_run() {
   HOME="$HOME" \
   PATH="/usr/bin:/bin" \
   "$NODE_BIN" "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" \
-    "$DIST_LAUNCHER" --dry-run
+    "$DIST_LAUNCHER" --dry-run --once
 }
 
 set +e

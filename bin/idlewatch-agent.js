@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs'
+import { existsSync } from 'node:fs'
 import os from 'os'
 import path from 'path'
 import process from 'process'
@@ -383,6 +384,23 @@ function loadOpenClawUsage(forceRefresh = false) {
     ['stats', '--json']
   ]
 
+  const pathEntries = (process.env.PATH || '').split(':').filter(Boolean)
+  function hasPathExecutable(binName) {
+    for (const entry of pathEntries) {
+      const candidate = path.join(entry, binName)
+      if (existsSync(candidate)) return true
+    }
+    return false
+  }
+
+  function isBinaryAvailable(binPath) {
+    if (binPath.includes('/')) {
+      return existsSync(binPath)
+    }
+
+    return hasPathExecutable(binPath)
+  }
+
   function runProbe(binPath, args) {
     const startMs = Date.now()
     try {
@@ -426,6 +444,7 @@ function loadOpenClawUsage(forceRefresh = false) {
   let sweeps = 0
   let sawCommandError = false
   let sawParseError = false
+  let sawCommandMissing = false
   let lastError = null
 
   const evaluateProbe = (binPath, cmdArgs, isPreferred = false) => {
@@ -466,6 +485,7 @@ function loadOpenClawUsage(forceRefresh = false) {
 
     if (probeRun.status === 'command-error') {
       if (probeRun.error === 'openclaw-not-found') {
+        sawCommandMissing = true
         lastError = probeRun.error
         preferredOpenClawProbe = isPreferred ? null : preferredOpenClawProbe
         return null
@@ -482,18 +502,33 @@ function loadOpenClawUsage(forceRefresh = false) {
   if (preferredOpenClawProbe) {
     sweeps = 1
     const cachedResult = evaluateProbe(preferredOpenClawProbe.binPath, preferredOpenClawProbe.args, true)
-    if (cachedResult) {
-      return cachedResult
-    }
+    if (cachedResult) return cachedResult
   }
 
   for (let sweep = 0; sweep <= OPENCLAW_PROBE_RETRIES; sweep++) {
     sweeps = sweep + 1
+    let sweepHasPotentialExecutable = false
+
     for (const binPath of binaries) {
+      const candidateExecutable = isBinaryAvailable(binPath)
+      if (!candidateExecutable) {
+        continue
+      }
+
+      sweepHasPotentialExecutable = true
       for (const args of subcommands) {
         const candidateResult = evaluateProbe(binPath, args)
         if (candidateResult) return candidateResult
       }
+    }
+
+    if (
+      sawCommandMissing &&
+      !sawCommandError &&
+      !sawParseError &&
+      !sweepHasPotentialExecutable
+    ) {
+      break
     }
   }
 

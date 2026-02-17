@@ -75,7 +75,8 @@ if [[ -n "$NODE_RUNTIME_DIR" ]]; then
   RUNTIME_DEST_DIR="$RESOURCES_DIR/runtime/node"
   rm -rf "$RUNTIME_DEST_DIR"
   mkdir -p "$(dirname "$RUNTIME_DEST_DIR")"
-  cp -R "$NODE_RUNTIME_DIR" "$RUNTIME_DEST_DIR"
+  # Copy with symlink dereference so packaged runtime is portable even if host runtime is a symlink.
+  cp -R -L "$NODE_RUNTIME_DIR" "$RUNTIME_DEST_DIR"
 fi
 NODE_RUNTIME_BUNDLED=false
 SIGNED_ARTIFACT=false
