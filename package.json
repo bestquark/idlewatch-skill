@@ -24,6 +24,7 @@
     "validate:firebase-write-once": "IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
     "validate:firebase-write-required-once": "IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
     "validate:dmg-install": "./scripts/validate-dmg-install.sh",
+    "validate:packaged-bundled-runtime": "./scripts/validate-packaged-bundled-runtime.sh",
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:usage-alert-rate-e2e": "node scripts/validate-usage-alert-rate-e2e.mjs",
     "validate:packaged-usage-recovery-e2e": "node scripts/validate-packaged-usage-recovery-e2e.mjs",

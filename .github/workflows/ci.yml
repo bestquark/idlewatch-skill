@@ -77,6 +77,9 @@ jobs:
       - name: Validate packaged app dry-run telemetry schema
         run: npm run validate:packaged-dry-run-schema
 
+      - name: Validate packaged bundled-runtime launcher path (no PATH node)
+        run: npm run validate:packaged-bundled-runtime
+
       - name: Validate packaged OpenClaw usage age SLO gate
         run: npm run validate:packaged-usage-age-slo
 

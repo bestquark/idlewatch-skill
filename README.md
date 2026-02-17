@@ -211,6 +211,7 @@ DMG release scaffolding is included:
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
 - Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
+- Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
 
 Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.

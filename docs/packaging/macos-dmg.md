@@ -63,10 +63,12 @@ Optional environment variables:
   - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that now runs trusted-prereq validation before build/sign/notarize
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
+- `npm run validate:packaged-bundled-runtime`
+  - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime and verifies launcher dry-run works under `PATH=/usr/bin:/bin` (no PATH node), proving bundled-runtime resolution
 
 ## CI integration
 
-- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, and DMG install validation via `npm run validate:dmg-install`)
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes bundled-runtime launcher validation via `npm run validate:packaged-bundled-runtime`, packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, and DMG install validation via `npm run validate:dmg-install`)
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:

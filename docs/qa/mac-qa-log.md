@@ -2205,3 +2205,22 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Improve monitoring startup resilience by removing unconditional Firebase runtime dependency for local-only/dry-run execution paths.
+
+## Implementation cycle update — 2026-02-17 01:58 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added packaged bundled-runtime validation harness: `scripts/validate-packaged-bundled-runtime.sh`.
+- ✅ Added npm entrypoint `npm run validate:packaged-bundled-runtime` to verify runtime independence from PATH-level Node.
+- ✅ New validation flow repackages with `IDLEWATCH_NODE_RUNTIME_DIR` set to current Node runtime, then executes packaged launcher with `PATH=/usr/bin:/bin` (no `node`) and asserts dry-run JSON output parses successfully.
+- ✅ Wired macOS packaging CI smoke (`.github/workflows/ci.yml`) to gate on bundled-runtime validation before usage-age / DMG checks.
+- ✅ Updated packaging docs (`README.md`, `docs/packaging/macos-dmg.md`) with bundled-runtime gate semantics and purpose.
+
+### Validation checks run this cycle
+
+- ✅ `npm run validate:packaged-bundled-runtime --silent` passes.
+- ✅ `npm test --silent` passes (120/120 tests).
+
+### Acceptance criteria updates
+
+- [x] Add deterministic CI guard proving packaged launcher can run with bundled Node runtime even when `node` is absent from PATH.
