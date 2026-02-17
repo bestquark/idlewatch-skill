@@ -1657,3 +1657,49 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add workload-level quality gate for near-stale/stale alert incidence over representative low-traffic windows.
+
+## QA cycle update — 2026-02-16 23:41 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30) including OpenClaw parser + freshness/alert coverage.
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits a valid sample row in local-only mode.
+- ✅ `npm run package:macos --silent` builds `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged app scaffold.
+- ✅ `npm run package:dmg --silent` builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct` / `memPct` / `memPressurePct`: populated and plausible.
+- `gpuPct`: populated on this host (`0` to `2` observed), with `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- OpenClaw usage fields (`tokensPerMin`, `openclawModel`, `openclawTotalTokens`, `openclawSessionId`, `openclawAgentId`, `openclawUsageTs`): populated in dry-run.
+- `source.usageIntegrationStatus`: `ok`
+- `source.usageIngestionStatus`: `ok`
+- `source.usageActivityStatus`: `fresh`
+- `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### Bugs / feature gaps identified this cycle
+
+1. **Distribution trust pipeline still optional/manual (High)**
+   - Packaging works, but artifacts remain unsigned by default and notarization is skipped without `MACOS_NOTARY_PROFILE`.
+   - Risk: Gatekeeper friction for external users.
+
+2. **Firebase integration not validated in this environment (Medium)**
+   - Current QA evidence is local-only (`firebase=false`) due missing runtime credentials/emulator settings.
+   - Need a dedicated write-path QA pass (service account or emulator) before release sign-off.
+
+3. **DMG artifact size indicates scaffold-only payload (Low/Informational)**
+   - Current unsigned DMG is very small (~61 KB), consistent with a launcher scaffold and no bundled Node runtime.
+   - Keep dependency expectation explicit in release notes and installer docs.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Usage probe and parser path are healthy on this host.
+- ✅ Freshness + alert fields are emitted with consistent semantics.
+- ⚠️ No CI assertion yet that enforces a bounded `openclawUsageAgeMs` on macOS runners under load.
+
+### DMG packaging risk status (current)
+
+- ✅ Build reproducibility: app scaffold + DMG generation succeeded this cycle.
+- ⚠️ Trust/compliance: signing + notarization require external env/profiles and are not enforced by default.
+- ⚠️ Runtime dependency: installer still assumes Node availability on target host.
