@@ -2478,3 +2478,34 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Notes on remaining gaps
 
 - High-priority remaining from the previous cycles remains the same: local default flows are still unsigned unless trusted mode/credentials are explicitly enabled, and credentialed Firebase production write-path QA remains pending until credentials are available.
+
+## QA cycle update — 2026-02-17 03:35 America/Toronto
+
+### Completed this implementation cycle
+
+- ✅ **OpenClaw parser reliability hardening for stringified numeric payloads and mixed telemetry shapes**
+  - Added robust number coercion in `src/openclaw-usage.js` for string-formatted values (`"1200"`, `"1771278820000"`, etc.).
+  - Added tolerant freshness marker handling so `totalTokensFresh` values like `"false"`/`"true"` are interpreted correctly.
+  - Expanded timestamp key support for session/status payloads (`updated_at`, `updatedAtMs`, `createdAt`, `created_at`, etc.).
+  - Added support for additional default-model keys (`defaultModel`, `default_model`) during session-less status responses.
+- ✅ **Monitoring reliability improvement via parser regression coverage**
+  - Added fixture and unit test `test/fixtures/openclaw-status-strings.json` + `test/openclaw-usage.test.mjs` asserting:
+    - stringified token/timestamp parsing,
+    - stale-token marker behavior,
+    - fallback/session selection with mixed shapes.
+- ✅ **Docs refresh for OpenClaw ingestion reliability**
+  - Updated `README.md` parsing notes to document accepted stringified numeric forms and mixed-key behavior.
+
+### Validation checks
+
+- ✅ `npm test --silent` passes (127/127).
+- ✅ `node bin/idlewatch-agent.js --dry-run` still emits usage-enriched rows in this host runtime.
+
+### Remaining high-priority gaps
+
+1. **Credentialed Firebase write-path validation remains pending (Medium, delivery confidence)**
+   - Still cannot complete end-to-end Firestore write-path QA without credentials in this environment.
+2. **Trusted distribution remains opt-in/certificate-dependent (High, release readiness)**
+   - Release pipeline can enforce trust, but local/default flows still support unsigned artifacts unless trusted mode is enabled.
+3. **Clean-machine install UX remains under-sampled (Medium, distribution confidence)**
+   - CI harness exists, but external hardware matrix is still not yet captured in this cycle.

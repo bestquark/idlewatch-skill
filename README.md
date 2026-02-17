@@ -172,6 +172,11 @@ Source metadata fields:
 - `source.usageRefreshOnNearStale`: whether near-stale proactive refresh is enabled (`IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE`).
 - `source.usageIdle`: boolean indicating usage age crossed idle window (`IDLEWATCH_USAGE_IDLE_AFTER_MS`).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
+
+OpenClaw parsing hardened in this release:
+- stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
+- mixed timestamp names and alternate session container keys are supported
+- stale-token markers like `"totalTokensFresh": "false"` are correctly interpreted as freshness metadata rather than causing parser failure
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
 - `source.usageProbeSweeps`: number of probe sweeps performed in the current refresh window.

@@ -70,3 +70,15 @@ test('parses generic usage payloads', () => {
 test('returns null for invalid payload', () => {
   assert.equal(parseOpenClawUsage('not-json'), null)
 })
+
+test('parses status payloads with stringified numeric fields and stale token marker fallback', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-strings.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 450)
+  assert.equal(usage.tokensPerMin, 45)
+  assert.equal(usage.sessionId, 'b7e1f8')
+  assert.equal(usage.agentId, 'agent-2')
+  assert.equal(usage.usageTimestampMs, 1771278820000)
+  assert.equal(usage.integrationStatus, 'ok')
+})

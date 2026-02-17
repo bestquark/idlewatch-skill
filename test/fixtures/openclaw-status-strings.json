@@ -1,0 +1,38 @@
+{
+  "sessions": {
+    "defaults": {
+      "model": "gpt-5.3-codex",
+      "defaultModel": "gpt-5.3-codex-spark"
+    },
+    "recent": [
+      {
+        "agentId": "agent-1",
+        "sessionId": "a9f2d3",
+        "updatedAt": "1771278800000",
+        "age": "600000",
+        "total_tokens": "120",
+        "totalTokensFresh": "false",
+        "model": "gpt-5.3-codex",
+        "tokens_per_minute": "12.75"
+      },
+      {
+        "agentId": "agent-2",
+        "sessionId": "b7e1f8",
+        "updatedAt": 1771278820000,
+        "ageMs": "30000",
+        "totalTokens": "450",
+        "totalTokensFresh": "true",
+        "model": "claude-opus-4-6",
+        "tokensPerMinute": "45"
+      },
+      {
+        "agentId": "agent-3",
+        "sessionId": "f2c9aa",
+        "updatedAt": 1771278830000,
+        "age": 15000,
+        "totalTokens": null,
+        "model": "gpt-5.3-codex"
+      }
+    ]
+  }
+}

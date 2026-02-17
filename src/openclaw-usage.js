@@ -1,6 +1,12 @@
 function pickNumber(...vals) {
   for (const val of vals) {
     if (typeof val === 'number' && Number.isFinite(val)) return val
+    if (typeof val === 'string') {
+      const normalized = val.trim()
+      if (!normalized) continue
+      const parsed = Number(normalized)
+      if (Number.isFinite(parsed)) return parsed
+    }
   }
   return null
 }
@@ -8,8 +14,21 @@ function pickNumber(...vals) {
 function pickString(...vals) {
   for (const val of vals) {
     if (typeof val === 'string' && val.trim()) return val
+    if (val instanceof String && val.toString().trim()) return val.toString().trim()
   }
   return null
+}
+
+function isFreshTokenMarker(value) {
+  if (value === false || value === 0) return false
+  if (value === null || typeof value === 'undefined') return true
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (!normalized) return true
+    if (['false', '0', 'no', 'off', 'stale'].includes(normalized)) return false
+    if (['true', '1', 'yes', 'on', 'fresh'].includes(normalized)) return true
+  }
+  return Boolean(value)
 }
 
 function deriveTokensPerMinute(session) {
@@ -25,8 +44,16 @@ function deriveTokensPerMinute(session) {
 function pickNewestSession(sessions = []) {
   return sessions.reduce((best, candidate) => {
     if (!best) return candidate
-    const bestTs = pickNumber(best?.updatedAt, best?.ts)
-    const candidateTs = pickNumber(candidate?.updatedAt, candidate?.ts)
+
+    const pickSessionTs = (item) => {
+      const age = pickNumber(item?.age, item?.ageMs)
+      const absolute = pickNumber(item?.updatedAt, item?.updated_at, item?.updatedAtMs, item?.createdAt, item?.created_at, item?.ts, item?.time)
+      return absolute ?? (Number.isFinite(age) && age >= 0 ? Date.now() - age : null)
+    }
+
+    const bestTs = pickSessionTs(best)
+    const candidateTs = pickSessionTs(candidate)
+
     if (candidateTs === null) return best
     if (bestTs === null || candidateTs > bestTs) return candidate
     return best
@@ -38,7 +65,7 @@ function pickBestRecentSession(recent = []) {
 
   const withFreshTokens = recent.filter((session) => {
     const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens)
-    return totalTokens !== null && session?.totalTokensFresh !== false
+    return totalTokens !== null && isFreshTokenMarker(session?.totalTokensFresh)
   })
   const freshestWithTokens = pickNewestSession(withFreshTokens)
   if (freshestWithTokens) return freshestWithTokens
@@ -123,7 +150,7 @@ function parseFromStatusJson(parsed) {
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {
-    const defaultsModel = pickString(defaults.model, defaults.defaultModel, parsed?.default_model)
+    const defaultsModel = pickString(defaults.model, defaults.defaultModel, parsed?.default_model, defaults?.default_model, parsed?.defaultModel)
     if (!defaultsModel) return null
     return {
       model: defaultsModel,
@@ -147,8 +174,8 @@ function parseFromStatusJson(parsed) {
   )
   const sessionAgeMs = pickNumber(session.age, session.ageMs)
   const usageTimestampMs =
-    pickNumber(session.updatedAt, session.ts, session.timestamp) ??
-    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickNumber(parsed?.ts, parsed?.time))
+    pickNumber(session.updatedAt, session.updated_at, session.updatedAtMs, session.ts, session.time, session.timestamp) ??
+    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickNumber(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs))
 
   const hasStrongUsage = model !== null || totalTokens !== null || tokensPerMin !== null
 
@@ -189,7 +216,7 @@ function parseGenericUsage(parsed) {
     tokensPerMin,
     sessionId: pickString(parsed?.sessionId, usage?.sessionId, usage?.id),
     agentId: pickString(parsed?.agentId, usage?.agentId),
-    usageTimestampMs: pickNumber(parsed?.updatedAt, usage?.updatedAt, parsed?.ts, parsed?.time),
+    usageTimestampMs: pickNumber(usage?.updatedAt, usage?.updated_at, usage?.updatedAtMs, usage?.ts, usage?.time, usage?.timestamp, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.ts, parsed?.time),
     integrationStatus: 'ok'
   }
 }
