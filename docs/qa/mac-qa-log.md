@@ -2245,3 +2245,52 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - 2 AM overnight cycle. All signals healthy; no new regressions detected.
 - Remaining gaps unchanged: trusted distribution (credential-gated), Firebase E2E (pending creds), clean-machine install UX (limited).
+
+## QA cycle update — 2026-02-17 02:30 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (120/120).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry with OpenClaw usage fields.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run package:dmg --silent` succeeds and builds `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`).
+- ✅ `npm run validate:dmg-install --silent` passes (DMG mount/copy/app schema smoke).
+
+### Telemetry validation snapshot (latest)
+
+- CPU/memory/memory-pressure: populated (`cpuPct`, `memPct`, `memUsedPct`, `memPressurePct`, `memPressureClass`).
+- GPU telemetry: populated (`gpuPct: 10–12`, `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`).
+- OpenClaw usage: populated when OpenClaw path is available (`tokensPerMin`, `openclawModel`, `openclawTotalTokens`, session identifiers).
+- OpenClaw usage freshness: stable with
+  - `openclawUsageAgeMs ~36,000–38,000ms`
+  - `source.usageIntegrationStatus: "ok"`
+  - `source.usageFreshnessState: "fresh"`
+  - `source.usageCommand: "/opt/homebrew/bin/openclaw status --json"`.
+- Environment remains local-only for this QA run (Firebase not configured): Firebase write path not exercised.
+
+### Bugs / feature gaps identified this cycle
+
+1. **Trusted distribution remains opt-out (High, release-readiness)**
+   - DMG remains unsigned/un-notarized by default when `MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE` are unset.
+   - Tag/release strict mode exists, but local/distribution defaults still allow unsigned artifacts.
+
+2. **Firebase write-path not under active QA (Medium, E2E confidence)**
+   - This cycle validates local dry-run/schema/install paths only.
+   - One credentialed pass is still needed to validate Firestore write semantics and failure handling end-to-end.
+
+3. **Packaging/runtime dependency remains operator-visible outside strict mode (Medium, usability)**
+   - Local script output continues to advise about optional bundling and signing.
+   - Runtime remains Node-dependent unless `IDLEWATCH_NODE_RUNTIME_DIR` is explicitly configured in packaging context.
+
+### DMG packaging risk status (current)
+
+- ✅ Build and install-smoke reproducibility remains stable (`.app` + versioned unsigned DMG + launch schema validation).
+- ⚠️ Trust/compliance risk remains (no automatic signing/notarization in this local run).
+- ⚠️ No new clean-machine external validation evidence for Apple Silicon + Intel/Rosetta matrix this cycle.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Data plane appears healthy in this runtime context with resolved command path and non-null usage fields.
+- ✅ Explicit freshness/near-stale/probe metadata remains present and consistent with collected usage age.
+- ⚠️ Integration robustness under alternate runtime contexts (e.g., different host shells/service invocations) still needs periodic sampling to confirm command-path stability.
