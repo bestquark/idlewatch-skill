@@ -1,0 +1,28 @@
+{
+  "sessions": {
+    "main": {
+      "agentId": "agent-map-main",
+      "sessionId": "map-main-1",
+      "model": "gpt-5.3-codex",
+      "updatedAt": 1771278900000,
+      "totalTokens": 1100,
+      "totalTokensFresh": true
+    },
+    "backup": {
+      "agentId": "agent-map-backup",
+      "sessionId": "map-backup-1",
+      "model": "claude-opus-4-6",
+      "updatedAt": 1771278950000,
+      "totalTokens": 1200,
+      "totalTokensFresh": true
+    },
+    "stale": {
+      "agentId": "agent-map-stale",
+      "sessionId": "map-stale-1",
+      "model": "gpt-5.3-codex",
+      "updatedAt": 1771278800000,
+      "totalTokens": null,
+      "totalTokensFresh": false
+    }
+  }
+}

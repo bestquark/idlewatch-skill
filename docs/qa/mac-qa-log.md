@@ -1,3 +1,24 @@
+## QA cycle update — 2026-02-17 09:26 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** Added OpenClaw parser hardening for session maps keyed by session id (object form under `sessions`) and covered with fixture regression tests in `test/openclaw-usage.test.mjs`.
+  - New fixture: `test/fixtures/openclaw-status-session-map.json`
+  - New parser path: `src/openclaw-usage.js` (`collectStatusSessionCandidates` object-map normalization)
+- ✅ **OpenClaw ingestion:** Added packaged runtime validation for usage alert transitions:
+  - New script: `scripts/validate-packaged-usage-alert-rate-e2e.mjs`
+  - New npm script: `validate:packaged-usage-alert-rate-e2e`
+  - CI integration: added to `macos-packaging-smoke` in `.github/workflows/ci.yml`
+- ✅ **Packaging scripts/docs:** Updated packaging docs and release checklist to include packaged alert-rate guardrail in both `docs/packaging/macos-dmg.md` and `README.md`.
+- ✅ `npm test --silent` passes (157).
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent` passes.
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent` still passes with unchanged behavior.
+
+### Bugs / features completed in this cycle
+
+- ✅ Parser now accepts both array and object-map session containers, reducing false-miss risk across OpenClaw CLI serializer variants.
+- ✅ Packaged alert semantics now have deterministic CI coverage in the same packaging-smoke path as install/checksum gates.
+
 ## QA cycle update — 2026-02-17 09:20 America/Toronto
 
 ### Completed this cycle

@@ -167,6 +167,23 @@ function extractJsonCandidates(raw) {
   return candidates
 }
 
+function coerceSessionCandidates(value) {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value : null
+  }
+
+  if (value && typeof value === 'object') {
+    const fromObject = Object.values(value).filter((entry) => {
+      if (!entry || typeof entry !== 'object') return false
+      if (Array.isArray(entry)) return entry.length > 0
+      return true
+    })
+    if (fromObject.length > 0) return fromObject
+  }
+
+  return null
+}
+
 function collectStatusSessionCandidates(parsed) {
   const candidateRoots = [
     parsed?.sessions?.recent,
@@ -186,12 +203,16 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.sessions
   ]
 
-  const sessionsArrayCandidates = candidateRoots
-    .filter(Array.isArray)
+  for (const root of candidateRoots) {
+    const normalized = coerceSessionCandidates(root)
+    if (normalized && normalized.length > 0) return normalized
+  }
 
-  if (sessionsArrayCandidates.length > 0) return sessionsArrayCandidates[0]
+  if (parsed?.result?.sessions) {
+    return [parsed.result.sessions]
+  }
 
-  return parsed?.result?.sessions ? [parsed.result.sessions] : null
+  return null
 }
 
 function parseFromStatusJson(parsed) {

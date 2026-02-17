@@ -120,6 +120,17 @@ test('parses wrapped status payload with direct session array and nested usage t
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses status payload where sessions is an object map keyed by session id', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-session-map.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 1200)
+  assert.equal(usage.sessionId, 'map-backup-1')
+  assert.equal(usage.agentId, 'agent-map-backup')
+  assert.equal(usage.usageTimestampMs, 1771278950000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)

@@ -29,6 +29,7 @@
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:usage-alert-rate-e2e": "node scripts/validate-usage-alert-rate-e2e.mjs",
     "validate:packaged-usage-recovery-e2e": "node scripts/validate-packaged-usage-recovery-e2e.mjs",
+    "validate:packaged-usage-alert-rate-e2e": "node scripts/validate-packaged-usage-alert-rate-e2e.mjs",
     "validate:openclaw-cache-recovery-e2e": "node scripts/validate-openclaw-cache-recovery-e2e.mjs",
     "validate:packaged-usage-probe-noise-e2e": "node scripts/validate-packaged-usage-probe-noise-e2e.mjs",
     "validate:trusted-prereqs": "./scripts/validate-trusted-prereqs.sh",

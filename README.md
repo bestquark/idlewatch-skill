@@ -188,6 +188,7 @@ OpenClaw parsing hardened in this release:
 - stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
 - mixed timestamp names and alternate session container keys are supported
 - wrapped status payload shapes (`result` root object, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
+- sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers
 - stale-token markers like `"totalTokensFresh": "false"` are correctly interpreted as freshness metadata rather than causing parser failure
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
@@ -241,6 +242,7 @@ DMG release scaffolding is included:
 - CI dry-run schema gates via `npm run validate:dry-run-schema` and `npm run validate:packaged-dry-run-schema` (packaged validator auto-rebuilds `IdleWatch.app` first to avoid stale-artifact mismatches)
 - Usage freshness transition gate via `npm run validate:usage-freshness-e2e` (simulates long-window aging→stale transitions end-to-end)
 - Usage alert-rate quality gate via `npm run validate:usage-alert-rate-e2e` (asserts typical low-traffic ages stay `usageAlertLevel=ok`, with deterministic boundary escalation)
+- Packaged usage alert-rate gate via `npm run validate:packaged-usage-alert-rate-e2e` (verifies alert transitions in packaged launcher runtime path)
 - Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
