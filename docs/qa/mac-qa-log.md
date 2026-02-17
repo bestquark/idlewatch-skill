@@ -1461,3 +1461,47 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add explicit usage alert-level metadata so downstream monitoring can page on ingestion outages without over-alerting on stale activity windows.
+
+## QA cycle update — 2026-02-16 23:11 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes after app rebuild.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`2`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `tokensPerMin`: populated (`12510.88`).
+  - `openclawUsageAgeMs`: `92296` with `source.usageIntegrationStatus: "stale"`, `source.usageIngestionStatus: "ok"`.
+  - alert metadata present and coherent (`usageAlertLevel: "warning"`, `usageAlertReason: "activity-stale"`).
+- One-shot mode (`--once`) confirms usage-disabled path remains deterministic:
+  - usage fields null, `source.usage: "disabled"`, `usageAlertLevel: "off"`, `usageAlertReason: "usage-disabled"`.
+
+### Bugs / feature gaps (current)
+
+1. **Packaged schema validation is order-dependent (Medium, QA ergonomics risk)**
+   - Running `validate:packaged-dry-run-schema` before rebuilding the app can fail against stale packaged bits (observed transient `usageAlertLevel invalid`).
+   - Follow-up: either make `validate:packaged-dry-run-schema` auto-run `package:macos`, or document/enforce an explicit precondition in npm script naming/help.
+
+2. **Trusted distribution remains credential-gated (High, release readiness)**
+   - DMG output remains unsigned/not notarized by default unless `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE` are provided.
+
+3. **Firebase production write-path validation still pending (Medium, E2E confidence)**
+   - Local schema + packaging checks are green; one credentialed Firestore write pass is still needed.
+
+### DMG packaging risk status
+
+- ✅ App + DMG artifacts are reproducibly generated in local QA (`IdleWatch.app`, versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced and verified.
+
+### OpenClaw integration gap status
+
+- ✅ Usage probe and alert-routing metadata are present and coherent in direct dry-run output.
+- ✅ Disabled-usage branch remains explicit and machine-readable (`off` alert level in `--once` validation).
+- ⚠️ Activity staleness remains common during low-traffic windows; downstream alert policy should continue prioritizing ingestion failures over stale-only activity states.
