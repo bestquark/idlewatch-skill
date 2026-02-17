@@ -64,6 +64,9 @@ function validateRow(row) {
   assert.equal(typeof source.usagePastStaleThreshold, 'boolean', 'source.usagePastStaleThreshold must be boolean')
   assert.equal(typeof source.usageRefreshAttempted, 'boolean', 'source.usageRefreshAttempted must be boolean')
   assert.equal(typeof source.usageRefreshRecovered, 'boolean', 'source.usageRefreshRecovered must be boolean')
+  assert.ok(Number.isInteger(source.usageRefreshAttempts) && source.usageRefreshAttempts >= 0, 'source.usageRefreshAttempts must be integer >= 0')
+  assert.ok(Number.isInteger(source.usageRefreshReprobes) && source.usageRefreshReprobes >= 0, 'source.usageRefreshReprobes must be integer >= 0')
+  assert.ok(Number.isFinite(source.usageRefreshDelayMs) && source.usageRefreshDelayMs >= 0, 'source.usageRefreshDelayMs must be number >= 0')
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
@@ -101,6 +104,12 @@ function validateRow(row) {
   assert.ok(source.usageProbeSweeps <= source.usageProbeRetries + 1, 'usageProbeSweeps cannot exceed configured retries + 1')
   if (source.usageRefreshRecovered) {
     assert.equal(source.usageRefreshAttempted, true, 'usageRefreshRecovered implies usageRefreshAttempted')
+  }
+  if (source.usageRefreshAttempted) {
+    assert.ok(source.usageRefreshAttempts >= 1, 'usageRefreshAttempts must be >= 1 when refresh attempted')
+    assert.ok(source.usageRefreshAttempts <= source.usageRefreshReprobes + 1, 'usageRefreshAttempts cannot exceed configured reprobes + 1')
+  } else {
+    assert.equal(source.usageRefreshAttempts, 0, 'usageRefreshAttempts must be 0 when refresh not attempted')
   }
 
   if (source.usage === 'unavailable') {

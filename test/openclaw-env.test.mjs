@@ -64,6 +64,62 @@ test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
   assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES/)
 })
 
+test('accepts explicit IDLEWATCH_USAGE_REFRESH_REPROBES in dry-run', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_USAGE_REFRESH_REPROBES: '3'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /idlewatch-agent dry-run/)
+})
+
+test('rejects invalid IDLEWATCH_USAGE_REFRESH_REPROBES', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_USAGE_REFRESH_REPROBES: '-1'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /Invalid IDLEWATCH_USAGE_REFRESH_REPROBES/)
+})
+
+test('accepts explicit IDLEWATCH_USAGE_REFRESH_DELAY_MS in dry-run', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_USAGE_REFRESH_DELAY_MS: '500'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /idlewatch-agent dry-run/)
+})
+
+test('rejects invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_USAGE_REFRESH_DELAY_MS: '-5'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /Invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS/)
+})
+
 test('accepts Firestore emulator mode without service account credentials', () => {
   const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
     env: {

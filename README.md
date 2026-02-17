@@ -80,6 +80,10 @@ Binary resolution order for the OpenClaw probe:
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
 - `IDLEWATCH_OPENCLAW_PROBE_RETRIES` retries full OpenClaw probe sweeps after the first pass
   to reduce transient command failures (default: `1`).
+- `IDLEWATCH_USAGE_REFRESH_REPROBES` controls how many extra forced uncached reprobes run
+  after crossing stale threshold (default: `1`, total attempts = reprobes + initial refresh).
+- `IDLEWATCH_USAGE_REFRESH_DELAY_MS` waits between forced stale-threshold reprobes
+  (default: `250`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
 
@@ -102,8 +106,11 @@ Source metadata fields:
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
-- `source.usageRefreshAttempted`: true when collector forced an immediate re-probe after crossing stale threshold.
-- `source.usageRefreshRecovered`: true when that forced re-probe recovered back below stale-threshold crossing.
+- `source.usageRefreshAttempted`: true when collector forced stale-threshold refresh logic.
+- `source.usageRefreshRecovered`: true when forced refresh recovered below stale-threshold crossing.
+- `source.usageRefreshAttempts`: number of forced refresh attempts actually executed.
+- `source.usageRefreshReprobes`: configured extra forced reprobes (`IDLEWATCH_USAGE_REFRESH_REPROBES`).
+- `source.usageRefreshDelayMs`: configured delay between reprobes (`IDLEWATCH_USAGE_REFRESH_DELAY_MS`).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.

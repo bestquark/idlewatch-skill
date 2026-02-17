@@ -1363,3 +1363,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add deterministic one-sample publish mode to reduce QA friction for Firebase/OpenClaw ingestion validation in non-loop contexts.
+
+## Implementation cycle update — 2026-02-16 22:58 America/Toronto
+
+### Completed this cycle
+
+- ✅ Improved stale-threshold recovery reliability by allowing configurable multi-attempt forced reprobes when usage crosses stale threshold:
+  - new env vars `IDLEWATCH_USAGE_REFRESH_REPROBES` (default `1`) and `IDLEWATCH_USAGE_REFRESH_DELAY_MS` (default `250`).
+  - refresh path now retries uncached probes (`reprobes + 1` total attempts) with optional inter-attempt delay.
+- ✅ Added refresh observability metadata for downstream tuning/debugging:
+  - `source.usageRefreshAttempts`
+  - `source.usageRefreshReprobes`
+  - `source.usageRefreshDelayMs`
+- ✅ Extended schema validator contracts for refresh metadata and consistency checks.
+- ✅ Added env validation tests for accepted/rejected refresh retry/delay settings.
+- ✅ Updated operator docs/help (`README.md`, `.env.example`, CLI `--help`) with new refresh controls.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (24/24).
+- ✅ `npm run validate:dry-run-schema --silent` passes with new refresh metadata checks.
+- ✅ `npm run package:macos --silent` succeeds.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes with packaged launcher schema checks.
+
+### Acceptance criteria updates
+
+- [x] Add configurable multi-attempt stale-threshold refresh controls to reduce packaged-loop stale flapping risk without masking ingestion failures.
