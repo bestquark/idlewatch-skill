@@ -606,3 +606,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Mitigate stale-status flapping risk in long-running QA/build windows without hiding real threshold crossings.
+
+## QA cycle update — 2026-02-16 19:20 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14 tests; GPU/memory/OpenClaw/freshness suites all green).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with populated CPU/memory/GPU/OpenClaw fields.
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged app scaffold.
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run:
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`29`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`32248.12`).
+  - `openclawUsageAgeMs`: `42001` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "fresh"`, `usageNearStale: false`.
+- Packaged app dry-run:
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`.
+  - `tokensPerMin`: populated (`28954.54`).
+  - `openclawUsageAgeMs`: `46923` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageNearStale: true`, `usagePastStaleThreshold: false`.
+
+### Bugs / feature gaps (current)
+
+1. **Trusted distribution path still optional/manual by default (High, release readiness)**
+   - Local packaging remains unsigned when `MACOS_CODESIGN_IDENTITY` is unset.
+   - Notarization/stapling still skipped unless `MACOS_NOTARY_PROFILE` is configured.
+
+2. **Firebase write path still not exercised in active QA loop (Medium, E2E confidence)**
+   - Local telemetry generation is healthy.
+   - A credentialed Firestore QA pass is still required to verify end-to-end writes and error handling.
+
+3. **Clean-machine installer validation still pending (Medium, distribution confidence)**
+   - No new install evidence this cycle for fresh macOS environments (Apple Silicon + Intel/Rosetta).
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk remains until signing + notarization are executed with configured credentials.
+- ⚠️ Clean-machine install evidence is still pending.
+
+### OpenClaw integration gap status
+
+- ✅ Integration remains healthy on host with populated usage/session fields and expected freshness transitions (`fresh`/`aging`).
+- ✅ Grace-window metadata is present in emitted samples (`usageStaleGraceMs`, `usagePastStaleThreshold`) and reduces stale flip noise in this cycle.
+- ⚠️ End-to-end CI timing assertions for long packaging windows are still absent.
