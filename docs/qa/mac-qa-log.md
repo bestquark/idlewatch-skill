@@ -1,3 +1,75 @@
+# IdleWatch Mac QA Readiness Log
+
+Date: 2026-02-16  
+Owner: QA (Mac distribution + telemetry + OpenClaw integration)
+
+## Scope audited
+
+- Repository: `idlewatch-skill`
+- CLI runtime and packaging readiness for Mac downloadable distribution
+- Telemetry signal quality: CPU / memory / GPU
+- OpenClaw integration readiness for LLM usage and session stats
+
+## QA cycle update — 2026-02-17 10:20 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA validation sweep executed:** Ran the full Mac telemetry + packaging checkpoint set for this cycle.
+- ✅ **Parser/monitor checks:** `npm test --silent` remains green with 164 tests.
+- ✅ **Telemetry checks:** `smoke` + packaged dry-run paths continue to emit OpenClaw usage + GPU rows.
+- ✅ **Packaging checks:** DMG build and installer/checksum validation passed.
+- ✅ **OpenClaw resilience validation:** Packaged and direct probe-noise/recovery paths continue to pass.
+
+### Validation checks run
+
+- ✅ `npm test --silent` (164)
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:packaged-usage-health --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ❌ `npm run validate:packaged-usage-age-slo --silent` *(failed: `openclawUsageAgeMs` 924,299ms > threshold 300,000ms during this run window)*
+- ✅ `npm run package:dmg --silent` (`dist/IdleWatch-0.1.0-unsigned.dmg`, `dist/IdleWatch-0.1.0-unsigned.dmg.sha256`)
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features completed in this cycle
+
+- ✅ **Feature:** Confirmed stability of packaged OpenClaw integration under noisy/non-zero-exit probe output and cache-recovery flows.
+- ✅ **Feature:** Re-confirmed strict usage-freshness state taxonomy (`ok`/`warning`) remains deterministic in packaged alert-rate fixture paths.
+- ⚠️ **Open item / bug:** `validate:packaged-usage-age-slo` still fails under long CI/QA execution windows when usage age drifts above the 5m max before validation sample completes.
+
+### Telemetry validation checks (latest sample)
+
+- `cpuPct`: `18.19`
+- `memPct`: `94.21` / `memUsedPct`: `94.21`
+- `memPressurePct`: `43` (`memPressureClass: normal`)
+- `gpuPct`: `0` via `gpuSource: ioreg-agx`, `gpuConfidence: high`
+- `tokensPerMin`: `5024.12`
+- `openclawModel`: `claude-opus-4-6`
+- `openclawTotalTokens`: `74853`
+- `openclawUsageAgeMs`: `897019`
+- `usageFreshnessState`: `stale`
+- `usageAlertLevel`: `warning` (`usageAlertReason`: `activity-past-threshold`)
+- `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+- `usageIntegrationStatus`: `stale` (expected during this stale window)
+
+### DMG packaging risks
+
+1. **High:** Distribution is still unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset), so Gatekeeper friction remains possible.
+2. **High:** `validate:packaged-usage-age-slo` indicates stale-age sensitivity can fail packaging-era/long validation runs even when collectors and probes are healthy.
+3. **Medium:** Trust-hardening remains opt-in and not enforced by default (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` path not active).
+4. **Medium:** No additional install matrix was added for Apple Silicon vs Intel/Rosetta in this specific cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** OpenClaw usage freshness can transition to `stale/warning` during extended runtime windows; threshold behavior should be revisited for packaging/validation timing in long jobs.
+2. **Gap:** Runtime still depends on local `openclaw` availability and accepted JSON shapes; command-path/shape compatibility remains an external dependency.
+3. **Gap:** Cloud telemetry path still not exercised in this local QA cycle (`Firebase is not configured`).
+
 ## QA cycle update — 2026-02-17 09:56 America/Toronto
 
 ### Completed this cycle
@@ -379,17 +451,6 @@
 
 - `validate:usage-alert-rate-e2e` now checks: typical cadence stays `ok`, while boundary samples escalate `notice -> warning -> warning`.
 - Packaged OpenClaw bin hint persistence now resolves correctly when only `IDLEWATCH_OPENCLAW_BIN_HINT` is provided to `package-macos.sh` and not re-exported at runtime.
-# IdleWatch Mac QA Readiness Log
-
-Date: 2026-02-16  
-Owner: QA (Mac distribution + telemetry + OpenClaw integration)
-
-## Scope audited
-
-- Repository: `idlewatch-skill`
-- CLI runtime and packaging readiness for Mac downloadable distribution
-- Telemetry signal quality: CPU / memory / GPU
-- OpenClaw integration readiness for LLM usage and session stats
 
 ## QA cycle update — 2026-02-17 04:30 America/Toronto
 
