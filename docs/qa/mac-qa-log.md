@@ -3,6 +3,75 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 18:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** Ran a full Mac validation set covering unit tests, telemetry schema/e2e gates, and packaging gates.
+- ✅ **Runtime health observed stable:** schema and runtime collectors continue to produce deterministic rows for host and packaged launchers.
+- ⚠️ **Known regression persisted:** `validate:packaged-bundled-runtime` and `validate:dmg-install` still intermittently fail from dry-run capture timeouts in this environment (no JSON captured within timeout window).
+- ⚠️ **SLO gate failure:** `validate:packaged-usage-age-slo` failed this cycle due `openclawUsageAgeMs` exceeding configured max threshold.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` **(partial/output-timeout path hit; fallback path passes)**
+- ⚠️ `npm run validate:dmg-install --silent` **(timeout/no output captured, validator hard-fail)**
+- ⚠️ `npm run validate:packaged-usage-age-slo --silent` **(failed: `openclawUsageAgeMs` > 300000ms)**
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** no code changes this cycle; validation output shows telemetry still includes required `fleet` fields and OpenClaw provenance for both host and packaged app.
+- ✅ **Feature:** `validate:packaged-usage-recovery-e2e` and `validate:openclaw-cache-recovery-e2e` remain green, confirming stale-fallback and reprobe recovery remains functional.
+- 🐛 **Open:** `validate:packaged-bundled-runtime` still shows timeout-driven partial row behavior when launched in validator context, reducing deterministic confidence in this gate.
+- 🐛 **Open:** `validate:dmg-install` relies on the same stdout-capture path and remains similarly brittle in this environment.
+- 🐛 **Open:** `validate:packaged-usage-age-slo` now fails due stale OpenClaw usage age window in packaged mode (`usageAgeMs` over max).
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 15.79`, `memUsedPct: 88.06`, `memPressurePct: 48 (normal)`, `gpuPct: 5`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 27311`, `openclawUsageAgeMs: 353138`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off --dry-run --json`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`
+
+- Packaged launcher `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 20.72`, `memUsedPct: 90.54`, `memPressurePct: 48 (normal)`, `gpuPct: 5`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 27311`, `openclawUsageAgeMs: 361388`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`
+
+- Packaged launcher with OpenClaw off `IDLEWATCH_OPENCLAW_USAGE=off ... --dry-run --once --json`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageAlertLevel: off`
+
+### DMG packaging risks
+
+1. **High:** Distribution still unsigned/unnotarized in this environment (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset) → Gatekeeper friction remains possible for first-time installs on strict macOS endpoints.
+2. **High:** Validation reliability gap on `validate:packaged-bundled-runtime` and `validate:dmg-install`: stderr/stdout capture can return empty on timeout even when app launch is healthy.
+3. **Medium:** Runtime age SLO can breach in packaged mode (`validate:packaged-usage-age-slo` failure) due stale telemetry window; this is timing-sensitive but currently fails consistently when stale data is extended.
+
+### OpenClaw integration gaps
+
+1. **Gap:** DMG installation validator path still cannot reliably assert telemetry capture; integration depends on noisy/timeout-safe output handling.
+2. **Gap:** Packaged usage freshness can shift to `stale`/`warning` quickly with local activity gap (`openclawUsageAgeMs` > threshold), requiring stricter acceptance window or improved test fixture timing.
+3. **Gap:** Firebase/cloud write path remains unexercised in this environment; local-only mode continues.
+
+### Follow-up / action items
+
+1. Fix `validate:packaged-bundled-runtime` + `validate:dmg-install` capture strategy to avoid hard fail on empty partial output windows.
+2. Revisit `validate:packaged-usage-age-slo` test timing or age threshold for packaged launch conditions.
+3. Keep this log entry cadence at 20-minute heartbeat and continue until both timeout-sensitive gates pass 2+ consecutive cycles without degradation.
+
 ## QA cycle update — 2026-02-17 18:40 America/Toronto
 
 ### Completed this cycle
