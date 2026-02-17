@@ -66,6 +66,8 @@ Binary resolution order for the OpenClaw probe:
   (default: `floor(IDLEWATCH_USAGE_STALE_MS*0.75)`).
 - `IDLEWATCH_USAGE_STALE_GRACE_MS` adds a grace window before `usageIntegrationStatus`
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
+- `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
+  snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
 
 - `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
 - `openclawModel`: active model name (from the selected recent session or defaults).
@@ -85,9 +87,11 @@ Source metadata fields:
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
-- `source.usageProbeResult`: `ok | disabled | command-missing | command-error | parse-error | unavailable`.
+- `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
 - `source.usageProbeError`: compact failure reason when probing fails.
+- `source.usageUsedFallbackCache`: boolean indicating whether last-good usage cache was used this sample.
+- `source.usageFallbackCacheAgeMs`: age of fallback cache snapshot when used, otherwise `null`.
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
 - `source.usageNearStaleMsThreshold`: threshold used for aging classification.
 - `source.usageStaleGraceMs`: grace window before stale status activation.

@@ -61,9 +61,11 @@ function validateRow(row) {
   assert.equal(typeof source.usageNearStale, 'boolean', 'source.usageNearStale must be boolean')
   assert.equal(typeof source.usagePastStaleThreshold, 'boolean', 'source.usagePastStaleThreshold must be boolean')
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
-  assert.ok(['ok', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
+  assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
   assert.ok(source.usageProbeError === null || typeof source.usageProbeError === 'string', 'source.usageProbeError must be string or null')
+  assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
+  assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')
   assert.ok(Number.isFinite(source.usageStaleMsThreshold), 'source.usageStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageNearStaleMsThreshold), 'source.usageNearStaleMsThreshold must be number')
   assert.ok(Number.isFinite(source.usageStaleGraceMs), 'source.usageStaleGraceMs must be number')
@@ -73,7 +75,7 @@ function validateRow(row) {
     assert.ok(row.openclawSessionId, 'openclawSessionId required when source.usage=openclaw')
     assert.ok(row.openclawUsageTs, 'openclawUsageTs required when source.usage=openclaw')
     assert.ok(source.usageFreshnessState, 'usageFreshnessState required when source.usage=openclaw')
-    assert.equal(source.usageProbeResult, 'ok', 'usageProbeResult must be ok when source.usage=openclaw')
+    assert.ok(['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must be ok or fallback-cache when source.usage=openclaw')
   }
 
   if (source.usage === 'disabled') {
@@ -81,8 +83,16 @@ function validateRow(row) {
   }
 
   if (source.usage === 'unavailable') {
-    assert.ok(source.usageProbeResult !== 'ok', 'usageProbeResult must explain unavailable usage')
+    assert.ok(!['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must explain unavailable usage')
     assert.ok(source.usageProbeAttempts > 0 || source.usageProbeResult === 'disabled', 'usageProbeAttempts should be > 0 when unavailable')
+  }
+
+  if (source.usageProbeResult === 'fallback-cache') {
+    assert.equal(source.usageUsedFallbackCache, true, 'usageUsedFallbackCache must be true for fallback-cache')
+    assert.ok(Number.isFinite(source.usageFallbackCacheAgeMs), 'usageFallbackCacheAgeMs required for fallback-cache')
+  } else {
+    assert.equal(source.usageUsedFallbackCache, false, 'usageUsedFallbackCache must be false unless fallback-cache')
+    assert.equal(source.usageFallbackCacheAgeMs, null, 'usageFallbackCacheAgeMs must be null unless fallback-cache')
   }
 
   if (REQUIRE_OPENCLAW_USAGE) {

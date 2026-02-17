@@ -891,3 +891,20 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 2. **Credentialed Firebase E2E pass still pending (Medium, delivery confidence)**
    - Local/stdout schema + packaging validations are green; Firestore write-path QA still requires credentials.
+
+## Implementation cycle update — 2026-02-16 20:51 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added transient OpenClaw probe resilience via last-good usage fallback cache:
+  - new env var `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS`
+  - probe can emit `source.usageProbeResult: "fallback-cache"` and keep usage populated during short command outages.
+- ✅ Added fallback observability metadata:
+  - `source.usageUsedFallbackCache`
+  - `source.usageFallbackCacheAgeMs`
+- ✅ Extended dry-run schema validator to enforce fallback metadata/consistency constraints.
+- ✅ Updated `.env.example` and README with fallback behavior and tuning docs.
+
+### Acceptance criteria updates
+
+- [x] Improve monitoring reliability against transient OpenClaw CLI probe failures by reusing bounded last-good usage snapshots with explicit provenance.
