@@ -11,6 +11,7 @@ VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "i
 CODESIGN_IDENTITY="${MACOS_CODESIGN_IDENTITY:-}"
 REQUIRE_TRUSTED="${IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION:-0}"
 NODE_RUNTIME_DIR="${IDLEWATCH_NODE_RUNTIME_DIR:-}"
+OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN:-${IDLEWATCH_OPENCLAW_BIN_HINT:-}}"
 ALLOW_UNSIGNED_TAG_RELEASE="${IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE:-0}"
 
 if [[ "$REQUIRE_TRUSTED" != "1" && "${GITHUB_ACTIONS:-}" == "true" ]]; then
@@ -86,7 +87,7 @@ cat > "$RESOURCES_DIR/packaging-metadata.json" <<METADATA
   "nodeRuntimeSource": "${NODE_RUNTIME_DIR:-}",
   "signed": ${SIGNED_ARTIFACT},
   "codesignIdentity": "${CODESIGN_IDENTITY:-}",
-  "openclawBinHint": "${IDLEWATCH_OPENCLAW_BIN:-}",
+  "openclawBinHint": "${OPENCLAW_BIN_HINT:-}",
   "launcher": "Contents/MacOS/IdleWatch",
   "payloadTarball": "${PKG_TGZ}",
   "payloadNode": "$(node -v 2>/dev/null || echo unknown)"

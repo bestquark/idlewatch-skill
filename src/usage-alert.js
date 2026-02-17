@@ -21,16 +21,16 @@ export function deriveUsageAlert(source, options = {}) {
     return { level: 'notice', reason: 'activity-idle' }
   }
 
+  if (pastStaleThreshold) {
+    return { level: 'warning', reason: 'activity-past-threshold' }
+  }
+
   if (activity === 'stale' && refreshAttempted && !refreshRecovered) {
     return { level: 'notice', reason: 'activity-no-new-usage' }
   }
 
   if (activity === 'stale') {
     return { level: 'warning', reason: 'activity-stale' }
-  }
-
-  if (pastStaleThreshold) {
-    return { level: 'warning', reason: 'activity-past-threshold' }
   }
 
   if (nearStale) {

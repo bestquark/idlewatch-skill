@@ -1,3 +1,22 @@
+## QA cycle update — 2026-02-17 04:36 America/Toronto
+
+### Completed this cycle
+
+- ✅ Fixed usage-alert contract mismatch so deterministic boundary aging/past-threshold states now escalate consistently to `warning` in the usage-alert quality gate (`validate:usage-alert-rate-e2e`).
+- ✅ Hardened packaging discoverability: packaged metadata now persists `openclawBinHint` from either `IDLEWATCH_OPENCLAW_BIN` **or** `IDLEWATCH_OPENCLAW_BIN_HINT`, closing the runtime hint gap when callers only set legacy hint env.
+- ✅ Clarified packaging documentation to describe the end-to-end OpenClaw resolution chain and build-time hint persistence.
+- ✅ Clarified `.env.example` with `IDLEWATCH_OPENCLAW_BIN_HINT` for parity with launch-time compatibility behavior.
+
+### Validation checks run this cycle
+
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm test --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+
+### Evidence
+
+- `validate:usage-alert-rate-e2e` now checks: typical cadence stays `ok`, while boundary samples escalate `notice -> warning -> warning`.
+- Packaged OpenClaw bin hint persistence now resolves correctly when only `IDLEWATCH_OPENCLAW_BIN_HINT` is provided to `package-macos.sh` and not re-exported at runtime.
 # IdleWatch Mac QA Readiness Log
 
 Date: 2026-02-16  

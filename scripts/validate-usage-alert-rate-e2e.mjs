@@ -85,7 +85,7 @@ try {
   assert.equal(deterministicBoundary[1].level, 'warning')
   assert.equal(deterministicBoundary[1].reason, 'activity-past-threshold')
   assert.equal(deterministicBoundary[2].level, 'warning')
-  assert.equal(deterministicBoundary[2].reason, 'activity-stale')
+  assert.equal(deterministicBoundary[2].reason, 'activity-past-threshold')
 
   console.log('usage-alert-rate-e2e: ok (typical cadence stays ok; boundary states escalate notice -> warning -> warning)')
 } finally {

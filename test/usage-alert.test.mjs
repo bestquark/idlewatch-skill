@@ -12,12 +12,26 @@ test('returns warning when activity is stale', () => {
   assert.deepEqual(result, { level: 'warning', reason: 'activity-stale' })
 })
 
-test('downgrades stale to notice when refresh attempts could not recover fresher usage', () => {
+test('prioritizes stale-threshold warning over stale refresh-no-new-noise', () => {
+  const result = deriveUsageAlert(
+    {
+      usageIngestionStatus: 'ok',
+      usageActivityStatus: 'stale',
+      usagePastStaleThreshold: true,
+      usageRefreshAttempted: true,
+      usageRefreshRecovered: false
+    }
+  )
+  assert.deepEqual(result, { level: 'warning', reason: 'activity-past-threshold' })
+})
+
+test('keeps stale-no-new-usage notice when explicitly forced despite not being past threshold', () => {
   const result = deriveUsageAlert({
     usageIngestionStatus: 'ok',
     usageActivityStatus: 'stale',
     usageRefreshAttempted: true,
-    usageRefreshRecovered: false
+    usageRefreshRecovered: false,
+    usagePastStaleThreshold: false
   })
   assert.deepEqual(result, { level: 'notice', reason: 'activity-no-new-usage' })
 })

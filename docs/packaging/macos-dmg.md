@@ -47,6 +47,7 @@ When the packaged launcher starts, it resolves the OpenClaw binary in this order
 1. `IDLEWATCH_OPENCLAW_BIN` (explicit runtime override, preferred)
 2. `IDLEWATCH_OPENCLAW_BIN_HINT` (legacy launcher hint, supported)
 3. `openclawBinHint` from `packaging-metadata.json`
+   (packaging writes this value from the same `IDLEWATCH_OPENCLAW_BIN` / `IDLEWATCH_OPENCLAW_BIN_HINT` inputs used during build)
 4. `openclaw` via normal `PATH`
 
 This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
