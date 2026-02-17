@@ -1837,3 +1837,19 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Integration remains healthy on this host in direct dry-run (`usageIntegrationStatus=ok`, populated usage/session fields).
 - ✅ Probe diagnostics remain explicit and actionable (`usageProbeResult`, `usageProbeAttempts`, `usageCommand`).
 - ⚠️ Still missing a credentialed end-to-end Firebase+OpenClaw combined publish validation in this QA stream.
+
+## Implementation cycle update — 2026-02-17 00:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ Removed packaged launcher dependency on `npx` (and implicit network/npm behavior) by expanding the packed tarball into app resources and executing the local payload directly via Node.
+- ✅ Added packaged launcher Node pinning support via `IDLEWATCH_NODE_BIN` for deterministic runtime selection in non-interactive contexts.
+- ✅ Updated packaging/operator docs (`docs/packaging/macos-dmg.md`, `README.md`, `.env.example`) to reflect launcher execution model and new env var.
+- ✅ Revalidated runtime + packaging smoke after launcher change:
+  - `npm test --silent`
+  - `npm run validate:packaged-dry-run-schema --silent`
+
+### Acceptance criteria updates
+
+- [x] Reduce packaged runtime fragility by removing `npx`-based launcher execution path.
+- [x] Add deterministic launcher runtime pinning (`IDLEWATCH_NODE_BIN`) for packaged artifacts.

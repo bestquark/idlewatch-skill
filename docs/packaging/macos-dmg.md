@@ -8,7 +8,7 @@ for CI wiring and local dry-runs.
 ## Prerequisites
 
 - Xcode Command Line Tools (`xcode-select --install`)
-- Node.js 20+ on target host (current scaffold launcher depends on `npx`)
+- Node.js 20+ on target host (current scaffold launcher executes bundled payload with local `node`)
 - Apple Developer signing identity (for production)
 - Notary API key/profile configured in keychain (for production)
 - Optional tools for polished DMG UX:
@@ -37,6 +37,7 @@ for CI wiring and local dry-runs.
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
+- `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
@@ -44,9 +45,10 @@ Optional environment variables:
 
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
-  - Bundles the generated `idlewatch-skill-<version>.tgz`
+  - Bundles the generated `idlewatch-skill-<version>.tgz` and expands it into `Contents/Resources/payload/package`
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
-    - `npx --yes --package <bundled-tgz> idlewatch-agent ...`
+    - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
+    - Node binary resolution order: `IDLEWATCH_NODE_BIN` → `PATH` (`node`)
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`

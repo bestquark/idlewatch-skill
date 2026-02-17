@@ -74,6 +74,7 @@ Binary resolution order for the OpenClaw probe:
 4. `openclaw` (PATH lookup)
 
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
+- `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale

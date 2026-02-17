@@ -23,6 +23,10 @@ pushd "$ROOT_DIR" >/dev/null
 npm pack --silent >/dev/null
 PKG_TGZ="$(ls -t idlewatch-skill-*.tgz | head -n1)"
 cp "$PKG_TGZ" "$RESOURCES_DIR/"
+PAYLOAD_DIR="$RESOURCES_DIR/payload"
+rm -rf "$PAYLOAD_DIR"
+mkdir -p "$PAYLOAD_DIR"
+tar -xzf "$RESOURCES_DIR/$PKG_TGZ" -C "$PAYLOAD_DIR"
 
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -45,19 +49,23 @@ cat > "$MACOS_DIR/IdleWatch" <<'SH'
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
-TGZ="$(ls "$RESOURCES_DIR"/idlewatch-skill-*.tgz | head -n1)"
+NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
+if [[ -z "$NODE_BIN" ]]; then
+  NODE_BIN="$(command -v node || true)"
+fi
 
-if ! command -v npx >/dev/null 2>&1; then
-  echo "IdleWatch requires Node.js (npx not found). Install Node.js 20+ and retry." >&2
+if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
+  echo "IdleWatch requires Node.js 20+ (node binary not found). Install Node.js or set IDLEWATCH_NODE_BIN and retry." >&2
   exit 1
 fi
 
-if [[ -z "${TGZ:-}" ]]; then
-  echo "IdleWatch package payload missing" >&2
+PAYLOAD_BIN="$RESOURCES_DIR/payload/package/bin/idlewatch-agent.js"
+if [[ ! -f "$PAYLOAD_BIN" ]]; then
+  echo "IdleWatch package payload missing ($PAYLOAD_BIN)" >&2
   exit 1
 fi
 
-exec npx --yes --package "$TGZ" idlewatch-agent "$@"
+exec "$NODE_BIN" "$PAYLOAD_BIN" "$@"
 SH
 chmod +x "$MACOS_DIR/IdleWatch"
 
