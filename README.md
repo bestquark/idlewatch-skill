@@ -223,7 +223,7 @@ Alerting guidance (recommended):
 Usage field semantics:
 - `openclawTotalTokens`: session-level cumulative total tokens reported by OpenClaw.
 - `tokensPerMin`: reported directly by OpenClaw when available; otherwise derived from `openclawTotalTokens / session age minutes`.
-- Additional parser compatibility covered for data-wrapper/session wrapper stats payloads (`payload`, `data.result`, `data.stats`, `result`), direct `current` payloads (`current`, `data.current`, `result.current`, `status.current`, `payload.current`), and alternate field aliases (for example `token_count`, `session_id`, `agent_id`, `usage_timestamp`, `tsMs`, `total_tokens`) so common OpenClaw CLI variants map into a stable row shape.
+- Additional parser compatibility covered for data-wrapper/session wrapper stats payloads (`payload`, `data.result`, `data.stats`, `result`), direct `current` payloads (`current`, `data.current`, `result.current`, `status.current`, `payload.current`) and snake_case session aliases under status-like envelopes (for example `current_session`, `active_session`, `session_id`, `agent_id`, `default_model`, `usage_ts`, `recent_sessions`) so common OpenClaw CLI variants map into a stable row shape.
 - Prompt/completion token fields and request/min are **not currently exposed as first-class metrics** in IdleWatch rows; keep `null`/absent rather than synthesizing fake values.
 
 If OpenClaw stats are unavailable, usage fields are emitted as `null` and collection continues.
@@ -255,6 +255,7 @@ DMG release scaffolding is included:
 - OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
 - Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
+  - Runtime copy is now limited to `bin`, `lib`, and `include` directories (with symlink dereference) to keep runtime payloads portable and avoid noise from host-specific completion symlinks.
 - Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
 - Background execution lifecycle helpers:
   - `scripts/install-macos-launch-agent.sh`

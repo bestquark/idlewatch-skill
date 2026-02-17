@@ -201,6 +201,39 @@ function extractJsonCandidates(raw) {
   return candidates
 }
 
+const OPENCLAW_ALIAS_KEY_MAP = {
+  current_session: 'currentSession',
+  active_session: 'activeSession',
+  recent_sessions: 'recentSessions',
+  active_sessions: 'activeSessions',
+  default_model: 'defaultModel',
+  session_id: 'sessionId',
+  agent_id: 'agentId',
+  usage_ts: 'usageTs'
+}
+
+function normalizeOpenClawAliases(value) {
+  if (Array.isArray(value)) return value.map((item) => normalizeOpenClawAliases(item))
+  if (!value || typeof value !== 'object') return value
+
+  const normalized = {}
+  for (const [key, rawValue] of Object.entries(value)) {
+    const child = normalizeOpenClawAliases(rawValue)
+    const alias = OPENCLAW_ALIAS_KEY_MAP[key]
+
+    if (alias && typeof normalized[alias] === 'undefined') {
+      normalized[alias] = child
+      continue
+    }
+
+    if (typeof normalized[key] === 'undefined') {
+      normalized[key] = child
+    }
+  }
+
+  return normalized
+}
+
 function hasAnySessionSignal(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
 
@@ -919,10 +952,11 @@ export function parseOpenClawUsage(raw) {
       continue
     }
 
-    const fromStatus = parseFromStatusJson(parsed)
+    const normalized = normalizeOpenClawAliases(parsed)
+    const fromStatus = parseFromStatusJson(normalized)
     if (fromStatus) return fromStatus
 
-    const fromGeneric = parseGenericUsage(parsed)
+    const fromGeneric = parseGenericUsage(normalized)
     if (fromGeneric) return fromGeneric
   }
 

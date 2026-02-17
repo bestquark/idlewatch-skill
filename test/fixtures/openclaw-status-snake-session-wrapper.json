@@ -1,0 +1,13 @@
+{
+  "status": {
+    "current_session": {
+      "session_id": "snake-current-1",
+      "agent_id": "agent-snake",
+      "model": "gpt-5.3-codex",
+      "total_tokens": 8888,
+      "updated_at": 1771299000,
+      "ts": 1771299012345
+    },
+    "default_model": "gpt-5.3-codex"
+  }
+}

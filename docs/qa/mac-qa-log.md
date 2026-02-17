@@ -3,6 +3,27 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 17:26 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added OpenClaw parser alias normalization for common snake_case session/session-id shapes (`current_session`, `active_session`, `default_model`, `session_id`, `agent_id`, `recent_sessions`) so more CLI variants normalize into canonical keys before selection and parsing.
+- ✅ **OpenClaw stats ingestion:** added compatibility coverage for `status` payloads using `current_session` wrappers (test fixture + parser normalization), improving parser acceptance for mixed serializers and reducing false "unparsed" drops.
+- ✅ **Packaging scripts/docs:** hardened `scripts/package-macos.sh` runtime bundling to copy only `bin`/`lib`/`include` directories with symlink dereference (instead of a blind recursive runtime-directory copy).
+  - This eliminates noise from host-specific shell-completion symlinks while keeping runtime portability.
+- ✅ **Docs:** updated macOS packaging and usage-ingestion docs to document alias normalization and the runtime subset copy path.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ Targeted parser tests now include snake_case session alias fixture coverage in `test/openclaw-usage.test.mjs`.
+- ℹ️ Packaging/runtime-copy validation to be confirmed in next full pipeline run (`npm run validate:packaged-bundled-runtime`).
+
+### Follow-up / remaining risks
+
+- High: Signed/notarized distribution still remains the largest external shipping risk outside local runtime reliability (requires Apple signing/notary credentials in CI/host).
+- Medium: End-to-end Firebase write-path and true clean-machine UX parity are still pending full environment coverage.
+
 ## QA cycle update — 2026-02-17 17:10 America/Toronto
 
 ### Completed this cycle

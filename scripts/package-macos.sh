@@ -75,8 +75,14 @@ if [[ -n "$NODE_RUNTIME_DIR" ]]; then
   RUNTIME_DEST_DIR="$RESOURCES_DIR/runtime/node"
   rm -rf "$RUNTIME_DEST_DIR"
   mkdir -p "$(dirname "$RUNTIME_DEST_DIR")"
-  # Copy with symlink dereference so packaged runtime is portable even if host runtime is a symlink.
-  cp -R -L "$NODE_RUNTIME_DIR" "$RUNTIME_DEST_DIR"
+  # Copy essential runtime directories with symlink dereference so packaged runtime is portable even if host runtime is a symlink.
+  # This avoids pulling in nonessential completion/doc symlink trees that can create copy noise.
+  for runtimeDir in bin lib include; do
+    if [[ -d "$NODE_RUNTIME_DIR/$runtimeDir" ]]; then
+      mkdir -p "$RUNTIME_DEST_DIR/$runtimeDir"
+      cp -R -L "$NODE_RUNTIME_DIR/$runtimeDir/" "$RUNTIME_DEST_DIR/$runtimeDir/"
+    fi
+  done
 fi
 NODE_RUNTIME_BUNDLED=false
 SIGNED_ARTIFACT=false

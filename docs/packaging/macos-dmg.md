@@ -50,7 +50,7 @@ When the packaged launcher starts, it resolves the OpenClaw binary in this order
    (packaging writes this value from the same `IDLEWATCH_OPENCLAW_BIN` / `IDLEWATCH_OPENCLAW_BIN_HINT` inputs used during build)
 4. `openclaw` via normal `PATH`
 
-When bundling a Node runtime, `package-macos.sh` dereferences symlinks while copying runtime files, so packaged layouts are portable even when the host runtime is a symlink.
+When bundling a Node runtime, `package-macos.sh` copies a portable subset (`bin`, `lib`, `include`) with symlink dereference, so packaged layouts remain portable even when the host runtime is a symlink and avoids copying non-essential symlinked shell-completion trees.
 
 OpenClaw command probing in the packaged runtime uses the same command preference list as local runs:
 `status --json`, `usage --json`, `session status --json`, `session_status --json`, `stats --json`.

@@ -223,6 +223,17 @@ test('parses payload wrapper stats payloads', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses snake_case current_session payload aliases under status wrapper', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-snake-session-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 8888)
+  assert.equal(usage.sessionId, 'snake-current-1')
+  assert.equal(usage.agentId, 'agent-snake')
+  assert.equal(usage.usageTimestampMs, 1771299000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)
