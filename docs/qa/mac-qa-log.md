@@ -1994,3 +1994,59 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Reduce false-positive stale alert noise in low-activity windows without masking ingestion failures.
+
+## QA cycle update — 2026-02-17 00:52 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (104/104 assertions).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + source metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ Direct + packaged `--dry-run` samples both emitted populated CPU/memory/memory-pressure/GPU/OpenClaw fields.
+- ⚠️ Firebase remains unconfigured in this QA environment (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run:
+  - `gpuPct`: populated (`26`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`23`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`102851.27`), `openclawModel`: `gpt-5.3-codex`, `openclawTotalTokens`: `222637`.
+  - `openclawUsageAgeMs`: `127564` with `source.usageIntegrationStatus: "stale"`, `usageActivityStatus: "stale"`, `usageAlertLevel: "warning"`.
+- Packaged app dry-run:
+  - `gpuPct`: populated (`18`) via `gpuSource: "ioreg-agx"`.
+  - `tokensPerMin`: populated (`84805.48`) with same session/model identifiers.
+  - `openclawUsageAgeMs`: `156152` with `source.usageIntegrationStatus: "stale"`, `usagePastStaleThreshold: true`, `usageRefreshAttempted: true`, `usageRefreshRecovered: false`.
+- Source metadata remains explicit and stable:
+  - `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+  - `source.usageStaleMsThreshold`: `60000`
+  - `source.usageNearStaleMsThreshold`: `59500`
+  - `source.usageStaleGraceMs`: `10000`
+  - `source.usageRefreshOnNearStale`: `true`
+
+### Bugs / feature gaps (current)
+
+1. **OpenClaw usage freshness still exceeds stale+grace under overnight/idle activity (Medium, observability reliability)**
+   - Both direct and packaged runs crossed stale+grace significantly (`127564ms` and `156152ms` vs `60000+10000`).
+   - Proactive refresh is firing but not recovering (`usageRefreshRecovered=false`), so stale warning noise persists in low-activity windows.
+
+2. **Trusted distribution still optional unless strict mode + credentials are configured (High, release readiness)**
+   - This cycle artifact is still `IdleWatch-0.1.0-unsigned.dmg`.
+   - Signing/notarization remains gated on `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+
+3. **Firebase write-path E2E still not exercised in active QA loop (Medium, delivery confidence)**
+   - Local schema/packaging validations are green.
+   - Credentialed Firestore publish-path validation remains pending.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced with configured credentials.
+- ⚠️ Runtime dependency risk persists for hosts without compatible Node runtime.
+
+### OpenClaw integration gap status
+
+- ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
+- ✅ Usage probe metadata remains rich and consistent across direct + packaged runs (`usageProbe*`, freshness, refresh-attempt fields).
+- ⚠️ Freshness recovery under low-activity windows remains unresolved; stale classification is correct but still frequent in overnight QA cycles.
