@@ -1326,3 +1326,27 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe diagnostics and ingestion status remain healthy in both direct and packaged runs (`usageIngestionStatus: ok`, `usageProbeResult: ok`).
 - ✅ New ingestion/activity status split is producing coherent signals for alert policy (`ok` ingestion with `fresh/aging` activity states).
 - ⚠️ Packaged runtime still reaches post-threshold age during longer loops; downstream policy tuning should continue to rely on activity + grace semantics instead of threshold crossing alone.
+
+## Implementation cycle update — 2026-02-16 22:49 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added targeted stale-threshold recovery pass for OpenClaw usage ingestion in `collectSample()`:
+  - when a sample crosses stale threshold (`usagePastStaleThreshold=true`) with successful ingestion, collector now forces one immediate uncached OpenClaw reprobe before finalizing row.
+  - this reduces false stale classifications caused by cache TTL timing during packaged/long-loop runs.
+- ✅ Added explicit observability fields for the recovery path:
+  - `source.usageRefreshAttempted`
+  - `source.usageRefreshRecovered`
+- ✅ Extended schema validator contract to enforce new recovery metadata shape + consistency (`usageRefreshRecovered` implies `usageRefreshAttempted`).
+- ✅ Updated README source-metadata docs with new recovery fields and semantics.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (20/20).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI includes new refresh metadata).
+- ✅ `npm run package:macos --silent` rebuilds packaged scaffold with changes.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher includes new refresh metadata).
+
+### Acceptance criteria updates
+
+- [x] Mitigate packaged-loop stale-age noise by adding one-shot forced reprobe recovery before final activity classification.

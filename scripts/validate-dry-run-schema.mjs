@@ -62,6 +62,8 @@ function validateRow(row) {
   assert.ok(source.usageFreshnessState === null || ['fresh', 'aging', 'stale', 'unknown'].includes(source.usageFreshnessState), 'source.usageFreshnessState invalid')
   assert.equal(typeof source.usageNearStale, 'boolean', 'source.usageNearStale must be boolean')
   assert.equal(typeof source.usagePastStaleThreshold, 'boolean', 'source.usagePastStaleThreshold must be boolean')
+  assert.equal(typeof source.usageRefreshAttempted, 'boolean', 'source.usageRefreshAttempted must be boolean')
+  assert.equal(typeof source.usageRefreshRecovered, 'boolean', 'source.usageRefreshRecovered must be boolean')
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
@@ -97,6 +99,9 @@ function validateRow(row) {
     assert.ok(source.usageProbeSweeps >= 1, 'usageProbeSweeps must be >= 1 when probe attempts run')
   }
   assert.ok(source.usageProbeSweeps <= source.usageProbeRetries + 1, 'usageProbeSweeps cannot exceed configured retries + 1')
+  if (source.usageRefreshRecovered) {
+    assert.equal(source.usageRefreshAttempted, true, 'usageRefreshRecovered implies usageRefreshAttempted')
+  }
 
   if (source.usage === 'unavailable') {
     assert.ok(!['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must explain unavailable usage')

@@ -97,6 +97,8 @@ Source metadata fields:
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
 - `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
+- `source.usageRefreshAttempted`: true when collector forced an immediate re-probe after crossing stale threshold.
+- `source.usageRefreshRecovered`: true when that forced re-probe recovered back below stale-threshold crossing.
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.

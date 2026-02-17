@@ -229,7 +229,7 @@ function resolveOpenClawBinaries() {
   return [...new Set(bins)]
 }
 
-function loadOpenClawUsage() {
+function loadOpenClawUsage(forceRefresh = false) {
   if (OPENCLAW_USAGE_MODE === 'off') {
     return {
       usage: null,
@@ -238,7 +238,7 @@ function loadOpenClawUsage() {
   }
 
   const now = Date.now()
-  if (now - openClawUsageCache.at < OPENCLAW_USAGE_TTL_MS) return openClawUsageCache.value
+  if (!forceRefresh && now - openClawUsageCache.at < OPENCLAW_USAGE_TTL_MS) return openClawUsageCache.value
 
   const binaries = resolveOpenClawBinaries()
   const subcommands = [
@@ -349,9 +349,28 @@ async function publish(row, retries = 2) {
 
 async function collectSample() {
   const nowMs = Date.now()
-  const usageProbe = loadOpenClawUsage()
-  const usage = usageProbe.usage
-  const usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
+  let usageProbe = loadOpenClawUsage()
+  let usage = usageProbe.usage
+  let usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
+  let usageRefreshAttempted = false
+  let usageRefreshRecovered = false
+
+  if (usage && usageFreshness.isPastStaleThreshold && usageProbe.probe.result === 'ok') {
+    usageRefreshAttempted = true
+    const refreshedUsageProbe = loadOpenClawUsage(true)
+    const refreshedUsage = refreshedUsageProbe.usage
+    const refreshedUsageTs = refreshedUsage?.usageTimestampMs
+    const previousUsageTs = usage?.usageTimestampMs
+
+    if (Number.isFinite(refreshedUsageTs) && (!Number.isFinite(previousUsageTs) || refreshedUsageTs > previousUsageTs)) {
+      usageProbe = refreshedUsageProbe
+      usage = refreshedUsage
+      usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
+    }
+
+    usageRefreshRecovered = usageFreshness.isPastStaleThreshold === false
+  }
+
   const gpu = process.platform === 'darwin'
     ? gpuSampleDarwin()
     : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null }
@@ -403,6 +422,8 @@ async function collectSample() {
       usageFreshnessState: usage ? usageFreshness.freshnessState : null,
       usageNearStale: usage ? usageFreshness.isNearStale : false,
       usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
+      usageRefreshAttempted,
+      usageRefreshRecovered,
       usageCommand: usage?.sourceCommand ?? null,
       usageStaleMsThreshold: USAGE_STALE_MS,
       usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
