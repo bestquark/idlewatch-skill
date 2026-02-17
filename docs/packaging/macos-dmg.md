@@ -37,6 +37,7 @@ for CI wiring and local dry-runs.
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
+- `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -50,8 +51,10 @@ Optional environment variables:
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
+- `npm run validate:trusted-prereqs`
+  - Validates local signing identity + notary keychain profile before running trusted packaging
 - `npm run package:trusted`
-  - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that fails fast unless signing and notarization inputs are configured
+  - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that now runs trusted-prereq validation before build/sign/notarize
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
 

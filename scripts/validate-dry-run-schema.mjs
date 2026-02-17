@@ -63,6 +63,7 @@ function validateRow(row) {
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
+  assert.ok(Number.isFinite(source.usageProbeTimeoutMs) && source.usageProbeTimeoutMs > 0, 'source.usageProbeTimeoutMs must be number > 0')
   assert.ok(source.usageProbeError === null || typeof source.usageProbeError === 'string', 'source.usageProbeError must be string or null')
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
   assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')

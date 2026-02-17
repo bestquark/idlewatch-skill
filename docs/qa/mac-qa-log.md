@@ -1078,3 +1078,23 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Runtime usage probe is healthy in this cycle (`usageProbeResult: ok`, no fallback cache use).
 - ✅ Freshness metadata and deterministic freshness E2E validation remain coherent.
 - ⚠️ Representative production-like E2E (with Firebase credentials) is still pending.
+
+## Implementation cycle update — 2026-02-16 21:51 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added configurable OpenClaw probe timeout control (`IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS`, default `2500`) to improve ingestion reliability on slower/non-interactive runtimes.
+- ✅ Exposed probe-timeout observability in telemetry rows via `source.usageProbeTimeoutMs`.
+- ✅ Extended dry-run schema validation to enforce `usageProbeTimeoutMs` presence/type.
+- ✅ Added trusted packaging preflight script (`scripts/validate-trusted-prereqs.sh`) to verify:
+  - configured `MACOS_CODESIGN_IDENTITY`
+  - configured `MACOS_NOTARY_PROFILE`
+  - local keychain contains the signing identity
+  - notary profile is usable via `xcrun notarytool`
+- ✅ Wired `npm run package:trusted` to run trusted preflight before build/sign/notarize steps.
+- ✅ Updated operator docs (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`) with timeout + preflight guidance.
+
+### Acceptance criteria updates
+
+- [x] Add fail-fast local trusted-release preflight to reduce unsigned/notarization misconfiguration churn.
+- [x] Add tunable OpenClaw probe timeout and explicit timeout metadata for reliability diagnostics.

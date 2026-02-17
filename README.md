@@ -123,6 +123,7 @@ DMG release scaffolding is included:
 - `docs/packaging/macos-dmg.md`
 - `scripts/package-macos.sh`
 - `scripts/build-dmg.sh`
+- `npm run validate:trusted-prereqs` (local preflight for signing identity + notary profile)
 - `npm run package:trusted` (strict signed + notarized local path)
 - `.github/workflows/release-macos-trusted.yml` (signed + notarized CI path)
 - CI dry-run schema gates via `npm run validate:dry-run-schema` and `npm run validate:packaged-dry-run-schema`
@@ -133,6 +134,7 @@ Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.
 - In strict mode, `package-macos.sh` requires `MACOS_CODESIGN_IDENTITY`.
 - In strict mode, `build-dmg.sh` requires both `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+- `npm run package:trusted` now runs `npm run validate:trusted-prereqs` first to fail fast when local keychain/notary setup is missing.
 
 Trusted-release workflow required secrets:
 
