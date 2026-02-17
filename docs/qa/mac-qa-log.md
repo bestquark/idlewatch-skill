@@ -2224,3 +2224,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add deterministic CI guard proving packaged launcher can run with bundled Node runtime even when `node` is absent from PATH.
+
+## QA cycle update — 2026-02-17 02:00 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (120/120).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with populated telemetry.
+- ⚠️ Firebase remains unconfigured (local stdout/NDJSON only).
+
+### Telemetry validation snapshot (latest)
+
+- `cpuPct`: `16.58`, `memPct`: `90.58`, `memPressurePct`: `26` (`normal`).
+- `gpuPct`: `8` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+- `tokensPerMin`: `24324.41`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `15056`.
+- `openclawUsageAgeMs`: `35863` with `usageIntegrationStatus: "ok"`, `usageIngestionStatus: "ok"`, `usageActivityStatus: "fresh"`, `usageAlertLevel: "ok"`.
+- `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+
+### Notes
+
+- 2 AM overnight cycle. All signals healthy; no new regressions detected.
+- Remaining gaps unchanged: trusted distribution (credential-gated), Firebase E2E (pending creds), clean-machine install UX (limited).
