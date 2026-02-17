@@ -1,3 +1,53 @@
+## QA cycle update — 2026-02-17 09:00 America/Toronto
+
+### Completed this cycle
+
+- ✅ `npm test --silent` passes (138/138).
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row (OpenClaw present) with local-only logging fallback.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes (`usageIntegrationStatus=ok`, `usageAlertLevel=ok`, usage freshness = `fresh`).
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run validate:packaged-usage-age-slo --silent` passes.
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg` rebuilt).
+- ✅ `npm run validate:dmg-install --silent` passes (`.dmg` mount/install schema path).
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+
+### Bugs / features validated this cycle
+
+- ✅ **Feature:** OpenClaw telemetry chain is stable on this host (`/opt/homebrew/bin/openclaw status --json`), including enriched probe metadata (`usageProbeDurationMs`, retry counters, freshness flags).
+- ✅ **Feature:** Packaged DMG artifact generation remains reproducible in unsigned mode (`idlewatch.app` + checksum).
+- ⚠️ **No blocking regressions identified** in this pass.
+
+### Telemetry validation checks (latest sample)
+
+- `cpuPct`: `25.74`
+- `memPct`: `94.27` / `memUsedPct`: `94.27`
+- `memPressurePct`: `27` (`memPressureClass: normal`)
+- `gpuPct`: `1` via `gpuSource: ioreg-agx` (`gpuConfidence: high`)
+- `tokensPerMin`: `32,502.31`
+- `openclawModel`: `gpt-5.3-codex-spark`
+- `openclawTotalTokens`: `21,737`
+- `openclawUsageAgeMs`: `40,208`
+- `usageFreshnessState`: `fresh`
+- `usageAlertLevel`: `ok`
+- `usageActivityStatus`: `fresh`
+- `openclawUsageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### DMG packaging risks
+
+1. **High:** Artifacts remain unsigned/unnotarized; recipients on newer macOS can still get Gatekeeper friction.
+2. **Medium:** Runtime trust and distribution hardening still rely on manual gating (`MACOS_NOTARY_PROFILE`, optional signing envs) and are not enforced by default.
+3. **Medium:** Node/runtime bundling is still opt-in; non-Node macOS hosts can fail at launch if setup expectations are unmet.
+4. **Medium:** Current cycle did not validate third-party AV/EDR behavior against the freshly built unsigned DMG.
+
+### OpenClaw integration gaps
+
+1. **Gap:** `openclaw` must be present on target machines; without it, usage telemetry degrades to `usage` = `disabled` and `openclaw` values go null.
+2. **Gap:** Cloud persistence remains unverified in this environment; writes are local stdout/NDJSON only without Firebase service-account or emulator creds.
+3. **Gap:** Optional: formal cross-version compatibility check between installed `openclaw` CLI schema outputs and parser coverage should remain in the recurring QA plan (payload formats continue to evolve).
+
+
 ## QA cycle update — 2026-02-17 08:56 America/Toronto
 
 ### Completed this cycle
