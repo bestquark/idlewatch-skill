@@ -263,6 +263,7 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.sessions?.active,
     parsed?.sessions?.session,
     parsed?.sessions?.activeSession,
+    parsed?.sessions?.current,
     parsed?.sessions?.currentSession,
     parsed?.recentSessions,
     parsed?.activeSessions,
@@ -270,6 +271,7 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.recent,
     parsed?.session,
     parsed?.activeSession,
+    parsed?.current,
     parsed?.currentSession,
     parsed?.result?.sessions?.recent,
     parsed?.result?.sessions?.recentSessions,
@@ -277,14 +279,64 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.result?.sessions?.active,
     parsed?.result?.sessions?.session,
     parsed?.result?.sessions?.activeSession,
+    parsed?.result?.sessions?.current,
     parsed?.result?.sessions?.currentSession,
     parsed?.result?.sessions,
     parsed?.result?.recentSessions,
     parsed?.result?.activeSessions,
     parsed?.result?.active,
-    parsed?.result?.session,
     parsed?.result?.activeSession,
+    parsed?.result?.session,
+    parsed?.result?.current,
     parsed?.result?.currentSession,
+    parsed?.result?.data?.sessions?.recent,
+    parsed?.result?.data?.sessions?.recentSessions,
+    parsed?.result?.data?.sessions?.activeSessions,
+    parsed?.result?.data?.sessions?.active,
+    parsed?.result?.data?.sessions?.session,
+    parsed?.result?.data?.sessions?.activeSession,
+    parsed?.result?.data?.sessions?.current,
+    parsed?.result?.data?.sessions?.currentSession,
+    parsed?.result?.data?.recentSessions,
+    parsed?.result?.data?.activeSessions,
+    parsed?.result?.data?.active,
+    parsed?.result?.data?.activeSession,
+    parsed?.result?.data?.session,
+    parsed?.result?.data?.current,
+    parsed?.result?.data?.currentSession,
+    parsed?.result?.data,
+    parsed?.result,
+    parsed?.data?.result?.session,
+    parsed?.data?.result?.active,
+    parsed?.data?.result?.activeSession,
+    parsed?.data?.result?.current,
+    parsed?.data?.result?.currentSession,
+    parsed?.data?.result?.sessions?.recent,
+    parsed?.data?.result?.sessions?.recentSessions,
+    parsed?.data?.result?.sessions?.activeSessions,
+    parsed?.data?.result?.sessions?.active,
+    parsed?.data?.result?.sessions?.session,
+    parsed?.data?.result?.sessions?.activeSession,
+    parsed?.data?.result?.sessions?.current,
+    parsed?.data?.result?.sessions?.currentSession,
+    parsed?.data?.sessions?.recent,
+    parsed?.data?.sessions?.recentSessions,
+    parsed?.data?.sessions?.activeSessions,
+    parsed?.data?.sessions?.active,
+    parsed?.data?.sessions?.session,
+    parsed?.data?.sessions?.activeSession,
+    parsed?.data?.sessions?.current,
+    parsed?.data?.sessions?.currentSession,
+    parsed?.data?.recentSessions,
+    parsed?.data?.activeSessions,
+    parsed?.data?.active,
+    parsed?.data?.recent,
+    parsed?.data?.session,
+    parsed?.data?.active,
+    parsed?.data?.activeSession,
+    parsed?.data?.current,
+    parsed?.data?.currentSession,
+    parsed?.data?.session,
     parsed?.sessions
   ]
 
@@ -298,10 +350,14 @@ function collectStatusSessionCandidates(parsed) {
 
 function parseFromStatusJson(parsed) {
   const sessionsRoot = collectStatusSessionCandidates(parsed)
-  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults ||
+  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults || parsed?.data?.defaults ||
     (parsed?.result?.defaultModel || parsed?.result?.default_model
       ? { model: parsed.result.defaultModel || parsed.result.default_model }
-      : {})
+      : parsed?.result?.data?.defaultModel || parsed?.result?.data?.default_model
+        ? { model: parsed.result.data.defaultModel || parsed.result.data.default_model }
+        : parsed?.config?.defaultModel || parsed?.config?.default_model
+          ? { model: parsed.config.defaultModel || parsed.config.default_model }
+          : {})
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {

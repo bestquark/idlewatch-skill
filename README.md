@@ -128,9 +128,10 @@ Binary resolution order for the OpenClaw probe:
 - `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
 - OpenClaw probe command preference used by the agent (first successful parse wins):
   1) `status --json`
-  2) `session status --json`
-  3) `session_status --json`
-  4) `stats --json` (fallback compatibility for CLI variants)
+  2) `usage --json`
+  3) `session status --json`
+  4) `session_status --json`
+  5) `stats --json` (fallback compatibility for CLI variants)
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
   (default: `floor((IDLEWATCH_USAGE_STALE_MS + IDLEWATCH_USAGE_STALE_GRACE_MS)*0.85)`).
@@ -187,7 +188,7 @@ Source metadata fields:
 OpenClaw parsing hardened in this release:
 - stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
 - mixed timestamp names, epoch-seconds variants (`1771278800`), and alternate session container keys are supported
-- wrapped status payload shapes (`result` root object, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
+- wrapped status payload shapes (`result` root object, `data.result` wrappers, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
 - direct session object payloads (`session`, `activeSession`, `currentSession`) are now handled alongside array/map forms
 - sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers
 - metadata keys like `sessions.defaults` are ignored during session-map selection so tokenized sessions are not shadowed by defaults payloads

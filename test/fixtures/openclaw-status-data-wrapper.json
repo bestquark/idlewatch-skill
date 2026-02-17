@@ -1,0 +1,20 @@
+{
+  "data": {
+    "result": {
+      "sessions": {
+        "current": {
+          "sessionId": "data-wrapper-current",
+          "agentId": "agent-wrapper",
+          "model": "claude-opus-4-6",
+          "modelName": "Claude Opus 4.6",
+          "totalTokens": 3333,
+          "ageMs": 1200,
+          "updatedAt": 1771279300000
+        }
+      },
+      "defaults": {
+        "model": "gpt-5.3-codex"
+      }
+    }
+  }
+}

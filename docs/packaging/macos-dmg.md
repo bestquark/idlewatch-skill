@@ -50,6 +50,9 @@ When the packaged launcher starts, it resolves the OpenClaw binary in this order
    (packaging writes this value from the same `IDLEWATCH_OPENCLAW_BIN` / `IDLEWATCH_OPENCLAW_BIN_HINT` inputs used during build)
 4. `openclaw` via normal `PATH`
 
+OpenClaw command probing in the packaged runtime uses the same command preference list as local runs:
+`status --json`, `usage --json`, `session status --json`, `session_status --json`, `stats --json`.
+
 This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
 
 

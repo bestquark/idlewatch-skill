@@ -377,6 +377,7 @@ function loadOpenClawUsage(forceRefresh = false) {
   const binaries = resolveOpenClawBinaries()
   const subcommands = [
     ['status', '--json'],
+    ['usage', '--json'],
     ['session', 'status', '--json'],
     ['session_status', '--json'],
     ['stats', '--json']

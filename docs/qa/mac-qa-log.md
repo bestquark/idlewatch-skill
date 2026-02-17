@@ -10,6 +10,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 10:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added parser candidate expansion for wrapped OpenClaw status envelopes under `data`/`result` wrappers and direct `current`/`active` aliases, reducing chance of missing valid status sessions from alternate serializers.
+- ✅ **OpenClaw stats ingestion:** expanded probe command ladder to include `openclaw usage --json` before existing fallbacks and added parser coverage for wrapped-status payload variants.
+- ✅ **Packaging scripts/docs:** updated packaging docs + README to explicitly document supported OpenClaw probe fallback order and wrapped payload compatibility used by packaged smoke gates.
+- ✅ **Validation:** `npm test --silent` passed (`169` tests) after adding `openclaw-status-data-wrapper.json` and matching unit coverage.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+
+### Notes
+
+- No packaging artifacts/build scripts were regenerated in this cycle (logic/docs/docs-only update path).
+- Remaining risk items still include external trusting/noise policy and long-window usage-age SLO behavior under very low activity runs.
+
 ## QA cycle update — 2026-02-17 10:40 America/Toronto
 
 ### Completed this cycle
