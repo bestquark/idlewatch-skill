@@ -1640,3 +1640,20 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Schema + packaged validators remain green with refreshed near-stale threshold metadata.
 - ✅ Disabled-usage handling remains explicit and machine-readable.
 - ⚠️ Still missing a workload-level quality gate for near-stale/stale frequency over longer observation windows.
+
+## Implementation cycle update — 2026-02-16 23:37 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added deterministic usage alert-rate quality harness (`scripts/validate-usage-alert-rate-e2e.mjs`) with mocked OpenClaw ages.
+- ✅ Added CI gate + npm entrypoint:
+  - `npm run validate:usage-alert-rate-e2e`
+  - wired into `.github/workflows/ci.yml` (`node-tests` job)
+- ✅ Guardrail now asserts expected behavior under representative low-traffic cadence:
+  - typical age window samples remain `source.usageAlertLevel: "ok"`
+  - boundary escalation remains deterministic (`notice` near-threshold, `warning` post-threshold/stale)
+- ✅ Updated README validation docs with the new alert-rate quality gate.
+
+### Acceptance criteria updates
+
+- [x] Add workload-level quality gate for near-stale/stale alert incidence over representative low-traffic windows.
