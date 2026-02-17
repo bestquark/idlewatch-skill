@@ -60,7 +60,7 @@ Optional environment variables:
 
 ## CI integration
 
-- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes DMG install validation via `npm run validate:dmg-install`)
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e` and DMG install validation via `npm run validate:dmg-install`)
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:

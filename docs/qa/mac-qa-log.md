@@ -1703,3 +1703,21 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Build reproducibility: app scaffold + DMG generation succeeded this cycle.
 - ⚠️ Trust/compliance: signing + notarization require external env/profiles and are not enforced by default.
 - ⚠️ Runtime dependency: installer still assumes Node availability on target host.
+
+## Implementation cycle update — 2026-02-16 23:52 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added packaged-runtime OpenClaw stale-recovery E2E harness: `scripts/validate-packaged-usage-recovery-e2e.mjs`.
+- ✅ Added npm entrypoint `npm run validate:packaged-usage-recovery-e2e`.
+- ✅ Wired macOS packaging CI smoke (`.github/workflows/ci.yml`) to gate on packaged stale-threshold recovery behavior.
+- ✅ Updated operator docs (`README.md`, `docs/packaging/macos-dmg.md`) with the new packaged recovery validation gate.
+
+### Validation checks run this cycle
+
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent` passes.
+- ✅ `npm test --silent` passes (30/30).
+
+### Acceptance criteria updates
+
+- [x] Add CI assertion for packaged OpenClaw stale-threshold recovery so usage-age reliability behavior is validated on macOS packaging path.
