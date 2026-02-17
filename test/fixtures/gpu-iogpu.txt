@@ -1,0 +1,2 @@
+IOGPUStatistics
+"PerformanceStatistics" = {"Renderer Utilization %"=23.4,"Device Utilization %"=1.2}

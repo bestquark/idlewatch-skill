@@ -108,6 +108,18 @@ test('parses status payload with nested sessions object and totals in totals.nes
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses wrapped status payload with direct session array and nested usage totals', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-wrap-session-object.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4.6')
+  assert.equal(usage.totalTokens, 789)
+  assert.equal(usage.tokensPerMin, 12.5)
+  assert.equal(usage.sessionId, 'wrapped-session-a')
+  assert.equal(usage.agentId, 'agent-wrap')
+  assert.equal(usage.usageTimestampMs, Date.parse('2026-02-17T09:00:00Z'))
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)

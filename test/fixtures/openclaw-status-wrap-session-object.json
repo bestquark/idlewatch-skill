@@ -1,0 +1,24 @@
+{
+  "result": {
+    "defaultModel": "gpt-4.1",
+    "defaults": {
+      "defaultModel": "gpt-4.1"
+    },
+    "sessions": [
+      {
+        "id": "wrapped-session-a",
+        "agentId": "agent-wrap",
+        "usage": {
+          "model": "claude-opus-4.6",
+          "totals": {
+            "totalTokens": "789"
+          },
+          "updatedAt": "2026-02-17T09:00:00Z",
+          "tokensPerMinute": "12.5",
+          "sessionId": "wrapped-session-a"
+        },
+        "age": 120000
+      }
+    ]
+  }
+}

@@ -110,6 +110,8 @@ Optional environment variables:
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime and verifies launcher dry-run works when `PATH=/usr/bin:/bin` (no `node` available in PATH)
+- Clean-machine verification note:
+  - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
 
 ## CI integration
 

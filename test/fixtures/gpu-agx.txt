@@ -1,0 +1,2 @@
+AGXPerformanceStatistics
+"PerformanceStatistics" = {"Renderer Utilization %"=12,"Device Utilization %"=34,"Tiler Utilization %"=5}

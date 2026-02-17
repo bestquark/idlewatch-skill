@@ -635,9 +635,9 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Operators misread normal cached memory usage as high memory pressure.
 
 **Acceptance criteria**
-- [ ] Add `memUsedPct` plus macOS-aware pressure indicator (e.g., memory pressure class/value).
-- [ ] Document metric definitions and caveats in README/skill docs.
-- [ ] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
+- [x] Add `memUsedPct` plus macOS-aware pressure indicator (e.g., memory pressure class/value).
+- [x] Document metric definitions and caveats in README/skill docs.
+- [x] Add threshold guidance for alerting (`warn/critical`) based on pressure, not free-only arithmetic.
 
 ---
 
@@ -734,7 +734,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - [x] Implement robust source with permission-tolerant fallback chain.
 - [x] Add parser tests with captured host output style (`ioreg` PerformanceStatistics).
-- [ ] Expand fixtures to three distinct Mac configurations (still pending).
+- [x] Expand fixtures to three distinct Mac configurations (now covered by fixture-backed macOS GPU tests).
 
 ## QA cycle update — 2026-02-16 18:00 America/Toronto
 
