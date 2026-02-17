@@ -88,6 +88,7 @@ PY
       - name: Enforce OpenClaw usage-health gate
         env:
           IDLEWATCH_REQUIRE_OPENCLAW_USAGE: '1'
+          IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS: '300000'
         run: npm run validate:packaged-usage-health --silent
 
       - name: Upload trusted DMG artifact

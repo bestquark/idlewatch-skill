@@ -165,6 +165,7 @@ DMG release scaffolding is included:
 - CI dry-run schema gates via `npm run validate:dry-run-schema` and `npm run validate:packaged-dry-run-schema` (packaged validator auto-rebuilds `IdleWatch.app` first to avoid stale-artifact mismatches)
 - Usage freshness transition gate via `npm run validate:usage-freshness-e2e` (simulates long-window aging→stale transitions end-to-end)
 - Usage alert-rate quality gate via `npm run validate:usage-alert-rate-e2e` (asserts typical low-traffic ages stay `usageAlertLevel=ok`, with deterministic boundary escalation)
+- Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
 
@@ -186,3 +187,4 @@ Trusted-release workflow required secrets:
 
 Trusted release workflow policy:
 - OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health` before artifact upload.
+- Trusted release gate also enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` to fail fast if packaged usage age is excessively stale.

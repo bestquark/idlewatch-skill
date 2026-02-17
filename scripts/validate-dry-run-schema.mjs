@@ -29,6 +29,14 @@ function assertNumberOrNull(value, field) {
 }
 
 const REQUIRE_OPENCLAW_USAGE = process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE === '1'
+const MAX_OPENCLAW_USAGE_AGE_MS_RAW = process.env.IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS
+const MAX_OPENCLAW_USAGE_AGE_MS = MAX_OPENCLAW_USAGE_AGE_MS_RAW
+  ? Number(MAX_OPENCLAW_USAGE_AGE_MS_RAW)
+  : null
+
+if (MAX_OPENCLAW_USAGE_AGE_MS_RAW) {
+  assert.ok(Number.isFinite(MAX_OPENCLAW_USAGE_AGE_MS) && MAX_OPENCLAW_USAGE_AGE_MS > 0, 'IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS must be a number > 0 when set')
+}
 
 function validateRow(row) {
   assert.equal(typeof row.host, 'string', 'host must be a string')
@@ -143,6 +151,14 @@ function validateRow(row) {
   if (REQUIRE_OPENCLAW_USAGE) {
     assert.equal(source.usage, 'openclaw', 'IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1 requires source.usage=openclaw')
     assert.notEqual(source.usageIntegrationStatus, 'unavailable', 'OpenClaw usage must not be unavailable in strict mode')
+  }
+
+  if (MAX_OPENCLAW_USAGE_AGE_MS !== null && source.usage === 'openclaw') {
+    assert.ok(Number.isFinite(row.openclawUsageAgeMs), 'openclawUsageAgeMs must be present when enforcing max age')
+    assert.ok(
+      row.openclawUsageAgeMs <= MAX_OPENCLAW_USAGE_AGE_MS,
+      `openclawUsageAgeMs (${row.openclawUsageAgeMs}) exceeds max allowed ${MAX_OPENCLAW_USAGE_AGE_MS}`
+    )
   }
 }
 

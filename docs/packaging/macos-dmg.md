@@ -60,7 +60,7 @@ Optional environment variables:
 
 ## CI integration
 
-- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e` and DMG install validation via `npm run validate:dmg-install`)
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, and DMG install validation via `npm run validate:dmg-install`)
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:
@@ -77,4 +77,5 @@ When present, the workflow imports a temporary build keychain, signs `IdleWatch.
 
 Release policy gate:
 - Trusted release workflow enforces packaged dry-run OpenClaw usage availability (`source.usage=openclaw`) before artifact upload via `npm run validate:packaged-usage-health`.
-- Both packaged validators (`validate:packaged-dry-run-schema`, `validate:packaged-usage-health`) now auto-run `package:macos` first so checks always target fresh packaged bits.
+- Trusted release workflow additionally enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` so packaged rows fail if usage age is excessively stale at validation time.
+- All packaged validators (`validate:packaged-dry-run-schema`, `validate:packaged-usage-health`, `validate:packaged-usage-age-slo`) auto-run `package:macos` first so checks always target fresh packaged bits.

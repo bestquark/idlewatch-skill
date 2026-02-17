@@ -77,6 +77,9 @@ jobs:
       - name: Validate packaged app dry-run telemetry schema
         run: npm run validate:packaged-dry-run-schema
 
+      - name: Validate packaged OpenClaw usage age SLO gate
+        run: npm run validate:packaged-usage-age-slo
+
       - name: Validate packaged OpenClaw usage stale-threshold recovery
         run: npm run validate:packaged-usage-recovery-e2e
 

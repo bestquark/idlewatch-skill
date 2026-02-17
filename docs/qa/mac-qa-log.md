@@ -1767,3 +1767,23 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Improve monitoring reliability across short agent restarts by persisting/reusing bounded last-good OpenClaw usage snapshots with explicit provenance.
+
+## Implementation cycle update — 2026-02-17 00:18 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added optional max-usage-age contract enforcement to dry-run schema validator via `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS`.
+- ✅ Added packaged SLO gate script: `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage + max age <= `300000ms`).
+- ✅ Wired macOS packaging CI to run the packaged usage-age SLO gate before recovery/DMG checks.
+- ✅ Hardened trusted release policy by enforcing `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` in usage-health gate step.
+- ✅ Updated operator docs/config references (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`) with the new usage-age guardrail.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (34/34).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-usage-age-slo --silent` passes.
+
+### Acceptance criteria updates
+
+- [x] Add CI-level packaged-runtime guardrail for excessively stale OpenClaw usage age to catch ingestion drift/regressions beyond freshness-grace tuning.
