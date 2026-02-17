@@ -1210,3 +1210,48 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add credential-free local Firebase E2E path (Firestore emulator) to reduce dependency on production credentials for ingestion validation.
+
+## QA cycle update — 2026-02-16 22:30 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (20/20).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged app schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:dmg-install --silent` passes (mounted-DMG install + launcher dry-run schema check).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`9`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`36165.23`).
+  - `openclawUsageAgeMs`: `45686` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageNearStale: true`, `usagePastStaleThreshold: false`.
+- Packaged app dry-run (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `tokensPerMin`: populated (`22284.54`).
+  - `openclawUsageAgeMs`: `74868` with `source.usageIntegrationStatus: "stale"`, `usageFreshnessState: "stale"`, `usagePastStaleThreshold: true`.
+
+### Bugs / feature gaps (current)
+
+1. **Packaged-run usage staleness remains reproducible under QA/runtime delay (Medium, observability tuning)**
+   - This cycle reproduced stale state in packaged dry-run (`openclawUsageAgeMs=74868`), while direct CLI remained `ok`.
+   - Classifier appears correct; downstream alerts should use `usageFreshnessState` + grace metadata and avoid binary paging on transient packaged-loop stale events.
+
+2. **Trusted distribution still credential-gated (High, release readiness)**
+   - Packaging + DMG install validation are green, but artifact remains unsigned/not notarized without configured `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+
+3. **Production-credentialed Firebase write-path validation still pending (Medium, E2E confidence)**
+   - Emulator-mode path is now validated, but one pass against real project credentials is still needed before release confidence is complete.
+
+### DMG packaging risk status
+
+- ✅ Packaging and installer validation are reproducible locally (`IdleWatch.app`, unsigned DMG, mounted-DMG install check).
+- ⚠️ Gatekeeper/trust risk persists until signing + notarization execute successfully with real Apple credentials.
+
+### OpenClaw integration gap status
+
+- ✅ Probe diagnostics and usage schema remain healthy in direct CLI runs (`usageProbeResult: ok`, populated usage/session fields).
+- ⚠️ Packaged runtime can still enter `stale` during longer loops; tuning/policy alignment is still needed for alerting behavior in distribution QA pipelines.
