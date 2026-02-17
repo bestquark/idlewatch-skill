@@ -3,6 +3,88 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 18:10 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA cycle completed (maintenance/no-production changes):** Ran full Mac telemetry + packaging regression sweep with no source code changes.
+- ✅ **Telemetry validation scope:** captured fresh host and packaged launcher samples, including `--once` packaged path and OpenClaw-disabled path.
+- ✅ **Packaging readiness:** validated all standard gates relevant to release-ready artifacts (metadata, checksum, dmg install).
+- ⚠️ **Persistent constrained-PATH launch risk:** `validate:packaged-bundled-runtime --silent` still shows intermittent launchability timeout behavior in noisy PATH-constrained environments (`dry-run timed out after 15000ms`, falls back to path-only check). Functional launch path remains green, but deterministic JSON capture still needs improvement.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (launcher **path-only check** green; captured JSON path remains timing-sensitive in constrained PATH)
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `node bin/idlewatch-agent.js --dry-run --json`
+- ✅ `node bin/idlewatch-agent.js --dry-run --once --json`
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`
+
+### Bugs
+
+- ✅ **Closed:** `validate-openclaw-cache-recovery-e2e` and `validate:packaged-usage-recovery-e2e` continue to pass under fresh runs.
+- 🐛 **Open:** `validate:packaged-bundled-runtime` still depends on partial-output timeout behavior when PATH is scrubbed (`dry-run timed out after 15000ms` before row parse).
+- 🐛 **Open (external):** DMG still local-only and unsigned/no-stapled in this environment, so Gatekeeper friction risk remains unchanged.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json` sample:
+  - `cpuPct`: `9.52`
+  - `memUsedPct`: `82.05`
+  - `memPressurePct`: `48` (`normal`)
+  - `tokensPerMin`: `null`
+  - `openclawModel`: `null`
+  - `openclawUsageAgeMs`: `null`
+  - `usageFreshnessState`: `disabled`
+  - `usageAlertLevel`: `off`
+
+- Host `--dry-run --json` with OpenClaw enabled (prior in sweep):
+  - `cpuPct`: `16.43`
+  - `memUsedPct`: `88.25`
+  - `memPressurePct`: `48` (`normal`)
+  - `tokensPerMin`: `36035.65`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawUsageAgeMs`: `50,882`
+  - `usageFreshnessState`: `fresh`
+  - `usageAlertLevel`: `ok`
+
+- Packaged launcher `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json` sample:
+  - `cpuPct`: `15.53`
+  - `memUsedPct`: `81.34`
+  - `memPressurePct`: `48` (`normal`)
+  - `tokensPerMin`: `9872.15`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawUsageAgeMs`: `188,734`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized in this environment (Gatekeeper friction remains possible on strict endpoints).
+2. **Medium:** `validate:packaged-bundled-runtime` still has constrained-PATH deterministic-capture risk (timeout → partial-row fallback path).
+3. **Low:** No end-to-end cross-mac architecture matrix in this single host run (`arm64` only).
+
+### OpenClaw integration gaps
+
+1. **Open:** Integration remains schema-version dependent on local `openclaw` CLI behavior and output shape, though parser coverage is broad.
+2. **Open:** Firebase/cloud write path remains unexercised locally; this host stays in local-only mode.
+3. **Open:** Constrained-PATH launch captures can require explicit timeout/path handling to avoid intermittent partial-row-only parse paths.
+
+### Follow-up / action items
+
+1. Stabilize packaged runtime timeout path so `validate:packaged-bundled-runtime` can consistently capture and validate JSON under clean PATH without fallback-only behavior.
+2. Continue running recurring 20-minute cycle; keep this item open until the partial-row path is replaced by reliable full-row capture.
+3. Reconfirm if any downstream OpenClaw schema drift occurs (especially around `session`/`agent` key names) and add fixtures promptly if needed.
+
 ## QA cycle update — 2026-02-17 18:00 America/Toronto
 
 ### Completed this cycle
