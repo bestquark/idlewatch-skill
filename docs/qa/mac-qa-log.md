@@ -962,3 +962,54 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Runtime probe and parser path remains healthy with explicit diagnostics and non-fallback usage ingestion.
 - ✅ Freshness metadata remains coherent across direct + packaged runs (`usageNearStale`, `usagePastStaleThreshold`, grace window fields).
 - ✅ Added dedicated long-window usage freshness E2E harness (`npm run validate:usage-freshness-e2e`) to assert expected transitions from `fresh` → `aging` → post-threshold-in-grace → `stale` using deterministic OpenClaw mock output.
+
+## QA cycle update — 2026-02-16 21:20 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes.
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + probe metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged app schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (fresh → aging → grace-window → stale transition).
+- ⚠️ Firebase remains unconfigured in QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct CLI dry-run sample:
+  - `gpuPct`: populated (`10`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`10`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`32835.59`).
+  - `openclawUsageAgeMs`: `52255` with `source.usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageNearStale: true`, `usagePastStaleThreshold: false`.
+- Usage probe diagnostics:
+  - `source.usageProbeResult`: `"ok"`
+  - `source.usageProbeAttempts`: `1`
+  - `source.usageUsedFallbackCache`: `false`
+  - `source.usageCommand`: `"/opt/homebrew/bin/openclaw status --json"`
+
+### Bugs / feature gaps (current)
+
+1. **Trusted distribution is still opt-in and credential-gated (High, release readiness)**
+   - Default local QA output remains unsigned DMG unless `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` are configured.
+   - Strict mode (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) exists but is not default.
+
+2. **Usage freshness remains near stale threshold in routine loops (Medium, observability tuning)**
+   - This cycle observed `openclawUsageAgeMs=52255` with near-stale state.
+   - Classifier behavior is correct, but downstream alerts should use `usagePastStaleThreshold` and grace metadata to avoid premature paging.
+
+3. **Credentialed Firebase E2E validation still pending (Medium, delivery confidence)**
+   - Local schema + packaging validation is green.
+   - Firestore write-path validation with real credentials remains outstanding.
+
+### DMG packaging risk status
+
+- ✅ Build reproducibility remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk remains until signing + notarization are executed with valid credentials.
+- ⚠️ Manual user-level first-install UX validation is still limited (beyond CI harness checks).
+
+### OpenClaw integration gap status
+
+- ✅ Runtime probe path remains healthy in this cycle with explicit diagnostics and non-fallback ingestion.
+- ✅ Freshness-state behavior remains coherent and validated in deterministic E2E harness.
+- ⚠️ Still no production-enforced policy gate requiring usage-health in every release path (available via optional `IDLEWATCH_REQUIRE_OPENCLAW_USAGE_HEALTH=1`).
