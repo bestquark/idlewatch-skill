@@ -188,7 +188,9 @@ OpenClaw parsing hardened in this release:
 - stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
 - mixed timestamp names, epoch-seconds variants (`1771278800`), and alternate session container keys are supported
 - wrapped status payload shapes (`result` root object, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
+- direct session object payloads (`session`, `activeSession`, `currentSession`) are now handled alongside array/map forms
 - sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers
+- metadata keys like `sessions.defaults` are ignored during session-map selection so tokenized sessions are not shadowed by defaults payloads
 - stale-token markers like `"totalTokensFresh": "false"` are correctly interpreted as freshness metadata rather than causing parser failure
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.

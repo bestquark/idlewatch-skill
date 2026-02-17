@@ -194,17 +194,61 @@ function extractJsonCandidates(raw) {
   return candidates
 }
 
-function coerceSessionCandidates(value) {
+function hasAnySessionSignal(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+
+  const directSignals = [
+    value.sessionId,
+    value.id,
+    value.agentId,
+    value.model,
+    value.modelName,
+    value.totalTokens,
+    value.total_tokens,
+    value.inputTokens,
+    value.outputTokens,
+    value.age,
+    value.ageMs,
+    value.updatedAt,
+    value.updated_at,
+    value.updatedAtMs,
+    value.ts,
+    value.time,
+    value.timestamp
+  ]
+
+  if (directSignals.some((field) => Number.isFinite(Number(field)) || (typeof field === 'string' && field.trim().length > 0) || field === true || field === false)) {
+    return true
+  }
+
+  return (
+    hasAnySessionSignal(value?.usage) ||
+    hasAnySessionSignal(value?.usageTotals) ||
+    hasAnySessionSignal(value?.result) ||
+    hasAnySessionSignal(value?.session)
+  )
+}
+
+function coerceSessionCandidates(value, options = {}) {
+  const skipKeys = new Set(options.skipKeys || [])
+
   if (Array.isArray(value)) {
     return value.length > 0 ? value : null
   }
 
   if (value && typeof value === 'object') {
-    const fromObject = Object.values(value).filter((entry) => {
-      if (!entry || typeof entry !== 'object') return false
-      if (Array.isArray(entry)) return entry.length > 0
-      return true
-    })
+    if (hasAnySessionSignal(value)) return [value]
+
+    const fromObject = Object.entries(value)
+      .filter(([key, entry]) => !skipKeys.has(key))
+      .map((entry) => entry[1])
+      .filter((entry) => {
+        if (!entry || typeof entry !== 'object') return false
+        if (Array.isArray(entry)) return entry.length > 0
+        if (!hasAnySessionSignal(entry)) return false
+        return true
+      })
+
     if (fromObject.length > 0) return fromObject
   }
 
@@ -216,27 +260,37 @@ function collectStatusSessionCandidates(parsed) {
     parsed?.sessions?.recent,
     parsed?.sessions?.recentSessions,
     parsed?.sessions?.activeSessions,
-    parsed?.recentSessions,
     parsed?.sessions?.active,
+    parsed?.sessions?.session,
+    parsed?.sessions?.activeSession,
+    parsed?.sessions?.currentSession,
+    parsed?.recentSessions,
     parsed?.activeSessions,
+    parsed?.active,
+    parsed?.recent,
+    parsed?.session,
+    parsed?.activeSession,
+    parsed?.currentSession,
     parsed?.result?.sessions?.recent,
     parsed?.result?.sessions?.recentSessions,
     parsed?.result?.sessions?.activeSessions,
+    parsed?.result?.sessions?.active,
+    parsed?.result?.sessions?.session,
+    parsed?.result?.sessions?.activeSession,
+    parsed?.result?.sessions?.currentSession,
+    parsed?.result?.sessions,
     parsed?.result?.recentSessions,
     parsed?.result?.activeSessions,
-    parsed?.result?.sessions,
-    parsed?.recent,
-    parsed?.active,
+    parsed?.result?.active,
+    parsed?.result?.session,
+    parsed?.result?.activeSession,
+    parsed?.result?.currentSession,
     parsed?.sessions
   ]
 
   for (const root of candidateRoots) {
-    const normalized = coerceSessionCandidates(root)
+    const normalized = coerceSessionCandidates(root, { skipKeys: ['defaults', 'metadata'] })
     if (normalized && normalized.length > 0) return normalized
-  }
-
-  if (parsed?.result?.sessions) {
-    return [parsed.result.sessions]
   }
 
   return null
@@ -244,7 +298,10 @@ function collectStatusSessionCandidates(parsed) {
 
 function parseFromStatusJson(parsed) {
   const sessionsRoot = collectStatusSessionCandidates(parsed)
-  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults || {}
+  const defaults = parsed?.sessions?.defaults || parsed?.defaults || parsed?.result?.defaults ||
+    (parsed?.result?.defaultModel || parsed?.result?.default_model
+      ? { model: parsed.result.defaultModel || parsed.result.default_model }
+      : {})
   const session = pickBestRecentSession(sessionsRoot)
 
   if (!session) {

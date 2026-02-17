@@ -1,0 +1,15 @@
+{
+  "result": {
+    "session": {
+      "sessionId": "result-session-1",
+      "agentId": "agent-result",
+      "model": "gpt-5.3-codex",
+      "totalTokens": 1111,
+      "tokensPerMinute": 1234.56,
+      "updatedAt": 1771279000000,
+      "age": 7000
+    },
+    "defaultModel": "fallback-model"
+  },
+  "ts": 1771279000000
+}

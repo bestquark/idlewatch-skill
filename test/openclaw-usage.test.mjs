@@ -140,6 +140,29 @@ test('parses status payload where sessions is an object map keyed by session id'
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('selects active session from result.session payload shape', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-result-session.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 1111)
+  assert.equal(usage.tokensPerMin, 1234.56)
+  assert.equal(usage.sessionId, 'result-session-1')
+  assert.equal(usage.agentId, 'agent-result')
+  assert.equal(usage.usageTimestampMs, 1771279000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
+test('ignores metadata defaults key in session maps and still selects most recent real session', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-session-map-with-defaults.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 2222)
+  assert.equal(usage.sessionId, 'map-main-2')
+  assert.equal(usage.agentId, 'agent-map-main-2')
+  assert.equal(usage.usageTimestampMs, 1771278960000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('uses top-level default model when no sessions are available', () => {
   const sample = '{"defaultModel":"claude-opus-4-6","sessions":{"recent":[]}}'
   const usage = parseOpenClawUsage(sample)

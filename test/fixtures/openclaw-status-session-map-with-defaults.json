@@ -1,0 +1,23 @@
+{
+  "sessions": {
+    "defaults": {
+      "model": "gpt-5.3-codex"
+    },
+    "map-main-2": {
+      "sessionId": "map-main-2",
+      "agentId": "agent-map-main-2",
+      "model": "claude-opus-4-6",
+      "updatedAt": 1771278960000,
+      "totalTokens": 2222,
+      "totalTokensFresh": true
+    },
+    "map-stale": {
+      "sessionId": "map-stale-2",
+      "agentId": "agent-map-stale-2",
+      "model": "gpt-5.3-codex",
+      "updatedAt": 1771278950000,
+      "totalTokens": 111,
+      "totalTokensFresh": false
+    }
+  }
+}

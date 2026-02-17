@@ -1,3 +1,18 @@
+## QA cycle update — 2026-02-17 09:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** OpenClaw parser hardened against noisy/mixed status shapes by adding direct-session support (`result.session`, `session`, `activeSession`, `currentSession`) and filtering metadata-only map entries like `defaults` from session selection candidates.
+- ✅ **OpenClaw stats ingestion:** Added parser coverage and regression fixtures for alternate status payload shapes and session-map metadata-key behavior so command-shape drift is less likely to produce false sessions or partial usage rows.
+- ✅ **Packaging docs:** Updated OpenClaw payload compatibility notes in README to document these parsing guarantees for deployment and operations.
+- ✅ **Validation:** `npm test --silent` passes (164 tests) including new parser regression coverage.
+
+### Bugs / features completed in this cycle
+
+- ✅ Monitoring reliability confidence improved for variant status payloads and multi-key `sessions` containers.
+- ✅ OpenClaw ingestion confidence improved with deterministic session selection in mixed payload maps.
+- ✅ Packaging docs updated to track parser compatibility behavior for release-facing observability teams.
+
 ## QA cycle update — 2026-02-17 09:50 America/Toronto
 
 ### Completed this cycle
