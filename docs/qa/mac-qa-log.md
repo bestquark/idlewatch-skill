@@ -3,6 +3,63 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 18:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Steady-state full sweep re-run:** executed the full Mac monitor/distribution validation set for this cycle.
+- ✅ **Telemetry continuity:** `npm test --silent` and complete packaging guardrail chain passed (`189` assertions).
+- ⚠️ **Install-check regression surfaced:** `validate:dmg-install` intermittently fails in this environment due launcher dry-run output timeout when run from mounted DMG path; path/copy flow still reaches command execution but emits no JSON within schema-check window.
+
+### Validation checks run
+
+- ✅ `npm test --silent` (`189/189`)
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:packaged-usage-health --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (path-only phase succeeds)
+- ✅ `npm run package:dmg --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ⚠️ `npm run validate:dmg-install --silent` **failed in this cycle** (`No telemetry JSON row found in dry-run output` under mount/copy flow)
+
+### Bugs / features completed
+
+- ✅ **No code changes in this cycle:** validation remains green across parser/runtime/packaging guardrails.
+- ✅ **Usage health gates remain stable:** freshness/alert/recovery/probe-noise/openclaw-cache-recovery suites all validated.
+- 🐛 **Open/ongoing:** `validate:dmg-install` still intermittently times out when collecting output from app copied out of mounted DMG in this runtime.
+
+### Telemetry validation checks (latest samples)
+
+- Host dry-run (`node bin/idlewatch-agent.js --dry-run`):
+  - `cpuPct: 19.23`, `memUsedPct: 83.77`, `memPressurePct: 48 (normal)`, `gpuPct: 0`, `tokensPerMin: 27621.79`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28746`
+  - `openclawUsageAgeMs: 65,588`, `usageIntegrationStatus: ok`, `usageActivityStatus: aging`, `usageNearStale: true`, `usagePastStaleThreshold: true`, `usageRefreshAttempted: true`, `usageAlertLevel: warning`
+- Packaged app direct (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run`):
+  - `cpuPct: 41.4`, `memUsedPct: 95.69`, `memPressurePct: 52 (normal)`, `gpuPct: 39`, `tokensPerMin: 4101.22`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28746`
+  - `openclawUsageAgeMs: 424,265`, `usageIntegrationStatus: stale`, `usageActivityStatus: stale`, `usageRefreshAttempted: true`, `usageRefreshRecovered: false`, `usageAlertReason: activity-past-threshold`
+- One-shot usage-disabled path (`--once`):
+  - `usageAlertLevel: off`, `usageAlertReason: usage-disabled`, `source.usage: disabled`, no local tokens emitted as expected.
+
+### DMG packaging risks
+
+1. **High:** Distribution still unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset).
+2. **Medium:** `validate:dmg-install` currently depends on successful dry-run JSON emission from mounted-DMG copied launch path; this cycle observed timeout/no-output behavior and reduced confidence in this specific install-validation path on this host.
+3. **Low:** Runtime dependency footprint remains launcher-scaffold plus packaged payload; Node availability assumptions still present unless runtime is explicitly bundled during packaging.
+
+### OpenClaw integration gaps
+
+1. **Gap:** OpenClaw usage freshness remains frequently stale in local low-activity windows (`openclawUsageAgeMs` can exceed stale+grace) despite healthy probe success.
+2. **Gap:** Long-run packaging/installer capture environments can still exhibit timeout behavior with mounted-DMG runs, masking telemetry output capture even while exit is non-zero in validator.
+3. **Gap:** No credentialed Firebase write-path validation this cycle (local-only mode remains active by default).
+
 ## QA cycle update — 2026-02-17 18:20 America/Toronto
 
 ### Completed this cycle
