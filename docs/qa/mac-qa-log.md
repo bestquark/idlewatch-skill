@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-17 09:36 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** Extended OpenClaw timestamp coercion to handle epoch-seconds values (integer seconds) as valid usage timestamps across status and generic payload shapes.
+  - New helper in `src/openclaw-usage.js`: `pickTimestamp(...vals)` with seconds->milliseconds normalization for timestamp keys.
+  - Added fixture `test/fixtures/openclaw-status-epoch-seconds.json`.
+  - Added regression coverage in `test/openclaw-usage.test.mjs` (`converts epoch-seconds usage timestamps to milliseconds`).
+  - Updated legacy nested sessions timestamp expectation in tests to reflect seconds-to-ms coercion.
+- ✅ **OpenClaw stats ingestion:** timestamp ingestion is now more robust for mixed CLI timestamp formats (e.g., `updatedAt`, `updated_at`, `ts`, `time`, and `usage.updatedAt`) when they arrive as epoch-seconds strings/ints.
+  - Improves `openclawUsageAgeMs` accuracy in environments emitting second-resolution timestamps.
+- ✅ **Packaging scripts/docs:** documented epoch-seconds timestamp normalization in parser support notes in `README.md`.
+
+### Validation checks
+
+- ✅ `npm test --silent` passes (160).
+- ℹ Packaging/runtime guardrails (`validate:packaged-usage-alert-rate-e2e`, `validate:packaged-usage-recovery-e2e`) were not re-run in this cycle; no script or logic changes were made in packaging paths.
+
 ## QA cycle update — 2026-02-17 09:26 America/Toronto
 
 ### Completed this cycle

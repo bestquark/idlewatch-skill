@@ -1,0 +1,15 @@
+{
+  "ts": 1771277700,
+  "sessions": {
+    "recent": [
+      {
+        "sessionId": "sec-session",
+        "agentId": "agent-sec",
+        "model": "gpt-5.3-codex-spark",
+        "updatedAt": 1771278800,
+        "totalTokens": 1200,
+        "tokensPerMinute": 30
+      }
+    ]
+  }
+}

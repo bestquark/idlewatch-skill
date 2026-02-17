@@ -14,6 +14,33 @@ function pickNumber(...vals) {
   return null
 }
 
+function pickTimestamp(...vals) {
+  for (const val of vals) {
+    if (val === null || typeof val === 'undefined') continue
+
+    if (typeof val === 'number' && Number.isFinite(val)) {
+      const numeric = val
+      if (Number.isInteger(numeric) && numeric > 0 && numeric < 1_000_000_000_000) return numeric * 1000
+      return numeric
+    }
+
+    if (typeof val === 'string') {
+      const normalized = val.trim()
+      if (!normalized) continue
+
+      const parsed = Number(normalized)
+      if (Number.isFinite(parsed)) {
+        if (Number.isInteger(parsed) && parsed > 0 && parsed < 1_000_000_000_000) return parsed * 1000
+        return parsed
+      }
+
+      const asDate = Date.parse(normalized)
+      if (!Number.isNaN(asDate)) return asDate
+    }
+  }
+  return null
+}
+
 function pickString(...vals) {
   for (const val of vals) {
     if (typeof val === 'string' && val.trim()) return val
@@ -77,7 +104,7 @@ function pickNewestSession(sessions = []) {
 
     const pickSessionTs = (item) => {
       const age = pickNumber(item?.age, item?.ageMs)
-      const absolute = pickNumber(item?.updatedAt, item?.updated_at, item?.updatedAtMs, item?.createdAt, item?.created_at, item?.ts, item?.time)
+      const absolute = pickTimestamp(item?.updatedAt, item?.updated_at, item?.updatedAtMs, item?.createdAt, item?.created_at, item?.ts, item?.time)
       return absolute ?? (Number.isFinite(age) && age >= 0 ? Date.now() - age : null)
     }
 
@@ -229,7 +256,7 @@ function parseFromStatusJson(parsed) {
       tokensPerMin: null,
       sessionId: null,
       agentId: null,
-      usageTimestampMs: pickNumber(parsed?.ts, parsed?.time),
+      usageTimestampMs: pickTimestamp(parsed?.ts, parsed?.time),
       integrationStatus: 'partial'
     }
   }
@@ -250,7 +277,7 @@ function parseFromStatusJson(parsed) {
   )
   const sessionAgeMs = pickNumber(session.age, session.ageMs)
   const usageTimestampMs =
-    pickNumber(
+    pickTimestamp(
       session.updatedAt,
       session.updated_at,
       session.updatedAtMs,
@@ -265,7 +292,7 @@ function parseFromStatusJson(parsed) {
       parsed?.updated_at,
       parsed?.updatedAtMs
     ) ??
-    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickNumber(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs))
+    (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs))
 
   const hasStrongUsage = model !== null || totalTokens !== null || tokensPerMin !== null
 
@@ -314,7 +341,7 @@ function parseGenericUsage(parsed) {
     tokensPerMin,
     sessionId: pickString(parsed?.sessionId, usage?.sessionId, usage?.id),
     agentId: pickString(parsed?.agentId, usage?.agentId),
-    usageTimestampMs: pickNumber(
+    usageTimestampMs: pickTimestamp(
       usage?.updatedAt,
       usage?.updated_at,
       usage?.updatedAtMs,

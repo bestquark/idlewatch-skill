@@ -62,7 +62,7 @@ test('parses generic usage payloads', () => {
     tokensPerMin: 45.67,
     sessionId: 'abc',
     agentId: 'main',
-    usageTimestampMs: 123456,
+    usageTimestampMs: 123456000,
     integrationStatus: 'ok'
   })
 })
@@ -80,6 +80,15 @@ test('parses status payloads with stringified numeric fields and stale token mar
   assert.equal(usage.sessionId, 'b7e1f8')
   assert.equal(usage.agentId, 'agent-2')
   assert.equal(usage.usageTimestampMs, 1771278820000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
+test('converts epoch-seconds usage timestamps to milliseconds', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-epoch-seconds.json'))
+  assert.ok(usage)
+  assert.equal(usage.sessionId, 'sec-session')
+  assert.equal(usage.agentId, 'agent-sec')
+  assert.equal(usage.usageTimestampMs, 1771278800000)
   assert.equal(usage.integrationStatus, 'ok')
 })
 
@@ -104,7 +113,7 @@ test('parses status payload with nested sessions object and totals in totals.nes
   assert.equal(usage.tokensPerMin, 32502.31)
   assert.equal(usage.sessionId, 'sess-1')
   assert.equal(usage.agentId, 'agent-007')
-  assert.equal(usage.usageTimestampMs, 1739703000)
+  assert.equal(usage.usageTimestampMs, 1739703000000)
   assert.equal(usage.integrationStatus, 'ok')
 })
 
