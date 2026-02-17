@@ -961,4 +961,4 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Runtime probe and parser path remains healthy with explicit diagnostics and non-fallback usage ingestion.
 - ✅ Freshness metadata remains coherent across direct + packaged runs (`usageNearStale`, `usagePastStaleThreshold`, grace window fields).
-- ⚠️ No dedicated long-window E2E harness yet to assert expected state transitions from `aging` to `stale` under sustained packaging/load conditions.
+- ✅ Added dedicated long-window usage freshness E2E harness (`npm run validate:usage-freshness-e2e`) to assert expected transitions from `fresh` → `aging` → post-threshold-in-grace → `stale` using deterministic OpenClaw mock output.

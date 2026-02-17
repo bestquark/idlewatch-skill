@@ -47,6 +47,9 @@ jobs:
       - name: Validate dry-run telemetry schema
         run: npm run validate:dry-run-schema
 
+      - name: Validate usage freshness long-window transitions
+        run: npm run validate:usage-freshness-e2e
+
   macos-packaging-smoke:
     name: macOS packaging scaffold smoke
     runs-on: macos-latest
