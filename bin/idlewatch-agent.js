@@ -307,6 +307,7 @@ let lastGoodOpenClawUsage = (() => {
   if (!cached) return null
   return { at: cached.at, usage: cached.usage, source: 'disk' }
 })()
+let preferredOpenClawProbe = null
 let memPressureCache = { at: 0, value: { pct: null, cls: 'unavailable', source: 'unavailable' } }
 
 function loadMemPressure() {
@@ -407,46 +408,70 @@ function loadOpenClawUsage(forceRefresh = false) {
   let sawParseError = false
   let lastError = null
 
+  const evaluateProbe = (binPath, cmdArgs, isPreferred = false) => {
+    const cmdText = `${binPath} ${cmdArgs.join(' ')}`
+    attempts += 1
+    const probeRun = runProbe(binPath, cmdArgs)
+
+    if (probeRun.out !== null) {
+      const parsed = parseOpenClawUsage(probeRun.out)
+      if (parsed) {
+        preferredOpenClawProbe = { binPath, args: cmdArgs }
+        const usage = { ...parsed, sourceCommand: cmdText }
+        const value = {
+          usage,
+          probe: {
+            result: 'ok',
+            attempts,
+            sweeps,
+            command: cmdText,
+            error: probeRun.status === 'ok-with-stderr' ? probeRun.error : null,
+            usedFallbackCache: false,
+            fallbackAgeMs: null,
+            fallbackCacheSource: null
+          }
+        }
+        lastGoodOpenClawUsage = { at: now, usage, source: 'memory' }
+        persistLastGoodUsageSnapshot(OPENCLAW_LAST_GOOD_CACHE_PATH, { at: now, usage })
+        openClawUsageCache = { at: now, value }
+        return value
+      }
+
+      sawParseError = true
+      lastError = 'unrecognized-json-shape'
+      preferredOpenClawProbe = isPreferred ? null : preferredOpenClawProbe
+      return null
+    }
+
+    if (probeRun.status === 'command-error') {
+      if (probeRun.error === 'openclaw-not-found') {
+        lastError = probeRun.error
+        preferredOpenClawProbe = isPreferred ? null : preferredOpenClawProbe
+        return null
+      }
+      sawCommandError = true
+      lastError = probeRun.error
+      preferredOpenClawProbe = isPreferred ? null : preferredOpenClawProbe
+      return null
+    }
+
+    return null
+  }
+
+  if (preferredOpenClawProbe) {
+    sweeps = 1
+    const cachedResult = evaluateProbe(preferredOpenClawProbe.binPath, preferredOpenClawProbe.args, true)
+    if (cachedResult) {
+      return cachedResult
+    }
+  }
+
   for (let sweep = 0; sweep <= OPENCLAW_PROBE_RETRIES; sweep++) {
     sweeps = sweep + 1
     for (const binPath of binaries) {
       for (const args of subcommands) {
-        attempts += 1
-        const cmdText = `${binPath} ${args.join(' ')}`
-        const probeRun = runProbe(binPath, args)
-
-        if (probeRun.out !== null) {
-          const parsed = parseOpenClawUsage(probeRun.out)
-          if (parsed) {
-            const usage = { ...parsed, sourceCommand: cmdText }
-            const value = {
-              usage,
-              probe: {
-                result: 'ok',
-                attempts,
-                sweeps,
-                command: cmdText,
-                error: probeRun.status === 'ok-with-stderr' ? probeRun.error : null,
-                usedFallbackCache: false,
-                fallbackAgeMs: null,
-                fallbackCacheSource: null
-              }
-            }
-            lastGoodOpenClawUsage = { at: now, usage, source: 'memory' }
-            persistLastGoodUsageSnapshot(OPENCLAW_LAST_GOOD_CACHE_PATH, { at: now, usage })
-            openClawUsageCache = { at: now, value }
-            return value
-          }
-          sawParseError = true
-          lastError = 'unrecognized-json-shape'
-        } else if (probeRun.status === 'command-error') {
-          if (probeRun.error === 'openclaw-not-found') {
-            lastError = probeRun.error
-            continue
-          }
-          sawCommandError = true
-          lastError = probeRun.error
-        }
+        const candidateResult = evaluateProbe(binPath, args)
+        if (candidateResult) return candidateResult
       }
     }
   }
@@ -511,10 +536,10 @@ async function publish(row, retries = 2) {
 }
 
 async function collectSample() {
-  const nowMs = Date.now()
+  const sampleStartMs = Date.now()
   let usageProbe = loadOpenClawUsage()
   let usage = usageProbe.usage
-  let usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
+  let usageFreshness = deriveUsageFreshness(usage, sampleStartMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   let usageRefreshAttempted = false
   let usageRefreshRecovered = false
   let usageRefreshAttempts = 0
@@ -537,13 +562,18 @@ async function collectSample() {
       if (Number.isFinite(refreshedUsageTs) && (!Number.isFinite(previousUsageTs) || refreshedUsageTs > previousUsageTs)) {
         usageProbe = refreshedUsageProbe
         usage = refreshedUsage
-        usageFreshness = deriveUsageFreshness(usage, nowMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
+        usageFreshness = deriveUsageFreshness(usage, Date.now(), USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
       }
 
       if (!usageFreshness.isPastStaleThreshold) break
     }
 
     usageRefreshRecovered = usageFreshness.isPastStaleThreshold === false
+  }
+
+  const sampleAtMs = Date.now()
+  if (usage) {
+    usageFreshness = deriveUsageFreshness(usage, sampleAtMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   }
 
   const gpu = process.platform === 'darwin'
@@ -604,7 +634,7 @@ async function collectSample() {
 
   const row = {
     host: HOST,
-    ts: nowMs,
+    ts: sampleAtMs,
     cpuPct: cpuPct(),
     memPct: usedMemPct,
     memUsedPct: usedMemPct,
@@ -626,7 +656,7 @@ async function collectSample() {
 
   return enrichWithOpenClawFleetTelemetry(row, {
     host: HOST,
-    collectedAtMs: nowMs,
+    collectedAtMs: sampleAtMs,
     collector: 'idlewatch-agent',
     collectorVersion: pkg.version
   })

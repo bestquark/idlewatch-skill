@@ -119,6 +119,8 @@ Binary resolution order for the OpenClaw probe:
 4. `/usr/local/bin/openclaw`
 5. `openclaw` (PATH lookup)
 
+- Successful probe command/args are cached for the life of the process so subsequent samples and forced stale-threshold refreshes reuse the known-good command first before full probe sweep.
+
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
 - `IDLEWATCH_OPENCLAW_BIN_HINT` is also supported for launcher compatibility in existing packaged flows.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
@@ -149,7 +151,8 @@ Binary resolution order for the OpenClaw probe:
 - `openclawModel`: active model name (from the selected recent session or defaults).
 - `openclawTotalTokens`: total tokens for the selected recent session.
 - `openclawSessionId`, `openclawAgentId`, `openclawUsageTs`: stable identifiers + timestamp alignment fields.
-- `openclawUsageAgeMs`: derived age of usage snapshot (`sampleTs - openclawUsageTs`) when available.
+- `openclawUsageAgeMs`: derived age of usage snapshot (`sampleTs - openclawUsageTs`) when available, where `sampleTs` is the end-of-sample collector timestamp.
+- `ts` and fleet `collectedAtMs` are the same collection timestamp (end of the collect cycle), which is typically a few milliseconds after final probe completion.
 
 Selection logic for `openclaw status --json`:
 1. Pick the most recently updated session among entries with non-null `totalTokens` and `totalTokensFresh !== false`.

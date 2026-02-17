@@ -2614,3 +2614,28 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - **Monitoring reliability:** improves confidence that transient wrapper/non-zero-exit command noise does not incorrectly flip OpenClaw ingestion to failed state.
 - **Packaging readiness:** adds deterministic packaged validation for one more real-world failure mode before DMG build/checksum/install gates.
 - **Doc readiness:** operators and future QA agents can see this guardrail in the documented packaging pipeline.
+
+## Implementation cycle update — 2026-02-17 04:26 America/Toronto
+
+### Completed this implementation cycle
+
+- ✅ Added in-process OpenClaw probe-command reuse for monitor/runtime reliability:
+  - `bin/idlewatch-agent.js` now caches the first successfully probed OpenClaw command+args tuple in process memory and reuses it before full binary/command sweep on later samples and forced refresh passes.
+  - This reduces probe churn and avoids repeated candidate scanning while preserving fallback behavior if the cached probe fails.
+- ✅ Improved sampling-time accuracy for OpenClaw freshness and emitted rows:
+  - `collectSample()` now uses end-of-cycle timestamping for `ts` and `fleet.collectedAtMs`.
+  - Usage freshness is re-evaluated immediately before row emission so `openclawUsageAgeMs` / `usageFreshnessState` reflect sample completion time, not sample-start time.
+- ✅ Updated operator docs for reliability semantics:
+  - README now documents OpenClaw probe-path caching behavior.
+  - README now clarifies timestamp semantics (`ts`, `collectedAtMs`, `openclawUsageAgeMs`) as end-of-sample behavior.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (132 tests).
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes.
+
+### Impact
+
+- Monitoring reliability: more stable probe selection and fresher age math during multi-step stale-threshold refresh paths.
+- OpenClaw ingestion: retains parser/probe resilience while reducing probe command churn in steady-state operation.
+- Packaging/docs: no packaging-script behavior changes this cycle; docs now explicitly communicate sampling freshness semantics for operators.
