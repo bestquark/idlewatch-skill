@@ -3508,3 +3508,37 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Impact
 
 - Steady-state confidence: all packaging, schema, runtime, and unit validations green. No regressions since last cycle.
+
+## QA cycle update — 2026-02-17 12:20 America/Toronto
+
+### Validation checks
+
+- ✅ `npm test` — 180 tests pass (0 failures)
+- ✅ `node bin/idlewatch-agent.js --dry-run --json` — emits populated telemetry row
+
+### Telemetry validation snapshot
+
+- `cpuPct`: `18.24`, `memPct`: `85.62`, `memPressurePct`: `49` (`normal`)
+- `gpuPct`: `0` via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`
+- `tokensPerMin`: `67527.59`, `openclawModel`: `claude-opus-4-6`, `openclawTotalTokens`: `75255`
+- `openclawUsageAgeMs`: `69903` with `usageIntegrationStatus: "ok"`, `usageFreshnessState: "aging"`, `usageAlertLevel: "warning"` (`activity-past-threshold`)
+- `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### Notes
+
+- Steady-state validation pass; no code changes in repo (`git diff` clean from prior cycle).
+- Test count stable at 180.
+- Usage freshness shows `aging` with age ~70s crossing stale threshold but ingestion healthy (`usageIngestionStatus: ok`, `usageProbeResult: ok`). Refresh attempted but no newer usage available (`usageRefreshRecovered: false`).
+- Remaining gaps unchanged: trusted distribution (credential-gated), Firebase E2E (pending creds), clean-machine install UX (limited).
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset).
+2. **Medium:** Node runtime dependency persists for non-bundled targets.
+3. **Low:** No arm64/Intel matrix in this cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Usage freshness can drift past stale threshold during low-activity windows; ingestion remains healthy but activity classification shows `aging`/`stale`.
+2. **Gap:** Firebase/cloud write path not exercised (local-only mode).
+3. **Gap:** Long-window stale-to-warning transitions remain policy-dependent rather than hard failures.
