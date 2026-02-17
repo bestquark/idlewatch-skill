@@ -1592,3 +1592,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Mitigate near-stale observability noise from overly aggressive default thresholding in normal local cadence.
+
+## QA cycle update — 2026-02-16 23:30 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (auto-rebuild path).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA env (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (this cycle)
+
+- Direct dry-run schema sample includes updated default freshness metadata:
+  - `source.usageStaleMsThreshold: 60000`
+  - `source.usageStaleGraceMs: 10000`
+  - `source.usageNearStaleMsThreshold: 59500` (matches new default derivation)
+- `--once`/usage-disabled branch remains deterministic and explicit:
+  - `source.usage: "disabled"`
+  - `source.usageIntegrationStatus: "disabled"`
+  - `source.usageAlertLevel: "off"`
+  - `source.usageAlertReason: "usage-disabled"`
+- Packaged dry-run schema validation passes after rebuild, confirming parity between direct and packaged telemetry contracts.
+
+### Bugs / feature gaps identified this cycle
+
+1. **Release artifact remains unsigned in default local flow (High, distribution trust)**
+   - DMG output remains `IdleWatch-0.1.0-unsigned.dmg` when signing/notary credentials are absent.
+   - Trusted path exists, but still requires operator-provided `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+
+2. **Firebase write path still not validated in this loop (Medium, E2E confidence)**
+   - Local generation/schema checks are green.
+   - Need one credentialed Firestore write validation pass to close ingestion confidence gap.
+
+3. **No runtime-rate guard for near-stale frequency yet (Medium, alert tuning confidence)**
+   - Threshold defaults improved, but there is still no CI/assertion around acceptable near-stale incidence under representative low-traffic workloads.
+
+### DMG packaging risk status (current)
+
+- ✅ App + DMG generation remains reproducible.
+- ⚠️ Trust pipeline remains credential-gated; unsigned artifacts are still the default local output.
+- ⚠️ Clean-machine install evidence was not extended in this cycle.
+
+### OpenClaw integration gap status (current)
+
+- ✅ Schema + packaged validators remain green with refreshed near-stale threshold metadata.
+- ✅ Disabled-usage handling remains explicit and machine-readable.
+- ⚠️ Still missing a workload-level quality gate for near-stale/stale frequency over longer observation windows.
