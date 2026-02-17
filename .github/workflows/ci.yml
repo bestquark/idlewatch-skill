@@ -73,3 +73,6 @@ jobs:
 
       - name: Build unsigned DMG
         run: npm run package:dmg
+
+      - name: Validate DMG install + launcher dry-run schema
+        run: npm run validate:dmg-install

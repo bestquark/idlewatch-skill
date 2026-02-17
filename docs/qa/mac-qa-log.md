@@ -796,3 +796,16 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Integration remains healthy on host with populated usage/session fields and schema checks passing in both direct and packaged flows.
 - ✅ Freshness/near-stale/grace metadata remains coherent across runs.
 - ⚠️ Long-window timing assertions are still CI-unit focused; no full E2E timing harness yet for packaging-duration stale transitions.
+
+## Implementation cycle update — 2026-02-16 20:09 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added DMG install validation harness: `scripts/validate-dmg-install.sh`.
+- ✅ Added npm entrypoint `npm run validate:dmg-install` to exercise mounted-DMG install flow.
+- ✅ Wired macOS packaging CI smoke to run DMG install validation after DMG build.
+- ✅ Updated README + packaging docs to document DMG install validation semantics.
+
+### Acceptance criteria updates
+
+- [x] Add clean-machine-like installer validation to CI (mount DMG, copy app, run launcher dry-run schema check).

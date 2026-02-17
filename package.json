@@ -15,6 +15,7 @@
     "smoke:dry-run": "node bin/idlewatch-agent.js --dry-run",
     "validate:dry-run-schema": "node scripts/validate-dry-run-schema.mjs node bin/idlewatch-agent.js --dry-run",
     "validate:packaged-dry-run-schema": "node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
+    "validate:dmg-install": "./scripts/validate-dmg-install.sh",
     "package:macos": "./scripts/package-macos.sh",
     "package:dmg": "./scripts/build-dmg.sh",
     "package:trusted": "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/package-macos.sh && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/build-dmg.sh",

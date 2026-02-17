@@ -51,10 +51,12 @@ Optional environment variables:
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
 - `npm run package:trusted`
   - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that fails fast unless signing and notarization inputs are configured
+- `npm run validate:dmg-install`
+  - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
 
 ## CI integration
 
-- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job)
+- Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes DMG install validation via `npm run validate:dmg-install`)
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:
