@@ -2073,3 +2073,60 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Reduce false-positive stale warning noise in low-activity windows where OpenClaw probes are healthy but no newer usage snapshot exists.
+
+## QA cycle update — 2026-02-17 01:12 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (111/111 assertions).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + source metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ❌ `npm run validate:dmg-install --silent` fails on mounted-DMG launch due to missing runtime dependency (`ERR_MODULE_NOT_FOUND: firebase-admin`).
+- ⚠️ Firebase remains unconfigured in this QA environment (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run:
+  - `gpuPct`: populated (`17`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`28`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`180123.37`), `openclawModel`: `gpt-5.3-codex`, `openclawTotalTokens`: `227766`.
+  - `openclawUsageAgeMs`: `74542` with `source.usageIntegrationStatus: "stale"`, `usageAlertLevel: "notice"`, `usageAlertReason: "activity-no-new-usage"`.
+- Packaged app dry-run:
+  - `gpuPct`: populated (`9`) via `gpuSource: "ioreg-agx"`.
+  - `tokensPerMin`: populated (`170394.25`) with same session/model identifiers.
+  - `openclawUsageAgeMs`: `78947` with `source.usageIntegrationStatus: "stale"`, `usageAlertLevel: "notice"`, `usageRefreshAttempted: true`, `usageRefreshRecovered: false`.
+- Source metadata remains explicit and stable across both shapes:
+  - `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+  - `source.usageStaleMsThreshold`: `60000`
+  - `source.usageNearStaleMsThreshold`: `59500`
+  - `source.usageStaleGraceMs`: `10000`
+
+### Bugs / feature gaps (current)
+
+1. **DMG install validation regressed with missing packaged dependency (High, release blocker)**
+   - Mounted-DMG launch path fails with `ERR_MODULE_NOT_FOUND: Cannot find package 'firebase-admin' imported from .../payload/package/bin/idlewatch-agent.js`.
+   - Repro: `npm run validate:dmg-install --silent` on this host.
+   - Impact: clean-machine install validation cannot complete; installer payload dependency closure is currently broken.
+
+2. **Trusted distribution still optional unless strict mode + credentials are configured (High, release readiness)**
+   - This cycle artifact remains `IdleWatch-0.1.0-unsigned.dmg`.
+   - Signing/notarization still depends on `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE` and operator enablement.
+
+3. **Firebase write-path E2E still not exercised in active QA loop (Medium, delivery confidence)**
+   - Local schema/packaging validations are green except DMG install regression.
+   - Credentialed Firestore publish-path validation remains pending.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG generation).
+- ❌ DMG install/run validation currently fails due to missing packaged `firebase-admin` dependency.
+- ⚠️ Gatekeeper/trust risk persists until signed + notarized artifacts are produced with configured credentials.
+- ⚠️ Runtime dependency risk persists for hosts without compatible Node runtime.
+
+### OpenClaw integration gap status
+
+- ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
+- ✅ Usage probe metadata remains rich and consistent across direct + packaged dry-runs.
+- ⚠️ Overnight/idle windows still frequently produce stale activity (`usageAlertReason=activity-no-new-usage`), which is reduced to notice but remains operational noise.
