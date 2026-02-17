@@ -75,6 +75,7 @@ function validateRow(row) {
   assert.ok(Number.isInteger(source.usageRefreshAttempts) && source.usageRefreshAttempts >= 0, 'source.usageRefreshAttempts must be integer >= 0')
   assert.ok(Number.isInteger(source.usageRefreshReprobes) && source.usageRefreshReprobes >= 0, 'source.usageRefreshReprobes must be integer >= 0')
   assert.ok(Number.isFinite(source.usageRefreshDelayMs) && source.usageRefreshDelayMs >= 0, 'source.usageRefreshDelayMs must be number >= 0')
+  assert.equal(typeof source.usageRefreshOnNearStale, 'boolean', 'source.usageRefreshOnNearStale must be boolean')
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')

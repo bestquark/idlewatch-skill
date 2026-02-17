@@ -87,6 +87,8 @@ Binary resolution order for the OpenClaw probe:
   after crossing stale threshold (default: `1`, total attempts = reprobes + initial refresh).
 - `IDLEWATCH_USAGE_REFRESH_DELAY_MS` waits between forced stale-threshold reprobes
   (default: `250`).
+- `IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE` triggers proactive refresh when usage is near-stale
+  to reduce stale flips in long packaging/QA loops (default: `1`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH` persists/reuses the last-good OpenClaw usage snapshot
@@ -118,6 +120,7 @@ Source metadata fields:
 - `source.usageRefreshAttempts`: number of forced refresh attempts actually executed.
 - `source.usageRefreshReprobes`: configured extra forced reprobes (`IDLEWATCH_USAGE_REFRESH_REPROBES`).
 - `source.usageRefreshDelayMs`: configured delay between reprobes (`IDLEWATCH_USAGE_REFRESH_DELAY_MS`).
+- `source.usageRefreshOnNearStale`: whether near-stale proactive refresh is enabled (`IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE`).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.

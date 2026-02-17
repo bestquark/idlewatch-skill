@@ -49,6 +49,7 @@ Optional environment variables:
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
     - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
     - Node binary resolution order: `IDLEWATCH_NODE_BIN` → `PATH` (`node`)
+    - Launcher enforces Node.js major version `>=20` and fails with actionable runtime-path/version diagnostics otherwise
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`

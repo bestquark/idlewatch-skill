@@ -59,6 +59,13 @@ if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
   exit 1
 fi
 
+NODE_MAJOR="$($NODE_BIN -p "process.versions.node.split('.')[0]" 2>/dev/null || echo "")"
+if [[ -z "$NODE_MAJOR" || "$NODE_MAJOR" -lt 20 ]]; then
+  NODE_VERSION="$($NODE_BIN -v 2>/dev/null || echo "unknown")"
+  echo "IdleWatch requires Node.js 20+ (found $NODE_VERSION at $NODE_BIN). Upgrade Node.js or set IDLEWATCH_NODE_BIN to a compatible runtime." >&2
+  exit 1
+fi
+
 PAYLOAD_BIN="$RESOURCES_DIR/payload/package/bin/idlewatch-agent.js"
 if [[ ! -f "$PAYLOAD_BIN" ]]; then
   echo "IdleWatch package payload missing ($PAYLOAD_BIN)" >&2

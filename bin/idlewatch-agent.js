@@ -13,7 +13,7 @@ import { deriveUsageAlert } from '../src/usage-alert.js'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
 }
 
 const args = new Set(process.argv.slice(2))
@@ -109,6 +109,17 @@ const USAGE_REFRESH_DELAY_MS = process.env.IDLEWATCH_USAGE_REFRESH_DELAY_MS
 if (!Number.isFinite(USAGE_REFRESH_DELAY_MS) || USAGE_REFRESH_DELAY_MS < 0) {
   console.error(
     `Invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS: ${process.env.IDLEWATCH_USAGE_REFRESH_DELAY_MS}. Expected a non-negative number.`
+  )
+  process.exit(1)
+}
+
+const USAGE_REFRESH_ON_NEAR_STALE = process.env.IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE
+  ? Number(process.env.IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE)
+  : 1
+
+if (![0, 1].includes(USAGE_REFRESH_ON_NEAR_STALE)) {
+  console.error(
+    `Invalid IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE: ${process.env.IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE}. Expected 0 or 1.`
   )
   process.exit(1)
 }
@@ -402,7 +413,8 @@ async function collectSample() {
   let usageRefreshRecovered = false
   let usageRefreshAttempts = 0
 
-  if (usage && usageFreshness.isPastStaleThreshold && usageProbe.probe.result === 'ok') {
+  const shouldRefreshForNearStale = USAGE_REFRESH_ON_NEAR_STALE === 1 && usageFreshness.isNearStale
+  if (usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && usageProbe.probe.result === 'ok') {
     usageRefreshAttempted = true
 
     for (let attempt = 0; attempt <= USAGE_REFRESH_REPROBES; attempt++) {
@@ -466,6 +478,7 @@ async function collectSample() {
     usageRefreshAttempts,
     usageRefreshReprobes: USAGE_REFRESH_REPROBES,
     usageRefreshDelayMs: USAGE_REFRESH_DELAY_MS,
+    usageRefreshOnNearStale: USAGE_REFRESH_ON_NEAR_STALE === 1,
     usageCommand: usage?.sourceCommand ?? null,
     usageStaleMsThreshold: USAGE_STALE_MS,
     usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,

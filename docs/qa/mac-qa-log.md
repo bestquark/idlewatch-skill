@@ -1901,3 +1901,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
 - ✅ Integration metadata remains rich (`usageProbe*`, freshness state, stale-threshold metadata).
 - ⚠️ Usage freshness can still drift into stale territory in real QA windows; keep packaged usage-age SLO gate active for release paths.
+
+## Implementation cycle update — 2026-02-17 00:36 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added proactive near-stale OpenClaw refresh control to reduce stale flapping before threshold crossing:
+  - new env var `IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE` (`1|0`, default `1`)
+  - collector now runs forced uncached refresh attempts when usage is near-stale (not only post-threshold), while preserving stale semantics when no fresher usage exists.
+- ✅ Exposed proactive-refresh configuration in telemetry metadata via `source.usageRefreshOnNearStale`.
+- ✅ Extended dry-run schema validation to enforce `source.usageRefreshOnNearStale` type/contract.
+- ✅ Hardened packaged launcher runtime reliability by enforcing Node major version `>=20` with actionable diagnostics (resolved binary path + detected version).
+- ✅ Updated operator docs/config references (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`, CLI `--help`) for near-stale refresh tuning and launcher Node-version enforcement.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (102/102 assertions).
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes after launcher/runtime updates.
+
+### Acceptance criteria updates
+
+- [x] Improve OpenClaw stats ingestion reliability by enabling proactive near-stale forced refresh attempts (configurable, schema-validated).
+- [x] Improve packaged runtime robustness with explicit Node-version guardrail and clearer install-time diagnostics.
