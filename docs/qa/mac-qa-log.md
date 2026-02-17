@@ -654,3 +654,18 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Integration remains healthy on host with populated usage/session fields and expected freshness transitions (`fresh`/`aging`).
 - ✅ Grace-window metadata is present in emitted samples (`usageStaleGraceMs`, `usagePastStaleThreshold`) and reduces stale flip noise in this cycle.
 - ⚠️ End-to-end CI timing assertions for long packaging windows are still absent.
+
+## Implementation cycle update — 2026-02-16 19:31 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added strict trusted-distribution guardrail for local packaging flows via `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`.
+- ✅ `scripts/package-macos.sh` now fails fast in strict mode if `MACOS_CODESIGN_IDENTITY` is missing.
+- ✅ `scripts/build-dmg.sh` now fails fast in strict mode if signing/notary inputs are missing (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+- ✅ Added one-command strict packaging entrypoint: `npm run package:trusted`.
+- ✅ Updated `.env.example`, README, and macOS packaging docs with strict-mode behavior and operator guidance.
+
+### Acceptance criteria updates
+
+- [x] Add safe-guarded local packaging path that prevents accidental unsigned/unnotarized release artifacts.
+- [x] Document strict trusted-release toggles and required environment variables for operators.

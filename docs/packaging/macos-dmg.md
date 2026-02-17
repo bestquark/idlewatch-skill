@@ -38,6 +38,7 @@ for CI wiring and local dry-runs.
 Optional environment variables:
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
+- `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
 
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
@@ -48,6 +49,8 @@ Optional environment variables:
 - `scripts/build-dmg.sh`
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
+- `npm run package:trusted`
+  - Convenience strict path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`) that fails fast unless signing and notarization inputs are configured
 
 ## CI integration
 

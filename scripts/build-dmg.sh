@@ -6,9 +6,21 @@ DIST_DIR="$ROOT_DIR/dist"
 DMG_ROOT="$DIST_DIR/dmg-root"
 VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "import('./package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version))")"
 NOTARY_PROFILE="${MACOS_NOTARY_PROFILE:-}"
+REQUIRE_TRUSTED="${IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION:-0}"
 DMG_SUFFIX="unsigned"
 if [[ -n "${MACOS_CODESIGN_IDENTITY:-}" ]]; then
   DMG_SUFFIX="signed"
+fi
+
+if [[ "$REQUIRE_TRUSTED" == "1" ]]; then
+  if [[ "$DMG_SUFFIX" != "signed" ]]; then
+    echo "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 requires MACOS_CODESIGN_IDENTITY to be set." >&2
+    exit 1
+  fi
+  if [[ -z "$NOTARY_PROFILE" ]]; then
+    echo "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 requires MACOS_NOTARY_PROFILE to be set." >&2
+    exit 1
+  fi
 fi
 OUT_DMG="$DIST_DIR/IdleWatch-${VERSION}-${DMG_SUFFIX}.dmg"
 

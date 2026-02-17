@@ -109,7 +109,13 @@ DMG release scaffolding is included:
 - `docs/packaging/macos-dmg.md`
 - `scripts/package-macos.sh`
 - `scripts/build-dmg.sh`
+- `npm run package:trusted` (strict signed + notarized local path)
 - `.github/workflows/release-macos-trusted.yml` (signed + notarized CI path)
+
+Strict packaging mode:
+- Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.
+- In strict mode, `package-macos.sh` requires `MACOS_CODESIGN_IDENTITY`.
+- In strict mode, `build-dmg.sh` requires both `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
 
 Trusted-release workflow required secrets:
 
