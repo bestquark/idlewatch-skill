@@ -357,7 +357,17 @@ function loadOpenClawUsage(forceRefresh = false) {
   if (OPENCLAW_USAGE_MODE === 'off') {
     return {
       usage: null,
-      probe: { result: 'disabled', attempts: 0, sweeps: 0, command: null, error: null, usedFallbackCache: false, fallbackAgeMs: null, fallbackCacheSource: null }
+      probe: {
+        result: 'disabled',
+        attempts: 0,
+        sweeps: 0,
+        command: null,
+        error: null,
+        usedFallbackCache: false,
+        fallbackAgeMs: null,
+        fallbackCacheSource: null,
+        durationMs: null
+      }
     }
   }
 
@@ -368,17 +378,19 @@ function loadOpenClawUsage(forceRefresh = false) {
   const subcommands = [
     ['status', '--json'],
     ['session', 'status', '--json'],
-    ['session_status', '--json']
+    ['session_status', '--json'],
+    ['stats', '--json']
   ]
 
   function runProbe(binPath, args) {
+    const startMs = Date.now()
     try {
       const out = execFileSync(binPath, args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         timeout: OPENCLAW_PROBE_TIMEOUT_MS
       })
-      return { out, error: null, status: 'ok' }
+      return { out, error: null, status: 'ok', durationMs: Date.now() - startMs }
     } catch (err) {
       const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
       const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
@@ -391,18 +403,20 @@ function loadOpenClawUsage(forceRefresh = false) {
         return {
           out: candidateOutput,
           error: `command-exited-${String(cmdStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
-          status: 'ok-with-stderr'
+          status: 'ok-with-stderr',
+          durationMs: Date.now() - startMs
         }
       }
 
       if (err?.code === 'ENOENT') {
-        return { out: null, error: 'openclaw-not-found', status: 'command-error' }
+        return { out: null, error: 'openclaw-not-found', status: 'command-error', durationMs: Date.now() - startMs }
       }
 
       return {
         out: null,
         error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed',
-        status: 'command-error'
+        status: 'command-error',
+        durationMs: Date.now() - startMs
       }
     }
   }
@@ -433,7 +447,8 @@ function loadOpenClawUsage(forceRefresh = false) {
             error: probeRun.status === 'ok-with-stderr' ? probeRun.error : null,
             usedFallbackCache: false,
             fallbackAgeMs: null,
-            fallbackCacheSource: null
+            fallbackCacheSource: null,
+            durationMs: probeRun.durationMs
           }
         }
         lastGoodOpenClawUsage = { at: now, usage, source: 'memory' }
@@ -499,7 +514,8 @@ function loadOpenClawUsage(forceRefresh = false) {
         error: lastError,
         usedFallbackCache: true,
         fallbackAgeMs,
-        fallbackCacheSource: lastGoodOpenClawUsage.source || 'memory'
+        fallbackCacheSource: lastGoodOpenClawUsage.source || 'memory',
+        durationMs: null
       }
     }
     openClawUsageCache = { at: now, value }
@@ -516,7 +532,8 @@ function loadOpenClawUsage(forceRefresh = false) {
       error: lastError,
       usedFallbackCache: false,
       fallbackAgeMs: null,
-      fallbackCacheSource: null
+      fallbackCacheSource: null,
+      durationMs: null
     }
   }
   openClawUsageCache = { at: now, value }
@@ -548,11 +565,14 @@ async function collectSample() {
   let usageRefreshAttempted = false
   let usageRefreshRecovered = false
   let usageRefreshAttempts = 0
+  let usageRefreshDurationMs = null
+  let usageRefreshStartMs = null
 
   const shouldRefreshForNearStale = USAGE_REFRESH_ON_NEAR_STALE === 1 && usageFreshness.isNearStale
   const canRefreshFromCurrentState = usageProbe.probe.result === 'ok' || usageProbe.probe.result === 'fallback-cache'
   if (usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
     usageRefreshAttempted = true
+    usageRefreshStartMs = Date.now()
 
     for (let attempt = 0; attempt <= USAGE_REFRESH_REPROBES; attempt++) {
       usageRefreshAttempts += 1
@@ -574,6 +594,7 @@ async function collectSample() {
       if (!usageFreshness.isPastStaleThreshold) break
     }
 
+    usageRefreshDurationMs = usageRefreshStartMs !== null ? Date.now() - usageRefreshStartMs : null
     usageRefreshRecovered = usageFreshness.isPastStaleThreshold === false
   }
 
@@ -613,6 +634,7 @@ async function collectSample() {
     usageProbeTimeoutMs: OPENCLAW_PROBE_TIMEOUT_MS,
     usageProbeRetries: OPENCLAW_PROBE_RETRIES,
     usageProbeError: usageProbe.probe.error,
+    usageProbeDurationMs: usageProbe.probe.durationMs,
     usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
     usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
     usageFallbackCacheSource: usageProbe.probe.fallbackCacheSource,
@@ -624,6 +646,7 @@ async function collectSample() {
     usageRefreshAttempts,
     usageRefreshReprobes: USAGE_REFRESH_REPROBES,
     usageRefreshDelayMs: USAGE_REFRESH_DELAY_MS,
+    usageRefreshDurationMs,
     usageRefreshOnNearStale: USAGE_REFRESH_ON_NEAR_STALE === 1,
     usageIdleAfterMsThreshold: USAGE_IDLE_AFTER_MS,
     usageIdle: usage ? (Number.isFinite(usageFreshness.usageAgeMs) && usageFreshness.usageAgeMs >= USAGE_IDLE_AFTER_MS) : false,

@@ -126,7 +126,11 @@ Binary resolution order for the OpenClaw probe:
 - `IDLEWATCH_OPENCLAW_BIN_HINT` is also supported for launcher compatibility in existing packaged flows.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
 - `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
-- `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
+- OpenClaw probe command preference used by the agent (first successful parse wins):
+  1) `status --json`
+  2) `session status --json`
+  3) `session_status --json`
+  4) `stats --json` (fallback compatibility for CLI variants)
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
   (default: `floor((IDLEWATCH_USAGE_STALE_MS + IDLEWATCH_USAGE_STALE_GRACE_MS)*0.85)`).
@@ -175,6 +179,7 @@ Source metadata fields:
 - `source.usageRefreshAttempts`: number of forced refresh attempts actually executed.
 - `source.usageRefreshReprobes`: configured extra forced reprobes (`IDLEWATCH_USAGE_REFRESH_REPROBES`).
 - `source.usageRefreshDelayMs`: configured delay between reprobes (`IDLEWATCH_USAGE_REFRESH_DELAY_MS`).
+- `source.usageRefreshDurationMs`: total elapsed ms spent in the stale-threshold/proactive refresh path when triggered.
 - `source.usageRefreshOnNearStale`: whether near-stale proactive refresh is enabled (`IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE`).
 - `source.usageIdle`: boolean indicating usage age crossed idle window (`IDLEWATCH_USAGE_IDLE_AFTER_MS`).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)

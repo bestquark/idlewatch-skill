@@ -2739,3 +2739,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - **Monitoring reliability:** stale samples sourced from fallback cache now attempt immediate reprobe/recovery, improving signal continuity in environments with intermittent OpenClaw CLI failures.
 - **OpenClaw stats ingestion:** reduces false `stale` persistence when transient probe failures recover inside the same collect cycle.
 - **Packaging/scripts confidence:** adding another deterministic e2e strengthens the packaged+non-packaged monitoring release posture.
+
+## Implementation cycle update — 2026-02-17 04:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ Improved OpenClaw command-path ingestion reliability by adding `stats --json` as a fallback OpenClaw probe command after `status`/`session status`/`session_status` attempts in the sampler.
+- ✅ Added probe and refresh timing observability for monitoring reliability: new source fields now emitted on every row:
+  - `source.usageProbeDurationMs` (last probe execution duration in ms)
+  - `source.usageRefreshDurationMs` (total elapsed ms spent in stale-threshold recovery refresh loop)
+- ✅ Updated schema validation (`scripts/validate-dry-run-schema.mjs`) to enforce the new telemetry fields as number-or-null.
+- ✅ Updated packaging/reliability docs (`README.md`) to document probe command fallback order and new timing fields.
+
+### Validation checks run this cycle
+
+- ✅ `npm run test --silent`
+- ✅ Dry-run rows now include the new OpenClaw timing fields with schema validation in the existing validation pipeline.
+
+### Impact
+
+- OpenClaw stats ingestion is more robust against CLI shape variants that expose usage through `stats --json`.
+- Monitoring operators now have direct visibility into probe/retry latency for troubleshooting long-running or flaky collection windows.
+- Docs now clearly describe the probe command precedence and new timing telemetry fields.
