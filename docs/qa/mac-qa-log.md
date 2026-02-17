@@ -3,6 +3,67 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 14:30 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test` passes (180/180).
+- ✅ `node bin/idlewatch-agent.js --dry-run --json` emits populated host telemetry.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run validate:dmg-install --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --json` emits populated packaged-app telemetry.
+
+### Bugs / features completed
+
+- ✅ **Feature:** Re-ran full Mac gate set and confirmed no regressions in schema, packaging, and refresh/reprobe paths.
+- ✅ **Feature:** Packaged app dry-run telemetry still provides full OpenClaw provenance (`usageCommand`, `usageProbeAttempts`, `usageFreshnessState`, alert fields).
+- ✅ **Open item / risk:** No code changes this cycle; telemetry sample still transitions to `usageFreshnessState: stale` on long windows (~31m inactive age) with expected warning.
+
+### Telemetry validation checks (host + packaged sample)
+
+- Host `--dry-run --json`:
+  - `cpuPct`: `16.92`
+  - `memUsedPct`: `96.75`
+  - `memPressurePct`: `47` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `721.49`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `21865`
+  - `openclawUsageAgeMs`: `1821404`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+- Packaged app `--dry-run --json`:
+  - `cpuPct`: `17.56`
+  - `memUsedPct`: `95.43`
+  - `memPressurePct`: `47` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `706.78`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `21865`
+  - `openclawUsageAgeMs`: `1859278`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### DMG packaging risks
+
+1. **High:** Distribution still unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset) → Gatekeeper friction remains likely on strict endpoints.
+2. **Medium:** No notary/staple path executed in this cycle (only unsigned DMG scaffolding path). 
+3. **Medium:** Node runtime dependency still present for machines without bundled runtime (`IDLEWATCH_NODE_RUNTIME_DIR`/`--include-node-runtime` not validated in this cycle).
+4. **Low:** No explicit arm64 vs Intel matrix in this cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** CLI output-shape dependency remains (`openclaw status --json` compatibility required for full parser path).
+2. **Gap:** Cloud/firestore path remains local-only in this environment; Firebase credentials/emulator write-path not exercised.
+3. **Gap:** Usage freshness policy under long-idle windows still generates `stale`/`warning` states; accepted behavior but needs SLO review for fleet expectations.
+
 ## QA cycle update — 2026-02-17 12:30 America/Toronto
 
 ### Validation checks run
