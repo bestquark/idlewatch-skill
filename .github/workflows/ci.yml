@@ -44,6 +44,9 @@ jobs:
       - name: Smoke: dry run
         run: npm run smoke:dry-run
 
+      - name: Validate dry-run telemetry schema
+        run: npm run validate:dry-run-schema
+
   macos-packaging-smoke:
     name: macOS packaging scaffold smoke
     runs-on: macos-latest
@@ -64,6 +67,9 @@ jobs:
 
       - name: App scaffold dry-run
         run: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
+
+      - name: Validate packaged app dry-run telemetry schema
+        run: npm run validate:packaged-dry-run-schema
 
       - name: Build unsigned DMG
         run: npm run package:dmg

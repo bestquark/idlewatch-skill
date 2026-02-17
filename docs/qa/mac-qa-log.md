@@ -256,7 +256,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 **Acceptance criteria**
 - [x] Add `macos-latest` job for smoke + dry-run + parser tests.
 - [ ] Add artifact build/sign/notarize workflow (with secrets in repo settings).
-- [ ] Gate merges on telemetry schema validation and deterministic integration tests.
+- [x] Gate merges on telemetry schema validation and deterministic integration tests.
 
 ---
 
@@ -717,3 +717,27 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Integration remains healthy on host with populated usage/session fields and deterministic freshness metadata.
 - ✅ Grace-window observability fields remain present and coherent (`usageNearStale`, `usagePastStaleThreshold`, `usageStaleGraceMs`).
 - ⚠️ End-to-end Firebase/OpenClaw-in-the-loop CI timing assertions are still pending.
+
+## Implementation cycle update — 2026-02-16 19:51 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added deterministic dry-run telemetry schema validator (`scripts/validate-dry-run-schema.mjs`) that enforces field presence/type/enum contracts and usage-source consistency checks.
+- ✅ Added npm entrypoints for schema validation across both runtime shapes:
+  - `npm run validate:dry-run-schema` (direct CLI)
+  - `npm run validate:packaged-dry-run-schema` (packaged app launcher)
+- ✅ Wired CI to run schema validation in both workflows:
+  - `node-tests` now gates on direct dry-run schema validation.
+  - `macos-packaging-smoke` now gates on packaged app dry-run schema validation before DMG build.
+- ✅ Marked telemetry-schema merge gating acceptance criterion complete in QA log.
+
+### Acceptance criteria updates
+
+- [x] Gate merges on telemetry schema validation and deterministic integration tests.
+
+### Remaining high-priority gaps (unchanged)
+
+1. **Trusted distribution still credential-dependent by environment (High, release readiness)**
+   - Strict mode + trusted workflow exist, but local/default flows remain unsigned when signing/notary env is unset.
+2. **Credentialed Firebase E2E validation still pending (Medium, delivery confidence)**
+   - Local stdout/NDJSON validation is healthy; Firestore path still needs one credentialed QA pass.

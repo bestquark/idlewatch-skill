@@ -111,6 +111,7 @@ DMG release scaffolding is included:
 - `scripts/build-dmg.sh`
 - `npm run package:trusted` (strict signed + notarized local path)
 - `.github/workflows/release-macos-trusted.yml` (signed + notarized CI path)
+- CI dry-run schema gates via `npm run validate:dry-run-schema` and `npm run validate:packaged-dry-run-schema`
 
 Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.
