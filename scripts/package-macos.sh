@@ -66,6 +66,32 @@ if [[ -n "$NODE_RUNTIME_DIR" ]]; then
   mkdir -p "$(dirname "$RUNTIME_DEST_DIR")"
   cp -R "$NODE_RUNTIME_DIR" "$RUNTIME_DEST_DIR"
 fi
+NODE_RUNTIME_BUNDLED=false
+SIGNED_ARTIFACT=false
+if [[ -n "$NODE_RUNTIME_DIR" ]]; then
+  NODE_RUNTIME_BUNDLED=true
+fi
+if [[ -n "$CODESIGN_IDENTITY" ]]; then
+  SIGNED_ARTIFACT=true
+fi
+
+cat > "$RESOURCES_DIR/packaging-metadata.json" <<METADATA
+{
+  "name": "idlewatch-agent",
+  "version": "${VERSION}",
+  "builtAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "platform": "darwin",
+  "bundleName": "IdleWatch.app",
+  "nodeRuntimeBundled": ${NODE_RUNTIME_BUNDLED},
+  "nodeRuntimeSource": "${NODE_RUNTIME_DIR:-}",
+  "signed": ${SIGNED_ARTIFACT},
+  "codesignIdentity": "${CODESIGN_IDENTITY:-}",
+  "openclawBinHint": "${IDLEWATCH_OPENCLAW_BIN:-}",
+  "launcher": "Contents/MacOS/IdleWatch",
+  "payloadTarball": "${PKG_TGZ}",
+  "payloadNode": "$(node -v 2>/dev/null || echo unknown)"
+}
+METADATA
 
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

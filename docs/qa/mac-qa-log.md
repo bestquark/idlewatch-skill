@@ -2372,3 +2372,27 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Core integration and probe path healthy in this runtime (`/opt/homebrew/bin/openclaw status --json` resolves and parses).
 - ✅ Parser and freshness metadata behavior remains consistent across direct + packaged entrypoints.
 - ⚠️ OpenClaw usage freshness noise in packaged loops should continue to be monitored (near-stale/stale transitions are more visible in longer QA windows).
+
+## Implementation cycle update — 2026-02-17 02:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ Hardened OpenClaw stats ingestion parser to be resilient to multi-JSON/noisy payloads by scanning all JSON objects in command output and selecting the first valid usage payload.
+- ✅ Added regression coverage for non-usage JSON noise preceding valid OpenClaw status output:
+  - `test/fixtures/openclaw-status-multi-json.txt`
+  - `test/openclaw-usage.test.mjs` case: `ignores non-usage JSON noise and parses later status payload`
+- ✅ Added packaging provenance metadata file during app packaging:
+  - `dist/IdleWatch.app/Contents/Resources/packaging-metadata.json` is now emitted by `scripts/package-macos.sh` with version/platform/signing/runtime hints/launcher/payload details.
+- ✅ Updated packaging docs to document build-time provenance artifact availability and intent (`README.md`, `docs/packaging/macos-dmg.md`).
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (`124` tests).
+- ✅ `npm run package:macos --silent` succeeds and writes `Contents/Resources/packaging-metadata.json`.
+- ✅ `npm run package:dmg --silent` succeeds (unsigned baseline build).
+
+### Expected impact
+
+- Monitoring reliability: OpenClaw ingestion is less likely to be classified `unavailable` due parser mis-detection when noisy preambles/suffixes are present in CLI output.
+- Packaging confidence: build artifacts now include deterministic provenance for support and release QA.
+- Docs/operability: operators can quickly confirm packaging context directly in packaged app resources.

@@ -34,6 +34,16 @@ test('parses noisy openclaw output and alternate sessions key names', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('ignores non-usage JSON noise and parses later status payload', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-multi-json.txt'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 333)
+  assert.equal(usage.sessionId, 'new')
+  assert.equal(usage.usageTimestampMs, 1771279012345)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses generic usage payloads', () => {
   const usage = parseOpenClawUsage(JSON.stringify({
     usage: {

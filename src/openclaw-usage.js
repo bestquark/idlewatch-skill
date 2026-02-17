@@ -50,50 +50,64 @@ function pickBestRecentSession(recent = []) {
   return pickNewestSession(recent) || recent[0]
 }
 
-function extractJson(raw) {
-  const firstBrace = raw.indexOf('{')
-  if (firstBrace < 0) return null
+function extractJsonCandidates(raw) {
+  const text = String(raw)
+  const candidates = []
 
-  let depth = 0
-  let inString = false
-  let escaped = false
+  for (let start = 0; start < text.length; start += 1) {
+    const open = text[start]
+    if (open !== '{' && open !== '[') continue
 
-  for (let i = firstBrace; i < raw.length; i++) {
-    const ch = raw[i]
+    const close = open === '{' ? '}' : ']'
+    let depth = 0
+    let inString = false
+    let escaped = false
+    let end = -1
 
-    if (inString) {
-      if (escaped) {
-        escaped = false
-      } else if (ch === '\\') {
-        escaped = true
-      } else if (ch === '"') {
-        inString = false
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i]
+
+      if (inString) {
+        if (escaped) {
+          escaped = false
+        } else if (ch === '\\') {
+          escaped = true
+        } else if (ch === '"') {
+          inString = false
+        }
+        continue
       }
-      continue
+
+      if (ch === '"') {
+        inString = true
+        continue
+      }
+
+      if (ch === open) {
+        depth += 1
+        continue
+      }
+
+      if (ch === close) {
+        depth -= 1
+        if (depth === 0) {
+          end = i
+          break
+        }
+
+        if (depth < 0) {
+          break
+        }
+      }
     }
 
-    if (ch === '"') {
-      inString = true
-      continue
-    }
-
-    if (ch === '{') {
-      depth += 1
-      continue
-    }
-
-    if (ch === '}') {
-      depth -= 1
-      if (depth === 0) {
-        return raw.slice(firstBrace, i + 1)
-      }
-      if (depth < 0) {
-        return null
-      }
+    if (end > start) {
+      candidates.push(text.slice(start, end + 1))
+      start = end
     }
   }
 
-  return null
+  return candidates
 }
 
 function parseFromStatusJson(parsed) {
@@ -183,20 +197,23 @@ function parseGenericUsage(parsed) {
 export function parseOpenClawUsage(raw) {
   if (!raw) return null
 
-  const candidate = extractJson(String(raw))
-  if (!candidate) return null
+  const candidates = extractJsonCandidates(raw)
+  if (candidates.length === 0) return null
 
-  let parsed
-  try {
-    parsed = JSON.parse(candidate)
-  } catch {
-    return null
+  for (const candidate of candidates) {
+    let parsed
+    try {
+      parsed = JSON.parse(candidate)
+    } catch {
+      continue
+    }
+
+    const fromStatus = parseFromStatusJson(parsed)
+    if (fromStatus) return fromStatus
+
+    const fromGeneric = parseGenericUsage(parsed)
+    if (fromGeneric) return fromGeneric
   }
 
-  const fromStatus = parseFromStatusJson(parsed)
-  if (fromStatus) {
-    return fromStatus
-  }
-
-  return parseGenericUsage(parsed)
+  return null
 }

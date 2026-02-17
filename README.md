@@ -214,6 +214,7 @@ DMG release scaffolding is included:
 - `docs/onboarding-external.md` (external-user quickstart + signed DMG rollout)
 - `docs/packaging/macos-dmg.md`
 - `scripts/package-macos.sh`
+  - Produces `dist/IdleWatch.app/Contents/Resources/packaging-metadata.json` with build provenance for QA/supportability.
 - `scripts/build-dmg.sh`
 - `npm run validate:trusted-prereqs` (local preflight for signing identity + notary profile)
 - `npm run package:trusted` (strict signed + notarized local path)

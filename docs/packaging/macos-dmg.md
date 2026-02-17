@@ -38,6 +38,8 @@ local testing and release preparation.
 
 ## Current scaffold commands
 
+Each packaged app includes `Contents/Resources/packaging-metadata.json` with build provenance (version, signing/runtime hints, payload filename, and launcher settings) to support supportability checks and deterministic QA.
+
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
