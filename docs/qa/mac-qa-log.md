@@ -3,6 +3,70 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 18:20 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Maintenance-only gate sweep complete:** ran the full Mac monitor/distribution QA suite for monitor+packaging + OpenClaw telemetry gates.
+- ✅ **Telemetry continuity:** captured fresh host and packaged-launcher JSON telemetry with both `--once` and OpenClaw-enabled/off variants.
+- ⚠️ **Open behavior retained:** constrained-PATH launchability path in bundled-runtime validator still reports intermittent partial/no-output on OpenClaw-enabled constrained path; recovery path validates as healthy (path-only check + `off` fallback path).
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (**launcher path-only check green**; OpenClaw-enabled constrained output capture still timeout-prone)
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`
+- ✅ `IDLEWATCH_OPENCLAW_USAGE=off ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`
+
+### Bugs/features completed
+
+- ✅ **Closed:** end-to-end monitor runtime + schema and distribution gate checks remain green after recent parser/runtime hardening.
+- ✅ **Closed:** packaged usage recovery behavior now consistently recovers to fresh after forced reprobe in this sweep.
+- 🐛 **Open:** `validate:packaged-bundled-runtime --silent` still emits `dry-run timed out after 15000ms` for constrained-PATH OpenClaw-enabled command capture, and logs fallback-path acceptance.
+
+### Telemetry validation checks
+
+- Host dry-run:
+  - `cpuPct: 18.95`, `memUsedPct: 83.82`, `memPressurePct: 48 (normal)`, `usageAlertLevel: ok`, `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 26978`, `openclawUsageAgeMs: 51,896`, `usageProbeAttempts: 1`
+  - `usageFreshnessState: fresh`, `usageIntegrationStatus: ok`, `usageIngestionStatus: ok`
+
+- Host dry-run `IDLEWATCH_OPENCLAW_USAGE=off`:
+  - `cpuPct: 9.09`, `memUsedPct: 83.82`, `memPressurePct: 48 (normal)`, `usageFreshnessState: disabled`, `usageProbeAttempts: 0`, `usageAlertLevel: off`
+
+- Packaged app direct `--dry-run --once --json`:
+  - `cpuPct: 17.66`, `memUsedPct: 80.91`, `memPressurePct: 48 (normal)`, `tokensPerMin: 8511.89`, `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 26978`, `openclawUsageAgeMs: 193,334`
+  - `usageFreshnessState: stale`, `usageNearStale: true`, `usagePastStaleThreshold: true`, `usageRefreshAttempted: true`, `usageAlertLevel: warning`
+
+- Packaged app `IDLEWATCH_OPENCLAW_USAGE=off --dry-run --once --json`:
+  - `cpuPct: 12.5`, `memUsedPct: 80.89`, `memPressurePct: 48 (normal)`, `usageFreshnessState: disabled`, `usageAlertLevel: off`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized in this environment (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset), so Gatekeeper friction remains possible on strict endpoints.
+2. **Medium:** Constrained-PATH OpenClaw-enabled JSON capture in `validate:packaged-bundled-runtime` still hits timeout path and relies on partial-row fallback/path-only validation, reducing confidence in strict artifact CI output-capture determinism.
+3. **Low:** Existing risk remains that packaged runtime path checks are cleaner than strict JSON capture in polluted environment variants.
+
+### OpenClaw integration gaps
+
+1. **Open:** OpenClaw schema parser now supports many aliases, but telemetry still depends on local `openclaw status --json` compatibility and command availability.
+2. **Open:** Firebase/cloud write path remains unexercised in this local host (`Firebase is not configured` warning persists).
+3. **Open:** The constrained-PATH launchability branch in bundled-runtime validation should be made deterministic for one-shot telemetry emission.
+
+### Follow-up / action items
+
+1. Reduce/remove timeout path in `validate:packaged-bundled-runtime` for constrained-PATH OpenClaw-enabled runs so full JSON row is reliably captured (or capture strategy is deterministically validated).
+2. Continue 20-minute recurrence and keep this issue open until two consecutive cycles fully pass with full output capture.
+3. Keep this section updated with any fresh packaging risk or OpenClaw integration deltas from each recurring cycle.
+
 ## QA cycle update — 2026-02-17 18:10 America/Toronto
 
 ### Completed this cycle
