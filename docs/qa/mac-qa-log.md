@@ -267,7 +267,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ `npm test --silent` passes (3/3 parser tests green).
 - ✅ `node bin/idlewatch-agent.js --dry-run` succeeds and emits local NDJSON row.
 - ✅ `npm run package:macos --silent` succeeds and builds `dist/IdleWatch.app`.
-- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged app scaffold.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds from packaged scaffold.
 - ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
 - ⚠️ GPU telemetry still unavailable on this host (`gpuPct: null`, `gpuSource: "unavailable"`, `gpuConfidence: "none"`).
 
@@ -584,3 +584,25 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ Integration remains functional with real usage/session fields and deterministic freshness states (`ok`/`aging`/`stale`).
 - ⚠️ End-to-end timing assertions for long packaging windows are still missing from CI.
+
+## Implementation cycle update — 2026-02-16 19:24 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added stale-classification grace control to reduce false-positive flapping in long packaging/QA loops:
+  - new env var `IDLEWATCH_USAGE_STALE_GRACE_MS` (default `min(interval, 10000)`)
+  - stale transition now triggers only when `usageAgeMs > staleThreshold + graceMs`
+- ✅ Added explicit threshold-crossing observability signal:
+  - `source.usagePastStaleThreshold` (true once age exceeds stale threshold, even within grace)
+  - `source.usageStaleGraceMs` exported in every sample for downstream alert transparency
+- ✅ Expanded freshness unit tests to cover grace-window behavior and threshold-crossing semantics.
+- ✅ Updated `.env.example` and README with new tuning and metadata fields.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (14/14 including new grace-window tests).
+- ✅ `node bin/idlewatch-agent.js --dry-run` succeeds with new usage freshness metadata fields present.
+
+### Acceptance criteria updates
+
+- [x] Mitigate stale-status flapping risk in long-running QA/build windows without hiding real threshold crossings.

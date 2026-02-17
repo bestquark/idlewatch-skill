@@ -57,6 +57,8 @@ session usage from local CLI JSON endpoints when available, then enriches sample
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
   (default: `floor(IDLEWATCH_USAGE_STALE_MS*0.75)`).
+- `IDLEWATCH_USAGE_STALE_GRACE_MS` adds a grace window before `usageIntegrationStatus`
+  flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
 
 - `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
 - `openclawModel`: active model name (from the selected recent session or defaults).
@@ -74,9 +76,11 @@ Source metadata fields:
 - `source.usageIntegrationStatus`: `ok | partial | stale | disabled | unavailable`
 - `source.usageFreshnessState`: `fresh | aging | stale | unknown`
 - `source.usageNearStale`: boolean early warning signal when age crosses near-stale threshold.
+- `source.usagePastStaleThreshold`: boolean showing age crossed stale threshold (before grace).
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
 - `source.usageNearStaleMsThreshold`: threshold used for aging classification.
+- `source.usageStaleGraceMs`: grace window before stale status activation.
 - `source.memPressureSource`: `memory_pressure | unavailable | unsupported`.
 
 Memory field semantics:
