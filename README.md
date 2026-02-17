@@ -122,6 +122,7 @@ Binary resolution order for the OpenClaw probe:
 - Successful probe command/args are cached for the life of the process so subsequent samples and forced stale-threshold refreshes reuse the known-good command first before full probe sweep.
 
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
+- `IDLEWATCH_OPENCLAW_BIN_STRICT=1` (optional) limits probing to only the explicit bin above when set, useful for deterministic tests.
 - `IDLEWATCH_OPENCLAW_BIN_HINT` is also supported for launcher compatibility in existing packaged flows.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
 - `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
@@ -236,6 +237,7 @@ DMG release scaffolding is included:
 - Usage alert-rate quality gate via `npm run validate:usage-alert-rate-e2e` (asserts typical low-traffic ages stay `usageAlertLevel=ok`, with deterministic boundary escalation)
 - Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
+- OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
 - Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
 - Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).

@@ -55,6 +55,7 @@ const FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST
 const OPENCLAW_USAGE_MODE = (process.env.IDLEWATCH_OPENCLAW_USAGE || 'auto').toLowerCase()
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
 const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS || 2500)
+const OPENCLAW_BIN_STRICT = process.env.IDLEWATCH_OPENCLAW_BIN_STRICT === '1'
 const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
   ? Number(process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES)
   : 1
@@ -326,6 +327,10 @@ function resolveOpenClawBinaries() {
   const explicit = process.env.IDLEWATCH_OPENCLAW_BIN?.trim()
   const homeDir = process.env.HOME?.trim()
 
+  if (OPENCLAW_BIN_STRICT && explicit) {
+    return [explicit]
+  }
+
   const bins = [
     explicit,
     '/opt/homebrew/bin/openclaw',
@@ -545,7 +550,8 @@ async function collectSample() {
   let usageRefreshAttempts = 0
 
   const shouldRefreshForNearStale = USAGE_REFRESH_ON_NEAR_STALE === 1 && usageFreshness.isNearStale
-  if (usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && usageProbe.probe.result === 'ok') {
+  const canRefreshFromCurrentState = usageProbe.probe.result === 'ok' || usageProbe.probe.result === 'fallback-cache'
+  if (usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
     usageRefreshAttempted = true
 
     for (let attempt = 0; attempt <= USAGE_REFRESH_REPROBES; attempt++) {

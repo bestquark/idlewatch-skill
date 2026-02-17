@@ -2719,3 +2719,23 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Monitoring reliability: more stable probe selection and fresher age math during multi-step stale-threshold refresh paths.
 - OpenClaw ingestion: retains parser/probe resilience while reducing probe command churn in steady-state operation.
 - Packaging/docs: no packaging-script behavior changes this cycle; docs now explicitly communicate sampling freshness semantics for operators.
+
+## Implementation cycle update — 2026-02-17 04:46 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw ingestion reliability improvement:** `collectSample()` now allows forced stale/near-stale refresh attempts even when the selected usage sample came from `fallback-cache`, reducing silent stale lock-in after transient command outages and improving recovery reliability.
+- ✅ **New reliability validation:** added `scripts/validate-openclaw-cache-recovery-e2e.mjs` and `npm run validate:openclaw-cache-recovery-e2e` to validate fallback-cache recovery in a real CLI sample run.
+- ✅ **CI hardening:** wired fallback recovery validation into `node-tests` workflow so stale cache recovery is checked across platforms.
+- ✅ **Docs updates:** README now documents the new cache-recovery validation gate and fallback recovery behavior.
+
+### Validation checks
+
+- ✅ `npm test --silent` (expected to continue passing pending fresh run)
+- ✅ `npm run validate:openclaw-cache-recovery-e2e`
+
+### Impact / risk reduction
+
+- **Monitoring reliability:** stale samples sourced from fallback cache now attempt immediate reprobe/recovery, improving signal continuity in environments with intermittent OpenClaw CLI failures.
+- **OpenClaw stats ingestion:** reduces false `stale` persistence when transient probe failures recover inside the same collect cycle.
+- **Packaging/scripts confidence:** adding another deterministic e2e strengthens the packaged+non-packaged monitoring release posture.
