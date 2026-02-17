@@ -3474,3 +3474,37 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - **Monitoring reliability:** timestamp parsing is more tolerant of mixed string date formats and parser tests now explicitly cover additional real-world payload variants.
 - **OpenClaw stats ingestion:** reduces parse misses on valid payloads with non-uniform timestamp shaping.
 - **Packaging scripts/docs:** removed external Python requirement in packaging template generation and reduced false-negative validation failures.
+
+## QA cycle — 2026-02-17 12:10 America/Toronto
+
+### Validation checks
+
+- ✅ `npm test` — 180 tests pass (0 failures)
+- ✅ `npm run validate:packaged-dry-run-schema` — dry-run schema ok
+- ✅ `npm run validate:packaged-metadata` — packaging metadata ok (IdleWatch.app 0.1.0)
+- ✅ `npm run validate:packaged-bundled-runtime` — bundled runtime validated
+- ✅ `npm run validate:packaged-usage-health` — usage health ok
+
+### Observations
+
+- **Test growth:** 180 tests (up from 132 in last logged cycle), reflecting expanded OpenClaw parser fixture and cache-recovery e2e coverage added in recent cycles.
+- **No code changes this cycle** — repo is clean (`git diff` empty). This is a steady-state validation pass.
+
+### DMG packaging risks
+
+- `cp` warnings during bundled-runtime copy (broken symlinks in Homebrew fish completions: `brew.fish`, `uv.fish`, `uvx.fish`). These are cosmetic — they don't affect the bundled Node runtime or app functionality — but a future cleanup pass on the runtime copy script could filter out vendor shell completions to eliminate noise.
+- `rm` non-empty-directory warnings during validation cleanup are benign (nested dirs cleaned bottom-up).
+
+### OpenClaw integration gaps
+
+- No new gaps identified. Parser and probe command fallback chain (`status` → `session status` → `session_status` → `stats --json`) covers known CLI output variants.
+- Usage integration status remains `disabled` in dry-run output (expected for non-connected test runs).
+
+### Bugs / features
+
+- No new bugs found.
+- No feature regressions detected.
+
+### Impact
+
+- Steady-state confidence: all packaging, schema, runtime, and unit validations green. No regressions since last cycle.
