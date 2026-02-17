@@ -38,6 +38,7 @@ for CI wiring and local dry-runs.
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
+- `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
@@ -49,7 +50,7 @@ Optional environment variables:
   - Installs production runtime dependencies into packaged payload (`npm install --omit=dev`) so mounted-DMG launches do not rely on workspace/global `node_modules`
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
     - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
-    - Node binary resolution order: `IDLEWATCH_NODE_BIN` → `PATH` (`node`)
+    - Node binary resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime (`Contents/Resources/runtime/node/bin/node`, when `IDLEWATCH_NODE_RUNTIME_DIR` is supplied at package time) → `PATH` (`node`)
     - Launcher enforces Node.js major version `>=20` and fails with actionable runtime-path/version diagnostics otherwise
   - Stages `dist/dmg-root` and adds `/Applications` symlink
 - `scripts/build-dmg.sh`

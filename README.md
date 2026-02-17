@@ -75,6 +75,7 @@ Binary resolution order for the OpenClaw probe:
 
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
+- `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
@@ -177,6 +178,7 @@ DMG release scaffolding is included:
 - Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
+- Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
 
 Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.

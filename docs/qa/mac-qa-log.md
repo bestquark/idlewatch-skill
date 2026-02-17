@@ -2150,3 +2150,22 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Resolve DMG install validation blocker caused by missing packaged runtime dependency (`firebase-admin`).
+
+## Implementation cycle update — 2026-02-17 01:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added optional bundled Node runtime support for packaged macOS app builds via `IDLEWATCH_NODE_RUNTIME_DIR` in `scripts/package-macos.sh`.
+- ✅ Launcher runtime resolution now supports: `IDLEWATCH_NODE_BIN` → bundled runtime (`Contents/Resources/runtime/node/bin/node`) → `PATH` (`node`).
+- ✅ Added package-time validation that `IDLEWATCH_NODE_RUNTIME_DIR` contains executable `bin/node` before bundling.
+- ✅ Updated operator docs/config references (`README.md`, `.env.example`, `docs/packaging/macos-dmg.md`) with bundled runtime behavior and invocation guidance.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (111/111 assertions).
+- ✅ `npm run package:macos --silent` succeeds with updated launcher/runtime resolution logic.
+- ✅ `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` succeeds with packaged scaffold after runtime-resolution changes.
+
+### Acceptance criteria updates
+
+- [x] Add optional packaging path to reduce runtime dependency friction on hosts without globally installed Node by allowing explicit bundled runtime injection.

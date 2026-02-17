@@ -10,6 +10,7 @@ MACOS_DIR="$CONTENTS_DIR/MacOS"
 VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "import('./package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version))")"
 CODESIGN_IDENTITY="${MACOS_CODESIGN_IDENTITY:-}"
 REQUIRE_TRUSTED="${IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION:-0}"
+NODE_RUNTIME_DIR="${IDLEWATCH_NODE_RUNTIME_DIR:-}"
 
 if [[ "$REQUIRE_TRUSTED" == "1" && -z "$CODESIGN_IDENTITY" ]]; then
   echo "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 requires MACOS_CODESIGN_IDENTITY to be set." >&2
@@ -41,6 +42,19 @@ fi
   npm install --omit=dev --ignore-scripts --no-audit --no-fund --silent
 )
 
+if [[ -n "$NODE_RUNTIME_DIR" ]]; then
+  RUNTIME_NODE_BIN="$NODE_RUNTIME_DIR/bin/node"
+  if [[ ! -x "$RUNTIME_NODE_BIN" ]]; then
+    echo "IDLEWATCH_NODE_RUNTIME_DIR must contain an executable bin/node (missing: $RUNTIME_NODE_BIN)" >&2
+    exit 1
+  fi
+
+  RUNTIME_DEST_DIR="$RESOURCES_DIR/runtime/node"
+  rm -rf "$RUNTIME_DEST_DIR"
+  mkdir -p "$(dirname "$RUNTIME_DEST_DIR")"
+  cp -R "$NODE_RUNTIME_DIR" "$RUNTIME_DEST_DIR"
+fi
+
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -64,7 +78,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
 NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
 if [[ -z "$NODE_BIN" ]]; then
-  NODE_BIN="$(command -v node || true)"
+  BUNDLED_NODE_BIN="$RESOURCES_DIR/runtime/node/bin/node"
+  if [[ -x "$BUNDLED_NODE_BIN" ]]; then
+    NODE_BIN="$BUNDLED_NODE_BIN"
+  else
+    NODE_BIN="$(command -v node || true)"
+  fi
 fi
 
 if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
@@ -106,9 +125,10 @@ Mac app scaffold package complete.
 Next steps:
   1) Test: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
   2) Build DMG: ./scripts/build-dmg.sh
-  3) Optional signing: export MACOS_CODESIGN_IDENTITY="Developer ID Application: ..." then rerun package-macos
-  4) Optional notarize+staple DMG: set MACOS_NOTARY_PROFILE and rerun build-dmg
-  5) Enforce trusted artifacts: export IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1
+  3) Optional bundle runtime for node-less targets: export IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"
+  4) Optional signing: export MACOS_CODESIGN_IDENTITY="Developer ID Application: ..." then rerun package-macos
+  5) Optional notarize+staple DMG: set MACOS_NOTARY_PROFILE and rerun build-dmg
+  6) Enforce trusted artifacts: export IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1
 EOF
 
 popd >/dev/null
