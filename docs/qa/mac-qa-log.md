@@ -3,6 +3,65 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 17:10 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation-only pass:** No code changes this cycle. Full gate sweep confirms all prior fixes (probe early-exit, symlink dereference, payload-wrapper parser, disabled-source schema) remain stable.
+
+### Validation checks run
+
+- ✅ `npm test --silent` — 124 pass, 0 fail, 0 skip.
+- ✅ `npm run validate:dry-run-schema --silent` — schema valid.
+- ✅ `npm run validate:packaged-metadata --silent` — `IdleWatch.app 0.1.0` metadata valid.
+- ✅ `npm run validate:dmg-checksum --silent` — DMG checksum valid.
+- ✅ `npm run validate:usage-freshness-e2e --silent` — `fresh → aging → post-threshold-in-grace → stale`.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` — `ok; boundary escalates notice → warning`.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `cpuPct`: `28.43`
+  - `memUsedPct`: `87.12`
+  - `memPressurePct`: `48` (`memPressureClass`: `normal`)
+  - `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `2564.34`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `31025`
+  - `openclawUsageAgeMs`: `729,358`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageProbeAttempts`: `6`
+  - `usageProbeResult`: `ok`
+  - `usageProbeDurationMs`: `1689`
+
+### Follow-up / remaining risks
+
+1. **High:** Distribution unsigned/unnotarized; Gatekeeper friction on strict endpoints.
+2. **Medium:** Memory usage improved this cycle (87% vs 97% prior); pressure class stable at `normal`.
+3. **Gap:** Firebase write path unexercised (local-only mode).
+4. **Gap:** Usage age ~729s (stale/warning) — expected in long-idle windows, not a bug.
+
+## QA cycle update — 2026-02-17 16:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** dry-run schema validator now accepts disabled-source nullability and disabled freshness states so `IDLEWATCH_OPENCLAW_USAGE=off` validation is deterministic and no longer blocked by stricter null assumptions.
+- ✅ **OpenClaw stats ingestion:** parser now supports session envelopes wrapped under `payload.*` (including `payload.status` / `payload.result` status-session trees), extending compatibility for alternate OpenClaw JSON schemas.
+- ✅ **Packaging/docs:** `scripts/validate:packaged-bundled-runtime` behavior is documented to expect `source.usage=disabled` + `usageFreshnessState=disabled` on OpenClaw-off checks, clarifying schema outcomes for clean launchability validation.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `IDLEWATCH_OPENCLAW_USAGE=off npm run validate:dry-run-schema --silent`
+- ✅ `node scripts/validate-dry-run-schema.mjs node bin/idlewatch-agent.js --dry-run` (openclaw auto)
+
+### Notes
+
+- This cycle keeps the bundled runtime portability and probe-early-exit improvements from the 16:47 cycle and adds parser coverage for real-world payload-wrapped status payloads.
+
+
 ## QA cycle update — 2026-02-17 16:47 America/Toronto
 
 ### Completed this cycle

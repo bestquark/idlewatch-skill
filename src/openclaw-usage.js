@@ -330,7 +330,73 @@ function isExplicitSessionEnvelope(value) {
     value.status?.result?.data?.recentSessions ||
     value.status?.result?.data?.recent ||
     value.status?.result?.data?.activeSessions ||
-    value.status?.result?.data?.active
+    value.status?.result?.data?.active ||
+    value.payload?.sessions ||
+    value.payload?.session ||
+    value.payload?.activeSession ||
+    value.payload?.currentSession ||
+    value.payload?.current ||
+    value.payload?.active ||
+    value.payload?.recentSessions ||
+    value.payload?.recent ||
+    value.payload?.activeSessions ||
+    value.payload?.result?.sessions ||
+    value.payload?.result?.session ||
+    value.payload?.result?.activeSession ||
+    value.payload?.result?.currentSession ||
+    value.payload?.result?.active ||
+    value.payload?.result?.recentSessions ||
+    value.payload?.result?.recent ||
+    value.payload?.result?.activeSessions ||
+    value.payload?.result?.data?.sessions ||
+    value.payload?.result?.data?.recentSessions ||
+    value.payload?.result?.data?.recent ||
+    value.payload?.result?.data?.activeSessions ||
+    value.payload?.result?.data?.active ||
+    value.payload?.data?.sessions ||
+    value.payload?.data?.session ||
+    value.payload?.data?.activeSession ||
+    value.payload?.data?.currentSession ||
+    value.payload?.data?.current ||
+    value.payload?.data?.active ||
+    value.payload?.data?.recentSessions ||
+    value.payload?.data?.recent ||
+    value.payload?.data?.activeSessions ||
+    value.payload?.data?.result?.sessions ||
+    value.payload?.data?.result?.session ||
+    value.payload?.data?.result?.activeSession ||
+    value.payload?.data?.result?.currentSession ||
+    value.payload?.data?.result?.active ||
+    value.payload?.data?.result?.recentSessions ||
+    value.payload?.data?.result?.recent ||
+    value.payload?.data?.result?.activeSessions ||
+    value.payload?.data?.result?.data?.sessions ||
+    value.payload?.data?.result?.data?.recentSessions ||
+    value.payload?.data?.result?.data?.recent ||
+    value.payload?.data?.result?.data?.activeSessions ||
+    value.payload?.data?.result?.data?.active ||
+    value.payload?.status?.sessions ||
+    value.payload?.status?.session ||
+    value.payload?.status?.activeSession ||
+    value.payload?.status?.currentSession ||
+    value.payload?.status?.current ||
+    value.payload?.status?.active ||
+    value.payload?.status?.recentSessions ||
+    value.payload?.status?.recent ||
+    value.payload?.status?.activeSessions ||
+    value.payload?.status?.result?.sessions ||
+    value.payload?.status?.result?.session ||
+    value.payload?.status?.result?.activeSession ||
+    value.payload?.status?.result?.currentSession ||
+    value.payload?.status?.result?.active ||
+    value.payload?.status?.result?.recentSessions ||
+    value.payload?.status?.result?.recent ||
+    value.payload?.status?.result?.activeSessions ||
+    value.payload?.status?.result?.data?.sessions ||
+    value.payload?.status?.result?.data?.recentSessions ||
+    value.payload?.status?.result?.data?.recent ||
+    value.payload?.status?.result?.data?.activeSessions ||
+    value.payload?.status?.result?.data?.active
   )
 }
 
@@ -367,7 +433,37 @@ function looksLikeStatsOrCurrentPayload(parsed) {
     parsed.status?.result?.sessionUsage ||
     parsed.status?.result?.usage ||
     parsed.status?.result?.current ||
-    parsed.status?.result?.session
+    parsed.status?.result?.session ||
+    parsed.payload?.stats ||
+    parsed.payload?.sessionUsage ||
+    parsed.payload?.usage ||
+    parsed.payload?.current ||
+    parsed.payload?.session ||
+    parsed.payload?.result?.stats ||
+    parsed.payload?.result?.sessionUsage ||
+    parsed.payload?.result?.usage ||
+    parsed.payload?.result?.current ||
+    parsed.payload?.result?.session ||
+    parsed.payload?.data?.stats ||
+    parsed.payload?.data?.sessionUsage ||
+    parsed.payload?.data?.usage ||
+    parsed.payload?.data?.current ||
+    parsed.payload?.data?.session ||
+    parsed.payload?.data?.result?.stats ||
+    parsed.payload?.data?.result?.sessionUsage ||
+    parsed.payload?.data?.result?.usage ||
+    parsed.payload?.data?.result?.current ||
+    parsed.payload?.data?.result?.session ||
+    parsed.payload?.status?.stats ||
+    parsed.payload?.status?.sessionUsage ||
+    parsed.payload?.status?.usage ||
+    parsed.payload?.status?.current ||
+    parsed.payload?.status?.session ||
+    parsed.payload?.status?.result?.stats ||
+    parsed.payload?.status?.result?.sessionUsage ||
+    parsed.payload?.status?.result?.usage ||
+    parsed.payload?.status?.result?.current ||
+    parsed.payload?.status?.result?.session
   )
 }
 

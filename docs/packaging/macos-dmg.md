@@ -120,6 +120,7 @@ Optional environment variables:
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` and uses shared `validate-dry-run-schema` parsing to avoid hangs on continuous launcher output.
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
   - If the OpenClaw-enabled dry-run path does not emit a telemetry row within timeout, the script performs a fallback launchability check with `IDLEWATCH_OPENCLAW_USAGE=off` to keep bundled-runtime availability coverage from being blocked by slow/noisy usage probes.
+  - When `IDLEWATCH_OPENCLAW_USAGE=off`, schema validation now expects `source.usage=disabled` with `usageFreshnessState=disabled`, so launchability checks remain deterministic even without local OpenClaw CLI availability.
 - Clean-machine verification note:
   - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
   - This script is self-contained (Node-only) and does not depend on host Python tooling.

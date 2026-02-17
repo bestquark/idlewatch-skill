@@ -674,7 +674,11 @@ async function collectSample() {
     usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
     usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
     usageFallbackCacheSource: usageProbe.probe.fallbackCacheSource,
-    usageFreshnessState: usage ? usageFreshness.freshnessState : null,
+    usageFreshnessState: OPENCLAW_USAGE_MODE === 'off'
+      ? 'disabled'
+      : usage
+        ? usageFreshness.freshnessState
+        : null,
     usageNearStale: usage ? usageFreshness.isNearStale : false,
     usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
     usageRefreshAttempted,
