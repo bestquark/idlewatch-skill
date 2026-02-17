@@ -20,6 +20,7 @@ npx idlewatch-skill --dry-run
 
 - `--help`: show usage
 - `--dry-run`: collect one sample and exit (no Firebase write)
+- `--once`: collect one sample, publish to Firebase when configured, then exit
 
 ## Reliability improvements
 
@@ -54,6 +55,10 @@ export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 
 If Firebase env vars are incomplete or invalid, the CLI exits with a clear configuration error.
 If Firebase vars are omitted entirely, it runs in local-only mode and prints telemetry to stdout.
+
+Validation helpers:
+- `npm run validate:firebase-emulator-mode` verifies emulator-only config wiring in dry-run mode.
+- `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
 
 ## OpenClaw usage ingestion (best effort)
 

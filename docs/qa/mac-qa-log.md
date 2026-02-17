@@ -1350,3 +1350,16 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Mitigate packaged-loop stale-age noise by adding one-shot forced reprobe recovery before final activity classification.
+
+## Implementation cycle update — 2026-02-16 22:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added one-shot runtime mode (`--once`) for deterministic Firebase write-path validation without running the continuous loop.
+- ✅ Added `npm run validate:firebase-write-once` helper to execute a single real ingestion attempt (emulator or production credentials).
+- ✅ Added smoke coverage for one-shot mode (`npm run smoke:once`) and gated default test suite on it.
+- ✅ Updated README CLI/docs to include `--once` semantics and Firebase validation workflow guidance.
+
+### Acceptance criteria updates
+
+- [x] Add deterministic one-sample publish mode to reduce QA friction for Firebase/OpenClaw ingestion validation in non-loop contexts.
