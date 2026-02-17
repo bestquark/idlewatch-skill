@@ -75,7 +75,7 @@ Binary resolution order for the OpenClaw probe:
 - `IDLEWATCH_USAGE_STALE_MS` controls staleness classification window for usage timestamps
   (default: `max(IDLEWATCH_INTERVAL_MS*3, 60000)`).
 - `IDLEWATCH_USAGE_NEAR_STALE_MS` controls "aging" classification before stale
-  (default: `floor(IDLEWATCH_USAGE_STALE_MS*0.75)`).
+  (default: `floor((IDLEWATCH_USAGE_STALE_MS + IDLEWATCH_USAGE_STALE_GRACE_MS)*0.85)`).
 - `IDLEWATCH_USAGE_STALE_GRACE_MS` adds a grace window before `usageIntegrationStatus`
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
 - `IDLEWATCH_OPENCLAW_PROBE_RETRIES` retries full OpenClaw probe sweeps after the first pass

@@ -12,7 +12,7 @@ import { deriveUsageFreshness } from '../src/usage-freshness.js'
 import { deriveUsageAlert } from '../src/usage-alert.js'
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor(stale*0.75))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--once] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
 }
 
 const args = new Set(process.argv.slice(2))
@@ -67,17 +67,6 @@ if (!Number.isFinite(USAGE_STALE_MS) || USAGE_STALE_MS <= 0) {
   process.exit(1)
 }
 
-const USAGE_NEAR_STALE_MS = process.env.IDLEWATCH_USAGE_NEAR_STALE_MS
-  ? Number(process.env.IDLEWATCH_USAGE_NEAR_STALE_MS)
-  : Math.floor(USAGE_STALE_MS * 0.75)
-
-if (!Number.isFinite(USAGE_NEAR_STALE_MS) || USAGE_NEAR_STALE_MS < 0) {
-  console.error(
-    `Invalid IDLEWATCH_USAGE_NEAR_STALE_MS: ${process.env.IDLEWATCH_USAGE_NEAR_STALE_MS}. Expected a non-negative number.`
-  )
-  process.exit(1)
-}
-
 const USAGE_STALE_GRACE_MS = process.env.IDLEWATCH_USAGE_STALE_GRACE_MS
   ? Number(process.env.IDLEWATCH_USAGE_STALE_GRACE_MS)
   : Math.min(INTERVAL_MS, 10000)
@@ -85,6 +74,17 @@ const USAGE_STALE_GRACE_MS = process.env.IDLEWATCH_USAGE_STALE_GRACE_MS
 if (!Number.isFinite(USAGE_STALE_GRACE_MS) || USAGE_STALE_GRACE_MS < 0) {
   console.error(
     `Invalid IDLEWATCH_USAGE_STALE_GRACE_MS: ${process.env.IDLEWATCH_USAGE_STALE_GRACE_MS}. Expected a non-negative number.`
+  )
+  process.exit(1)
+}
+
+const USAGE_NEAR_STALE_MS = process.env.IDLEWATCH_USAGE_NEAR_STALE_MS
+  ? Number(process.env.IDLEWATCH_USAGE_NEAR_STALE_MS)
+  : Math.floor((USAGE_STALE_MS + USAGE_STALE_GRACE_MS) * 0.85)
+
+if (!Number.isFinite(USAGE_NEAR_STALE_MS) || USAGE_NEAR_STALE_MS < 0) {
+  console.error(
+    `Invalid IDLEWATCH_USAGE_NEAR_STALE_MS: ${process.env.IDLEWATCH_USAGE_NEAR_STALE_MS}. Expected a non-negative number.`
   )
   process.exit(1)
 }

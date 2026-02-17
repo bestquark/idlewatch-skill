@@ -1573,3 +1573,22 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Usage collection active and field mapping remains healthy on this host.
 - ⚠️ Freshness classification may be too noisy under normal workloads.
 - ⚠️ No contract test asserting acceptable near-stale/stale rates under expected session rhythm.
+
+## Implementation cycle update — 2026-02-16 23:28 America/Toronto
+
+### Completed this cycle
+
+- ✅ Reduced near-stale alert noise by changing the default aging threshold to account for stale grace:
+  - `IDLEWATCH_USAGE_NEAR_STALE_MS` now defaults to `floor((stale + grace) * 0.85)` instead of `floor(stale * 0.75)`.
+- ✅ Reordered startup config initialization so near-stale default derives from validated stale + grace values deterministically.
+- ✅ Updated operator-facing defaults/docs in `README.md`, `.env.example`, and CLI `--help` text.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (30/30).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ Dry-run output reports the updated threshold metadata (`source.usageNearStaleMsThreshold: 59500` with default stale=60000, grace=10000).
+
+### Acceptance criteria updates
+
+- [x] Mitigate near-stale observability noise from overly aggressive default thresholding in normal local cadence.
