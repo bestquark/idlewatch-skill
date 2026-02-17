@@ -3,6 +3,52 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 12:30 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test` passes (180/180).
+- ✅ `node bin/idlewatch-agent.js --dry-run --json` emits populated telemetry.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning -> warning`).
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+
+### Telemetry validation snapshot
+
+- `cpuPct`: `15.33`
+- `memUsedPct`: `85.79`
+- `memPressurePct`: `48` (`memPressureClass`: `normal`)
+- `gpuPct`: `0` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+- `tokensPerMin`: `40,740.28`
+- `openclawModel`: `claude-opus-4-6`
+- `openclawTotalTokens`: `29,773`
+- `openclawUsageAgeMs`: `43,896`
+- `usageFreshnessState`: `fresh`
+- `usageAlertLevel`: `ok`
+- `usageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### Notes
+
+- All gates green. Test count up from 169 → 180 since last cycle (11 new tests added).
+- Memory pressure elevated to 48% but still classified `normal`.
+- No code changes in this cycle; validation-only pass.
+- Remaining gaps unchanged: unsigned/unnotarized DMG, Firebase cloud path unconfigured, OpenClaw CLI shape dependency.
+
+### DMG packaging risks
+
+1. **High:** Distribution unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset).
+2. **Medium:** No notary/staple path exercised.
+3. **Medium:** Node runtime dependency for non-developer Macs.
+4. **Low:** No arm64/Intel matrix in this cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** CLI shape dependency — parser compatibility hinges on `openclaw status --json` stability.
+2. **Gap:** Firebase/cloud write path not exercised (local-only).
+3. **Gap:** Long-window stale transitions remain a policy decision.
+
 ## Scope audited
 
 - Repository: `idlewatch-skill`
