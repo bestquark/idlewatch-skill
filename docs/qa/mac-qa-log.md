@@ -1744,3 +1744,26 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Add deterministic fail-fast control for one-shot Firebase ingestion validation so credential/config drift cannot silently pass local-only mode.
+
+## Implementation cycle update — 2026-02-17 00:08 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added persisted OpenClaw last-good usage cache support for restart resilience:
+  - new env var `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH`
+  - collector now hydrates last-good usage from disk at startup and can serve `fallback-cache` immediately after process restarts.
+- ✅ Added explicit fallback provenance metadata for observability:
+  - new telemetry field `source.usageFallbackCacheSource` (`memory | disk | null`).
+- ✅ Persist-on-success path now writes last-good usage snapshots whenever live OpenClaw usage parsing succeeds.
+- ✅ Added deterministic unit coverage for cache persistence/corruption handling (`test/openclaw-cache.test.mjs`).
+- ✅ Extended schema validator to enforce fallback cache source consistency when `usageProbeResult=fallback-cache`.
+- ✅ Updated operator docs/help (`README.md`, `.env.example`, CLI `--help`) with persistent cache behavior and configuration.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (34/34).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+
+### Acceptance criteria updates
+
+- [x] Improve monitoring reliability across short agent restarts by persisting/reusing bounded last-good OpenClaw usage snapshots with explicit provenance.

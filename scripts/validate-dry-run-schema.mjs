@@ -75,6 +75,7 @@ function validateRow(row) {
   assert.ok(Number.isFinite(source.usageProbeTimeoutMs) && source.usageProbeTimeoutMs > 0, 'source.usageProbeTimeoutMs must be number > 0')
   assert.ok(source.usageProbeError === null || typeof source.usageProbeError === 'string', 'source.usageProbeError must be string or null')
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
+  assert.ok(source.usageFallbackCacheSource === null || ['memory', 'disk'].includes(source.usageFallbackCacheSource), 'source.usageFallbackCacheSource must be memory|disk|null')
   assert.ok(['ok', 'notice', 'warning', 'critical', 'off'].includes(source.usageAlertLevel), 'source.usageAlertLevel invalid')
   assert.ok(['healthy', 'activity-near-stale', 'activity-past-threshold', 'activity-stale', 'ingestion-unavailable', 'usage-disabled'].includes(source.usageAlertReason), 'source.usageAlertReason invalid')
   assertNumberOrNull(source.usageFallbackCacheAgeMs, 'source.usageFallbackCacheAgeMs')
@@ -128,9 +129,11 @@ function validateRow(row) {
   if (source.usageProbeResult === 'fallback-cache') {
     assert.equal(source.usageUsedFallbackCache, true, 'usageUsedFallbackCache must be true for fallback-cache')
     assert.ok(Number.isFinite(source.usageFallbackCacheAgeMs), 'usageFallbackCacheAgeMs required for fallback-cache')
+    assert.ok(['memory', 'disk'].includes(source.usageFallbackCacheSource), 'usageFallbackCacheSource required for fallback-cache')
   } else {
     assert.equal(source.usageUsedFallbackCache, false, 'usageUsedFallbackCache must be false unless fallback-cache')
     assert.equal(source.usageFallbackCacheAgeMs, null, 'usageFallbackCacheAgeMs must be null unless fallback-cache')
+    assert.equal(source.usageFallbackCacheSource, null, 'usageFallbackCacheSource must be null unless fallback-cache')
   }
 
   if (source.usageIngestionStatus === 'ok') {

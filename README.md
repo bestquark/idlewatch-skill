@@ -88,6 +88,8 @@ Binary resolution order for the OpenClaw probe:
   (default: `250`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
+- `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH` persists/reuses the last-good OpenClaw usage snapshot
+  across process restarts (default: OS temp dir path keyed by host).
 
 - `tokensPerMin`: explicit rate if available from OpenClaw, otherwise derived from `totalTokens / ageMinutes` for the selected recent session.
 - `openclawModel`: active model name (from the selected recent session or defaults).
@@ -123,6 +125,7 @@ Source metadata fields:
 - `source.usageProbeError`: compact failure reason when probing fails.
 - `source.usageUsedFallbackCache`: boolean indicating whether last-good usage cache was used this sample.
 - `source.usageFallbackCacheAgeMs`: age of fallback cache snapshot when used, otherwise `null`.
+- `source.usageFallbackCacheSource`: `memory | disk | null` indicating fallback cache origin.
 - `source.usageStaleMsThreshold`: threshold used for stale classification.
 - `source.usageNearStaleMsThreshold`: threshold used for aging classification.
 - `source.usageStaleGraceMs`: grace window before stale status activation.
