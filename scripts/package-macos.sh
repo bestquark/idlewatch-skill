@@ -115,6 +115,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
 NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
+OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN_HINT:-}"
+if [[ -z "$OPENCLAW_BIN_HINT" && -f "$RESOURCES_DIR/packaging-metadata.json" ]]; then
+  OPENCLAW_BIN_HINT="$(python3 - "$RESOURCES_DIR/packaging-metadata.json" <<'PY'
+import json
+import sys
+path = sys.argv[1]
+try:
+    data = json.loads(open(path, 'r', encoding='utf8').read())
+    hint = data.get('openclawBinHint', '')
+    if hint:
+        print(hint)
+except Exception:
+    pass
+PY
+)"
+fi
 if [[ -z "$NODE_BIN" ]]; then
   BUNDLED_NODE_BIN="$RESOURCES_DIR/runtime/node/bin/node"
   if [[ -x "$BUNDLED_NODE_BIN" ]]; then
@@ -134,6 +150,12 @@ if [[ -z "$NODE_MAJOR" || "$NODE_MAJOR" -lt 20 ]]; then
   NODE_VERSION="$($NODE_BIN -v 2>/dev/null || echo "unknown")"
   echo "IdleWatch requires Node.js 20+ (found $NODE_VERSION at $NODE_BIN). Upgrade Node.js or set IDLEWATCH_NODE_BIN to a compatible runtime." >&2
   exit 1
+fi
+
+if [[ -n "$OPENCLAW_BIN_HINT" && -x "$OPENCLAW_BIN_HINT" ]]; then
+  export IDLEWATCH_OPENCLAW_BIN="$OPENCLAW_BIN_HINT"
+elif [[ -n "$OPENCLAW_BIN_HINT" ]]; then
+  echo "Warning: packaged OpenClaw binary hint is not executable at: $OPENCLAW_BIN_HINT" >&2
 fi
 
 PAYLOAD_BIN="$RESOURCES_DIR/payload/package/bin/idlewatch-agent.js"

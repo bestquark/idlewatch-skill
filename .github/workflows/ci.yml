@@ -71,6 +71,9 @@ jobs:
       - name: Build macOS app scaffold
         run: npm run package:macos
 
+      - name: Validate packaged metadata
+        run: npm run validate:packaged-metadata
+
       - name: App scaffold dry-run
         run: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
 

@@ -323,13 +323,28 @@ function loadMemPressure() {
 
 function resolveOpenClawBinaries() {
   const explicit = process.env.IDLEWATCH_OPENCLAW_BIN?.trim()
+  const homeDir = process.env.HOME?.trim()
+
   const bins = [
     explicit,
     '/opt/homebrew/bin/openclaw',
     '/usr/local/bin/openclaw',
+    '/usr/bin/openclaw',
+    '/usr/local/sbin/openclaw',
+    '/usr/sbin/openclaw',
+    homeDir ? `${homeDir}/.local/bin/openclaw` : null,
+    homeDir ? `${homeDir}/bin/openclaw` : null,
     'openclaw'
   ].filter(Boolean)
-  return [...new Set(bins)]
+
+  const deduped = []
+  const seen = new Set()
+  for (const binPath of bins) {
+    if (seen.has(binPath)) continue
+    seen.add(binPath)
+    deduped.push(binPath)
+  }
+  return deduped
 }
 
 function loadOpenClawUsage(forceRefresh = false) {
@@ -361,14 +376,28 @@ function loadOpenClawUsage(forceRefresh = false) {
     } catch (err) {
       const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
       const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
+      const stdoutPayload = stdoutText.trim()
+      const stderrPayload = stderrText.trim()
       const cmdStatus = err?.status
-      if (typeof stdoutText === 'string' && stdoutText.trim()) {
-        return { out: stdoutText, error: `command-exited-${String(cmdStatus || 'nonzero')}: ${stderrText ? stderrText.trim().split('\n')[0].slice(0, 120) : 'non-zero-exit'}`, status: 'ok-with-stderr' }
+
+      if (stdoutPayload || stderrPayload) {
+        const candidateOutput = stdoutPayload || stderrPayload
+        return {
+          out: candidateOutput,
+          error: `command-exited-${String(cmdStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
+          status: 'ok-with-stderr'
+        }
       }
+
       if (err?.code === 'ENOENT') {
         return { out: null, error: 'openclaw-not-found', status: 'command-error' }
       }
-      return { out: null, error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed', status: 'command-error' }
+
+      return {
+        out: null,
+        error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed',
+        status: 'command-error'
+      }
     }
   }
 
@@ -523,13 +552,17 @@ async function collectSample() {
   const memPressure = loadMemPressure()
   const usedMemPct = memUsedPct()
 
+  const usageIntegrationStatus = usage
+    ? usageFreshness.isStale
+      ? 'stale'
+      : usage?.integrationStatus === 'partial'
+        ? 'ok'
+        : (usage?.integrationStatus ?? 'ok')
+    : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable')
+
   const source = {
     usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
-    usageIntegrationStatus: usage
-      ? usageFreshness.isStale
-        ? 'stale'
-        : (usage?.integrationStatus ?? 'ok')
-      : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+    usageIntegrationStatus,
     usageIngestionStatus: OPENCLAW_USAGE_MODE === 'off'
       ? 'disabled'
       : usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)

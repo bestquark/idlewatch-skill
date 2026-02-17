@@ -18,6 +18,31 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - OpenClaw usage fields remain `null` in dry-run (`source.usage: "unavailable"`).
 - CI currently runs on `ubuntu-latest` only (Node 20/22), no macOS CI coverage.
 
+## QA cycle update — 2026-02-17 04:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ Expanded OpenClaw collector resilience for packaged/runtime environments:
+  - added broader OpenClaw binary discovery paths (including user-level and common system locations),
+  - added successful JSON parsing from non-zero exit output when payload is emitted on stderr,
+  - normalized parser-reported integration status so partial/noisy payloads stay schema-valid.
+- ✅ Hardened packaged launcher reliability:
+  - launcher now reads `packaging-metadata.json` and pre-seeds `IDLEWATCH_OPENCLAW_BIN` from `openclawBinHint` when available, improving non-interactive/packaged OpenClaw discovery.
+- ✅ Added packaged artifact metadata validation:
+  - new `scripts/validate-packaged-metadata.sh` with npm script `validate:packaged-metadata`,
+  - wired into `ci.yml` under `macos-packaging-smoke`.
+- ✅ Added regression coverage for stderr-based OpenClaw probe parsing in `test/openclaw-env.test.mjs`.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` + OpenClaw stderr probe coverage test.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+
+### OpenClaw ingestion risks now reduced
+
+1. **OpenClaw binary discoverability**: reduced by expanding discovery + packaged hint propagation (from metadata).
+2. **Probe output parsing under failure paths**: improved by parsing parseable stderr payloads and classifying probe status as `ok-with-stderr` when recovery is possible.
+
 ## QA cycle update — 2026-02-17 03:50 America/Toronto
 
 ### Validation checks run this cycle

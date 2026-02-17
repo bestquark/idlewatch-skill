@@ -38,10 +38,18 @@ local testing and release preparation.
 
 ## Current scaffold commands
 
+### OpenClaw discoverability in packaged launches
+
+IdleWatch writes packaging metadata (`Contents/Resources/packaging-metadata.json`) during `package-macos` with the `openclawBinHint` used at build time.
+
+When the packaged launcher starts, it uses `IDLEWATCH_OPENCLAW_BIN` directly if set, otherwise it falls back to a bundled/runtime-hint path from `packaging-metadata.json` before PATH lookup. This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
+
+
 Each packaged app includes `Contents/Resources/packaging-metadata.json` with build provenance (version, signing/runtime hints, payload filename, and launcher settings) to support supportability checks and deterministic QA.
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
+  - If unset at runtime, packaged launcher will fall back to `openclawBinHint` captured in `packaging-metadata.json` during packaging.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
 - `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.
@@ -67,10 +75,14 @@ Optional environment variables:
   - Creates `dist/IdleWatch-<version>-unsigned.dmg` (or `-signed.dmg` when `MACOS_CODESIGN_IDENTITY` is set) from `dist/dmg-root`
   - Writes SHA-256 checksum to `dist/IdleWatch-<version>-<signed|unsigned>.dmg.sha256`
   - If `MACOS_NOTARY_PROFILE` is set, submits DMG via `notarytool` and staples on success
+- `scripts/validate-packaged-metadata.sh`
+  - Verifies generated `Contents/Resources/packaging-metadata.json` and packaged entrypoint integrity
 - `scripts/validate-dmg-checksum.sh`
   - Verifies checksum integrity for latest DMG (or explicit path)
 - `npm run validate:dmg-checksum`
   - Runs `scripts/validate-dmg-checksum.sh` for artifact integrity checks in local/release workflows
+- `npm run validate:packaged-metadata`
+  - Runs `scripts/validate-packaged-metadata.sh` and validates bundle metadata + platform consistency
 - `npm run package:release`
   - Runs `package:trusted` and checksum validation in one command (safe for production-ready artifact preparation)
 - `scripts/install-macos-launch-agent.sh`

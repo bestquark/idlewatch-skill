@@ -33,6 +33,7 @@
     "validate:trusted-prereqs": "./scripts/validate-trusted-prereqs.sh",
     "package:macos": "./scripts/package-macos.sh",
     "package:dmg": "./scripts/build-dmg.sh",
+    "validate:packaged-metadata": "./scripts/validate-packaged-metadata.sh",
     "package:trusted": "IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 npm run validate:trusted-prereqs --silent && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/package-macos.sh && IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1 ./scripts/build-dmg.sh",
     "package:release": "npm run package:trusted && npm run validate:dmg-checksum",
     "install:macos-launch-agent": "./scripts/install-macos-launch-agent.sh",
