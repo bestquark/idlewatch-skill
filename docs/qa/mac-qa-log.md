@@ -1,3 +1,61 @@
+## QA cycle update — 2026-02-17 09:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring + packaging sweep:** Executed a full Mac QA + packaging pass with all existing e2e validators, covering usage health, freshness, alert transitions, recovery, packaging, install, checksum, and recovery fallback.
+- ✅ **OpenClaw telemetry:** Collector on this host returns fully populated usage + GPU telemetry in `--dry-run` and packaged app dry-run schema remains valid.
+- ✅ **OpenClaw integration metadata:** Validation confirms command path and probe provenance are populated in source fields (`usageCommand`, `usageProbeResult`, `usageProbeAttempts`, `usageFreshnessState`, cache usage flags).
+- ✅ **Dry-run schema:** Packaged app dry-run (`./dist/IdleWatch.app/... --dry-run`) remains schema-valid.
+- ✅ **Packaging risk posture:** DMG generation and installation/ checksum checks continue to pass in unsigned mode with optional trust steps still gated on envs.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (160 tests).
+- ✅ `node bin/idlewatch-agent.js --dry-run --json` produced populated OpenClaw + GPU telemetry.
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes (`source.usage="openclaw"`, `usageIntegrationStatus="ok"`, `usageFreshnessState="fresh"`).
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes.
+- ✅ `npm run validate:packaged-usage-age-slo --silent` passes.
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent` passes (forced reprobe recovery observed).
+- ✅ `npm run package:dmg --silent` succeeds (`dist/IdleWatch-0.1.0-unsigned.dmg`).
+- ✅ `npm run validate:dmg-install --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+
+### Bugs / features completed in this cycle
+
+- ✅ **Feature:** Added runtime resilience confirmation in the log: packaged metadata and launch schema checks remain green while `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` path is intentionally off.
+- ✅ **Feature:** Reconfirmed OpenClaw parser + probe state is stable for both direct binary and packaged launcher paths.
+- ⚠️ **Open item:** Trust-hardening and distribution-enforcement features remain optional until signing/notarization envs and policy gates are active.
+
+### Telemetry validation checks (latest sample)
+
+- `cpuPct`: `13.02`
+- `memPct`: `94.49` / `memUsedPct`: `94.49`
+- `memPressurePct`: `44` (`memPressureClass: normal`)
+- `gpuPct`: `0` via `gpuSource: ioreg-agx` (`gpuConfidence: high`)
+- `tokensPerMin`: `39,433.26`
+- `openclawModel`: `gpt-5.3-codex-spark`
+- `openclawTotalTokens`: `27,855`
+- `openclawUsageAgeMs`: `42,435`
+- `usageFreshnessState`: `fresh`
+- `usageAlertLevel`: `ok`
+- `openclawUsageCommand`: `/opt/homebrew/bin/openclaw status --json`
+
+### DMG packaging risks
+
+1. **High:** Unsigned/unnotarized DMG remains default when `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` are unset, so Gatekeeper friction remains possible for recipients.
+2. **Medium:** Distribution trust remains opt-in (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`, `MACOS_NOTARY_PROFILE`) and is not a default blocking gate.
+3. **Medium:** Packaging still depends on a target machine meeting runtime assumptions when `IDLEWATCH_NODE_RUNTIME_DIR` is not provided.
+4. **Low:** No additional packaging OS-version/arch smoke matrix run was added in this exact cycle.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Usage pipeline depends on installed `openclaw` command shape and availability; behavior can drift outside tested CLI versions.
+2. **Gap:** Firebase/cloud write path still not validated in this cycle due local-only environment (env intentionally not configured).
+3. **Gap:** OpenClaw integration confidence is telemetry-strong but remains environment-dependent for fleet parity.
+
+
 ## QA cycle update — 2026-02-17 09:36 America/Toronto
 
 ### Completed this cycle
