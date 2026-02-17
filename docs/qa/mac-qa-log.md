@@ -3,6 +3,62 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 16:20 America/Toronto
+
+### Validation checks run
+
+- ✅ `npm test --silent` passes (183/183).
+- ✅ `npm run validate:dry-run-schema --silent` passes.
+- ✅ `npm run validate:usage-freshness-e2e --silent` passes (`fresh -> aging -> post-threshold-in-grace -> stale`).
+- ✅ `npm run validate:usage-alert-rate-e2e --silent` passes (`typical cadence stays ok; boundary states escalate notice -> warning`).
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:dmg-checksum --silent` passes.
+- ✅ `npm run validate:dmg-install --silent` passes (DMG mount + launcher `--dry-run` schema valid).
+- ❌ `npm run validate:packaged-bundled-runtime --silent` fails — both OpenClaw-enabled and OpenClaw-disabled dry-runs capture zero bytes via `execFileSync` before the 15s timeout, same root cause as prior cycles.
+
+### Telemetry validation checks
+
+- Host `--dry-run --json`:
+  - `cpuPct`: `19.43`
+  - `memUsedPct`: `97.06`
+  - `memPressurePct`: `50` (`memPressureClass`: `normal`)
+  - `gpuPct`: `4` (`gpuSource`: `ioreg-agx`, `gpuConfidence`: `high`)
+  - `tokensPerMin`: `2044.41`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+  - `openclawTotalTokens`: `24684`
+  - `openclawUsageAgeMs`: `727,903`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageAlertReason`: `activity-past-threshold`
+  - `usageProbeAttempts`: `36`
+  - `usageCommand`: `openclaw status --json`
+
+### Bugs / open issues
+
+- 🐛 **Persistent (high):** `validate:packaged-bundled-runtime` stdio capture regression remains open. `execFileSync` with piped stdio captures zero bytes from the packaged launcher under constrained PATH before the 15s kill timeout. Root cause: likely a combination of 80 OpenClaw probe attempts under `openclaw-not-found` and stdio buffering behavior with symlinked node. The DMG install validator (`validate:dmg-install`) succeeds because it uses a different execution path (temp dir mount).
+- ⚠️ **Ongoing:** Memory usage elevated to 97% this cycle (up from ~89% in prior cycle), though pressure class remains `normal` at 50%.
+- ⚠️ **Ongoing:** Usage age ~728s (stale/warning) — expected in long-idle windows, not a bug.
+
+### DMG packaging risks
+
+1. **High:** Distribution unsigned/unnotarized; Gatekeeper friction on strict endpoints.
+2. **High:** Bundled Node runtime is a symlink (`-> ../Cellar/node/25.6.1/bin/node`), not a copied binary — breaks portability and likely contributes to bundled-runtime validator failures.
+3. **High:** `validate:packaged-bundled-runtime` non-deterministic failure prevents treating this gate as reliable in CI.
+4. **Medium:** 80 probe attempts under constrained PATH adds latency before fallback cache kicks in.
+
+### OpenClaw integration gaps
+
+1. **Gap:** CLI shape dependency (`openclaw status --json`) required for telemetry provenance.
+2. **Gap:** `openclaw-not-found` fallback under constrained PATH produces cache-only telemetry with warning-level alerting.
+3. **Gap:** Firebase write path unexercised (local-only mode).
+4. **Gap:** Long-idle windows trend to `stale` + `warning` without local usage activity.
+
+### Follow-up / action items
+
+1. Fix bundled-runtime stdio capture: add `--once` flag or flush stdout before probe sweeps to unblock `execFileSync` capture.
+2. Copy node binary instead of symlinking in `package-macos.sh` for distribution portability.
+3. Add early-exit on `command-missing` to reduce 80-attempt probe sweep under constrained PATH.
+
 ## QA cycle update — 2026-02-17 16:00 America/Toronto
 
 ### Validation checks run
