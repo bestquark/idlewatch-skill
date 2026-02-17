@@ -10,6 +10,62 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - Telemetry signal quality: CPU / memory / GPU
 - OpenClaw integration readiness for LLM usage and session stats
 
+## QA cycle update — 2026-02-17 10:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Full Mac QA sweep rerun:** all packaging and telemetry validation gates re-executed successfully.
+- ✅ **Packaging artifacts:** `dist/IdleWatch-0.1.0-unsigned.dmg` regenerated and checksum revalidated.
+- ✅ **Distribution smoke:** `validate:dmg-install` passed; `.app` mount and `--dry-run` startup path still valid.
+
+### Validation checks run
+
+- ✅ `npm test --silent` (`169` tests)
+- ✅ `npm run validate:packaged-metadata`
+- ✅ `npm run validate:packaged-usage-health`
+- ✅ `npm run validate:usage-freshness-e2e`
+- ✅ `npm run validate:usage-alert-rate-e2e`
+- ✅ `npm run validate:packaged-usage-recovery-e2e`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e`
+- ✅ `npm run validate:packaged-usage-age-slo`
+- ✅ `npm run package:dmg`
+- ✅ `npm run validate:dmg-install`
+- ✅ `npm run validate:dmg-checksum`
+
+### Bugs / features completed in this cycle
+
+- ✅ **Feature:** Packaged dry-run remains compatible with `openclaw` JSON parsing and forced reprobe behavior (`usageRefreshAttempted: true` in the stale path).
+- ✅ **Feature:** Schema validation continues to pass for packaged dry-run output via `scripts/validate-dry-run-schema.mjs`.
+- ⚠️ **Open item:** Staleness behavior remains unchanged under low-activity windows: usage ages around 100s quickly move to `warning`/`stale`, which is expected by current policy but can appear as degraded in unattended 24h windows.
+
+### Telemetry validation checks (latest sample)
+
+- Hosted packaged sample (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` with usage required):
+  - `openclawUsageAgeMs`: `102,244`
+  - `usageIntegrationStatus`: `stale`
+  - `usageFreshnessState`: `stale`
+  - `usageAlertLevel`: `warning`
+  - `usageRefreshAttempted`: `true`
+  - `usageProbeAttempts`: `1`
+  - `usageRefreshAttempts`: `2`
+  - `tokensPerMin`: `16107.14`
+  - `openclawModel`: `gpt-5.3-codex-spark`
+
+### DMG packaging risks
+
+1. **High:** Distribution remains unsigned/unnotarized-by-default (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset), so Gatekeeper friction remains likely for end users on strict settings.
+2. **Medium:** No hardened runtime or notarized distribution path is exercised in this cycle.
+3. **Medium:** Runtime bundling not required for this host but still environment-dependent when `IDLEWATCH_NODE_RUNTIME_DIR` is not set.
+4. **Low:** No arm64/Intel matrix run in this cycle; current pass uses default local environment only.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Integration still depends on local OpenClaw binary output shape; compatibility hinges on JSON schemas (`status --json`) staying stable enough for current parser candidates.
+2. **Gap:** No local cloud write-path validation in this cycle (Firebase still in local-only mode).
+3. **Gap:** Long-window stale-to-warning transitions remain a usability/operations policy decision rather than a hard failure.
+
 ## QA cycle update — 2026-02-17 10:45 America/Toronto
 
 ### Completed this cycle
