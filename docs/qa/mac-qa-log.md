@@ -1853,3 +1853,51 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - [x] Reduce packaged runtime fragility by removing `npx`-based launcher execution path.
 - [x] Add deterministic launcher runtime pinning (`IDLEWATCH_NODE_BIN`) for packaged artifacts.
+
+## QA cycle update — 2026-02-17 00:32 America/Toronto
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (102/102 assertions across repeated matrix-style dry-run/config suites).
+- ✅ `npm run validate:dry-run-schema --silent` passes (direct CLI schema + probe metadata contract).
+- ✅ `npm run package:macos --silent` succeeds and refreshes `dist/IdleWatch.app`.
+- ✅ `npm run validate:packaged-dry-run-schema --silent` passes (packaged launcher schema contract).
+- ✅ `npm run package:dmg --silent` succeeds and outputs `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Firebase remains unconfigured in this QA environment (local stdout/NDJSON validation only).
+
+### Telemetry validation snapshot (latest samples)
+
+- Direct CLI dry-run (`node bin/idlewatch-agent.js --dry-run` from `npm test`):
+  - `gpuPct`: populated (`0`) via `gpuSource: "ioreg-agx"`, `gpuConfidence: "high"`.
+  - `memPressurePct`: populated (`13`) with `memPressureClass: "normal"`.
+  - `tokensPerMin`: populated (`16791.05`).
+  - `openclawModel`: populated (`gpt-5.3-codex`), `openclawTotalTokens`: populated (`28439`).
+  - `openclawUsageAgeMs`: `100444` with `source.usageIntegrationStatus: "stale"`, `usageActivityStatus: "stale"`, `usagePastStaleThreshold: true`.
+  - `source.usageCommand`: `/opt/homebrew/bin/openclaw status --json`.
+- One-shot mode check in suite remains coherent when usage is disabled by contract (`source.usage=disabled`, `usageIntegrationStatus=disabled`).
+
+### Bugs / feature gaps (current)
+
+1. **OpenClaw usage age exceeded stale+grace in this cycle (Medium, observability reliability)**
+   - Direct dry-run showed `openclawUsageAgeMs=100444` against `usageStaleMsThreshold=60000` and `usageStaleGraceMs=10000`.
+   - Classification is correct (`stale`) but indicates background usage polling can drift beyond current SLO during idle/off-peak periods.
+
+2. **Trusted distribution still optional unless strict mode/credentials are set (High, release readiness)**
+   - This cycle again produced `IdleWatch-0.1.0-unsigned.dmg`.
+   - Signing/notarization remains credential-gated and non-default (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+
+3. **Firebase write-path E2E still not exercised in active QA loop (Medium, delivery confidence)**
+   - Local schema + packaging checks are green.
+   - Credentialed publish-path validation remains pending.
+
+### DMG packaging risk status
+
+- ✅ Reproducible local packaging remains healthy (`IdleWatch.app` + versioned unsigned DMG).
+- ⚠️ Gatekeeper/trust risk persists until trusted credentials are configured and signed+notarized outputs are validated.
+- ⚠️ Runtime dependency risk persists for hosts without a compatible Node runtime.
+
+### OpenClaw integration gap status
+
+- ✅ Probe command resolution remains explicit and stable (`/opt/homebrew/bin/openclaw status --json`).
+- ✅ Integration metadata remains rich (`usageProbe*`, freshness state, stale-threshold metadata).
+- ⚠️ Usage freshness can still drift into stale territory in real QA windows; keep packaged usage-age SLO gate active for release paths.
