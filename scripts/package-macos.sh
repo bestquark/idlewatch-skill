@@ -52,7 +52,17 @@ fi
 # run without relying on workspace-level node_modules.
 (
   cd "$PAYLOAD_PKG_DIR"
-  npm install --omit=dev --ignore-scripts --no-audit --no-fund --silent
+
+  # Prefer lockfile-based install when available for reproducible dependency snapshots.
+  if [[ -f "$ROOT_DIR/package-lock.json" ]]; then
+    cp "$ROOT_DIR/package-lock.json" package-lock.json
+  fi
+
+  if [[ -f package-lock.json ]]; then
+    npm ci --omit=dev --ignore-scripts --no-audit --no-fund --silent
+  else
+    npm install --omit=dev --ignore-scripts --no-audit --no-fund --silent
+  fi
 )
 
 if [[ -n "$NODE_RUNTIME_DIR" ]]; then

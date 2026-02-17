@@ -82,3 +82,15 @@ test('parses status payloads with stringified numeric fields and stale token mar
   assert.equal(usage.usageTimestampMs, 1771278820000)
   assert.equal(usage.integrationStatus, 'ok')
 })
+
+test('parses stats payloads with nested usage totals', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 4560)
+  assert.equal(usage.tokensPerMin, 123.45)
+  assert.equal(usage.sessionId, 'sess-stats-01')
+  assert.equal(usage.agentId, 'agent-stats')
+  assert.equal(usage.usageTimestampMs, 1771279012345)
+  assert.equal(usage.integrationStatus, 'ok')
+})

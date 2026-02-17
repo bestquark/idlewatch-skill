@@ -1,3 +1,20 @@
+## QA cycle update — 2026-02-17 08:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ `npm test --silent` passes.
+- ✅ OpenClaw ingestion parser support added for `stats`/nested totals payloads (including nested total token fields) with regression fixture coverage.
+- ✅ OpenClaw last-good cache persistence now writes atomically (no temp-file residue on interrupted writes), reducing local startup/cache recovery risk.
+- ✅ Packaging dependency install in `scripts/package-macos.sh` now prefers lockfile-based `npm ci` when available (fallbacks to `npm install`), improving deterministic macOS payload builds.
+- ✅ `docs/packaging/macos-dmg.md` updated to document lockfile-capable packaging dependency installs.
+
+### Validation checks run this cycle
+
+- ✅ `node bin/idlewatch-agent.js --dry-run` emits populated telemetry row and local NDJSON sample.
+- ✅ `npm test --silent` passes (unit + schema/smoke path validated).
+- ✅ `npm run validate:packaged-metadata --silent` passes.
+- ✅ `npm run validate:packaged-usage-health --silent` passes.
+
 ## QA cycle update — 2026-02-17 08:50 America/Toronto
 
 ### Completed this cycle

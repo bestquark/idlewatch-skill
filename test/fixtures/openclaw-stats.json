@@ -1,0 +1,17 @@
+{
+  "ts": 1771279123456,
+  "stats": {
+    "model": "claude-opus-4-6",
+    "totals": {
+      "tokens": {
+        "total": 4560,
+        "input": 3000,
+        "output": 1560
+      },
+      "updatedAt": 1771279012345
+    },
+    "agentId": "agent-stats",
+    "sessionId": "sess-stats-01",
+    "tokensPerMinute": 123.45
+  }
+}

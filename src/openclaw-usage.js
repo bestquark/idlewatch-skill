@@ -31,8 +31,23 @@ function isFreshTokenMarker(value) {
   return Boolean(value)
 }
 
+function pickNestedTotalsTokens(candidate) {
+  if (!candidate || typeof candidate !== 'object') return null
+
+  const totalsRoot = candidate.totals || candidate.summary || candidate.usageTotals
+
+  return pickNumber(
+    totalsRoot?.totalTokens,
+    totalsRoot?.total_tokens,
+    totalsRoot?.total,
+    totalsRoot?.tokens?.total,
+    totalsRoot?.tokens?.sum,
+    totalsRoot?.tokenCount
+  )
+}
+
 function deriveTokensPerMinute(session) {
-  const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens)
+  const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens, pickNestedTotalsTokens(session))
   const ageMs = pickNumber(session?.ageMs, session?.age)
   if (totalTokens === null || ageMs === null || ageMs <= 0) return null
 
@@ -64,13 +79,13 @@ function pickBestRecentSession(recent = []) {
   if (!Array.isArray(recent) || recent.length === 0) return null
 
   const withFreshTokens = recent.filter((session) => {
-    const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens)
+    const totalTokens = pickNumber(session?.totalTokens, session?.total_tokens, pickNestedTotalsTokens(session))
     return totalTokens !== null && isFreshTokenMarker(session?.totalTokensFresh)
   })
   const freshestWithTokens = pickNewestSession(withFreshTokens)
   if (freshestWithTokens) return freshestWithTokens
 
-  const anyWithTokens = recent.filter((session) => pickNumber(session?.totalTokens, session?.total_tokens) !== null)
+  const anyWithTokens = recent.filter((session) => pickNumber(session?.totalTokens, session?.total_tokens, pickNestedTotalsTokens(session)) !== null)
   const newestWithTokens = pickNewestSession(anyWithTokens)
   if (newestWithTokens) return newestWithTokens
 
@@ -164,13 +179,14 @@ function parseFromStatusJson(parsed) {
   }
 
   const model = pickString(session.model, session.modelName, defaults.model, parsed?.default_model)
-  const totalTokens = pickNumber(session.totalTokens, session.total_tokens)
+  const totalTokens = pickNumber(session.totalTokens, session.total_tokens, pickNestedTotalsTokens(session))
   const tokensPerMin = pickNumber(
     session.tokensPerMinute,
     session.tokens_per_minute,
     session.tpm,
     session.rate,
-    deriveTokensPerMinute(session)
+    deriveTokensPerMinute(session),
+    pickNumber(session?.derived?.tokensPerMinute, session?.derived?.tpm)
   )
   const sessionAgeMs = pickNumber(session.age, session.ageMs)
   const usageTimestampMs =
@@ -192,20 +208,28 @@ function parseFromStatusJson(parsed) {
 
 function parseGenericUsage(parsed) {
   const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed
-  const model = pickString(parsed?.model, usage?.model, usage?.modelName, parsed?.default_model)
+  const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals
+  const model = pickString(parsed?.model, usage?.model, usage?.modelName, usageTotals?.model, parsed?.default_model)
   const totalTokens = pickNumber(
     usage?.totalTokens,
     usage?.total_tokens,
     usage?.tokens,
     usage?.tokenCount,
-    usage?.inputTokens && usage?.outputTokens ? usage.inputTokens + usage.outputTokens : null
+    usage?.inputTokens && usage?.outputTokens ? usage.inputTokens + usage.outputTokens : null,
+    usageTotals?.total,
+    usageTotals?.totalTokens,
+    usageTotals?.total_tokens,
+    usageTotals?.tokens?.total
   )
   const tokensPerMin = pickNumber(
     usage?.tokensPerMinute,
     usage?.tokens_per_minute,
     usage?.tpm,
     usage?.tokenRate,
-    usage?.requestsPerMinute
+    usage?.requestsPerMinute,
+    usage?.tokens?.perMin,
+    usageTotals?.tokensPerMinute,
+    usageTotals?.tokens_per_minute
   )
 
   if (model === null && totalTokens === null && tokensPerMin === null) return null
@@ -216,7 +240,25 @@ function parseGenericUsage(parsed) {
     tokensPerMin,
     sessionId: pickString(parsed?.sessionId, usage?.sessionId, usage?.id),
     agentId: pickString(parsed?.agentId, usage?.agentId),
-    usageTimestampMs: pickNumber(usage?.updatedAt, usage?.updated_at, usage?.updatedAtMs, usage?.ts, usage?.time, usage?.timestamp, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.ts, parsed?.time),
+    usageTimestampMs: pickNumber(
+      usage?.updatedAt,
+      usage?.updated_at,
+      usage?.updatedAtMs,
+      usage?.ts,
+      usage?.time,
+      usage?.timestamp,
+      usageTotals?.updatedAt,
+      usageTotals?.updated_at,
+      usageTotals?.updatedAtMs,
+      usageTotals?.ts,
+      usageTotals?.time,
+      usageTotals?.timestamp,
+      parsed?.updatedAt,
+      parsed?.updated_at,
+      parsed?.updatedAtMs,
+      parsed?.ts,
+      parsed?.time
+    ),
     integrationStatus: 'ok'
   }
 }

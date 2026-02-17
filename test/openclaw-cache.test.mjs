@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
@@ -21,6 +21,10 @@ test('persists and reloads last-good usage snapshot', () => {
   assert.equal(loaded.usage.model, 'gpt-5.3-codex')
   assert.equal(loaded.usage.totalTokens, 12345)
   assert.ok(Number.isFinite(loaded.ageMs) && loaded.ageMs >= 0)
+
+  const files = readdirSync(dir)
+  assert.ok(files.includes('last-good.json'))
+  assert.equal(files.some((name) => name.startsWith('last-good.json.tmp-')), false)
 
   rmSync(dir, { recursive: true, force: true })
 })

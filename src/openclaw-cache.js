@@ -29,11 +29,23 @@ export function persistLastGoodUsageSnapshot(cachePath, payload) {
     return false
   }
 
+  const destination = cachePath
+  const dir = path.dirname(destination)
+  const tempPath = `${destination}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  const serialized = JSON.stringify({ at: payload.at, usage: payload.usage })
+
   try {
-    fs.mkdirSync(path.dirname(cachePath), { recursive: true })
-    fs.writeFileSync(cachePath, JSON.stringify({ at: payload.at, usage: payload.usage }), 'utf8')
+    fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(tempPath, serialized, 'utf8')
+    fs.renameSync(tempPath, destination)
     return true
   } catch {
     return false
+  } finally {
+    try {
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath)
+    } catch {
+      // best effort cleanup
+    }
   }
 }

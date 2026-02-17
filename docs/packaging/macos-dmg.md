@@ -73,7 +73,7 @@ Optional environment variables:
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
   - Bundles the generated `idlewatch-skill-<version>.tgz` and expands it into `Contents/Resources/payload/package`
-  - Installs production runtime dependencies into packaged payload (`npm install --omit=dev`) so mounted-DMG launches do not rely on workspace/global `node_modules`
+  - Installs production runtime dependencies into packaged payload (`npm ci --omit=dev` when a lockfile is available, otherwise `npm install --omit=dev`) so mounted-DMG launches do not rely on workspace/global `node_modules`
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
     - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
     - Node binary resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime (`Contents/Resources/runtime/node/bin/node`, when `IDLEWATCH_NODE_RUNTIME_DIR` is supplied at package time) → `PATH` (`node`)
