@@ -63,6 +63,8 @@ function validateRow(row) {
   assert.ok(source.usageCommand === null || typeof source.usageCommand === 'string', 'source.usageCommand must be string or null')
   assert.ok(['ok', 'fallback-cache', 'disabled', 'command-missing', 'command-error', 'parse-error', 'unavailable'].includes(source.usageProbeResult), 'source.usageProbeResult invalid')
   assert.ok(Number.isInteger(source.usageProbeAttempts) && source.usageProbeAttempts >= 0, 'source.usageProbeAttempts must be integer >= 0')
+  assert.ok(Number.isInteger(source.usageProbeSweeps) && source.usageProbeSweeps >= 0, 'source.usageProbeSweeps must be integer >= 0')
+  assert.ok(Number.isInteger(source.usageProbeRetries) && source.usageProbeRetries >= 0, 'source.usageProbeRetries must be integer >= 0')
   assert.ok(Number.isFinite(source.usageProbeTimeoutMs) && source.usageProbeTimeoutMs > 0, 'source.usageProbeTimeoutMs must be number > 0')
   assert.ok(source.usageProbeError === null || typeof source.usageProbeError === 'string', 'source.usageProbeError must be string or null')
   assert.equal(typeof source.usageUsedFallbackCache, 'boolean', 'source.usageUsedFallbackCache must be boolean')
@@ -82,6 +84,13 @@ function validateRow(row) {
   if (source.usage === 'disabled') {
     assert.equal(source.usageProbeResult, 'disabled', 'usageProbeResult must be disabled when source.usage=disabled')
   }
+
+  if (source.usageProbeAttempts === 0) {
+    assert.equal(source.usageProbeSweeps, 0, 'usageProbeSweeps must be 0 when no probe attempts ran')
+  } else {
+    assert.ok(source.usageProbeSweeps >= 1, 'usageProbeSweeps must be >= 1 when probe attempts run')
+  }
+  assert.ok(source.usageProbeSweeps <= source.usageProbeRetries + 1, 'usageProbeSweeps cannot exceed configured retries + 1')
 
   if (source.usage === 'unavailable') {
     assert.ok(!['ok', 'fallback-cache'].includes(source.usageProbeResult), 'usageProbeResult must explain unavailable usage')

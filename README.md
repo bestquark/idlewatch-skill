@@ -66,6 +66,8 @@ Binary resolution order for the OpenClaw probe:
   (default: `floor(IDLEWATCH_USAGE_STALE_MS*0.75)`).
 - `IDLEWATCH_USAGE_STALE_GRACE_MS` adds a grace window before `usageIntegrationStatus`
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
+- `IDLEWATCH_OPENCLAW_PROBE_RETRIES` retries full OpenClaw probe sweeps after the first pass
+  to reduce transient command failures (default: `1`).
 - `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS` reuses the last successful OpenClaw usage
   snapshot after transient probe failures for up to this age (default: `max(stale+grace, 120000)`).
 
@@ -89,6 +91,8 @@ Source metadata fields:
 - `source.usageCommand`: command used (`openclaw status --json`, etc.)
 - `source.usageProbeResult`: `ok | fallback-cache | disabled | command-missing | command-error | parse-error | unavailable`.
 - `source.usageProbeAttempts`: number of probe attempts in the current refresh window.
+- `source.usageProbeSweeps`: number of probe sweeps performed in the current refresh window.
+- `source.usageProbeRetries`: configured retry count (`IDLEWATCH_OPENCLAW_PROBE_RETRIES`).
 - `source.usageProbeError`: compact failure reason when probing fails.
 - `source.usageUsedFallbackCache`: boolean indicating whether last-good usage cache was used this sample.
 - `source.usageFallbackCacheAgeMs`: age of fallback cache snapshot when used, otherwise `null`.

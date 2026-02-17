@@ -35,3 +35,31 @@ test('rejects invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS', () => {
   assert.notEqual(run.status, 0)
   assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS/)
 })
+
+test('accepts explicit IDLEWATCH_OPENCLAW_PROBE_RETRIES in dry-run', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_OPENCLAW_PROBE_RETRIES: '2'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /idlewatch-agent dry-run/)
+})
+
+test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_OPENCLAW_PROBE_RETRIES: '-1'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES/)
+})

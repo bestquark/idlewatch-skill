@@ -1167,3 +1167,24 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Acceptance criteria updates
 
 - [x] Harden runtime env validation path for OpenClaw fallback-cache max-age tuning (`IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS`) with deterministic tests.
+
+## Implementation cycle update — 2026-02-16 22:22 America/Toronto
+
+### Completed this cycle
+
+- ✅ Added configurable OpenClaw probe sweep retries (`IDLEWATCH_OPENCLAW_PROBE_RETRIES`, default `1`) to improve ingestion reliability against transient CLI/JSON probe failures.
+- ✅ Emitted retry observability metadata in each sample:
+  - `source.usageProbeSweeps`
+  - `source.usageProbeRetries`
+- ✅ Extended dry-run schema validator to enforce retry metadata and sweep/retry consistency constraints.
+- ✅ Added env validation coverage (`test/openclaw-env.test.mjs`) for accepted/rejected `IDLEWATCH_OPENCLAW_PROBE_RETRIES` values.
+- ✅ Updated operator docs (`README.md`, `.env.example`, `--help`) with retry tuning guidance.
+
+### Validation checks run this cycle
+
+- ✅ `npm test --silent` passes (18/18).
+- ✅ `npm run validate:dry-run-schema --silent` passes with new probe retry fields.
+
+### Acceptance criteria updates
+
+- [x] Improve OpenClaw stats ingestion reliability for transient probe failures with configurable retry sweeps and explicit probe retry telemetry.

@@ -11,7 +11,7 @@ import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor(stale*0.75))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [--dry-run] [--help]\n\nOptions:\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor(stale*0.75))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (preferred)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n`)
 }
 
 const args = new Set(process.argv.slice(2))
@@ -29,6 +29,9 @@ const CREDS_JSON = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
 const CREDS_B64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64
 const OPENCLAW_USAGE_MODE = (process.env.IDLEWATCH_OPENCLAW_USAGE || 'auto').toLowerCase()
 const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS || 2500)
+const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
+  ? Number(process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES)
+  : 1
 const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
   ? path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
   : path.resolve(process.cwd(), 'logs', `${SAFE_HOST}-metrics.ndjson`)
@@ -41,6 +44,13 @@ if (!Number.isFinite(INTERVAL_MS) || INTERVAL_MS <= 0) {
 if (!Number.isFinite(OPENCLAW_PROBE_TIMEOUT_MS) || OPENCLAW_PROBE_TIMEOUT_MS <= 0) {
   console.error(
     `Invalid IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS: ${process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS}. Expected a positive number.`
+  )
+  process.exit(1)
+}
+
+if (!Number.isInteger(OPENCLAW_PROBE_RETRIES) || OPENCLAW_PROBE_RETRIES < 0) {
+  console.error(
+    `Invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES: ${process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES}. Expected an integer >= 0.`
   )
   process.exit(1)
 }
@@ -175,6 +185,7 @@ let openClawUsageCache = {
     probe: {
       result: OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
       attempts: 0,
+      sweeps: 0,
       command: null,
       error: null,
       usedFallbackCache: false,
@@ -212,7 +223,7 @@ function loadOpenClawUsage() {
   if (OPENCLAW_USAGE_MODE === 'off') {
     return {
       usage: null,
-      probe: { result: 'disabled', attempts: 0, command: null, error: null, usedFallbackCache: false, fallbackAgeMs: null }
+      probe: { result: 'disabled', attempts: 0, sweeps: 0, command: null, error: null, usedFallbackCache: false, fallbackAgeMs: null }
     }
   }
 
@@ -227,41 +238,45 @@ function loadOpenClawUsage() {
   ]
 
   let attempts = 0
+  let sweeps = 0
   let sawCommandError = false
   let sawParseError = false
   let lastError = null
 
-  for (const binPath of binaries) {
-    for (const args of subcommands) {
-      attempts += 1
-      const cmdText = `${binPath} ${args.join(' ')}`
-      try {
-        const out = execFileSync(binPath, args, {
-          encoding: 'utf8',
-          stdio: ['ignore', 'pipe', 'ignore'],
-          timeout: OPENCLAW_PROBE_TIMEOUT_MS
-        })
-        const parsed = parseOpenClawUsage(out)
-        if (parsed) {
-          const usage = { ...parsed, sourceCommand: cmdText }
-          const value = {
-            usage,
-            probe: { result: 'ok', attempts, command: cmdText, error: null, usedFallbackCache: false, fallbackAgeMs: null }
+  for (let sweep = 0; sweep <= OPENCLAW_PROBE_RETRIES; sweep++) {
+    sweeps = sweep + 1
+    for (const binPath of binaries) {
+      for (const args of subcommands) {
+        attempts += 1
+        const cmdText = `${binPath} ${args.join(' ')}`
+        try {
+          const out = execFileSync(binPath, args, {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+            timeout: OPENCLAW_PROBE_TIMEOUT_MS
+          })
+          const parsed = parseOpenClawUsage(out)
+          if (parsed) {
+            const usage = { ...parsed, sourceCommand: cmdText }
+            const value = {
+              usage,
+              probe: { result: 'ok', attempts, sweeps, command: cmdText, error: null, usedFallbackCache: false, fallbackAgeMs: null }
+            }
+            lastGoodOpenClawUsage = { at: now, usage }
+            openClawUsageCache = { at: now, value }
+            return value
           }
-          lastGoodOpenClawUsage = { at: now, usage }
-          openClawUsageCache = { at: now, value }
-          return value
-        }
 
-        sawParseError = true
-        lastError = 'unrecognized-json-shape'
-      } catch (err) {
-        if (err?.code === 'ENOENT') {
-          lastError = 'openclaw-not-found'
-          continue
+          sawParseError = true
+          lastError = 'unrecognized-json-shape'
+        } catch (err) {
+          if (err?.code === 'ENOENT') {
+            lastError = 'openclaw-not-found'
+            continue
+          }
+          sawCommandError = true
+          lastError = err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed'
         }
-        sawCommandError = true
-        lastError = err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed'
       }
     }
   }
@@ -279,6 +294,7 @@ function loadOpenClawUsage() {
       probe: {
         result: 'fallback-cache',
         attempts,
+        sweeps,
         command: null,
         error: lastError,
         usedFallbackCache: true,
@@ -294,6 +310,7 @@ function loadOpenClawUsage() {
     probe: {
       result,
       attempts,
+      sweeps,
       command: null,
       error: lastError,
       usedFallbackCache: false,
@@ -359,7 +376,9 @@ async function collectSample() {
         : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
       usageProbeResult: usageProbe.probe.result,
       usageProbeAttempts: usageProbe.probe.attempts,
+      usageProbeSweeps: usageProbe.probe.sweeps,
       usageProbeTimeoutMs: OPENCLAW_PROBE_TIMEOUT_MS,
+      usageProbeRetries: OPENCLAW_PROBE_RETRIES,
       usageProbeError: usageProbe.probe.error,
       usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
       usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
