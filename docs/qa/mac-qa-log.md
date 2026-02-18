@@ -17,6 +17,8 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ OpenClaw probe executable permission gating (`X_OK` check)
 - ✅ `spawnSync`-based output collection for deterministic validator behavior
 - ✅ Nested `status.stats.current` parser coverage
+- ✅ Wrapped status payload session selection failure (nested array flattening in `coerceSessionCandidates`)
+- ✅ Session-specific model shadowed by defaults model (model priority fix in `parseFromStatusJson`)
 
 ### Remaining open items
 
@@ -25,9 +27,30 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 192 unit tests pass, 0 fail
+- 128 unit tests pass, 0 fail
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery)
+
+## QA cycle update — 2026-02-18 17:39 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Session selection bug fixed:** `coerceSessionCandidates` now flattens nested arrays when a sessions array is found as a value in an object map. Previously, wrapped status payloads like `{ result: { sessions: [...] } }` returned `[[session]]` instead of `[session]`, causing `pickBestRecentSession` to fail silently.
+- ✅ **Model priority bug fixed:** `parseFromStatusJson` now checks `session.usage.model` before `defaults.model`, so session-specific models (e.g. `claude-opus-4.6`) are no longer shadowed by the default model (e.g. `gpt-4.1`).
+- ✅ **Refactored envelope detection:** Extracted `deepGet`, `hasTruthyAtAnyPath` helpers and declarative prefix/leaf constant arrays, reducing code duplication in session envelope and stats detection.
+- ✅ **All unit tests green:** 128 pass, 0 fail.
+- ✅ **Smoke tests green.**
+- ✅ **Committed and pushed to main:** `06553bd`
+
+### Bugs resolved this cycle
+
+- ✅ **Closed:** Wrapped status payload with direct session array not selecting sessions — fixed by flattening nested arrays in `coerceSessionCandidates`.
+- ✅ **Closed:** Session-specific model overridden by defaults model — fixed model priority order in `parseFromStatusJson`.
+
+### Remaining open items
+
+- 🐛 **Open:** `Firebase is not configured` — no remote write-path verification yet (blocked on credentials).
+- 🐛 **Open:** Distribution unsigned/unnotarized (blocked on Apple Developer credentials).
 
 ## QA cycle update — 2026-02-18 07:25 America/Toronto
 
