@@ -3,6 +3,74 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 21:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this heartbeat.
+- ✅ **No source code changes in this cycle.**
+- ✅ **Packaging validators now run end-to-end:** `packaged-bundled-runtime`, `dmg-install`, and `packaged-usage-age-slo` all passed cleanly with current timeout/retry profile.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** Host + packaged telemetry shape remains valid with OpenClaw provenance fields in auto/off modes.
+- ✅ **Feature:** Packaged runtime and DMG install checks passed deterministically this cycle (no launch/no-output fallback path).
+- ✅ **Feature:** OpenClaw probe fallback behavior remains stable in long-idle periods (reprobes attempted and telemetry remains ingesting).
+- 🐛 **Open:** `openclawUsageAgeMs` remains stale in both host and packaged auto modes (`~246k–251k ms`) producing `warning` state.
+- 🐛 **Open:** Local credentials remain unavailable; signed/notarized execution path still unverified.
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 20.68`, `memUsedPct: 53.82`, `memPressurePct: 19`, `openclawUsageAgeMs: 246,484`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 16.67`, `memUsedPct: 53.79`, `memPressurePct: 19`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+- Packaged `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 17.87`, `memUsedPct: 53.77`, `memPressurePct: 18`, `openclawUsageAgeMs: 251,360`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Packaged with usage off `IDLEWATCH_OPENCLAW_USAGE=off ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 16.00`, `memUsedPct: 53.98`, `memPressurePct: 18`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+### DMG packaging risks
+
+1. **High:** Artifacts remain unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset), so Gatekeeper trust path remains unproven.
+2. **Medium:** `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` remains untested for end-to-end behavior until signing/notary is enabled.
+3. **Medium:** Current cycle still depends on local path/toolchain assumptions (node runtime location + temp mount behavior).
+
+### OpenClaw integration gaps
+
+1. **Gap:** No authenticated Firebase or emulator credentials in this host; validation still local-only (`Firebase is not configured`).
+2. **Gap:** Long-horizon stale state remains unresolved (`warning` with age near 4.1–4.2 minutes).
+3. **Gap:** No remote-verified signed artifact -> OpenClaw ingestion chain proof yet.
+
+### Follow-up / status
+
+1. Keep 20-minute cadence and keep capturing host/packaged stale-to-warning trajectory for threshold behavior confidence.
+2. Run a credentials-backed/write-path cycle with service account or Firestore emulator as soon as credentials are available.
+3. Execute trust-aware packaging validation with `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE` + `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`.
+
 ## QA cycle update — 2026-02-17 21:30 America/Toronto
 
 ### Completed this cycle
