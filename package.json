@@ -40,7 +40,9 @@
     "package:release": "npm run package:trusted && npm run validate:dmg-checksum",
     "install:macos-launch-agent": "./scripts/install-macos-launch-agent.sh",
     "uninstall:macos-launch-agent": "./scripts/uninstall-macos-launch-agent.sh",
-    "test": "npm run validate:bin && npm run test:unit && npm run smoke:help && npm run smoke:dry-run && npm run smoke:once"
+    "test": "npm run validate:bin && npm run test:unit && npm run smoke:help && npm run smoke:dry-run && npm run smoke:once",
+    "validate:all": "./scripts/validate-all.sh",
+    "validate:all:quick": "./scripts/validate-all.sh --skip-packaging"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"
