@@ -47,7 +47,7 @@ if [[ ! -d "$APP_PATH" ]]; then
   exit 1
 fi
 
-cp -R "$APP_PATH" "$TMP_APPS/"
+ditto "$APP_PATH" "$TMP_APPS/IdleWatch.app"
 INSTALLED_LAUNCHER="$TMP_APPS/IdleWatch.app/Contents/MacOS/IdleWatch"
 
 if [[ ! -x "$INSTALLED_LAUNCHER" ]]; then
