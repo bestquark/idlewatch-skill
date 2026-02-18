@@ -3,6 +3,74 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 21:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this heartbeat.
+- ✅ **No source code changes in this cycle.**
+- ✅ **Packaging deterministic now for both app-launch paths:** `packaged-bundled-runtime` and `validate:dmg-install` completed cleanly on first pass with the timeout/retry profile.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** Host + packaged telemetry shape remains valid with OpenClaw provenance fields in `usage=auto` and `usage=off` modes.
+- ✅ **Feature:** Packaged runtime and installed-DMG launch validations are now deterministic on this host profile with no forced fallback path in this cycle.
+- ✅ **Feature:** OpenClaw fallback/reprobe flow remains deterministic (`refreshAttempted: true`, `refreshRecovered: false`) with valid stale state transitions.
+- 🐛 **Open:** `openclawUsageAgeMs` remains in stale/`warning` state at ~251k–256k ms in host and packaged auto-mode samples.
+- 🐛 **Open:** No Firebase/service-account or emulator validation available on this host (`Firebase is not configured`), so remote write-path remains unverified.
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 16.86`, `memUsedPct: 53.64`, `memPressurePct: 18`, `openclawUsageAgeMs: 251,157`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 25`, `memUsedPct: 53.70`, `memPressurePct: 18`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+- Packaged `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 18.38`, `memUsedPct: 54.57`, `memPressurePct: 18`, `openclawUsageAgeMs: 256,040`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Packaged with usage off `IDLEWATCH_OPENCLAW_USAGE=off ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 12.50`, `memUsedPct: 54.54`, `memPressurePct: 18`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+### DMG packaging risks
+
+1. **High:** Distribution artifacts continue to be unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset); Gatekeeper trust path remains unproven.
+2. **Medium:** `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` remains untested end-to-end until signing/notary is configured.
+3. **Low:** Current validation remains environment/path dependent (restricted-path dry-run behavior in scripts is sensitive to host toolchain and I/O timing under heavier load).
+
+### OpenClaw integration gaps
+
+1. **Gap:** No authenticated Firebase writes or service-account-backed validation in this host environment.
+2. **Gap:** Stale/`warning` transition remains long-lived under sustained idle in this host profile.
+3. **Gap:** Signed/distribution trust verification and remote OpenClaw write-path remain pending.
+
+### Follow-up / status
+
+1. Keep 20-minute cadence and keep capturing host/packaged stale-to-warning trajectory for policy confirmation.
+2. Run one cycle against Firebase emulator or service-account credentials for true end-to-end write-path verification.
+3. Execute signing/notary-enabled run to validate `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` behavior.
+
 ## QA cycle update — 2026-02-17 21:40 America/Toronto
 
 ### Completed this cycle
