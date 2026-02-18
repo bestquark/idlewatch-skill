@@ -341,6 +341,9 @@ function resolveOpenClawBinaries() {
     '/usr/sbin/openclaw',
     homeDir ? `${homeDir}/.local/bin/openclaw` : null,
     homeDir ? `${homeDir}/bin/openclaw` : null,
+    homeDir ? `${homeDir}/.npm-global/bin/openclaw` : null,
+    homeDir ? `${homeDir}/.nvm/versions/node/${process.version}/bin/openclaw` : null,
+    '/opt/homebrew/lib/node_modules/.bin/openclaw',
     'openclaw'
   ].filter(Boolean)
 
@@ -411,13 +414,35 @@ function loadOpenClawUsage(forceRefresh = false) {
     return hasPathExecutable(binPath)
   }
 
+  // Build an augmented PATH for probe subprocesses so that #!/usr/bin/env node
+  // scripts (like openclaw) can locate the node binary even when the packaged
+  // app runs with a restricted PATH (e.g. /usr/bin:/bin:/usr/sbin:/sbin).
+  const probeEnv = (() => {
+    const currentPath = process.env.PATH || ''
+    const extraDirs = new Set()
+
+    // Add directory of the running node binary (handles packaged + nvm setups)
+    const nodeDir = path.dirname(process.execPath)
+    if (nodeDir && nodeDir !== '.') extraDirs.add(nodeDir)
+
+    // Common Homebrew / system node locations
+    for (const dir of ['/opt/homebrew/bin', '/usr/local/bin', `${process.env.HOME || ''}/.local/bin`]) {
+      if (dir) extraDirs.add(dir)
+    }
+
+    const pathDirs = currentPath.split(':').filter(Boolean)
+    const augmented = [...new Set([...extraDirs, ...pathDirs])].join(':')
+    return { ...process.env, PATH: augmented }
+  })()
+
   function runProbe(binPath, args) {
     const startMs = Date.now()
     try {
       const out = execFileSync(binPath, args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: OPENCLAW_PROBE_TIMEOUT_MS
+        timeout: OPENCLAW_PROBE_TIMEOUT_MS,
+        env: probeEnv
       })
       return { out, error: null, status: 'ok', durationMs: Date.now() - startMs }
     } catch (err) {
