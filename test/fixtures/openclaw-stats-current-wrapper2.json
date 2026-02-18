@@ -1,0 +1,15 @@
+{
+  "status": {
+    "stats": {
+      "model": "claude-opus-4-6",
+      "current": {
+        "model": "gpt-5.3-codex-spark",
+        "sessionId": "status-current-stats-01",
+        "agentId": "agent-current-wrap",
+        "totalTokens": 555,
+        "tokensPerMinute": 21.5,
+        "updatedAt": 1771295000000
+      }
+    }
+  }
+}

@@ -4,6 +4,50 @@ Date: 2026-02-16
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 
+## QA cycle update — 2026-02-17 20:36 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** `scripts/validate-packaged-bundled-runtime.sh` and `scripts/validate-dmg-install.sh` now use configurable retry count and timeout growth (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`, `IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) plus optional backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`) before deterministic OpenClaw-off launchability fallback.
+- ✅ **OpenClaw ingestion robustness:** expanded usage parser candidate precedence for nested payload patterns including `status.stats.current` and sibling wrappers in `src/openclaw-usage.js` to avoid stale model/token fallback under mixed output shapes.
+- ✅ **Packaging docs:** updated `docs/packaging/macos-dmg.md` to document new timeout/retry knobs and fallback behavior.
+- ✅ **Tests / evidence:** added fixture `test/fixtures/openclaw-stats-current-wrapper2.json` and parser test coverage for nested `status.stats.current`; ran `node --test test/openclaw-usage.test.mjs test/validate-dry-run-schema.test.mjs` and full `npm test --silent` (190 pass).
+
+### Validation checks run
+
+- ✅ `node --test test/openclaw-usage.test.mjs test/validate-dry-run-schema.test.mjs`
+- ✅ `npm test --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+
+### Follow-up / status
+
+1. Re-run both packaged validators on a clean macOS account/session and confirm fully deterministic OpenClaw-on dry-runs under high-latency conditions.
+2. Continue tracking `openclawUsageAgeMs` and stale-policy behavior in both host and packaged rows.
+3. Credentials-free Firebase/cloud-write validation remains pending until emulator or service-account credentials are available.
+
+
+## QA cycle update — 2026-02-17 20:26 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability improvement:** `validate:packaged-bundled-runtime` and `validate:dmg-install` now perform a two-attempt `--dry-run` validation strategy with automatic timeout extension on first failure (`IDLEWATCH_DRY_RUN_TIMEOUT_MS + IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) before fallback checks.
+- ✅ **Monitoring reliability / CLI probing:** improved OpenClaw executable discovery in `bin/idlewatch-agent.js` to gate probe candidates on executable permission (`X_OK`) instead of mere path existence, reducing spurious probe attempts and false negatives.
+- ✅ **Packaging scripts:** added configurable retry-bonus timeout knob in packaged validators and documented the behavior path in `docs/packaging/macos-dmg.md`.
+- ✅ **Packaging docs:** updated launchability fallback language to clarify OpenClaw-off schema expectations and retry/backoff behavior.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+
+### Follow-up / status
+
+1. Continue tracking `openclawUsageAgeMs` and stale-policy behavior in both host and packaged rows.
+2. Credentials-free Firebase/cloud-write validation remains pending until emulator or service-account credentials are available.
+
+
 ## QA cycle update — 2026-02-17 20:16 America/Toronto
 
 ### Completed this cycle

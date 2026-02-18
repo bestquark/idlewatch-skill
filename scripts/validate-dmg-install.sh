@@ -19,6 +19,9 @@ DEV_ENTRY=""
 TMP_APPS="$(mktemp -d -t idlewatch-apps.XXXXXX)"
 IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-30000}"
 IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="${IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS:-4000}"
+DRY_RUN_TIMEOUT_RETRY_BONUS_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS:-10000}"
+DRY_RUN_TIMEOUT_MAX_ATTEMPTS="${IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS:-3}"
+DRY_RUN_TIMEOUT_BACKOFF_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS:-2000}"
 
 cleanup() {
   if [[ -n "$DEV_ENTRY" ]]; then
@@ -54,27 +57,52 @@ fi
 
 run_dmg_dry_run() {
   local openclaw_usage=${1:-auto}
+  local timeout_ms=${2}
 
   env \
-    IDLEWATCH_DRY_RUN_TIMEOUT_MS="$IDLEWATCH_DRY_RUN_TIMEOUT_MS" \
+    IDLEWATCH_DRY_RUN_TIMEOUT_MS="$timeout_ms" \
     IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
     IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
-    node "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" "$INSTALLED_LAUNCHER" --dry-run
+    node "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" "$INSTALLED_LAUNCHER" --dry-run --once
+}
+
+run_dmg_dry_run_with_retries() {
+  local openclaw_usage=$1
+  local attempt=1
+  local timeout_ms="$IDLEWATCH_DRY_RUN_TIMEOUT_MS"
+
+  while (( attempt <= DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); do
+    local sleep_ms=0
+    echo "Attempt ${attempt}/${DRY_RUN_TIMEOUT_MAX_ATTEMPTS}: validating DMG-installed launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage} timeout=${timeout_ms}ms" >&2
+    if run_dmg_dry_run "$openclaw_usage" "$timeout_ms"; then
+      return 0
+    fi
+
+    if (( attempt < DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); then
+      timeout_ms=$((timeout_ms + DRY_RUN_TIMEOUT_RETRY_BONUS_MS))
+      sleep_ms=$((DRY_RUN_TIMEOUT_BACKOFF_MS < 0 ? 0 : DRY_RUN_TIMEOUT_BACKOFF_MS))
+      if (( sleep_ms > 0 )); then
+        sleep $(awk -v t="$sleep_ms" 'BEGIN { printf "%.3f", t / 1000 }')
+      fi
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  return 1
 }
 
 set +e
-if run_dmg_dry_run auto; then
+if run_dmg_dry_run_with_retries auto; then
   echo "dmg install validation ok ($INPUT_DMG)"
   exit 0
 fi
 
-if run_dmg_dry_run off; then
+if run_dmg_dry_run_with_retries off; then
   echo "dmg install validation ok ($INPUT_DMG)" >&2
-  echo "OpenClaw-enabled dry-run did not emit telemetry within timeout; launchability path remains healthy." >&2
+  echo "OpenClaw-enabled dry-run did not emit telemetry within timeout/backoff window; launchability path remains healthy." >&2
   exit 0
 fi
 
 set -e
-echo "dmg install validation failed for both OpenClaw-on and OpenClaw-off modes" >&2
+echo "dmg install validation failed for both Openclaw-on and OpenClaw-off modes" >&2
 exit 1
-

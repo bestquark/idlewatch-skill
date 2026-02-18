@@ -812,12 +812,87 @@ function parseFromStatusJson(parsed) {
 }
 
 function parseGenericUsage(parsed) {
-  const usage = parsed?.usage || parsed?.sessionUsage || parsed?.stats || parsed?.payload?.usage || parsed?.payload?.sessionUsage || parsed?.payload?.stats ||
-    parsed?.data?.usage || parsed?.data?.sessionUsage || parsed?.data?.stats ||
-    parsed?.current || parsed?.session || parsed?.result?.current || parsed?.data?.current || parsed?.result?.session || parsed?.data?.session ||
-    parsed?.payload?.current || parsed?.payload?.session || parsed?.payload?.result?.current || parsed?.payload?.result?.session ||
-    parsed?.data?.result?.current || parsed?.data?.result?.session || parsed?.data?.result?.currentSession ||
-    parsed?.status?.current || parsed?.status?.data?.current || parsed?.status?.session || parsed?.status?.result?.current || parsed?.status?.result?.session || parsed
+  const usageCandidates = [
+    parsed?.usage,
+    parsed?.sessionUsage,
+    parsed?.stats,
+    parsed?.stats?.current,
+    parsed?.payload?.usage,
+    parsed?.payload?.sessionUsage,
+    parsed?.payload?.stats,
+    parsed?.payload?.stats?.current,
+    parsed?.payload?.stats?.session,
+    parsed?.data?.usage,
+    parsed?.data?.sessionUsage,
+    parsed?.data?.stats,
+    parsed?.data?.stats?.current,
+    parsed?.data?.stats?.session,
+    parsed?.result?.usage,
+    parsed?.result?.sessionUsage,
+    parsed?.result?.stats,
+    parsed?.result?.stats?.current,
+    parsed?.result?.stats?.session,
+    parsed?.payload?.result?.usage,
+    parsed?.payload?.result?.sessionUsage,
+    parsed?.payload?.result?.stats,
+    parsed?.payload?.result?.stats?.current,
+    parsed?.payload?.result?.stats?.session,
+    parsed?.data?.result?.usage,
+    parsed?.data?.result?.sessionUsage,
+    parsed?.data?.result?.stats,
+    parsed?.data?.result?.stats?.current,
+    parsed?.data?.result?.stats?.session,
+    parsed?.status?.usage,
+    parsed?.status?.sessionUsage,
+    parsed?.status?.stats,
+    parsed?.status?.stats?.current,
+    parsed?.status?.stats?.session,
+    parsed?.status?.result?.usage,
+    parsed?.status?.result?.sessionUsage,
+    parsed?.status?.result?.stats,
+    parsed?.status?.result?.stats?.current,
+    parsed?.status?.result?.stats?.session,
+    parsed?.current,
+    parsed?.session,
+    parsed?.result?.current,
+    parsed?.result?.session,
+    parsed?.result?.data?.current,
+    parsed?.result?.data?.session,
+    parsed?.result?.data?.stats,
+    parsed?.data?.current,
+    parsed?.data?.session,
+    parsed?.data?.result?.current,
+    parsed?.data?.result?.session,
+    parsed?.data?.stats,
+    parsed?.payload?.current,
+    parsed?.payload?.session,
+    parsed?.payload?.result?.current,
+    parsed?.payload?.result?.session,
+    parsed?.payload?.data?.current,
+    parsed?.payload?.data?.session,
+    parsed?.payload?.data?.stats,
+    parsed?.status?.current,
+    parsed?.status?.session,
+    parsed?.status?.result?.current,
+    parsed?.status?.result?.session,
+    parsed?.status?.data?.current,
+    parsed?.status?.data?.session,
+    parsed?.status?.data?.stats,
+    parsed
+  ]
+
+  const chooseUsageCandidate = (candidate) => {
+    if (!candidate || typeof candidate !== 'object') return null
+
+    const nestedCurrent = candidate.current
+    if (nestedCurrent && typeof nestedCurrent === 'object' && (nestedCurrent.totalTokens !== undefined || nestedCurrent.total_tokens !== undefined || nestedCurrent.sessionId || nestedCurrent.model || nestedCurrent.updatedAt || nestedCurrent.updated_at || nestedCurrent.updatedAtMs)) {
+      return nestedCurrent
+    }
+
+    return candidate
+  }
+
+  const usage = chooseUsageCandidate(usageCandidates.find((candidate) => candidate && typeof candidate === 'object' && candidate !== null))
   const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
   const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
   const totalTokens = pickNumber(

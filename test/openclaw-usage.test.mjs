@@ -249,3 +249,15 @@ test('parses stderr payload even when command exits non-zero', () => {
   assert.equal(got.totalTokens, 1)
   assert.equal(got.integrationStatus, 'ok')
 })
+
+test('parses stats payload with nested current object under status.stats', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex-spark')
+  assert.equal(usage.totalTokens, 555)
+  assert.equal(usage.tokensPerMin, 21.5)
+  assert.equal(usage.sessionId, 'status-current-stats-01')
+  assert.equal(usage.agentId, 'agent-current-wrap')
+  assert.equal(usage.usageTimestampMs, 1771295000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})

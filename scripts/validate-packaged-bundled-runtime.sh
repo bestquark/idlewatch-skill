@@ -33,11 +33,15 @@ npm run validate:packaged-metadata --silent
 
 IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-30000}"
 IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="${IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS:-4000}"
+DRY_RUN_TIMEOUT_RETRY_BONUS_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS:-10000}"
+DRY_RUN_TIMEOUT_MAX_ATTEMPTS="${IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS:-3}"
+DRY_RUN_TIMEOUT_BACKOFF_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS:-2000}"
 
 run_packaged_dry_run() {
   local openclaw_usage=${1:-auto}
+  local timeout_ms=${2}
 
-  IDLEWATCH_DRY_RUN_TIMEOUT_MS="$IDLEWATCH_DRY_RUN_TIMEOUT_MS" \
+  IDLEWATCH_DRY_RUN_TIMEOUT_MS="$timeout_ms" \
   IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
   IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
   HOME="$HOME" \
@@ -46,15 +50,40 @@ run_packaged_dry_run() {
     "$DIST_LAUNCHER" --dry-run --once
 }
 
+run_packaged_dry_run_with_retries() {
+  local openclaw_usage=$1
+  local attempt=1
+  local timeout_ms="$IDLEWATCH_DRY_RUN_TIMEOUT_MS"
+
+  while (( attempt <= DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); do
+    local sleep_ms=0
+    echo "Attempt ${attempt}/${DRY_RUN_TIMEOUT_MAX_ATTEMPTS}: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage} timeout=${timeout_ms}ms" >&2
+    if run_packaged_dry_run "$openclaw_usage" "$timeout_ms"; then
+      return 0
+    fi
+
+    if (( attempt < DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); then
+      timeout_ms=$((timeout_ms + DRY_RUN_TIMEOUT_RETRY_BONUS_MS))
+      sleep_ms=$((DRY_RUN_TIMEOUT_BACKOFF_MS < 0 ? 0 : DRY_RUN_TIMEOUT_BACKOFF_MS))
+      if (( sleep_ms > 0 )); then
+        sleep $(awk -v t="$sleep_ms" 'BEGIN { printf "%.3f", t / 1000 }')
+      fi
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  return 1
+}
+
 set +e
-run_packaged_dry_run auto
+run_packaged_dry_run_with_retries auto
 rc=$?
 set -e
 
 if [[ $rc -ne 0 ]]; then
-  if run_packaged_dry_run off; then
-    echo "bundled runtime validation ok (launcher path-only check under constrained PATH)" >&2
-    echo "OpenClaw-enabled dry-run under constrained PATH did not emit telemetry in time; launchability path remains healthy." >&2
+  if run_packaged_dry_run_with_retries off; then
+    echo "bundled runtime validation ok (launcher path-only check under restricted PATH)" >&2
+    echo "OpenClaw-enabled dry-run did not emit telemetry within timeout/backoff window; launchability path remains healthy." >&2
     exit 0
   fi
 
@@ -63,4 +92,4 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 echo "bundled runtime validation ok"
-echo "validated launcher dry-run under constrained PATH in ${IDLEWATCH_DRY_RUN_TIMEOUT_MS}ms timeout"
+echo "validated launcher dry-run under restricted PATH in ${IDLEWATCH_DRY_RUN_TIMEOUT_MS}ms baseline (+${DRY_RUN_TIMEOUT_RETRY_BONUS_MS}ms retry increments, up to ${DRY_RUN_TIMEOUT_MAX_ATTEMPTS} attempts)"

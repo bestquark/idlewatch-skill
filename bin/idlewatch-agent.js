@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs'
-import { existsSync } from 'node:fs'
+import { accessSync, constants } from 'node:fs'
 import os from 'os'
 import path from 'path'
 import process from 'process'
@@ -385,17 +385,27 @@ function loadOpenClawUsage(forceRefresh = false) {
   ]
 
   const pathEntries = (process.env.PATH || '').split(':').filter(Boolean)
+
+  function isExecutable(candidate) {
+    try {
+      accessSync(candidate, constants.X_OK)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   function hasPathExecutable(binName) {
     for (const entry of pathEntries) {
       const candidate = path.join(entry, binName)
-      if (existsSync(candidate)) return true
+      if (isExecutable(candidate)) return true
     }
     return false
   }
 
   function isBinaryAvailable(binPath) {
     if (binPath.includes('/')) {
-      return existsSync(binPath)
+      return isExecutable(binPath)
     }
 
     return hasPathExecutable(binPath)

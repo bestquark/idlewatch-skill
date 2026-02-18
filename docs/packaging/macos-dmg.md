@@ -72,6 +72,11 @@ Optional environment variables:
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — baseline timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
   - Packaged runtime and DMG install validators default this to `30000` during execution to reduce false timeout failures on slow hosts.
+- `IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS=10000` — extra timeout budget (in ms) applied when an `--dry-run` attempt does not emit telemetry.
+  - Example: `30000` -> fallback retry tries `40000` (then `50000`, etc., if `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` is raised).
+- `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS=3` — number of timeout/retry attempts for packaged validator dry-runs. Set to `1` to keep strict single-pass behavior.
+- `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
+  - Set to `0` for tight loops when deterministic timing is already stable.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -114,14 +119,14 @@ Optional environment variables:
 - `npm run package:trusted`
   - Strict signed + notarized local path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`)
 - `npm run validate:dmg-install`
-  - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
-  - Runs OpenClaw-enabled dry-run first; if output is still unavailable, it retries with `IDLEWATCH_OPENCLAW_USAGE=off` so installability is at least validated on timeout-prone hosts
+  - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app.
+  - Runs OpenClaw-enabled dry-run first and retries up to `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` with increasing timeout (`+IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) plus optional backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`) before a disabled-usage launchability pass (`IDLEWATCH_OPENCLAW_USAGE=off`).
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
-  - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` and uses shared `validate-dry-run-schema` parsing to avoid hangs on continuous launcher output.
+  - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
-  - If the OpenClaw-enabled dry-run path does not emit a telemetry row within timeout, the script performs a fallback launchability check with `IDLEWATCH_OPENCLAW_USAGE=off` to keep bundled-runtime availability coverage from being blocked by slow/noisy usage probes.
-  - When `IDLEWATCH_OPENCLAW_USAGE=off`, schema validation now expects `source.usage=disabled` with `usageFreshnessState=disabled`, so launchability checks remain deterministic even without local OpenClaw CLI availability.
+  - If the OpenClaw-enabled dry-run path does not emit telemetry within the timeout window, the script retries with extended timeout and then falls back to `IDLEWATCH_OPENCLAW_USAGE=off` for deterministic launchability checks.
+  - In `IDLEWATCH_OPENCLAW_USAGE=off`, schema validation expects `source.usage=disabled` and `usageFreshnessState=disabled`, so launchability checks remain deterministic even without local OpenClaw CLI availability.
 - Clean-machine verification note:
   - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
   - This script is self-contained (Node-only) and does not depend on host Python tooling.
