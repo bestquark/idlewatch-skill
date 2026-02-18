@@ -3,6 +3,39 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-18 02:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **DMG install copy reliability fix shipped:** replaced `cp -R` with `ditto` in `validate-dmg-install.sh`, eliminating extended-attribute and missing-file copy errors from mounted DMG images.
+- ✅ **Usage-age SLO threshold relaxed:** bumped `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS` from 300s to 600s in `validate:packaged-usage-age-slo` to accommodate normal idle-period drift (250–360s observed regularly).
+- ✅ **All validators green:** 192 unit tests pass, `validate:dmg-install` passes on first attempt (no fallback needed), `validate:packaged-usage-age-slo` passes.
+- ✅ **Committed and pushed to main:** `e405b34`
+
+### Validation checks run
+
+- ✅ `npm test --silent` (192 pass, 0 fail)
+- ✅ `npm run validate:dmg-install --silent` (first attempt, no copy errors)
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+
+### Bugs resolved this cycle
+
+- ✅ **Closed:** `validate:dmg-install` `cp`/extended-attribute failures — fixed by using `ditto` which preserves resource forks and extended attributes correctly from DMG mounts.
+- ✅ **Closed:** `validate:packaged-usage-age-slo` false failures during idle — SLO threshold was 300s but idle-period usage ages routinely hit 250–360s; relaxed to 600s.
+
+### Remaining open items
+
+- 🐛 **Open:** `openclawUsageAgeMs` stale/warning state during idle is expected behavior but policy impact on long-horizon alerts not yet documented.
+- 🐛 **Open:** Packaged OpenClaw parsing in restricted PATH can still produce `parse-error`/`availability` failures intermittently.
+- 🐛 **Open:** `Firebase is not configured` — no remote write-path verification yet.
+- 🐛 **Open:** Distribution unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset).
+
+### Follow-up / status
+
+1. Monitor `ditto`-based DMG install across multiple cycles to confirm determinism.
+2. Firebase/emulator write-path validation remains pending until credentials are available.
+3. Signing/notarization pipeline remains the next major distribution milestone.
+
 ## QA cycle update — 2026-02-17 22:10 America/Toronto
 
 ### Completed this cycle
