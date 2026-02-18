@@ -3,6 +3,38 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-18 07:12 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Restricted PATH probe fix shipped:** OpenClaw probe subprocess now inherits an augmented PATH that includes the running node binary's directory (`process.execPath` dirname) plus `/opt/homebrew/bin`, `/usr/local/bin`, and `~/.local/bin`. This fixes `#!/usr/bin/env node` resolution failures in packaged `.app` bundles running with minimal PATH.
+- ✅ **Idle stale policy docs committed:** `docs/telemetry/idle-stale-policy.md` (previously untracked) now tracked and documents expected stale/warning behavior during idle, thresholds, and dashboard guidance.
+- ✅ **All unit tests green:** 192 pass, 0 fail.
+- ✅ **Smoke tests green:** dry-run and once modes verified with augmented PATH.
+- ✅ **Committed and pushed to main:** `8800cc7`
+
+### Validation checks run
+
+- ✅ `npm run test:unit` (192 pass, 0 fail)
+- ✅ `npm run smoke:dry-run`
+- ✅ `npm run smoke:once`
+
+### Bugs resolved this cycle
+
+- ✅ **Closed:** Packaged OpenClaw parsing in restricted PATH producing `parse-error`/`availability` failures — fixed by augmenting probe subprocess PATH with node binary location and common system dirs.
+- ✅ **Closed:** `openclawUsageAgeMs` stale/warning idle policy not documented — now documented in `docs/telemetry/idle-stale-policy.md`.
+
+### Remaining open items
+
+- 🐛 **Open:** `Firebase is not configured` — no remote write-path verification yet.
+- 🐛 **Open:** Distribution unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset).
+
+### Follow-up / status
+
+1. Verify restricted-PATH fix in packaged validators across subsequent cycles.
+2. Firebase/emulator write-path validation remains pending until credentials are available.
+3. Signing/notarization pipeline remains the next major distribution milestone.
+
 ## QA cycle update — 2026-02-18 02:15 America/Toronto
 
 ### Completed this cycle
