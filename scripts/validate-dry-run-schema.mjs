@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 
 const command = process.argv[2] || 'node'
 const args = process.argv.slice(3)
@@ -22,33 +22,28 @@ function collectOutput(stderrBuffer, stdoutBuffer) {
 }
 
 function run() {
-  let out = ''
-  try {
-    out = execFileSync(command, args, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: DRY_RUN_TIMEOUT_MS,
-      maxBuffer: 8 * 1024 * 1024,
-      killSignal: 'SIGINT'
-    })
-  } catch (err) {
-    const timedOut = err.name === 'Error' && err.code === 'ETIMEDOUT'
-    const partialOut = collectOutput(err.stdout, err.stderr)
-    if (partialOut) {
-      out = partialOut
-    }
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: DRY_RUN_TIMEOUT_MS,
+    maxBuffer: 8 * 1024 * 1024,
+    killSignal: 'SIGINT'
+  })
 
-    if (timedOut) {
-      console.error(`dry-run timed out after ${DRY_RUN_TIMEOUT_MS}ms; attempting to validate captured output from partial row`)
-    } else {
-      // Non-timeout failures can still emit valid telemetry JSON as JSON log noise.
-      // This helper is intentionally resilient so launchers with noisy stdout/stderr
-      // still succeed when a valid final JSON row is present.
-      if (!out.trim()) {
-        throw err
-      }
-      console.error(`dry-run exited with non-zero status ${err.status}; validating captured output anyway`)
+  const out = collectOutput(result.stdout, result.stderr)
+  const timedOut = result.error?.code === 'ETIMEDOUT' || result.signal === 'SIGINT'
+
+  if (timedOut) {
+    console.error(`dry-run timed out after ${DRY_RUN_TIMEOUT_MS}ms; attempting to validate captured output from partial row`)
+  } else if (result.error) {
+    if (!out.trim()) {
+      throw result.error
     }
+    console.error(`dry-run process error: ${result.error.message}; validating captured output anyway`)
+  } else if (result.status !== 0 && !out.trim()) {
+    throw new Error(`dry-run exited with non-zero status ${result.status}`)
+  } else if (result.status !== 0) {
+    console.error(`dry-run exited with non-zero status ${result.status}; validating captured output anyway`)
   }
 
   if (!out) {
@@ -67,6 +62,7 @@ function run() {
   validateRow(row)
   console.log(`dry-run schema ok (${command} ${args.join(' ')})`)
 }
+
 
 function assertNumberOrNull(value, field) {
   assert.ok(value === null || Number.isFinite(value), `${field} must be a finite number or null`)

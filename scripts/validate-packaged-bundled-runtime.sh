@@ -31,12 +31,14 @@ fi
 
 npm run validate:packaged-metadata --silent
 
-IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-15000}"
+IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-30000}"
+IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="${IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS:-4000}"
 
 run_packaged_dry_run() {
   local openclaw_usage=${1:-auto}
 
   IDLEWATCH_DRY_RUN_TIMEOUT_MS="$IDLEWATCH_DRY_RUN_TIMEOUT_MS" \
+  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
   IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
   HOME="$HOME" \
   PATH="/usr/bin:/bin" \
@@ -52,7 +54,7 @@ set -e
 if [[ $rc -ne 0 ]]; then
   if run_packaged_dry_run off; then
     echo "bundled runtime validation ok (launcher path-only check under constrained PATH)" >&2
-    echo "OpenClaw dry-run under constrained PATH did not emit telemetry in time; launchability path remains healthy." >&2
+    echo "OpenClaw-enabled dry-run under constrained PATH did not emit telemetry in time; launchability path remains healthy." >&2
     exit 0
   fi
 

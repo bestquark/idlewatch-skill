@@ -4,6 +4,24 @@ Date: 2026-02-16
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 
+## QA cycle update — 2026-02-17 20:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability improvements shipped:** dry-run validator output collection no longer relies on `execFileSync` behavior; it now uses `spawnSync`-collected stdout/stderr so timeout and partial-output cases are handled deterministically.
+- ✅ **Packaging scripts updated:** `validate:packaged-bundled-runtime` and `validate:dmg-install` now use larger validation defaults in slow hosts (`IDLEWATCH_DRY_RUN_TIMEOUT_MS=30000`) and pass `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=4000` through validation.
+- ✅ **OpenClaw/packaging telemetry verification resilience:** `validate:dmg-install` now retries with `IDLEWATCH_OPENCLAW_USAGE=off` when an OpenClaw-enabled dry-run does not emit telemetry in time; `validate:packaged-bundled-runtime` retains the same fallback strategy and now reports it with clearer diagnostics.
+- ✅ **Documentation updated:** `docs/packaging/macos-dmg.md` now documents validation timeout knobs, probe timeout behavior, and the fallback path used by packaged validation scripts.
+- ✅ **Validation runbook executed and green:**
+  - `npm test --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `npm run validate:dmg-install --silent`
+
+### Follow-up / action items
+
+1. Continue collecting two consecutive runs for both package validators so we can close the remaining historical “output-timing race” risk profile.
+2. Keep monitoring `openclawUsageAgeMs` drift in this env to confirm whether packaging timeout tuning affects stale/freshness transitions.
+
 ## QA cycle update — 2026-02-17 20:10 America/Toronto
 
 ### Completed this cycle

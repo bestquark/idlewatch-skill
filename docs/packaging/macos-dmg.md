@@ -69,9 +69,9 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent"` — override LaunchAgent label.
 - `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$HOME/Library/LaunchAgents"` — override plist root for install/uninstall scripts.
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
-- `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — per-probe timeout for OpenClaw usage commands.
-- `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
-  - Packaged runtime validation now executes `--dry-run --once` for deterministic one-shot output capture.
+- `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
+- `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — baseline timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
+  - Packaged runtime and DMG install validators default this to `30000` during execution to reduce false timeout failures on slow hosts.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -115,6 +115,7 @@ Optional environment variables:
   - Strict signed + notarized local path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`)
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app
+  - Runs OpenClaw-enabled dry-run first; if output is still unavailable, it retries with `IDLEWATCH_OPENCLAW_USAGE=off` so installability is at least validated on timeout-prone hosts
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` and uses shared `validate-dry-run-schema` parsing to avoid hangs on continuous launcher output.
