@@ -294,376 +294,116 @@ function coerceSessionCandidates(value, options = {}) {
         return true
       })
 
-    if (fromObject.length > 0) return fromObject
+    if (fromObject.length > 0) {
+      // Flatten nested arrays (e.g. when a sessions array is a value in an object map)
+      const flattened = fromObject.flatMap((entry) => (Array.isArray(entry) ? entry : [entry]))
+      return flattened.length > 0 ? flattened : fromObject
+    }
   }
 
   return null
 }
 
+/**
+ * Resolve a dot-separated path on an object, returning undefined if any
+ * segment is nullish.  E.g. deepGet(obj, 'a.b.c') === obj?.a?.b?.c
+ */
+function deepGet(obj, path) {
+  let cur = obj
+  const segments = path.split('.')
+  for (let i = 0; i < segments.length; i++) {
+    if (cur == null || typeof cur !== 'object') return undefined
+    cur = cur[segments[i]]
+  }
+  return cur
+}
+
+/**
+ * Check whether any combination of wrapper-prefix + leaf-key is truthy on
+ * `value`.  `prefixes` are dot-separated paths (empty string = root).
+ */
+function hasTruthyAtAnyPath(value, prefixes, leafKeys) {
+  for (const prefix of prefixes) {
+    const base = prefix ? deepGet(value, prefix) : value
+    if (base == null || typeof base !== 'object') continue
+    for (const leaf of leafKeys) {
+      if (base[leaf]) return true
+    }
+  }
+  return false
+}
+
+// Wrapper prefixes used for envelope detection (up to 4 levels deep).
+const SESSION_ENVELOPE_PREFIXES = [
+  '', 'result', 'result.data', 'data', 'data.result',
+  'status', 'status.result', 'status.result.data', 'status.data',
+  'payload', 'payload.result', 'payload.result.data', 'payload.data',
+  'payload.data.result', 'payload.data.result.data',
+  'payload.status', 'payload.status.result', 'payload.status.result.data'
+]
+
+const SESSION_LEAF_KEYS = ['sessions', 'session', 'activeSession', 'currentSession', 'current', 'active', 'recentSessions', 'recent', 'activeSessions']
+
 function isExplicitSessionEnvelope(value) {
   if (!value || typeof value !== 'object') return false
-  return !!(
-    value.sessions ||
-    value.session ||
-    value.activeSession ||
-    value.currentSession ||
-    value.current ||
-    value.active ||
-    value.recentSessions ||
-    value.recent ||
-    value.activeSessions ||
-    value.result?.sessions ||
-    value.result?.session ||
-    value.result?.activeSession ||
-    value.result?.currentSession ||
-    value.result?.active ||
-    value.result?.recentSessions ||
-    value.result?.recent ||
-    value.result?.activeSessions ||
-    value.result?.data?.sessions ||
-    value.result?.data?.recentSessions ||
-    value.result?.data?.recent ||
-    value.result?.data?.activeSessions ||
-    value.result?.data?.active ||
-    value.data?.sessions ||
-    value.data?.session ||
-    value.data?.activeSession ||
-    value.data?.currentSession ||
-    value.data?.current ||
-    value.data?.active ||
-    value.data?.recentSessions ||
-    value.data?.recent ||
-    value.data?.activeSessions ||
-    value.data?.result?.sessions ||
-    value.data?.result?.session ||
-    value.data?.result?.activeSession ||
-    value.data?.result?.currentSession ||
-    value.data?.result?.active ||
-    value.data?.result?.recentSessions ||
-    value.data?.result?.recent ||
-    value.data?.result?.activeSessions ||
-    value.status?.sessions ||
-    value.status?.session ||
-    value.status?.activeSession ||
-    value.status?.currentSession ||
-    value.status?.current ||
-    value.status?.active ||
-    value.status?.recentSessions ||
-    value.status?.recent ||
-    value.status?.activeSessions ||
-    value.status?.result?.sessions ||
-    value.status?.result?.session ||
-    value.status?.result?.activeSession ||
-    value.status?.result?.currentSession ||
-    value.status?.result?.active ||
-    value.status?.result?.recentSessions ||
-    value.status?.result?.recent ||
-    value.status?.result?.activeSessions ||
-    value.status?.result?.data?.sessions ||
-    value.status?.result?.data?.recentSessions ||
-    value.status?.result?.data?.recent ||
-    value.status?.result?.data?.activeSessions ||
-    value.status?.result?.data?.active ||
-    value.payload?.sessions ||
-    value.payload?.session ||
-    value.payload?.activeSession ||
-    value.payload?.currentSession ||
-    value.payload?.current ||
-    value.payload?.active ||
-    value.payload?.recentSessions ||
-    value.payload?.recent ||
-    value.payload?.activeSessions ||
-    value.payload?.result?.sessions ||
-    value.payload?.result?.session ||
-    value.payload?.result?.activeSession ||
-    value.payload?.result?.currentSession ||
-    value.payload?.result?.active ||
-    value.payload?.result?.recentSessions ||
-    value.payload?.result?.recent ||
-    value.payload?.result?.activeSessions ||
-    value.payload?.result?.data?.sessions ||
-    value.payload?.result?.data?.recentSessions ||
-    value.payload?.result?.data?.recent ||
-    value.payload?.result?.data?.activeSessions ||
-    value.payload?.result?.data?.active ||
-    value.payload?.data?.sessions ||
-    value.payload?.data?.session ||
-    value.payload?.data?.activeSession ||
-    value.payload?.data?.currentSession ||
-    value.payload?.data?.current ||
-    value.payload?.data?.active ||
-    value.payload?.data?.recentSessions ||
-    value.payload?.data?.recent ||
-    value.payload?.data?.activeSessions ||
-    value.payload?.data?.result?.sessions ||
-    value.payload?.data?.result?.session ||
-    value.payload?.data?.result?.activeSession ||
-    value.payload?.data?.result?.currentSession ||
-    value.payload?.data?.result?.active ||
-    value.payload?.data?.result?.recentSessions ||
-    value.payload?.data?.result?.recent ||
-    value.payload?.data?.result?.activeSessions ||
-    value.payload?.data?.result?.data?.sessions ||
-    value.payload?.data?.result?.data?.recentSessions ||
-    value.payload?.data?.result?.data?.recent ||
-    value.payload?.data?.result?.data?.activeSessions ||
-    value.payload?.data?.result?.data?.active ||
-    value.payload?.status?.sessions ||
-    value.payload?.status?.session ||
-    value.payload?.status?.activeSession ||
-    value.payload?.status?.currentSession ||
-    value.payload?.status?.current ||
-    value.payload?.status?.active ||
-    value.payload?.status?.recentSessions ||
-    value.payload?.status?.recent ||
-    value.payload?.status?.activeSessions ||
-    value.payload?.status?.result?.sessions ||
-    value.payload?.status?.result?.session ||
-    value.payload?.status?.result?.activeSession ||
-    value.payload?.status?.result?.currentSession ||
-    value.payload?.status?.result?.active ||
-    value.payload?.status?.result?.recentSessions ||
-    value.payload?.status?.result?.recent ||
-    value.payload?.status?.result?.activeSessions ||
-    value.payload?.status?.result?.data?.sessions ||
-    value.payload?.status?.result?.data?.recentSessions ||
-    value.payload?.status?.result?.data?.recent ||
-    value.payload?.status?.result?.data?.activeSessions ||
-    value.payload?.status?.result?.data?.active
-  )
+  return hasTruthyAtAnyPath(value, SESSION_ENVELOPE_PREFIXES, SESSION_LEAF_KEYS)
 }
+
+const STATS_PREFIXES = [
+  '', 'result', 'data', 'data.result', 'status', 'status.result',
+  'payload', 'payload.result', 'payload.data', 'payload.data.result',
+  'payload.status', 'payload.status.result'
+]
+
+const STATS_LEAF_KEYS = ['stats', 'sessionUsage', 'usage', 'current', 'session']
 
 function looksLikeStatsOrCurrentPayload(parsed) {
   if (!parsed || typeof parsed !== 'object') return false
-
-  return !!(
-    parsed.stats ||
-    parsed.sessionUsage ||
-    parsed.usage ||
-    parsed.current ||
-    parsed.session ||
-    parsed.result?.stats ||
-    parsed.result?.sessionUsage ||
-    parsed.result?.usage ||
-    parsed.result?.current ||
-    parsed.result?.session ||
-    parsed.data?.stats ||
-    parsed.data?.sessionUsage ||
-    parsed.data?.usage ||
-    parsed.data?.current ||
-    parsed.data?.session ||
-    parsed.data?.result?.stats ||
-    parsed.data?.result?.sessionUsage ||
-    parsed.data?.result?.usage ||
-    parsed.data?.result?.current ||
-    parsed.data?.result?.session ||
-    parsed.status?.stats ||
-    parsed.status?.sessionUsage ||
-    parsed.status?.usage ||
-    parsed.status?.current ||
-    parsed.status?.session ||
-    parsed.status?.result?.stats ||
-    parsed.status?.result?.sessionUsage ||
-    parsed.status?.result?.usage ||
-    parsed.status?.result?.current ||
-    parsed.status?.result?.session ||
-    parsed.payload?.stats ||
-    parsed.payload?.sessionUsage ||
-    parsed.payload?.usage ||
-    parsed.payload?.current ||
-    parsed.payload?.session ||
-    parsed.payload?.result?.stats ||
-    parsed.payload?.result?.sessionUsage ||
-    parsed.payload?.result?.usage ||
-    parsed.payload?.result?.current ||
-    parsed.payload?.result?.session ||
-    parsed.payload?.data?.stats ||
-    parsed.payload?.data?.sessionUsage ||
-    parsed.payload?.data?.usage ||
-    parsed.payload?.data?.current ||
-    parsed.payload?.data?.session ||
-    parsed.payload?.data?.result?.stats ||
-    parsed.payload?.data?.result?.sessionUsage ||
-    parsed.payload?.data?.result?.usage ||
-    parsed.payload?.data?.result?.current ||
-    parsed.payload?.data?.result?.session ||
-    parsed.payload?.status?.stats ||
-    parsed.payload?.status?.sessionUsage ||
-    parsed.payload?.status?.usage ||
-    parsed.payload?.status?.current ||
-    parsed.payload?.status?.session ||
-    parsed.payload?.status?.result?.stats ||
-    parsed.payload?.status?.result?.sessionUsage ||
-    parsed.payload?.status?.result?.usage ||
-    parsed.payload?.status?.result?.current ||
-    parsed.payload?.status?.result?.session
-  )
+  return hasTruthyAtAnyPath(parsed, STATS_PREFIXES, STATS_LEAF_KEYS)
 }
 
-function collectStatusSessionCandidates(parsed) {
-  const candidateRoots = [
-    parsed?.sessions?.recent,
-    parsed?.sessions?.recentSessions,
-    parsed?.sessions?.activeSessions,
-    parsed?.sessions?.active,
-    parsed?.sessions?.session,
-    parsed?.sessions?.activeSession,
-    parsed?.sessions?.current,
-    parsed?.sessions?.currentSession,
-    parsed?.recentSessions,
-    parsed?.activeSessions,
-    parsed?.active,
-    parsed?.recent,
-    parsed?.session,
-    parsed?.activeSession,
-    parsed?.current,
-    parsed?.currentSession,
-    parsed?.result?.sessions?.recent,
-    parsed?.result?.sessions?.recentSessions,
-    parsed?.result?.sessions?.activeSessions,
-    parsed?.result?.sessions?.active,
-    parsed?.result?.sessions?.session,
-    parsed?.result?.sessions?.activeSession,
-    parsed?.result?.sessions?.current,
-    parsed?.result?.sessions?.currentSession,
-    parsed?.result?.sessions,
-    parsed?.result?.recentSessions,
-    parsed?.result?.activeSessions,
-    parsed?.result?.active,
-    parsed?.result?.activeSession,
-    parsed?.result?.session,
-    parsed?.result?.current,
-    parsed?.result?.currentSession,
-    parsed?.result?.data?.sessions?.recent,
-    parsed?.result?.data?.sessions?.recentSessions,
-    parsed?.result?.data?.sessions?.activeSessions,
-    parsed?.result?.data?.sessions?.active,
-    parsed?.result?.data?.sessions?.session,
-    parsed?.result?.data?.sessions?.activeSession,
-    parsed?.result?.data?.sessions?.current,
-    parsed?.result?.data?.sessions?.currentSession,
-    parsed?.result?.data?.recentSessions,
-    parsed?.result?.data?.activeSessions,
-    parsed?.result?.data?.active,
-    parsed?.result?.data?.activeSession,
-    parsed?.result?.data?.session,
-    parsed?.result?.data?.current,
-    parsed?.result?.data?.currentSession,
-    parsed?.result?.data,
-    parsed?.result,
-    parsed?.data?.result?.sessions?.recent,
-    parsed?.data?.result?.sessions?.recentSessions,
-    parsed?.data?.result?.sessions?.activeSessions,
-    parsed?.data?.result?.sessions?.active,
-    parsed?.data?.result?.sessions?.session,
-    parsed?.data?.result?.sessions?.activeSession,
-    parsed?.data?.result?.sessions?.current,
-    parsed?.data?.result?.sessions?.currentSession,
-    parsed?.data?.result?.sessions,
-    parsed?.data?.result?.recent,
-    parsed?.data?.result?.recentSessions,
-    parsed?.data?.result?.activeSessions,
-    parsed?.data?.result?.active,
-    parsed?.data?.result?.activeSession,
-    parsed?.data?.result?.session,
-    parsed?.data?.result?.current,
-    parsed?.data?.result?.currentSession,
-    parsed?.data?.result?.data,
-    parsed?.data?.result,
-    parsed?.data?.result?.data?.sessions?.recent,
-    parsed?.data?.result?.data?.sessions?.recentSessions,
-    parsed?.data?.result?.data?.sessions?.activeSessions,
-    parsed?.data?.result?.data?.sessions?.active,
-    parsed?.data?.result?.data?.sessions?.session,
-    parsed?.data?.result?.data?.sessions?.activeSession,
-    parsed?.data?.result?.data?.sessions?.current,
-    parsed?.data?.result?.data?.sessions?.currentSession,
-    parsed?.data?.result?.data?.sessions,
-    parsed?.data?.result?.data?.recent,
-    parsed?.data?.result?.data?.recentSessions,
-    parsed?.data?.result?.data?.activeSessions,
-    parsed?.data?.result?.data?.active,
-    parsed?.data?.result?.data?.activeSession,
-    parsed?.data?.result?.data?.session,
-    parsed?.data?.result?.data?.current,
-    parsed?.data?.result?.data?.currentSession,
-    parsed?.data?.result?.data,
-    parsed?.data?.result?.data,
-    parsed?.data,
-    parsed?.status?.sessions?.recent,
-    parsed?.status?.sessions?.recentSessions,
-    parsed?.status?.sessions?.activeSessions,
-    parsed?.status?.sessions?.active,
-    parsed?.status?.sessions?.session,
-    parsed?.status?.sessions?.activeSession,
-    parsed?.status?.sessions?.current,
-    parsed?.status?.sessions?.currentSession,
-    parsed?.status?.sessions,
-    parsed?.status?.recentSessions,
-    parsed?.status?.activeSessions,
-    parsed?.status?.active,
-    parsed?.status?.activeSession,
-    parsed?.status?.session,
-    parsed?.status?.active,
-    parsed?.status?.recent,
-    parsed?.status?.current,
-    parsed?.status?.currentSession,
-    parsed?.status?.result?.sessions?.recent,
-    parsed?.status?.result?.sessions?.recentSessions,
-    parsed?.status?.result?.sessions?.activeSessions,
-    parsed?.status?.result?.sessions?.active,
-    parsed?.status?.result?.sessions?.session,
-    parsed?.status?.result?.sessions?.activeSession,
-    parsed?.status?.result?.sessions?.current,
-    parsed?.status?.result?.sessions?.currentSession,
-    parsed?.status?.result?.sessions,
-    parsed?.status?.result?.recentSessions,
-    parsed?.status?.result?.activeSessions,
-    parsed?.status?.result?.active,
-    parsed?.status?.result?.activeSession,
-    parsed?.status?.result?.session,
-    parsed?.status?.result?.current,
-    parsed?.status?.result?.currentSession,
-    parsed?.status?.result?.data?.sessions?.recent,
-    parsed?.status?.result?.data?.sessions?.recentSessions,
-    parsed?.status?.result?.data?.sessions?.activeSessions,
-    parsed?.status?.result?.data?.sessions?.active,
-    parsed?.status?.result?.data?.sessions?.session,
-    parsed?.status?.result?.data?.sessions?.activeSession,
-    parsed?.status?.result?.data?.sessions?.current,
-    parsed?.status?.result?.data?.sessions?.currentSession,
-    parsed?.status?.result?.data?.recentSessions,
-    parsed?.status?.result?.data?.activeSessions,
-    parsed?.status?.result?.data?.active,
-    parsed?.status?.result?.data?.activeSession,
-    parsed?.status?.result?.data?.session,
-    parsed?.status?.result?.data?.current,
-    parsed?.status?.result?.data?.currentSession,
-    parsed?.status?.result?.data,
-    parsed?.status?.result,
-    parsed?.status?.data?.sessions?.recent,
-    parsed?.status?.data?.sessions?.recentSessions,
-    parsed?.status?.data?.sessions?.activeSessions,
-    parsed?.status?.data?.sessions?.active,
-    parsed?.status?.data?.sessions?.session,
-    parsed?.status?.data?.sessions?.activeSession,
-    parsed?.status?.data?.sessions?.current,
-    parsed?.status?.data?.sessions?.currentSession,
-    parsed?.status?.data?.recentSessions,
-    parsed?.status?.data?.activeSessions,
-    parsed?.status?.data?.active,
-    parsed?.status?.data?.recent,
-    parsed?.status?.data?.session,
-    parsed?.status?.data?.activeSession,
-    parsed?.status?.data?.current,
-    parsed?.status?.data?.currentSession,
-    parsed?.status?.data?.sessions,
-    parsed?.sessions,
-    parsed?.data
-  ]
+// Wrapper prefixes for session candidate collection (ordered by priority).
+const COLLECT_PREFIXES = [
+  'sessions', '', 'result.sessions', 'result', 'result.data.sessions', 'result.data',
+  'data.result.sessions', 'data.result', 'data.result.data.sessions', 'data.result.data',
+  'data', 'status.sessions', 'status', 'status.result.sessions', 'status.result',
+  'status.result.data', 'status.data.sessions', 'status.data'
+]
 
-  for (const root of candidateRoots) {
-    const normalized = coerceSessionCandidates(root, { skipKeys: ['defaults', 'metadata', 'config'] })
+// Session leaf keys to probe under each prefix.
+const COLLECT_LEAVES = ['recent', 'recentSessions', 'activeSessions', 'active', 'session', 'activeSession', 'current', 'currentSession']
+
+// Additional fallback paths checked as raw roots (no leaf expansion).
+const COLLECT_FALLBACK_ROOTS = [
+  'result.data', 'result', 'data.result.data', 'data.result', 'data',
+  'status.result.data', 'status.result', 'sessions', 'data'
+]
+
+function collectStatusSessionCandidates(parsed) {
+  const coerceOpts = { skipKeys: ['defaults', 'metadata', 'config'] }
+
+  // First pass: prefix + leaf combinations (specific paths only).
+  for (const prefix of COLLECT_PREFIXES) {
+    const base = prefix ? deepGet(parsed, prefix) : parsed
+    if (base == null || typeof base !== 'object') continue
+    for (const leaf of COLLECT_LEAVES) {
+      const candidate = base[leaf]
+      if (candidate == null) continue
+      const normalized = coerceSessionCandidates(candidate, coerceOpts)
+      if (normalized && normalized.length > 0) return normalized
+    }
+  }
+
+  // Second pass: try wrapper roots themselves as session containers (fallback).
+  const fallbackRoots = [
+    'result.data', 'result', 'data.result.data', 'data.result',
+    'data', 'status.result.data', 'status.result', 'status.data',
+    'sessions', 'data'
+  ]
+  for (const path of fallbackRoots) {
+    const candidate = deepGet(parsed, path)
+    if (candidate == null) continue
+    const normalized = coerceSessionCandidates(candidate, coerceOpts)
     if (normalized && normalized.length > 0) return normalized
   }
 
@@ -726,9 +466,9 @@ function parseFromStatusJson(parsed) {
   const model = pickString(
     session.model,
     session.modelName,
+    session?.usage?.model,
     defaults.model,
     parsed?.default_model,
-    session?.usage?.model,
     parsed?.defaultModel,
     parsed?.status?.model,
     parsed?.status?.modelName,
