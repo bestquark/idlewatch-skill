@@ -4,6 +4,75 @@ Date: 2026-02-16
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 
+## QA cycle update — 2026-02-17 20:00 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this heartbeat.
+- ✅ **No source changes in this cycle.**
+- ✅ `npm test --silent` and core schema/integration checks passed.
+- ⚠️ `validate:packaged-bundled-runtime --silent` and `validate:dmg-install --silent` continue to show no-output timeout behavior under this host profile; both still exit 0 with fallback/partial handling.
+- ✅ OpenClaw telemetry remains functionally present and schema-compliant in both host and packaged dry-runs; stale state persists in long-idle windows.
+- ✅ DMG checksum and packaging metadata validations remain green.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` *(passes launchability; no-output timeout fallback path engaged)*
+- ⚠️ `npm run validate:dmg-install --silent` *(passes with launchability evidence only; no-output timeout observed)*
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** `openclaw --dry-run` and packaged launcher remain schema-stable with expected fields under default and `IDLEWATCH_OPENCLAW_USAGE=off` modes.
+- ✅ **Feature:** packaged usage recovery tests pass, including cache-recovery and forced-reprobe transitions.
+- 🐛 **Open:** timeout-sensitive packaged launch validators still hit output-capture windows; no false negatives on payload validity are yet proven in this environment.
+- 🐛 **Open:** OpenClaw integration remains in local-only/Firebase-not-configured mode on this host, preventing end-to-end cloud-write verification.
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `openclawUsageAgeMs: 256,169`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run --json`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`
+
+- Packaged `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `openclawUsageAgeMs: 256,169`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Packaged with usage off `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`
+
+### DMG packaging risks
+
+1. **High:** `validate:packaged-bundled-runtime` still relies on a 15s no-output timeout path and may pass via partial-row fallback instead of deterministic JSON telemetry capture.
+2. **High:** `validate:dmg-install` still demonstrates same output-capture sensitivity on this machine/toolchain profile.
+3. **Medium:** Distribution remains unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` not set).
+4. **Medium:** Evidence path is launchability-first for constrained PATH scenarios rather than strict full telemetry proof.
+
+### OpenClaw integration gaps
+
+1. **Gap:** No authenticated cloud write path in current environment (`Firebase is not configured`), so telemetry integration evidence is local-only unless emulator/credentials are provisioned.
+2. **Gap:** Noisy/no-output behavior in packaged validator paths reduces deterministic proof quality.
+3. **Gap:** Stale usage state remains present during prolonged idle windows despite successful OpenClaw probe ingestion.
+
+### Follow-up / action items
+
+1. Re-run `packaged-bundled-runtime` and `dmg-install` after timeout tuning to achieve full-row capture on first pass.
+2. Continue tracking stale-state transition and confirm whether warning-at-56→60s policy behavior remains expected or drifts.
+3. If possible, run one cycle with Firebase emulator creds to close the cloud-write verification gap.
+
 ## QA cycle update — 2026-02-17 19:50 America/Toronto
 
 ### Completed this cycle
