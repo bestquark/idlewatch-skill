@@ -4,6 +4,74 @@ Date: 2026-02-16
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 
+## QA cycle update — 2026-02-17 19:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this 20-minute heartbeat.
+- ✅ **No source changes in this cycle.**
+- ✅ Core monitor/e2e suites passed: `npm test --silent`, `validate:dry-run-schema`, `validate:packaged-metadata`, `validate:usage-freshness-e2e`, `validate:usage-alert-rate-e2e`.
+- ✅ Distribution + package evidence checks passed: `validate:packaged-usage-recovery-e2e`, `validate:openclaw-cache-recovery-e2e`, `validate:packaged-usage-alert-rate-e2e`, `validate:packaged-usage-probe-noise-e2e`, `validate:dmg-checksum`, `validate:packaged-usage-age-slo`.
+- ⚠️ `validate:packaged-bundled-runtime --silent` and `validate:dmg-install --silent` still need no-output fallback handling on this host profile (both report partial-row/no-output capture races).
+- ✅ OpenClaw stale-path remains observable but bounded: latest samples showed `openclawUsageAgeMs` at ~259k/264k ms with `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageAlertLevel: warning`.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` *(passes launchability; JSON-row capture timed out on first attempt, fallback path used)*
+- ⚠️ `npm run validate:dmg-install --silent` *(still no-output timeout/fallback behavior observed; exit remains 0)*
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** monitor/packaging metadata pipelines remain stable; no schema regressions and no source changes.
+- ✅ **Feature:** recovery logic continues to recover stale-cache and packaging-mode usage states when probes are forced.
+- 🐛 **Open:** timeout-sensitive packaged launch validators (`packaged-bundled-runtime`, `dmg-install`) still intermittently emit no JSON row under constrained PATH output conditions.
+- 🐛 **Open:** OpenClaw usage still trends into warning/stale state after sustained idle window despite successful ingestion (`usageRefreshRecovered: false`).
+- 🐛 **Open:** OpenClaw smoke still reads local-mode limitation (`Firebase is not configured`) in this environment.
+
+### Telemetry validation checks (latest samples)
+
+- Host dry-run (`node bin/idlewatch-agent.js --dry-run --json`):
+  - `cpuPct: 17.51`, `memUsedPct: 85.63`, `memPressurePct: 47 (normal)`, `gpuPct: 0`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28212`, `openclawUsageAgeMs: 258,797`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+- Host with `IDLEWATCH_OPENCLAW_USAGE=off`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`
+- Packaged dry-run (`./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`):
+  - `cpuPct: 18.82`, `memUsedPct: 84.21`, `memPressurePct: 47 (normal)`, `gpuPct: 0`
+  - `openclawModel: gpt-5.3-codex-spark`, `openclawTotalTokens: 28212`, `openclawUsageAgeMs: 263,636`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+- Packaged launcher with `IDLEWATCH_OPENCLAW_USAGE=off`:
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`
+
+### DMG packaging risks
+
+1. **High:** `validate:packaged-bundled-runtime`/`validate:dmg-install` still rely on JSON capture within a narrow window; no-output races reduce deterministic install evidence on this host.
+2. **High:** Distribution remains unsigned/unnotarized by default (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` unset).
+3. **Medium:** Local environment timeout sensitivity can still cause noisy false negatives even when launchability is healthy.
+
+### OpenClaw integration gaps
+
+1. **Gap:** No authenticated cloud-write path here (`Firebase is not configured`), so telemetry ingest remains local-only evidence.
+2. **Gap:** Stale-state transition remains active in both host/packaged modes under prolonged idle windows (`openclawUsageAgeMs` still near threshold, warning remains).
+3. **Gap:** `dmg-install` validator still lacks robust deterministic capture for slow path/no-output scenarios.
+
+### Follow-up / action items
+
+1. Keep 20-minute cadence and capture consecutive green runs of `packaged-bundled-runtime` and `dmg-install` after any timeout tuning.
+2. Revisit stale-usage threshold behavior with a longer run window to confirm whether warning is policy-by-design or regression.
+3. Leave DMG-install fallback path unchanged unless evidence of real install failure appears, but continue improving validator timeout/output-race handling.
+
 ## QA cycle update — 2026-02-17 19:40 America/Toronto
 
 ### Completed this cycle
