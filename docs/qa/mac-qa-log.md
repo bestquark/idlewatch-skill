@@ -4,6 +4,74 @@ Date: 2026-02-16
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 
+## QA cycle update — 2026-02-17 20:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this heartbeat.
+- ✅ **No source changes in this cycle.**
+- ✅ **Packaged validators now pass deterministically on first attempt** with existing timeout/retry settings (`IDLEWATCH_DRY_RUN_TIMEOUT_MS=30000`, up to 3 attempts).
+- ✅ **OpenClaw telemetry checks remain stable** for host and packaged paths with and without usage integration.
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `npm run validate:dmg-install --silent`
+- ✅ `npm run validate:packaged-usage-age-slo --silent`
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** host and packaged dry-run telemetry remains schema-valid and includes OpenClaw provenance fields when enabled.
+- ✅ **Feature:** OpenClaw cache/usage recovery and probe-noise resilience suites passed.
+- ✅ **Feature:** packaging validators now produce valid JSON telemetry rows within validator timeout on this host run.
+- 🐛 **Open:** `openclawUsageAgeMs` still drifts into stale territory after sustained inactivity, while ingestion remains `ok`.
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 18.98`, `memUsedPct: 87.46`, `memPressurePct: 49`, `openclawUsageAgeMs: 284,743`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 8.70`, `memUsedPct: 87.44`, `memPressurePct: 49`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+- Packaged `dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 19.63`, `memUsedPct: 87.71`, `memPressurePct: 48`, `openclawUsageAgeMs: 289,704`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Packaged with usage off `IDLEWATCH_OPENCLAW_USAGE=off dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 23.08`, `memUsedPct: 87.58`, `memPressurePct: 48`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+### DMG packaging risks
+
+1. **High:** Distribution still default unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` remain unset), so Gatekeeper friction remains possible.
+2. **Medium:** Packaging remains environment-coupled; reproducibility should be revalidated on clean CI-like hosts to ensure timeout tolerances remain stable.
+3. **Medium:** `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`/notarization path remains unverified without signing/notary credentials.
+
+### OpenClaw integration gaps
+
+1. **Gap:** Firebase/cloud write path still not validated locally (`Firebase is not configured`) so telemetry remains local-log + stderr-only in this environment.
+2. **Gap:** Stale/`warning` state remains accepted but still needs longer-horizon policy confirmation (host + packaged both observed).
+3. **Gap:** Deterministic packaging evidence still benefits from signed/notarized environment to close remaining trust/acceptance gaps.
+
+### Follow-up / status
+
+1. Keep this 20-minute cadence and continue collecting consecutive telemetry samples for stale-state drift.
+2. Re-validate package signing/notarization path as soon as credentials are available.
+3. Keep source changes minimal unless new packaging failures or integration regressions appear.
+
 ## QA cycle update — 2026-02-17 20:36 America/Toronto
 
 ### Completed this cycle
