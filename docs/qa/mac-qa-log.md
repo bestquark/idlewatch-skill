@@ -3,7 +3,83 @@
 Date: 2026-02-16  
 Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
+## QA cycle update — 2026-02-17 22:10 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA sweep executed (monitor + distribution):** full validation set run for this 20-minute heartbeat.
+- ✅ **No source code changes in this cycle.**
+- ✅ `packaged-metadata` validator passed after packaging regeneration.
+- ⚠️ `validate:packaged-bundled-runtime` passed only via launchability fallback (3 attempt, with retry bonus) because OpenClaw-enabled dry-runs stayed on stale/parse-error.
+- ⚠️ `validate:dmg-install` failed while copying installed app from DMG (`cp` missing-file/extended attributes errors), so signed-install path remains unverified.
+- ⚠️ `validate:packaged-usage-age-slo` failed due sustained `openclawUsageAgeMs` above threshold (`325,668ms`, then `361,769ms`).
+
+### Validation checks run
+
+- ✅ `npm test --silent`
+- ✅ `npm run validate:dry-run-schema --silent`
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` *(passed via `IDLEWATCH_OPENCLAW_USAGE=off` fallback after OpenClaw-on schema failure)*
+- ⚠️ `npm run validate:dmg-install --silent` *(failed: DMG install copy errors from mounted image)*
+- ⚠️ `npm run validate:packaged-usage-age-slo --silent` *(failed: `openclawUsageAgeMs` exceeded max allowed threshold)*
+- ✅ `npm run validate:openclaw-cache-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-recovery-e2e --silent`
+- ✅ `npm run validate:packaged-usage-alert-rate-e2e --silent`
+- ✅ `npm run validate:packaged-usage-probe-noise-e2e --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+
+### Bugs / features
+
+- ✅ **Feature:** Host + packaged telemetry still emits full OpenClaw provenance fields in both `auto` and `off` modes.
+- ✅ **Feature:** Runtime fallback behavior remains deterministic in this host profile (`usageRefreshAttempted: true`, `usageRefreshRecovered: false` where stale was detected).
+- ✅ **Feature:** Packaged installability remains healthy in checksum verification and non-timing validators.
+- 🐛 **Open:** `openclawUsageAgeMs` continues to drift above stale/slo windows on both host and packaged auto paths (host: `352,208ms`; packaged: `361,769ms`).
+- 🐛 **Open:** Packaged OpenClaw parsing in restricted PATH still resolves to `parse-error`/`availability` failures intermittently (causing openclaw-on dry-runs to fail schema checks).
+- 🐛 **Open:** `validate:dmg-install` shows repeated `cp`/extended-attribute failures when copying DMG content, which blocks end-to-end installation telemetry confidence.
+- 🐛 **Open:** `Firebase is not configured` (still local-only; no remote write-path verification).
+
+### Telemetry validation checks (latest samples)
+
+- Host `node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 15.76`, `memUsedPct: 57.4`, `memPressurePct: 20`, `openclawUsageAgeMs: 352,208`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Host `IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run --json`:
+  - `cpuPct: 7.69`, `memUsedPct: 56.19`, `memPressurePct: 20`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+- Packaged `./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 17.54`, `memUsedPct: 57.84`, `memPressurePct: 21`, `openclawUsageAgeMs: 361,769`
+  - `usageFreshnessState: stale`, `usageIntegrationStatus: stale`, `usageIngestionStatus: ok`, `usageAlertLevel: warning`, `usageAlertReason: activity-past-threshold`
+
+- Packaged with usage off `IDLEWATCH_OPENCLAW_USAGE=off ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once --json`:
+  - `cpuPct: 8`, `memUsedPct: 57.84`, `memPressurePct: 21`, `openclawUsageAgeMs: null`
+  - `usageFreshnessState: disabled`, `usageIntegrationStatus: disabled`, `usageIngestionStatus: disabled`, `usageAlertLevel: off`, `usageAlertReason: usage-disabled`
+
+### DMG packaging risks
+
+1. **High:** `validate:dmg-install` is currently non-deterministic for this host due `cp` copy failures from mounted DMG (`No such file or directory`, extended attributes) and should be treated as a packaging/packaging-metadata integrity risk.
+2. **High:** Distribution still unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset); trusted distribution behavior remains unproven.
+3. **Medium:** OpenClaw-enabled packaged launch path is vulnerable to restricted PATH/runtime-path differences; schema checks can fail even when launchability works.
+4. **Medium:** `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` remains untested against this host packaging build.
+
+### OpenClaw integration gaps
+
+1. **Gap:** No authenticated Firestore/service-account validation on this host (`Firebase is not configured`), so telemetry remote writes remain unverified.
+2. **Gap:** SLO regression in this cycle: `openclawUsageAgeMs` exceeded `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS` threshold in packaged auto mode.
+3. **Gap:** Packaged `validate:dmg-install` path still not evidence-backed end-to-end; copy failures may obscure remote integration checks in installed context.
+
+### Follow-up / status
+
+1. Reproduce `validate:packaged-bundled-runtime` and `validate:dmg-install` with explicit artifact integrity checks and non-brittle copy path (or fallback to `ditto` for DMG extraction).
+2. Run one pass with Firebase emulator/service-account credentials to close remote write-path gap.
+3. Investigate `openclawUsageAgeMs` growth behavior + packaging-openclaw parse path under restricted runtime PATH to reduce stale age SLO failures.
+4. Build and run a trusted/signing flow (`MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE`) to close the final Gatekeeper/risk path.
+
 ## QA cycle update — 2026-02-17 22:00 America/Toronto
+
 
 ### Completed this cycle
 
