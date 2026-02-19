@@ -778,28 +778,36 @@ async function tick() {
 
 let running = false
 let stopped = false
+let inflightTick = null
 
 async function loop() {
   if (stopped || running) return
   running = true
   try {
-    await tick()
+    inflightTick = tick()
+    await inflightTick
   } catch (e) {
     console.error(e.message)
   } finally {
+    inflightTick = null
     running = false
     if (!stopped) setTimeout(loop, INTERVAL_MS)
   }
 }
 
-process.on('SIGINT', () => {
+async function gracefulShutdown(signal) {
+  if (stopped) return
   stopped = true
+  if (inflightTick) {
+    console.log(`idlewatch-agent received ${signal}, waiting for in-flight sample…`)
+    try { await inflightTick } catch { /* already logged */ }
+  }
+  console.log('idlewatch-agent stopped')
   process.exit(0)
-})
-process.on('SIGTERM', () => {
-  stopped = true
-  process.exit(0)
-})
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 
 if (DRY_RUN || ONCE) {
   const mode = DRY_RUN ? 'dry-run' : 'once'

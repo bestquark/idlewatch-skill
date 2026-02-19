@@ -27,9 +27,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 128 unit tests pass, 0 fail
+- 138 unit tests pass, 0 fail
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery)
+
+## QA cycle update — 2026-02-18 19:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Graceful shutdown:** Agent now waits for in-flight sample collection/publish to complete before exiting on SIGINT/SIGTERM, preventing data loss during restarts or LaunchAgent reload.
+- ✅ **Config module extracted:** New `src/config.js` with `buildConfig()` consolidates all env var parsing and validation into a single reusable module with proper constraint checking (`parseNumericEnv` helper). Reduces repetitive validation boilerplate in the main agent.
+- ✅ **Config tests added:** 10 new unit tests covering defaults, overrides, derived thresholds, host sanitization, invalid value rejection, and Firebase config passthrough.
+- ✅ **All unit tests green:** 138 pass, 0 fail (up from 128).
+- ✅ **Smoke tests green.**
+
+### Improvements shipped
+
+- ✅ **Monitoring reliability:** Graceful shutdown prevents partial writes and lost samples on process signals.
+- ✅ **Code quality:** Config parsing is now testable in isolation, decoupled from main agent startup.
+
+### Remaining open items
+
+- 🐛 **Open:** `Firebase is not configured` — no remote write-path verification yet (blocked on credentials).
+- 🐛 **Open:** Distribution unsigned/unnotarized (blocked on Apple Developer credentials).
 
 ## QA cycle update — 2026-02-18 17:39 America/Toronto
 
