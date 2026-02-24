@@ -98,11 +98,11 @@ jobs:
       - name: Validate packaged OpenClaw parser resilience for non-zero-exit noisy probes
         run: npm run validate:packaged-usage-probe-noise-e2e
 
-      - name: Validate packaged OpenClaw stats fallback parse
-        run: npm run validate:packaged-openclaw-stats-ingestion
-
-      - name: Validate packaged OpenClaw cache recovery from stale fallback
-        run: npm run validate:packaged-openclaw-cache-recovery-e2e
+      - name: Validate packaged OpenClaw release gates (health + stats fallback + cache recovery)
+        env:
+          IDLEWATCH_REQUIRE_OPENCLAW_USAGE: '1'
+          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
+        run: npm run validate:packaged-openclaw-release-gates --silent
 
       - name: Validate packaged OpenClaw usage stale-threshold recovery
         run: npm run validate:packaged-usage-recovery-e2e

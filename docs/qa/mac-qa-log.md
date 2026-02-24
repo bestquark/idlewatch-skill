@@ -56,6 +56,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** no code changes this cycle; QA log documentation update only.
 
+## QA cycle update — 2026-02-23 22:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI+release alignment:** Updated `.github/workflows/ci.yml` packaging smoke to run the consolidated `validate:packaged-openclaw-release-gates` step (with `IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1` and `IDLEWATCH_SKIP_PACKAGE_MACOS=1`) instead of separate stats/cache-recovery steps.
+- ✅ **Monitoring reliability improvement:** CI now validates packaged OpenClaw health + fallback stats parsing + stale-cache recovery in one atomic gate against the already-built artifact.
+- ✅ **Packaging docs updated:** CI integration section in `docs/packaging/macos-dmg.md` now references the consolidated release gate and its packaged checks composition.
+
+### Validation details
+
+- ✅ `.github/workflows/ci.yml` and `scripts/validate-all.sh` are now consistent: both prioritize release-gate artifact reuse for packaged OpenClaw checks.
+- ✅ `npm run validate:all --silent` remains green: **19 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** CI has a single authoritative OpenClaw packaged gate for stats and recovery instead of fragmented checks.
+- 🧨 **OpenClaw integration gap remains:** remote write-path confirmation still blocked without Firebase write credentials.
+- ⚠️ **Distribution trust risk remains:** unsigned/notarized path still not end-to-end testable on this host without Apple credentials.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-23 22:05 America/Toronto
 
 ### Completed this cycle
