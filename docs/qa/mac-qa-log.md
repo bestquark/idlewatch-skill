@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 05:49 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** fixed status+generic mixed-output selection edge case in `parseOpenClawUsage`.
+  - The parser now consistently selects the strongest candidate between status- and generic-style payloads even when early noisy status envelopes are present first.
+- ✅ **Regression coverage:** added fixture + test `openclaw-mixed-status-then-generic-output.txt` and `prefers richer generic usage candidate when status candidate is partial`.
+- ✅ **Validation:** `npm run test:unit` (**262 pass, 0 fail**) and `npm run validate:openclaw-release-gates:all --silent` (passed).
+
+### Notes
+
+- ✅ **Commit status:** test+fixture+parser behavior test coverage updated and marked complete.
+
 ## QA cycle update — 2026-02-24 05:44 America/Toronto
 
 ### Completed this cycle

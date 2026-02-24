@@ -80,6 +80,19 @@ test('supports model_name in generic usage payloads', () => {
   assert.equal(usage.usageTimestampMs, 1771324000000)
   assert.equal(usage.integrationStatus, 'ok')
 })
+
+test('prefers richer generic usage candidate when status candidate is partial', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-mixed-status-then-generic-output.txt'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 777)
+  assert.equal(usage.tokensPerMin, 11.1)
+  assert.equal(usage.sessionId, 'standalone')
+  assert.equal(usage.agentId, 'agent-stand')
+  assert.equal(usage.usageTimestampMs, 1771281000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses status wrapper payloads under status.current', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-status-status-wrapper.json'))
   assert.ok(usage)
