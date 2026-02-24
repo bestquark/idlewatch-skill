@@ -29,9 +29,48 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 222 unit tests pass, 0 fail (latest run: 2026-02-23 20:31)
+- 222 unit tests pass, 0 fail (latest run: 2026-02-23 20:42)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery)
+
+## QA cycle update — 2026-02-23 20:42 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep refreshed:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Telemetry validation checks passed (18 checks):**
+  - `validate:dry-run-schema`
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-cache-recovery-e2e`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-usage-age-slo`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **OpenClaw telemetry-mode smoke checks executed:**
+  - `validate:firebase-emulator-mode` (dry-run) passed.
+  - `validate:firebase-write-required-once` failed only due missing Firebase credentials (expected behavior).
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Validation sweep expanded to include explicit OpenClaw stats ingestion validation and still passes fully in this environment.
+- 🧨 **OpenClaw integration gap:** remote write-path verification still blocked without credentials/secret material (`FIREBASE_*` in write mode).
+- ⚠️ **DMG packaging risk:** trusted-distribution prerequisites still fail (`validate:trusted-prereqs`) because `MACOS_CODESIGN_IDENTITY` is missing; no notarization coverage on this host.
+
+### Test health summary for this cycle
+
+- `npm run validate:all` result: **18 pass, 0 fail, 0 skip**.
+- `validate:trusted-prereqs` result: expected failure due missing signing identity.
+- `validate:openclaw-stats-ingestion`: ✅ pass (newly added in this environment run)
+
+### Notes
+
+- ✅ **Commit status:** no code files changed in this cycle; QA log documentation updated.
 
 ## QA cycle update — 2026-02-23 20:31 America/Toronto
 
