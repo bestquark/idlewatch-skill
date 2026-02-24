@@ -29,9 +29,33 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:12)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:17)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:17 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI coverage improvement:** Added packaged OpenClaw cache-recovery validator to the macOS packaging CI workflow (`.github/workflows/ci.yml`) so it runs in PR/push packaging smoke automatically.
+- ✅ **Monitoring reliability hardening:** CI now executes `validate:packaged-openclaw-cache-recovery-e2e` on macOS scaffold smoke.
+- ✅ **Packaging scripts/docs:** Verified packaging docs already describe new validator coverage and CI path now matches docs.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-cache-recovery-e2e --silent` passed locally.
+- ✅ `npm run validate:all --silent` passed after CI-script wiring: **20 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** CI-level enforcement catches stale-cache recovery regressions in packaged OpenClaw probe behavior.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification still blocked without Firebase write credentials.
+- ⚠️ **DMG signing/notarization risk remains:** unsigned/notarized artifacts still cannot complete trusted-distribution flow without Apple credentials.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 
 ## QA cycle update — 2026-02-23 21:12 America/Toronto
 
