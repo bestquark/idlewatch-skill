@@ -29,9 +29,33 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:44)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:54)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 00:54 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Script consolidation:** added host-side OpenClaw release gate script `validate:openclaw-release-gates` to run stats-ingestion + cache-recovery checks as one operator-friendly command.
+- ✅ **Packaging scripts simplification:** `scripts/validate-all.sh` now calls the host gate instead of running the two OpenClaw validators separately.
+- ✅ **Docs alignment:** README validation helper list now documents `validate:openclaw-release-gates` for host CI parity with packaged release-gate behavior.
+
+### Validation details
+
+- ✅ `npm run validate:openclaw-release-gates --silent` passed.
+- ✅ `npm run validate:all --silent` passed: **18 pass, 0 fail, 0 skip**.
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (**30 pass, 0 fail**).
+
+### Features / risks observed
+
+- ✅ **Feature:** reduces drift between host and packaged OpenClaw reliability checks by standardizing a single command for the common reliability pairing.
+- 🧨 **OpenClaw integration gap remains:** remote write-path confirmation still requires Firebase write credentials (`validate:firebase-write-required-once`).
+- ⚠️ **Distribution trust risk remains:** signed/notarized release path still requires Apple credentials in this environment.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-24 00:44 America/Toronto
 

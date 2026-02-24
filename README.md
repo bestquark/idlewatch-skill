@@ -107,6 +107,7 @@ Validation helpers:
 - `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
 - `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
 - `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path).
+- `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-stats-ingestion` + `validate:openclaw-cache-recovery-e2e`) in one gate.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one artifact-aware release gate.

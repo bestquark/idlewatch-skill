@@ -51,8 +51,7 @@ run_validator "smoke:once"                           npm run smoke:once --silent
 run_validator "validate:dry-run-schema"              npm run validate:dry-run-schema --silent
 run_validator "validate:usage-freshness-e2e"         npm run validate:usage-freshness-e2e --silent
 run_validator "validate:usage-alert-rate-e2e"        npm run validate:usage-alert-rate-e2e --silent
-run_validator "validate:openclaw-cache-recovery-e2e" npm run validate:openclaw-cache-recovery-e2e --silent
-run_validator "validate:openclaw-stats-ingestion" npm run validate:openclaw-stats-ingestion --silent
+run_validator "validate:openclaw-release-gates" npm run validate:openclaw-release-gates --silent
 
 # --- Packaging ---
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
