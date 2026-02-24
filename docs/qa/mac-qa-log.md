@@ -79,6 +79,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** no source changes this cycle; QA log documentation updated.
 
+## QA cycle update — 2026-02-23 23:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Parser hardening:** stripped terminal control/ANSI escape sequences before JSON candidate extraction (`extractOpenClawNoise`) to avoid false parse misses when probe output includes cursor movement / color / control codes.
+- ✅ **Monitoring reliability:** Added fixture+unit test coverage for complex ANSI noise (`openclaw-status-ansi-complex-noise.txt`) to ensure valid usage payloads are still parsed in noisy stderr/stdout.
+- ✅ **Packaging validation preserved:** existing full-sweep packaging checks still pass unchanged with this parser update.
+
+### Validation details
+
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (26 tests, 0 fail).
+- ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
+
+### Features / risks
+
+- ✅ **Feature:** CLI logs with ANSI cursor/color/control chatter no longer silently block usage ingestion.
+- ⚠️ **OpenClaw integration gap remains:** remote write-path verification is still blocked by missing Firebase write credentials.
+- ⚠️ **Packaging trust risk remains:** unsigned/notarized release validation remains dependent on Apple signing/notary setup in this environment.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-23 23:25 America/Toronto
 
 ### Completed this cycle

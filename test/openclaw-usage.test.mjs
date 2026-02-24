@@ -284,6 +284,17 @@ test('chooses strongest usage payload when earlier JSON is metadata-only', () =>
   assert.equal(got.integrationStatus, 'ok')
 })
 
+test('strips complex ANSI cursor/control codes and parses JSON session payload', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-ansi-complex-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'claude-opus-4-6')
+  assert.equal(got.totalTokens, 9999)
+  assert.equal(got.sessionId, 'complex-ansi')
+  assert.equal(got.agentId, 'agent-ansi')
+  assert.equal(got.usageTimestampMs, 1771313300000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)

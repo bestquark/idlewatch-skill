@@ -141,8 +141,15 @@ function pickBestRecentSession(recent = []) {
   return pickNewestSession(recent) || recent[0]
 }
 
+function extractOpenClawNoise(raw) {
+  return String(raw)
+    .replace(/\u001b\[[0-9;]*[ -/]*[@-~]/g, '')
+    .replace(/\u001b[^m]*m/g, '')
+    .replace(/\r/g, '')
+}
+
 function extractJsonCandidates(raw) {
-  const text = String(raw)
+  const text = extractOpenClawNoise(raw)
   const candidates = []
 
   for (let start = 0; start < text.length; start += 1) {

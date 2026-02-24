@@ -1,0 +1,3 @@
+[33mstart-up[0m
+{"status":"ok","sessions":{"active":[{"sessionId":"complex-ansi","agentId":"agent-ansi","model":"claude-opus-4-6","totalTokens":9999,"updatedAt":1771313300000,"totalTokensFresh":true}]}}
+[2K[1G done
