@@ -299,6 +299,8 @@ For CI / script chaining, artifact-aware convenience helpers are available:
 
 - `npm run validate:packaged-openclaw-release-gates:reuse-artifact`
 - `npm run validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`
+- `npm run validate:packaged-dry-run-schema:reuse-artifact`
+- `npm run validate:packaged-usage-age-slo:reuse-artifact`
 - `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact`
 - `npm run validate:packaged-usage-recovery-e2e:reuse-artifact`
 - `npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact`

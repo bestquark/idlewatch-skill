@@ -1,3 +1,19 @@
+## QA cycle update — 2026-02-24 04:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging script reliability (high-value):** made packaged OpenClaw reuse wrappers truly reusable by making base packaged validators honor `IDLEWATCH_SKIP_PACKAGE_MACOS`.
+  - `validate:packaged-dry-run-schema` and `validate:packaged-usage-age-slo` now skip repackaging when artifact reuse is requested.
+- ✅ **Wrapper coverage expanded:** added `:reuse-artifact` script entries for:
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-usage-age-slo:reuse-artifact`
+- ✅ **Packaging docs + CI alignment:** updated `README.md` and `docs/packaging/macos-dmg.md` to document artifact-reuse behavior, and switched CI packaged smoke steps to use the reuse wrappers for dry-run schema + usage-age checks.
+- ✅ **Validation run:** `npm run validate:all --silent` (18 pass, 0 fail, 0 skip)
+
+### Notes
+
+- ✅ **Commit status:** scripts + docs + QA log updated.
+
 ## QA cycle update — 2026-02-24 04:30 America/Toronto
 
 ### Completed this cycle
