@@ -29,9 +29,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 22:01)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 22:05)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 22:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep hardening:** Updated `scripts/validate-all.sh` to run the consolidated `validate:packaged-openclaw-release-gates` in packaging mode.
+- ✅ **Release-gate reliability improvement:** The release gate now runs in artifact-reuse mode in `validate-all` (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) so repeated packaging within one sweep is avoided and checks validate the already-built app once.
+- ✅ **Monitoring + OpenClaw coverage preserved:** This still executes OpenClaw health, stats-fallback, and cache-recovery checks through the consolidated gate while keeping existing non-packaged telemetry checks intact.
+
+### Validation details
+
+- ✅ `npm run validate:all --silent` passed with release-gate integration enabled: **19 pass, 0 fail, 0 skip**.
+- ✅ `npm run validate:packaged-openclaw-release-gates --silent` passes via `IDLEWATCH_SKIP_PACKAGE_MACOS=1` in this environment after package build.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Centralizes release verification logic in both trusted workflow and standard validation flows.
+- 🧨 **OpenClaw integration gap remains:** no end-to-end Firebase write-path check without write credentials.
+- ⚠️ **Packaging trust risk remains:** trusted release still requires signing/notary secrets for full production confidence.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 21:55 America/Toronto
 
