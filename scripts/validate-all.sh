@@ -51,29 +51,21 @@ run_validator "smoke:once"                           npm run smoke:once --silent
 run_validator "validate:dry-run-schema"              npm run validate:dry-run-schema --silent
 run_validator "validate:usage-freshness-e2e"         npm run validate:usage-freshness-e2e --silent
 run_validator "validate:usage-alert-rate-e2e"        npm run validate:usage-alert-rate-e2e --silent
-run_validator "validate:openclaw-release-gates:all" npm run validate:openclaw-release-gates:all --silent
+run_validator "validate:openclaw-release-gates" npm run validate:openclaw-release-gates --silent
 
 # --- Packaging ---
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
   skip_validator "validate:packaged-metadata"
   skip_validator "validate:packaged-bundled-runtime"
   skip_validator "validate:packaged-dry-run-schema:reuse-artifact"
-  skip_validator "validate:packaged-usage-health:reuse-artifact"
-  skip_validator "validate:packaged-usage-age-slo:reuse-artifact"
-  skip_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"
-  skip_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"
-  skip_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"
+  skip_validator "validate:packaged-openclaw-robustness:reuse-artifact"
   skip_validator "validate:dmg-install"
   skip_validator "validate:dmg-checksum"
 else
   run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
   run_validator "validate:packaged-dry-run-schema:reuse-artifact"                  npm run validate:packaged-dry-run-schema:reuse-artifact --silent
-  run_validator "validate:packaged-usage-health:reuse-artifact"                   npm run validate:packaged-usage-health:reuse-artifact --silent
-  run_validator "validate:packaged-usage-age-slo:reuse-artifact"                   npm run validate:packaged-usage-age-slo:reuse-artifact --silent
-  run_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"         npm run validate:packaged-usage-recovery-e2e:reuse-artifact --silent
-  run_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"       npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact --silent
-  run_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"      npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact --silent
+  run_validator "validate:packaged-openclaw-robustness:reuse-artifact"                   npm run validate:packaged-openclaw-robustness:reuse-artifact --silent
   run_validator "validate:dmg-install"                         npm run validate:dmg-install --silent
   run_validator "validate:dmg-checksum"                        npm run validate:dmg-checksum --silent
 fi

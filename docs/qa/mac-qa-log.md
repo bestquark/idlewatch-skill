@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-24 08:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation orchestration reliability:** simplified `scripts/validate-all.sh` packaging coverage to avoid redundant OpenClaw execution by:
+  - running host gate as `validate:openclaw-release-gates` (host only)
+  - replacing individual packaged checks with single `validate:packaged-openclaw-robustness:reuse-artifact`
+- ✅ **Benefit:** prevents duplicated packaged OpenClaw release checks during full sweep while still covering age-SLO, alert-rate transitions, probe-noise resilience, and release-gate behavior.
+- ✅ **Validation:** `npm run test:unit` ✅ and `SKIP_PACKAGING=1 npm run validate:all --silent` ✅.
+
+### Notes
+
+- ✅ **Commit status:** scripts + QA log update completed.
+
 ## QA cycle update — 2026-02-24 08:28 America/Toronto
 
 ### Completed this cycle
