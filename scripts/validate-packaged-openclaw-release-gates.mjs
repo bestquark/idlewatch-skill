@@ -22,6 +22,9 @@ function ensureReleaseArtifact() {
 }
 
 function runValidator(name, extraEnv = {}) {
+  const enforceOpenClawUsage = process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE || '1'
+  const requireOpenClaw = String(process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE).toLowerCase() === '0' ? '0' : enforceOpenClawUsage
+
   const result = spawnSync('npm', ['run', name, '--silent'], {
     cwd: repoRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -29,6 +32,7 @@ function runValidator(name, extraEnv = {}) {
     env: {
       ...process.env,
       IDLEWATCH_SKIP_PACKAGE_MACOS: '1',
+      IDLEWATCH_REQUIRE_OPENCLAW_USAGE: requireOpenClaw,
       ...extraEnv
     }
   })

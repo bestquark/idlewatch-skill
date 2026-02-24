@@ -79,6 +79,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** no code changes this cycle; QA log documentation update only.
 
+## QA cycle update — 2026-02-23 22:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Release-gate determinism improvement:** `validate:packaged-openclaw-release-gates` now enforces OpenClaw-health by default (`IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1`) inside the gate runner itself, preventing callers from accidentally omitting usage validation.
+- ✅ **Packaging scripts cleanup:** Removed duplicated per-workflow env wiring by relying on gate defaults; CI and trusted release now only pass artifact-reuse mode (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) at call sites.
+- ✅ **Docs aligned:** README and packaging docs updated to call out default `IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1` behavior for release-gate execution.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-release-gates --silent` passed with default gate behavior.
+- ✅ `npm run validate:all --silent` remains green: **19 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Default behavior is now explicit and self-contained in release-gate runner, reducing duplication across CI/trusted workflow callers.
+- 🧨 **OpenClaw integration gap remains:** no remote write-path check without write credentials.
+- ⚠️ **Packaging trust risk remains:** signed/notarized verification still depends on Apple credentials in CI.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-23 22:25 America/Toronto
 
 ### Completed this cycle

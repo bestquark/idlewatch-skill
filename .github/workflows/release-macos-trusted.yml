@@ -87,7 +87,6 @@ PY
 
       - name: Enforce packaged OpenClaw release gates
         env:
-          IDLEWATCH_REQUIRE_OPENCLAW_USAGE: '1'
           IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS: '300000'
           MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
           MACOS_NOTARY_PROFILE: idlewatch-ci

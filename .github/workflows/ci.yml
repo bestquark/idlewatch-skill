@@ -100,7 +100,6 @@ jobs:
 
       - name: Validate packaged OpenClaw release gates (health + stats fallback + cache recovery)
         env:
-          IDLEWATCH_REQUIRE_OPENCLAW_USAGE: '1'
           IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
         run: npm run validate:packaged-openclaw-release-gates --silent
 
