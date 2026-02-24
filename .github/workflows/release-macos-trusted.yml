@@ -85,6 +85,9 @@ PY
           npm run package:macos --silent
           npm run package:dmg --silent
 
+      - name: Validate host OpenClaw release gate
+        run: npm run validate:openclaw-release-gates --silent
+
       - name: Enforce packaged OpenClaw release gates (reuse artifact)
         env:
           IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS: '300000'

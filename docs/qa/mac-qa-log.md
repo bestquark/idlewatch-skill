@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-24 07:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability + packaging coverage:** added host OpenClaw release-gate execution to the trusted release workflow (`.github/workflows/release-macos-trusted.yml`) so release checks now include both host and packaged resilience validation before artifact upload.
+  - Host gate: `npm run validate:openclaw-release-gates --silent`
+  - Packaged gate: `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+- ✅ **Packaging docs update:** clarified trusted release OpenClaw guardrail sequencing in `docs/packaging/macos-dmg.md` to explicitly list host + packaged OpenClaw gate stages.
+- ✅ **Validation:** `npm run validate:openclaw-release-gates --silent` ✅
+
+### Notes
+
+- ✅ **Commit status:** release workflow + packaging docs + QA log update completed.
+
 ## QA cycle update — 2026-02-24 06:58 America/Toronto
 
 ### Completed this cycle
