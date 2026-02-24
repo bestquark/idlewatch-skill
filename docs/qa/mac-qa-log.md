@@ -29,9 +29,33 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:40)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:45)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Release-gate optimization:** Made packaged OpenClaw validators (validate:packaged-openclaw-stats-ingestion, validate:packaged-openclaw-cache-recovery-e2e) skip repackaging when IDLEWATCH_SKIP_PACKAGE_MACOS=1 so trusted release checks validate the same signed artifact already produced by package:macos.
+- ✅ **Monitoring reliability hardening:** Trusted release workflow now executes OpenClaw stats/recovery gates against the prebuilt artifact, avoiding duplicate packaging churn before upload checks.
+- ✅ **Packaging scripts/docs:** Updated trusted-release policy docs and workflow to reflect this direct-artifact validation path.
+
+### Validation details
+
+- ✅ npm run validate:packaged-openclaw-stats-ingestion --silent passed.
+- ✅ npm run validate:packaged-openclaw-cache-recovery-e2e --silent passed.
+- ✅ Trusted workflow path now sets IDLEWATCH_SKIP_PACKAGE_MACOS=1 for those checks; local CI job behavior remains unchanged.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Aligns trusted OpenClaw checks with the exact signed payload that will be uploaded, improving signal quality in release validation.
+- 🧨 **OpenClaw integration gap remains:** still no remote write-path check without Firebase write credentials.
+- ⚠️ **Packaging trust risk remains:** signing/notary secrets required in CI for full trusted execution.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 21:40 America/Toronto
 

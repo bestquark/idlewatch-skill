@@ -151,7 +151,7 @@ Trusted release workflow enforces stronger OpenClaw verification and expects the
 When present, the workflow imports a temporary build keychain, signs `IdleWatch.app`, notarizes/staples the DMG, and uploads `IdleWatch-*-signed.dmg`.
 
 Release policy gate:
-- Trusted release workflow enforces packaged dry-run OpenClaw availability via `npm run validate:packaged-usage-health`, with the additional OpenClaw coverage gates `validate:packaged-openclaw-stats-ingestion` and `validate:packaged-openclaw-cache-recovery-e2e` to validate stats fallback parsing and stale-cache recovery in the signed/notarized pipeline path.
+- Trusted release workflow enforces packaged dry-run OpenClaw availability via `npm run validate:packaged-usage-health`, with the additional OpenClaw coverage gates `validate:packaged-openclaw-stats-ingestion` and `validate:packaged-openclaw-cache-recovery-e2e` to validate stats fallback parsing and stale-cache recovery in the signed/notarized pipeline path. In release mode these checks reuse the already-built app via `IDLEWATCH_SKIP_PACKAGE_MACOS=1`.
 - Trusted release workflow additionally enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` so packaged rows fail if usage age is excessively stale at validation time.
 - Packaging scripts now auto-enable strict trusted requirements on CI tag refs (`refs/tags/*`) to prevent accidental unsigned release artifacts; set `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` only for deliberate break-glass exceptions.
 - All packaged validators (`validate:packaged-dry-run-schema`, `validate:packaged-usage-health`, `validate:packaged-usage-age-slo`) auto-run `package:macos` first so checks always target fresh packaged bits.

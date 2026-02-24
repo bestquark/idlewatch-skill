@@ -95,12 +95,14 @@ PY
         env:
           MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
           MACOS_NOTARY_PROFILE: idlewatch-ci
+          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
         run: npm run validate:packaged-openclaw-stats-ingestion --silent
 
       - name: Enforce packaged OpenClaw cache recovery behavior
         env:
           MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
           MACOS_NOTARY_PROFILE: idlewatch-ci
+          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
         run: npm run validate:packaged-openclaw-cache-recovery-e2e --silent
 
       - name: Upload trusted DMG artifact

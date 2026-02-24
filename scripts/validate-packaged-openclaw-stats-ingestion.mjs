@@ -85,11 +85,13 @@ function collectRow(env) {
 }
 
 function run() {
-  execFileSync('npm', ['run', 'package:macos', '--silent'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe']
-  })
+  if (process.env.IDLEWATCH_SKIP_PACKAGE_MACOS !== '1') {
+    execFileSync('npm', ['run', 'package:macos', '--silent'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+  }
 
   writeMockOpenClaw(mockBinPath)
 
