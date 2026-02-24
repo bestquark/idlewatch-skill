@@ -86,6 +86,9 @@ jobs:
       - name: Validate packaged app dry-run telemetry schema
         run: npm run validate:packaged-dry-run-schema:reuse-artifact
 
+      - name: Validate packaged OpenClaw usage-health gate
+        run: npm run validate:packaged-usage-health:reuse-artifact
+
       - name: Validate packaged bundled-runtime launcher path (no PATH node)
         run: npm run validate:packaged-bundled-runtime
 

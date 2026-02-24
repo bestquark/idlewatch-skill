@@ -20,6 +20,7 @@
     "validate:packaged-dry-run-schema": "[ \"${IDLEWATCH_SKIP_PACKAGE_MACOS:-}\" = \"1\" ] || npm run package:macos --silent && node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
     "validate:packaged-dry-run-schema:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema --silent",
     "validate:packaged-usage-health": "[ \"${IDLEWATCH_SKIP_PACKAGE_MACOS:-}\" = \"1\" ] || npm run package:macos --silent && IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1 node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
+    "validate:packaged-usage-health:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-usage-health --silent",
     "validate:packaged-usage-age-slo": "[ \"${IDLEWATCH_SKIP_PACKAGE_MACOS:-}\" = \"1\" ] || npm run package:macos --silent && IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1 IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=600000 node scripts/validate-dry-run-schema.mjs ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run",
     "validate:packaged-usage-age-slo:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-usage-age-slo --silent",
     "validate:firebase-emulator-mode": "FIREBASE_PROJECT_ID=idlewatch-dev FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --dry-run",

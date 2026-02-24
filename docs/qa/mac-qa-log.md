@@ -1,3 +1,18 @@
+## QA cycle update — 2026-02-24 04:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging reliability + coverage (high-priority):** completed reusable `packaged-usage-health` integration path for both validation and CI.
+  - Added `validate:packaged-usage-health:reuse-artifact` script in `package.json`.
+  - Added `validate:packaged-usage-health:reuse-artifact` to CI (`.github/workflows/ci.yml`) smoke path so usage-health is always checked against the prebuilt artifact.
+- ✅ **Validation scope expanded:** updated `scripts/validate-all.sh` packaging section to include `validate:packaged-dry-run-schema` and `validate:packaged-usage-health` in every full sweep, and retained full bundled-runtime checks.
+- ✅ **Docs updated:** listed new helper in README and updated macOS packaging CI docs to reflect the additional usage-health smoke check.
+- ✅ **Validation sweep:** `npm run validate:all --silent` ✅ (**20 pass, 0 fail, 0 skip**) after changes.
+
+### Notes
+
+- ✅ **Commit status:** scripts + CI + docs + QA log updated and pushed.
+
 ## QA cycle update — 2026-02-24 04:50 America/Toronto
 
 ### Completed this cycle
