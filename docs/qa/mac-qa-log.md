@@ -1,3 +1,25 @@
+## QA cycle update — 2026-02-24 04:00 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all` in repository root.
+- ✅ **Result:** **18 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry validation checks executed in this cycle:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **OpenClaw checks:** `validate:firebase-emulator-mode` passed (firebase emulator + dry-run mode).
+- ⚠️ **OpenClaw write-path check gap:** `validate:firebase-write-required-once` is still blocked: Firebase write credentials are not configured (`FIREBASE_PROJECT_ID` + service-account settings missing), so end-to-end write confirmation remains pending.
+- ⚠️ **DMG packaging trust risk:** `validate:trusted-prereqs` still blocked by missing signing/notary environment (`MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`), leaving notarization and signed-distribution readiness unverified.
+
+### Notes
+
+- ✅ **Commit status:** documentation update in `docs/qa/mac-qa-log.md` only.
+
 ## QA cycle update — 2026-02-24 01:35 America/Toronto
 
 ### Completed this cycle
