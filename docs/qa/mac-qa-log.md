@@ -1,14 +1,28 @@
-## QA cycle update — 2026-02-24 04:25 America/Toronto
+## QA cycle update — 2026-02-24 04:30 America/Toronto
 
 ### Completed this cycle
 
-- ✅ **CI + packaging script alignment:** updated `.github/workflows/ci.yml` to run packaged OpenClaw validators via the reusable `:reuse-artifact` wrappers (`packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, `packaged-openclaw-release-gates`, `packaged-usage-recovery-e2e`) for cleaner, explicit artifact reuse.
-- ✅ **Release-gate consistency:** this removes duplicated `IDLEWATCH_SKIP_PACKAGE_MACOS` boilerplate in CI and ensures packaged checks validate the already-built artifact.
-- ✅ **Validation sweep:** `npm run validate:all --silent` completed successfully (`18 pass, 0 fail, 0 skip`).
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **18 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry/feature checks:** verified host and packaged release health paths:
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Feature status / bugs:** no new regressions in monitoring/parsing or packaging gates; prior OpenClaw parser and artifact-reuse behavior remains stable.
+- ✅ **OpenClaw integration:** `validate:firebase-emulator-mode` passes (emulator + dry-run).
+- ⚠️ **OpenClaw write-path gap remains:** `validate:firebase-write-required-once` still blocked due missing write credentials (`FIREBASE_PROJECT_ID` + service-account configuration).
+- ⚠️ **DMG packaging trust risk remains:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
 
 ### Notes
 
-- ✅ **Commit status:** CI workflow update and QA log update completed in this cycle.
+- ✅ **Commit status:** QA log documentation only in this cycle.
 
 ## QA cycle update — 2026-02-24 04:20 America/Toronto
 
