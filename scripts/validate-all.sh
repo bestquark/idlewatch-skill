@@ -51,7 +51,7 @@ run_validator "smoke:once"                           npm run smoke:once --silent
 run_validator "validate:dry-run-schema"              npm run validate:dry-run-schema --silent
 run_validator "validate:usage-freshness-e2e"         npm run validate:usage-freshness-e2e --silent
 run_validator "validate:usage-alert-rate-e2e"        npm run validate:usage-alert-rate-e2e --silent
-run_validator "validate:openclaw-release-gates" npm run validate:openclaw-release-gates --silent
+run_validator "validate:openclaw-release-gates:all" npm run validate:openclaw-release-gates:all --silent
 
 # --- Packaging ---
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
@@ -60,7 +60,6 @@ if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
   skip_validator "validate:packaged-dry-run-schema:reuse-artifact"
   skip_validator "validate:packaged-usage-health:reuse-artifact"
   skip_validator "validate:packaged-usage-age-slo:reuse-artifact"
-  skip_validator "validate:packaged-openclaw-release-gates:reuse-artifact"
   skip_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"
   skip_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"
   skip_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"
@@ -72,7 +71,6 @@ else
   run_validator "validate:packaged-dry-run-schema:reuse-artifact"                  npm run validate:packaged-dry-run-schema:reuse-artifact --silent
   run_validator "validate:packaged-usage-health:reuse-artifact"                   npm run validate:packaged-usage-health:reuse-artifact --silent
   run_validator "validate:packaged-usage-age-slo:reuse-artifact"                   npm run validate:packaged-usage-age-slo:reuse-artifact --silent
-  run_validator "validate:packaged-openclaw-release-gates:reuse-artifact (artifact reuse mode)" npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
   run_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"         npm run validate:packaged-usage-recovery-e2e:reuse-artifact --silent
   run_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"       npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact --silent
   run_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"      npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact --silent

@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 07:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep reliability:** simplified `scripts/validate-all.sh` OpenClaw coverage by switching core step from `validate:openclaw-release-gates` to `validate:openclaw-release-gates:all`.
+  - This keeps host and packaged-reuse OpenClaw checks in one deterministic gate and removes duplicated execution of `validate:packaged-openclaw-release-gates:reuse-artifact` from the packaging section.
+- ✅ **Packaging script consistency:** updated skip/run sets to match the consolidated gate invocation.
+- ✅ **Validation:** `npm run test:unit` and `SKIP_PACKAGING=1 npm run validate:all --silent` passed; this path validates full script-level refactor without packaging-only workload.
+
+### Notes
+
+- ✅ **Commit status:** validation-sweep reliability refactor + QA log update completed.
+
 ## QA cycle update — 2026-02-24 07:50 America/Toronto
 
 ### Completed this cycle
