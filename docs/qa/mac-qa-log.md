@@ -29,7 +29,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:17)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:20)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
 
@@ -56,6 +56,33 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** source changes committed and pushed in this cycle.
 
+
+## QA cycle update — 2026-02-23 21:20 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep re-run:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Result:** **20 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks confirmed:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-cache-recovery-e2e`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:packaged-openclaw-stats-ingestion`
+  - `validate:packaged-openclaw-cache-recovery-e2e`
+
+### OpenClaw + distribution checks
+
+- ✅ `validate:firebase-emulator-mode` (dry-run) passed.
+- ✅ `validate:packaged-*` OpenClaw validators remain passing in this run.
+- 🧨 **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still fails by design when Firebase credentials are absent.
+- ⚠️ **DMG packaging risk persists:** trusted-distribution validation remains blocked by missing `MACOS_CODESIGN_IDENTITY` / notary profile in this environment.
+
+### Notes
+
+- ✅ **Commit status:** no source code changes this cycle; QA log documentation updated.
+
+- ✅ No code changes in this cycle; only QA documentation update.
 
 ## QA cycle update — 2026-02-23 21:12 America/Toronto
 
