@@ -295,6 +295,18 @@ test('strips complex ANSI cursor/control codes and parses JSON session payload',
   assert.equal(got.integrationStatus, 'ok')
 })
 
+
+
+test('strips control characters (backspace/ctrl) before parsing JSON', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-control-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'gpt-4.1')
+  assert.equal(got.totalTokens, 3333)
+  assert.equal(got.sessionId, 'control-ansi')
+  assert.equal(got.agentId, 'agent-control')
+  assert.equal(got.usageTimestampMs, 1771314400000)
+  assert.equal(got.integrationStatus, 'ok')
+})
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)
