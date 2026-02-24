@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 08:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI packaging smoke cleanup:** removed redundant standalone `validate:packaged-usage-recovery-e2e:reuse-artifact` step from `.github/workflows/ci.yml` because packaged recovery is already validated through `validate:packaged-openclaw-release-gates:reuse-artifact`.
+- ✅ **Docs alignment:** updated `docs/packaging/macos-dmg.md` baseline smoke step list to avoid duplicated coverage confusion and reflect that OpenClaw release gate covers recovery behavior.
+- ✅ **Validation:** `SKIP_PACKAGING=1 npm run validate:all --silent` ✅ (**19 pass, 0 fail, 0 skip**).
+
+### Notes
+
+- ✅ **Commit status:** workflow and docs cleanup + QA log updated.
+
 ## QA cycle update — 2026-02-24 08:11 America/Toronto
 
 ### Completed this cycle

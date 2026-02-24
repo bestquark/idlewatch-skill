@@ -98,9 +98,6 @@ jobs:
       - name: Validate packaged OpenClaw release gates (health + stats fallback + cache recovery)
         run: npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
 
-      - name: Validate packaged OpenClaw usage stale-threshold recovery
-        run: npm run validate:packaged-usage-recovery-e2e:reuse-artifact
-
       - name: Build unsigned DMG
         run: npm run package:dmg
 
