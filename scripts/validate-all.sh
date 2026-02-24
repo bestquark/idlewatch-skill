@@ -60,6 +60,7 @@ if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
   skip_validator "validate:packaged-bundled-runtime"
   skip_validator "validate:packaged-usage-age-slo"
   skip_validator "validate:packaged-openclaw-stats-ingestion"
+  skip_validator "validate:packaged-openclaw-cache-recovery-e2e"
   skip_validator "validate:packaged-usage-recovery-e2e"
   skip_validator "validate:packaged-usage-alert-rate-e2e"
   skip_validator "validate:packaged-usage-probe-noise-e2e"
@@ -69,8 +70,9 @@ else
   run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
   run_validator "validate:packaged-usage-age-slo"              npm run validate:packaged-usage-age-slo --silent
-  run_validator "validate:packaged-openclaw-stats-ingestion"   npm run validate:packaged-openclaw-stats-ingestion --silent
-  run_validator "validate:packaged-usage-recovery-e2e"         npm run validate:packaged-usage-recovery-e2e --silent
+  run_validator "validate:packaged-openclaw-stats-ingestion"      npm run validate:packaged-openclaw-stats-ingestion --silent
+  run_validator "validate:packaged-openclaw-cache-recovery-e2e"  npm run validate:packaged-openclaw-cache-recovery-e2e --silent
+  run_validator "validate:packaged-usage-recovery-e2e"          npm run validate:packaged-usage-recovery-e2e --silent
   run_validator "validate:packaged-usage-alert-rate-e2e"       npm run validate:packaged-usage-alert-rate-e2e --silent
   run_validator "validate:packaged-usage-probe-noise-e2e"      npm run validate:packaged-usage-probe-noise-e2e --silent
   run_validator "validate:dmg-install"                         npm run validate:dmg-install --silent

@@ -29,9 +29,41 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 20:57)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:05)
 - All smoke tests green (dry-run, once, help)
-- All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion)
+- All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability improvement:** Added packaged stale-cache recovery e2e validator (`validate:packaged-openclaw-cache-recovery-e2e`) to verify probe failure handling and recovery in packaged runtime mode.
+- ✅ **OpenClaw coverage improvement:** Expanded packaged validation set to include recovery behavior after temporary probe failures, not just successful stats fallback.
+- ✅ **Packaging scripts/docs updates:** Added new validator to `package.json`, `validate-all`, and release docs coverage list (`docs/packaging/macos-dmg.md`).
+- ✅ **Validation sweep refreshed:** Ran `npm run validate:all` (now **20 checks**) and captured 20 pass, 0 fail, 0 skip.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-cache-recovery-e2e` passed (mocked packaged launcher dry-run; stale-cache path with temporary probe failures recovered via reprobe attempts).
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion` passed.
+- ✅ `validate:all` now includes both `packaged-openclaw-stats-ingestion` and `packaged-openclaw-cache-recovery-e2e` in core packaging checks.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Covers a realistic packaged reliability edge case where stale cache must be used temporarily while probe retries recover.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification in release/packaging mode is still blocked without Firebase credentials.
+- ⚠️ **DMG signing/notarization risk remains:** unsigned/notarized artifacts can still block Gatekeeper and CI release confidence.
+
+### Test health summary for this cycle
+
+- `npm run validate:all` result: **20 pass, 0 fail, 0 skip**.
+- `validate:packaged-openclaw-cache-recovery-e2e`: ✅ pass.
+- `validate:packaged-openclaw-stats-ingestion`: ✅ pass.
+- `validate:trusted-prereqs`: expected failure due missing signing/notary configuration.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 20:57 America/Toronto
 
