@@ -1,0 +1,1 @@
+]0;OpenClaw Probe{"status":"ok","sessions":{"active":[{"sessionId":"osc1","agentId":"agent-osc","model":"qwen2.5-coder","totalTokens":5555,"updatedAt":1771315500000,"totalTokensFresh":true}]}}\

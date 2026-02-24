@@ -144,6 +144,10 @@ function pickBestRecentSession(recent = []) {
 function extractOpenClawNoise(raw) {
   const esc = String.fromCharCode(0x1b)
   return String(raw)
+    .replace(/\x1b\][^\x07\x1b]*\x07/g, '')
+    .replace(/\x1b\][^\x1b]*\x1b\\/g, '')
+    .replace(/\x9b\][^\x07\x1b]*\x07/g, '')
+    .replace(/\x9b[^\x07\x1b]*\x1b\\/g, '')
     .replace(new RegExp(`${esc}\\[[0-9;?]*[ -/]*[@-~]`, 'g'), '')
     .replace(new RegExp(`${esc}[^m]*m`, 'g'), '')
     .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')

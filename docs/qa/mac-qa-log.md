@@ -37,18 +37,18 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Completed this cycle
 
-- ✅ **OpenClaw parser hardening:** extended `extractOpenClawNoise` to strip terminal control characters (backspace/ASCII control range) in addition to ANSI escape/cursor codes before JSON extraction.
-- ✅ **Monitoring reliability:** added fixture+unit test for control-noise probe output (`openclaw-status-control-noise.txt`) ensuring valid usage extraction from noisy stderr/stdout.
-- ✅ **Validation continuity:** existing `validate:all` sweep remains green with the parser enhancement.
+- ✅ **OpenClaw parser hardening extended:** added OSC/title-control stripping in `extractOpenClawNoise` to remove terminal control sequences (`ESC ] ... BEL/ESC\`) before JSON extraction.
+- ✅ **Monitoring reliability:** added fixture+unit test `openclaw-status-osc-noise.txt` and new test `strips OSC/title control sequences before parsing JSON` to guard parser behavior in noisy terminal environments.
+- ✅ **Validation continuity:** existing `validate:all` sweep remains green with the OSC-control parser enhancement.
 
 ### Validation details
 
-- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (**27 pass, 0 fail**).
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (**28 pass, 0 fail**).
 - ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
 
 ### Features / risks observed
 
-- ✅ **Feature:** improved resilience to real-world terminal output artifacts (carriage/control noise) that previously could hide a valid OpenClaw JSON payload.
+- ✅ **Feature:** improved resilience to real-world terminal output artifacts like OSC title and control-sequence noise that can hide valid OpenClaw payloads.
 - 🧨 **OpenClaw integration gap remains:** remote write-path validation still depends on Firebase write credentials (`validate:firebase-write-required-once`).
 - ⚠️ **Distribution trust risk remains:** signed/notarized release run still depends on Apple credentials on this host.
 

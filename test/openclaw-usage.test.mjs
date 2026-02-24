@@ -307,6 +307,18 @@ test('strips control characters (backspace/ctrl) before parsing JSON', () => {
   assert.equal(got.usageTimestampMs, 1771314400000)
   assert.equal(got.integrationStatus, 'ok')
 })
+
+test('strips OSC/title control sequences before parsing JSON', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-osc-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'qwen2.5-coder')
+  assert.equal(got.totalTokens, 5555)
+  assert.equal(got.sessionId, 'osc1')
+  assert.equal(got.agentId, 'agent-osc')
+  assert.equal(got.usageTimestampMs, 1771315500000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)
