@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 08:46 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability hardening:** added regression test for timestamp normalization edge in mixed-output candidate arbitration.
+  - New fixture/test ensures `parseOpenClawUsage` picks the newest candidate correctly when timestamp fields are string values in both status/generic payloads.
+- ✅ **Outcome:** protects against future regressions where stringified `updatedAt` values could be mis-ranked during score-tie arbitration.
+- ✅ **Validation:** `npm run test:unit` ✅ (with new test case included).
+
+### Notes
+
+- ✅ **Commit status:** parser test/fixture update + QA log completed.
+
 ## QA cycle update — 2026-02-24 08:35 America/Toronto
 
 ### Completed this cycle
