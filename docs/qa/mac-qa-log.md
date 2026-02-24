@@ -1,14 +1,31 @@
-## QA cycle update — 2026-02-24 05:07 America/Toronto
+## QA cycle update — 2026-02-24 05:12 America/Toronto
 
 ### Completed this cycle
 
-- ✅ **Monitoring reliability (OpenClaw stats ingestion):** added parser support for session records that expose model as `defaultModel`/`default_model` (no explicit `model` field), ensuring newer OpenClaw status envelopes are still parsed as full usage signals.
-- ✅ **Test coverage:** added fixture + unit test `openclaw-status-stats-session-default-model.json` and `parses session array payload with model in defaultModel field`.
-- ✅ **Validation:** `npm run test:unit` ✅ (253 pass, 0 fail) and `npm run validate:all --silent` ✅ (20 pass, 0 fail, 0 skip).
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **20 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks executed:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-health`
+  - `validate:packaged-dry-run-schema`
+  - `validate:packaged-usage-age-slo`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **OpenClaw integration checks:** `validate:firebase-emulator-mode` passes.
+- ⚠️ **OpenClaw write-path gap persists:** `validate:firebase-write-required-once` remains blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account configuration).
+- ✅ **Feature/bug status:** no new regressions; packaging validator reuse and OpenClaw parsing behavior remain stable.
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` in this environment.
 
 ### Notes
 
-- ✅ **Commit status:** parser fix + regression test + QA log update completed.
+- ✅ **Commit status:** QA log documentation only in this cycle.
 
 ## QA cycle update — 2026-02-24 05:02 America/Toronto
 
