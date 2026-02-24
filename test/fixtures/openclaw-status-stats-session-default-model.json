@@ -1,0 +1,27 @@
+{
+  "status": {
+    "stats": {
+      "current": {
+        "sessions": [
+          {
+            "sessionId": "legacy-model",
+            "defaultModel": "claude-mini-3.7",
+            "agentId": "agent-default-model",
+            "totalTokens": "777",
+            "updatedAt": 1771274000000,
+            "tokensPerMinute": "12.34"
+          },
+          {
+            "sessionId": "better-total",
+            "default_model": "gpt-4.1-mini",
+            "defaultModel": "should-not-win",
+            "agentId": "agent-legacy",
+            "total_tokens": "999",
+            "updatedAt": 1771264000000,
+            "tokens_per_minute": 9.87
+          }
+        ]
+      }
+    }
+  }
+}

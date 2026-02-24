@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 05:07 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability (OpenClaw stats ingestion):** added parser support for session records that expose model as `defaultModel`/`default_model` (no explicit `model` field), ensuring newer OpenClaw status envelopes are still parsed as full usage signals.
+- ✅ **Test coverage:** added fixture + unit test `openclaw-status-stats-session-default-model.json` and `parses session array payload with model in defaultModel field`.
+- ✅ **Validation:** `npm run test:unit` ✅ (253 pass, 0 fail) and `npm run validate:all --silent` ✅ (20 pass, 0 fail, 0 skip).
+
+### Notes
+
+- ✅ **Commit status:** parser fix + regression test + QA log update completed.
+
 ## QA cycle update — 2026-02-24 05:02 America/Toronto
 
 ### Completed this cycle

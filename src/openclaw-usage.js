@@ -522,6 +522,8 @@ function parseFromStatusJson(parsed) {
     session.model,
     session.modelName,
     session?.usage?.model,
+    session?.defaultModel,
+    session?.default_model,
     defaults.model,
     parsed?.default_model,
     parsed?.defaultModel,
