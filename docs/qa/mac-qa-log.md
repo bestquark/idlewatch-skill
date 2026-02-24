@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 08:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability hardening:** added regression test for ISO-format timestamp handling in mixed OpenClaw candidate arbitration.
+  - New fixture/test confirms `parseOpenClawUsage` correctly picks the newer candidate when `updatedAt` is provided as ISO strings.
+- ✅ **Why it matters:** prevents regressions in environments where OpenClaw returns stringified datetime fields instead of numeric epoch values.
+- ✅ **Validation:** `npm run test:unit` ✅ with new scenario.
+
+### Notes
+
+- ✅ **Commit status:** fixture + parser regression test + QA log update completed.
+
 ## QA cycle update — 2026-02-24 08:50 America/Toronto
 
 ### Completed this cycle

@@ -93,6 +93,17 @@ test('prefers most recent candidate when scores tie', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('prefers most recent candidate when timestamps are ISO strings', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-mixed-equal-score-status-vs-generic-iso-ts.txt'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'qwen-3')
+  assert.equal(usage.totalTokens, 100)
+  assert.equal(usage.tokensPerMin, 2.2)
+  assert.equal(usage.sessionId, 'generic-newer')
+  assert.equal(usage.agentId, 'agent-generic')
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses latest candidate when timestamp fields are strings', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-mixed-equal-score-status-vs-generic-string-ts.txt'))
   assert.ok(usage)
