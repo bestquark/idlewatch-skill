@@ -86,17 +86,8 @@ jobs:
       - name: Validate packaged bundled-runtime launcher path (no PATH node)
         run: npm run validate:packaged-bundled-runtime
 
-      - name: Validate packaged OpenClaw usage age SLO gate
-        run: npm run validate:packaged-usage-age-slo:reuse-artifact
-
-      - name: Validate packaged OpenClaw alert-rate transition contract
-        run: npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact
-
-      - name: Validate packaged OpenClaw parser resilience for non-zero-exit noisy probes
-        run: npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact
-
-      - name: Validate packaged OpenClaw release gates (health + stats fallback + cache recovery)
-        run: npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
+      - name: Validate packaged OpenClaw robustness gate (age SLO + alert-rate + probe-noise + release)
+        run: npm run validate:packaged-openclaw-robustness:reuse-artifact --silent
 
       - name: Build unsigned DMG
         run: npm run package:dmg

@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 08:28 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging command simplification:** introduced `validate:packaged-openclaw-robustness:reuse-artifact` in `package.json` to group packaged OpenClaw resilience checks (age-SLO + alert-rate + probe-noise + release gates) in one command.
+- ✅ **CI simplification:** replaced three separate CI OpenClaw checks with one `validate:packaged-openclaw-robustness:reuse-artifact --silent` step in `macos-packaging-smoke`.
+- ✅ **Docs update:** `README.md` and `docs/packaging/macos-dmg.md` now document this consolidated packaged robustness gate.
+- ✅ **Validation:** `npm run test:unit` ✅ and `npm run validate:openclaw-release-gates:all --silent` ✅.
+
+### Notes
+
+- ✅ **Commit status:** new bundled packaged robustness script + CI/docs updates completed.
+
 ## QA cycle update — 2026-02-24 08:23 America/Toronto
 
 ### Completed this cycle
