@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 08:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI packaging smoke simplification:** removed redundant explicit packaged OpenClaw usage-health step from `.github/workflows/ci.yml`.
+  - Coverage for usage-health remains enforced through `validate:packaged-openclaw-release-gates:reuse-artifact`, which already includes `validate:packaged-usage-health:reuse-artifact`.
+  - This reduces duplication while keeping the same reliability checks for health + stats fallback + stale-threshold recovery.
+- ✅ **Validation:** `npm run test:unit` ✅ and `SKIP_PACKAGING=1 npm run validate:all --silent` ✅ (**19 pass, 0 fail, 0 skip**).
+
+### Notes
+
+- ✅ **Commit status:** workflow + QA log update completed.
+
 ## QA cycle update — 2026-02-24 07:55 America/Toronto
 
 ### Completed this cycle
