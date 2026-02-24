@@ -285,4 +285,5 @@ Trusted-release workflow required secrets:
 
 Trusted release workflow policy:
 - OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health` before artifact upload.
+- The trusted pipeline now also runs `npm run validate:packaged-openclaw-stats-ingestion` and `npm run validate:packaged-openclaw-cache-recovery-e2e` before upload to validate stats fallback and stale-cache recovery behavior under signed build conditions.
 - Trusted release gate also enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` to fail fast if packaged usage age is excessively stale.

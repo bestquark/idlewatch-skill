@@ -91,6 +91,18 @@ PY
           IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS: '300000'
         run: npm run validate:packaged-usage-health --silent
 
+      - name: Enforce packaged OpenClaw stats ingestion fallback parse
+        env:
+          MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+          MACOS_NOTARY_PROFILE: idlewatch-ci
+        run: npm run validate:packaged-openclaw-stats-ingestion --silent
+
+      - name: Enforce packaged OpenClaw cache recovery behavior
+        env:
+          MACOS_CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
+          MACOS_NOTARY_PROFILE: idlewatch-ci
+        run: npm run validate:packaged-openclaw-cache-recovery-e2e --silent
+
       - name: Upload trusted DMG artifact
         uses: actions/upload-artifact@v4
         with:

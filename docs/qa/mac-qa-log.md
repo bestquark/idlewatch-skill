@@ -29,7 +29,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:30)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:35)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
 
@@ -57,6 +57,30 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Notes
 
 - ✅ **Commit status:** no source code changes this cycle; QA log only.
+
+## QA cycle update — 2026-02-23 21:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Release pipeline hardening:** Added OpenClaw stats-fallback + cache-recovery checks directly into .github/workflows/release-macos-trusted.yml before artifact upload.
+- ✅ **Monitoring reliability in release path:** Trusted release now explicitly executes both `validate:packaged-openclaw-stats-ingestion` and `validate:packaged-openclaw-cache-recovery-e2e` after signed packaging.
+- ✅ **Packaging docs updated:** Updated `docs/packaging/macos-dmg.md` and `README.md` trusted-release policy notes to reflect the expanded OpenClaw release gates.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion --silent` passed.
+- ✅ `npm run validate:packaged-openclaw-cache-recovery-e2e --silent` passed.
+- ✅ Workflow-level source changes are now aligned across `ci.yml` + release gate docs with host+packaged + trusted release coverage.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Trusted release path now validates both ingestion and recovery OpenClaw behavior under packaged runner conditions.
+- 🧨 **OpenClaw integration gap remains:** still no end-to-end remote write-path check without Firebase credentials.
+- ⚠️ **Packaging trust risk remains:** `MACOS_CODESIGN_IDENTITY` and notary profile secrets still required for full trusted run in CI host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 21:25 America/Toronto
 
