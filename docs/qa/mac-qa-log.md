@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 06:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** finalized deterministic OpenClaw usage arbitration by adding explicit recency-aware tie-breaker in `parseOpenClawUsage` and removing early-score short-circuiting.
+- ✅ **Regression coverage:** added fixture + test `openclaw-mixed-equal-score-status-vs-generic-newest.txt` / `prefers most recent candidate when scores tie` to lock in stable behavior when mixed status/generic payloads return equal-confidence candidates.
+- ✅ **Packaging docs:** clarified release-gate docs so both `README.md` and `docs/packaging/macos-dmg.md` explicitly document the `:reuse-artifact` release wrapper behavior (health + stats + cache-recovery checks).
+- ✅ **Validation:** `npm run test:unit` ✅ (**267 pass, 0 fail**).
+
+### Notes
+
+- ✅ **Commit status:** parser arbitration + tests + docs + QA log updated.
+
 ## QA cycle update — 2026-02-24 06:30 America/Toronto
 
 ### Completed this cycle

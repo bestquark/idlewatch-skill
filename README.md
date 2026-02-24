@@ -111,7 +111,8 @@ Validation helpers:
 - `npm run validate:openclaw-release-gates:all` runs both host and packaged OpenClaw release gates in one command (`validate:openclaw-release-gates` + `validate:packaged-openclaw-release-gates:reuse-artifact`) and is the shortest local loop before CI.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
-- `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one artifact-aware release gate.
+- `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
+- `npm run validate:packaged-openclaw-release-gates:reuse-artifact` does the same on an already-packaged artifact (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) and is the command used in CI/release smoke for repeatable validation.
 
 ## OpenClaw usage ingestion (best effort)
 

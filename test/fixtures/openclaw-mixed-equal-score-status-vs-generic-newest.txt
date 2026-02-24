@@ -1,0 +1,2 @@
+{"status":{"current":{"session":{"sessionId":"status-older","agentId":"agent-status","model":"claude-3","totalTokens":100,"tokens_per_minute":4.4,"updatedAt":1771280000000}}}
+{"model":"claude-3","total_tokens":"999","tokens_per_minute":"4.4","session_id":"generic-newer","agent_id":"agent-generic","updatedAt":1771290000000}

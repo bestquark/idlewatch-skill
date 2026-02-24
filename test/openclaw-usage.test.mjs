@@ -81,6 +81,18 @@ test('supports model_name in generic usage payloads', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('prefers most recent candidate when scores tie', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-mixed-equal-score-status-vs-generic-newest.txt'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-3')
+  assert.equal(usage.totalTokens, 999)
+  assert.equal(usage.tokensPerMin, 4.4)
+  assert.equal(usage.sessionId, 'generic-newer')
+  assert.equal(usage.agentId, 'agent-generic')
+  assert.equal(usage.usageTimestampMs, 1771290000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('prefers richer generic usage candidate when status candidate is partial', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-mixed-status-then-generic-output.txt'))
   assert.ok(usage)

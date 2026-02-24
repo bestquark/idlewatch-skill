@@ -888,6 +888,17 @@ export function parseOpenClawUsage(raw) {
   let bestSource = null
   let hasError = false
 
+  const compareByRecency = (a, b) => {
+    if (!a || !b) return 0
+    const aTs = a.usageTimestampMs
+    const bTs = b.usageTimestampMs
+    if (aTs === null && bTs === null) return 0
+    if (aTs === null) return -1
+    if (bTs === null) return 1
+    if (aTs === bTs) return 0
+    return aTs > bTs ? 1 : -1
+  }
+
   for (const candidate of candidates) {
     let parsed
     try {
@@ -901,7 +912,11 @@ export function parseOpenClawUsage(raw) {
     const fromStatus = parseFromStatusJson(normalized)
     if (fromStatus) {
       const score = usageCandidateScore(fromStatus)
-      if (score > bestScore || (score === bestScore && bestSource !== 'generic')) {
+      if (
+        score > bestScore ||
+        (score === bestScore && compareByRecency(fromStatus, bestMatch) > 0) ||
+        (score === bestScore && bestSource === 'generic' && compareByRecency(fromStatus, bestMatch) === 0)
+      ) {
         bestMatch = fromStatus
         bestScore = score
         bestSource = 'status'
@@ -911,16 +926,17 @@ export function parseOpenClawUsage(raw) {
     const fromGeneric = parseGenericUsage(normalized)
     if (fromGeneric) {
       const score = usageCandidateScore(fromGeneric)
-      if (score > bestScore || (score === bestScore && bestSource !== 'generic')) {
+      if (
+        score > bestScore ||
+        (score === bestScore && compareByRecency(fromGeneric, bestMatch) > 0) ||
+        (score === bestScore && compareByRecency(fromGeneric, bestMatch) === 0 && bestSource !== 'generic')
+      ) {
         bestMatch = fromGeneric
         bestScore = score
         bestSource = 'generic'
       }
     }
 
-    if (bestScore >= 10) {
-      return bestMatch
-    }
   }
 
   return hasError && bestMatch === null ? null : bestMatch
