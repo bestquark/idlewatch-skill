@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 04:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI + packaging script alignment:** updated `.github/workflows/ci.yml` to run packaged OpenClaw validators via the reusable `:reuse-artifact` wrappers (`packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, `packaged-openclaw-release-gates`, `packaged-usage-recovery-e2e`) for cleaner, explicit artifact reuse.
+- ✅ **Release-gate consistency:** this removes duplicated `IDLEWATCH_SKIP_PACKAGE_MACOS` boilerplate in CI and ensures packaged checks validate the already-built artifact.
+- ✅ **Validation sweep:** `npm run validate:all --silent` completed successfully (`18 pass, 0 fail, 0 skip`).
+
+### Notes
+
+- ✅ **Commit status:** CI workflow update and QA log update completed in this cycle.
+
 ## QA cycle update — 2026-02-24 04:20 America/Toronto
 
 ### Completed this cycle

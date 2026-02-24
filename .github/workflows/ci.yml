@@ -93,20 +93,16 @@ jobs:
         run: npm run validate:packaged-usage-age-slo
 
       - name: Validate packaged OpenClaw alert-rate transition contract
-        run: npm run validate:packaged-usage-alert-rate-e2e
+        run: npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact
 
       - name: Validate packaged OpenClaw parser resilience for non-zero-exit noisy probes
-        run: npm run validate:packaged-usage-probe-noise-e2e
+        run: npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact
 
       - name: Validate packaged OpenClaw release gates (health + stats fallback + cache recovery)
-        env:
-          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
-        run: npm run validate:packaged-openclaw-release-gates --silent
+        run: npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
 
       - name: Validate packaged OpenClaw usage stale-threshold recovery
-        env:
-          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
-        run: npm run validate:packaged-usage-recovery-e2e
+        run: npm run validate:packaged-usage-recovery-e2e:reuse-artifact
 
       - name: Build unsigned DMG
         run: npm run package:dmg
