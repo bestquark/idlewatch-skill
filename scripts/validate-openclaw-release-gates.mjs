@@ -38,10 +38,11 @@ function runValidator(name, extraEnv = {}) {
 }
 
 function main() {
+  runValidator('validate:openclaw-usage-health')
   runValidator('validate:openclaw-stats-ingestion')
   runValidator('validate:openclaw-cache-recovery-e2e')
 
-  console.log('validate-openclaw-release-gates: ok (host OpenClaw checks for stats fallback and stale-cache recovery)')
+  console.log('validate-openclaw-release-gates: ok (host OpenClaw checks for usage-health, stats fallback, and stale-cache recovery)')
 }
 
 main()

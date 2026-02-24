@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 06:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added a new host OpenClaw health validation stage to the release gate so `parseOpenClawUsage` health behavior is now explicitly validated in `validate:openclaw-release-gates` in addition to stats fallback + cache recovery.
+- ✅ **Packaging scripts/docs:** added `validate:openclaw-usage-health` validator and wired it into host release validation (`scripts/validate-openclaw-release-gates.mjs`, `package.json`). Updated `README.md` + `docs/packaging/macos-dmg.md` to document the host + packaged coverage split.
+- ✅ **Validation:** ran `npm run validate:openclaw-release-gates --silent` and `npm run validate:openclaw-release-gates:all --silent` successfully.
+
+### Notes
+
+- ✅ **Commit status:** parser/docs/scripting updates completed and ready for push.
+
 ## QA cycle update — 2026-02-24 06:35 America/Toronto
 
 ### Completed this cycle
