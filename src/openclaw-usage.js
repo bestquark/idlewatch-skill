@@ -685,10 +685,10 @@ function parseGenericUsage(parsed) {
   const usageRecord = Array.isArray(usage) ? pickBestRecentSession(usage) : usage
 
   const usageTotals = usageRecord?.totals || usageRecord?.summary || usageRecord?.usageTotals || usageRecord?.usage?.totals || usageRecord?.usage?.summary
-  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usageRecord?.model, usageRecord?.modelName, usageTotals?.model, usageRecord?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
+  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usageRecord?.model, usageRecord?.modelName, usageRecord?.defaultModel, usageRecord?.default_model, usageTotals?.model, usageRecord?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
   const totalTokens = pickNumber(
     usageRecord?.totalTokens,
-    usage?.total_tokens,
+    usageRecord?.total_tokens,
     usageRecord?.tokenCount,
     usageRecord?.token_count,
     usageRecord?.tokens,

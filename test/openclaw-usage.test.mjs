@@ -153,6 +153,18 @@ test('parses status.stats.current.sessions as array', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('supports string snake-case total_tokens in sessions array payloads', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-stats-current-sessions-snake-tokens.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 4321)
+  assert.equal(usage.tokensPerMin, 42)
+  assert.equal(usage.sessionId, 'active-string-tokens')
+  assert.equal(usage.agentId, 'agent-legacy-2')
+  assert.equal(usage.usageTimestampMs, 1771279100000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses status payload with nested sessions object and totals in totals.nested field', () => {
   const raw = fixture('openclaw-status-nested-recent.json')
   const usage = parseOpenClawUsage(raw)

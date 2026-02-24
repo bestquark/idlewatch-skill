@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 04:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability hardening:** fixed a parsing edge case where OpenClaw status payloads in `status.stats.current.sessions` provided only snake_case `total_tokens` (string values) and only `defaultModel`; parser now correctly parses model from `defaultModel` and retains fallback to `total_tokens` without requiring `totalTokens`/repackaging.
+- ✅ **Test coverage:** added fixture + unit test `supports string snake-case total_tokens in sessions array payloads` to prevent regression in session-array ingestion parsing.
+- ✅ **Validation:** ran `npm run validate:openclaw-release-gates:all --silent` successfully (`validate:openclaw-release-gates` + packaged reuse checks), with all checks passing.
+
+### Notes
+
+- ✅ **Commit status:** parser fix + regression test + QA log entry completed in this cycle.
+
 ## QA cycle update — 2026-02-24 04:40 America/Toronto
 
 ### Completed this cycle
