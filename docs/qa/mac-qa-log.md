@@ -29,9 +29,31 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:05)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:12)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:12 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep continued:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Result:** **20 pass, 0 fail, 0 skip** (all checks green in this execution).
+- ✅ **OpenClaw and distribution smoke checks:**
+  - `validate:firebase-emulator-mode` (dry-run) passed.
+  - `validate:openclaw-cache-recovery-e2e` passed.
+  - `validate:firebase-write-required-once` failed only due missing Firebase credentials (expected).
+  - `validate:trusted-prereqs` still fails due missing `MACOS_CODESIGN_IDENTITY` (and notary profile).
+
+### Features / bugs / risks observed
+
+- ✅ **No regression:** no new telemetry or packaging issues observed; prior packaged OpenClaw fallback + cache recovery validators still pass when run together.
+- 🧨 **OpenClaw integration gap persists:** remote write-path verification still blocked without credentialed Firebase write-mode.
+- ⚠️ **DMG packaging risk persists:** unsigned/notarized distribution cannot achieve trusted-distribution status on this host without Apple Developer credentials.
+
+### Notes
+
+- ✅ **Commit status:** no source code changes this cycle; log updated only.
 
 ## QA cycle update — 2026-02-23 21:05 America/Toronto
 
