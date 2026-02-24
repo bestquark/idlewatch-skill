@@ -56,6 +56,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** no source changes this cycle; QA log documentation updated.
 
+## QA cycle update — 2026-02-23 23:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability hardening:** improved `parseOpenClawUsage` candidate selection so it now scores parsed candidates and selects the strongest usable payload from noisy outputs, instead of returning first partial/default-only payload.
+- ✅ **OpenClaw stats ingestion reliability:** added coverage for multi-object noisy output where early JSON only carries metadata/default model and later JSON carries active usage/session data.
+- ✅ **Parser test coverage expanded:** added fixture `openclaw-status-noisy-default-then-usage.txt` and new unit test `chooses strongest usage payload when earlier JSON is metadata-only`.
+
+### Validation details
+
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (25 tests, 0 fail).
+- ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Better protection against false negatives in CLI runs where stderr/stdout contains multiple JSON documents and only later documents have valid usage telemetry.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification still depends on Firebase write credentials.
+- ⚠️ **Distribution trust risk remains:** signed/notarized validation still requires Apple credentials in this environment.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-23 23:15 America/Toronto
 
 ### Completed this cycle

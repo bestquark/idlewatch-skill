@@ -273,6 +273,17 @@ test('ignores ANSI escape noise and parses JSON session payload', () => {
   assert.equal(got.integrationStatus, 'ok')
 })
 
+test('chooses strongest usage payload when earlier JSON is metadata-only', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-noisy-default-then-usage.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'gpt-5.3-codex-pro')
+  assert.equal(got.totalTokens, 7777)
+  assert.equal(got.sessionId, 'main')
+  assert.equal(got.agentId, 'agent-priority')
+  assert.equal(got.usageTimestampMs, 1771312500000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)

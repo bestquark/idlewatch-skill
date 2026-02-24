@@ -1,0 +1,2 @@
+{"defaultModel":"gpt-5.3-codex"}
+{"status":"ok","sessions":{"recent":[{"id":"main","agentId":"agent-priority","model":"gpt-5.3-codex-pro","totalTokens":7777,"updatedAt":1771312500000,"totalTokensFresh":true}]}}

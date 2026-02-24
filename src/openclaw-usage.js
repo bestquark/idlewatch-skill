@@ -784,27 +784,66 @@ function parseGenericUsage(parsed) {
   }
 }
 
+function usageCandidateScore(usage) {
+  if (!usage) return -1
+
+  let score = usage.integrationStatus === 'ok' ? 8 : 1
+
+  if (usage.model !== null) score += 2
+  if (usage.totalTokens !== null) score += 2
+  if (usage.tokensPerMin !== null) score += 1
+  if (usage.sessionId !== null) score += 1
+  if (usage.agentId !== null) score += 1
+  if (usage.usageTimestampMs !== null) score += 1
+
+  return score
+}
+
 export function parseOpenClawUsage(raw) {
   if (!raw) return null
 
   const candidates = extractJsonCandidates(raw)
   if (candidates.length === 0) return null
 
+  let bestMatch = null
+  let bestScore = -1
+  let hasError = false
+
   for (const candidate of candidates) {
     let parsed
     try {
       parsed = JSON.parse(candidate)
     } catch {
+      hasError = true
       continue
     }
 
     const normalized = normalizeOpenClawAliases(parsed)
     const fromStatus = parseFromStatusJson(normalized)
-    if (fromStatus) return fromStatus
+    if (fromStatus) {
+      const score = usageCandidateScore(fromStatus)
+      if (score > bestScore) {
+        bestMatch = fromStatus
+        bestScore = score
+        if (score >= 10) {
+          return bestMatch
+        }
+      }
+      continue
+    }
 
     const fromGeneric = parseGenericUsage(normalized)
-    if (fromGeneric) return fromGeneric
+    if (fromGeneric) {
+      const score = usageCandidateScore(fromGeneric)
+      if (score > bestScore) {
+        bestMatch = fromGeneric
+        bestScore = score
+        if (score >= 10) {
+          return bestMatch
+        }
+      }
+    }
   }
 
-  return null
+  return hasError && bestMatch === null ? null : bestMatch
 }
