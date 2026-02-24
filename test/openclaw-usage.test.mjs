@@ -129,6 +129,18 @@ test('parses stats payloads nested under data wrapper', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses nested stats current.session wrapper payloads', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats-nested-session-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-opus-4-6')
+  assert.equal(usage.totalTokens, 3141)
+  assert.equal(usage.tokensPerMin, 77.7)
+  assert.equal(usage.sessionId, 'stats-nested-session-1')
+  assert.equal(usage.agentId, 'agent-stats-nested')
+  assert.equal(usage.usageTimestampMs, 1771303100000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses status payload with nested sessions object and totals in totals.nested field', () => {
   const raw = fixture('openclaw-status-nested-recent.json')
   const usage = parseOpenClawUsage(raw)

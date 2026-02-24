@@ -50,6 +50,8 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ **OpenClaw telemetry mode smoke checks executed:**
   - `validate:firebase-emulator-mode` (dry-run) passed.
   - `validate:firebase-write-required-once` failed only due missing Firebase credentials (expected; same block as above).
+  - `validate:openclaw-stats-ingestion` passed.
+- ✅ **OpenClaw stats ingestion coverage expanded:** added `validate:openclaw-stats-ingestion`, deeper `stats.current.session` parser unwrapping, and regression coverage for nested wrapper variants.
 
 ### Features / bugs / risks observed
 

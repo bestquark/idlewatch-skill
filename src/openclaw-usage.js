@@ -274,6 +274,43 @@ function hasAnySessionSignal(value) {
   )
 }
 
+function extractUsageEnvelope(value, depth = 0) {
+  if (!value || typeof value !== 'object') return null
+  if (depth > 6) return null
+
+  const nextKeys = [
+    'current',
+    'currentSession',
+    'activeSession',
+    'session',
+    'active',
+    'recent',
+    'recentSessions',
+    'activeSessions',
+    'stats',
+    'sessionUsage',
+    'usage',
+    'data',
+    'result',
+    'status',
+    'payload',
+    'defaultModel',
+    'default_model',
+    'session_id',
+    'agent_id'
+  ]
+
+  for (const key of nextKeys) {
+    const next = value[key]
+    const normalized = extractUsageEnvelope(next, depth + 1)
+    if (normalized) return normalized
+  }
+
+  if (hasAnySessionSignal(value)) return value
+
+  return null
+}
+
 function coerceSessionCandidates(value, options = {}) {
   const skipKeys = new Set(options.skipKeys || [])
 
@@ -621,18 +658,12 @@ function parseGenericUsage(parsed) {
     parsed
   ]
 
-  const chooseUsageCandidate = (candidate) => {
-    if (!candidate || typeof candidate !== 'object') return null
+  const usage = usageCandidates.reduce((found, candidate) => {
+    if (found) return found
+    const envelope = extractUsageEnvelope(candidate)
+    return envelope && typeof envelope === 'object' ? envelope : null
+  }, null)
 
-    const nestedCurrent = candidate.current
-    if (nestedCurrent && typeof nestedCurrent === 'object' && (nestedCurrent.totalTokens !== undefined || nestedCurrent.total_tokens !== undefined || nestedCurrent.sessionId || nestedCurrent.model || nestedCurrent.updatedAt || nestedCurrent.updated_at || nestedCurrent.updatedAtMs)) {
-      return nestedCurrent
-    }
-
-    return candidate
-  }
-
-  const usage = chooseUsageCandidate(usageCandidates.find((candidate) => candidate && typeof candidate === 'object' && candidate !== null))
   const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
   const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
   const totalTokens = pickNumber(

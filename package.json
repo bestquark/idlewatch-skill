@@ -31,6 +31,7 @@
     "validate:packaged-usage-recovery-e2e": "node scripts/validate-packaged-usage-recovery-e2e.mjs",
     "validate:packaged-usage-alert-rate-e2e": "node scripts/validate-packaged-usage-alert-rate-e2e.mjs",
     "validate:openclaw-cache-recovery-e2e": "node scripts/validate-openclaw-cache-recovery-e2e.mjs",
+    "validate:openclaw-stats-ingestion": "node scripts/validate-openclaw-stats-ingestion.mjs",
     "validate:packaged-usage-probe-noise-e2e": "node scripts/validate-packaged-usage-probe-noise-e2e.mjs",
     "validate:trusted-prereqs": "./scripts/validate-trusted-prereqs.sh",
     "package:macos": "./scripts/package-macos.sh",

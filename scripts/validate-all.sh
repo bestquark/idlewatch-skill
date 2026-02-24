@@ -52,6 +52,7 @@ run_validator "validate:dry-run-schema"              npm run validate:dry-run-sc
 run_validator "validate:usage-freshness-e2e"         npm run validate:usage-freshness-e2e --silent
 run_validator "validate:usage-alert-rate-e2e"        npm run validate:usage-alert-rate-e2e --silent
 run_validator "validate:openclaw-cache-recovery-e2e" npm run validate:openclaw-cache-recovery-e2e --silent
+run_validator "validate:openclaw-stats-ingestion" npm run validate:openclaw-stats-ingestion --silent
 
 # --- Packaging ---
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then

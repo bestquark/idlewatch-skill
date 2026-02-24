@@ -135,6 +135,7 @@ Optional environment variables:
 ## CI integration
 
 - Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes bundled-runtime launcher validation via `npm run validate:packaged-bundled-runtime`, parser resilience for non-zero-exit/noisy probe output via `npm run validate:packaged-usage-probe-noise-e2e`, packaged usage alert-rate transitions via `npm run validate:packaged-usage-alert-rate-e2e`, packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo`, packaged stale-threshold recovery validation via `npm run validate:packaged-usage-recovery-e2e`, checksum validation via `npm run validate:dmg-checksum`, and DMG install validation via `npm run validate:dmg-install`)
+- Core validation coverage also runs `npm run validate:openclaw-stats-ingestion` to guard the `stats --json` fallback path when status/usage endpoints diverge.
 - Trusted signed/notarized release path: `.github/workflows/release-macos-trusted.yml`
 
 Trusted release workflow expects these repository secrets:
