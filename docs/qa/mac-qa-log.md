@@ -19,17 +19,54 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - ✅ Nested `status.stats.current` parser coverage
 - ✅ Wrapped status payload session selection failure (nested array flattening in `coerceSessionCandidates`)
 - ✅ Session-specific model shadowed by defaults model (model priority fix in `parseFromStatusJson`)
+- ✅ Graceful shutdown flow now waits on sample publish before exit.
 
 ### Remaining open items
 
 - 🐛 **Open:** `Firebase is not configured` — no remote write-path verification yet (blocked on credentials).
 - 🐛 **Open:** Distribution unsigned/unnotarized (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE` unset; blocked on Apple Developer credentials).
+- 🐛 **Open:** OpenClaw write integration still lacks emulator/credentialed end-to-end confirmation in automated release packaging mode.
 
 ### Test health
 
-- 138 unit tests pass, 0 fail
+- 222 unit tests pass, 0 fail (latest run: 2026-02-23 20:31)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery)
+
+## QA cycle update — 2026-02-23 20:31 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep refreshed:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Telemetry validation checks passed:**
+  - `validate:dry-run-schema`
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-cache-recovery-e2e`
+  - `validate:packaged-usage-age-slo`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+- ✅ **OpenClaw telemetry mode smoke checks executed:**
+  - `validate:firebase-emulator-mode` (dry-run) passed.
+  - `validate:firebase-write-required-once` failed only due missing Firebase credentials (expected; same block as above).
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Validation output now consistently yields 17/17 pass for `validate:all` with this environment, with no regressions from prior release.
+- ✅ **No new Mac telemetry regressions** surfaced in this cycle.
+- 🧨 **OpenClaw integration gap:** write-path hardening still blocked until credentials are available.
+- ⚠️ **DMG packaging risk:** trusted-distribution prerequisites still fail (`validate:trusted-prereqs`) because `MACOS_CODESIGN_IDENTITY` (and usually notarization profile) are not configured on this host.
+- ⚠️ **Distribution risk:** DMG artifacts are reproducible and checksummed but remain unsigned/notarized, which may trigger Gatekeeper trust prompts and block CI-grade release confidence.
+
+### Test health summary for this cycle
+
+- `npm run validate:all` result: **17 pass, 0 fail, 0 skip**.
+- `validate:trusted-prereqs` result: expected failure due missing signing identity.
+
+### Notes
+
+- ✅ **Commit status:** no code files changed in this cycle; only QA log documentation updated.
 
 ## QA cycle update — 2026-02-18 19:55 America/Toronto
 
