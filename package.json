@@ -45,7 +45,8 @@
     "uninstall:macos-launch-agent": "./scripts/uninstall-macos-launch-agent.sh",
     "test": "npm run validate:bin && npm run test:unit && npm run smoke:help && npm run smoke:dry-run && npm run smoke:once",
     "validate:all": "./scripts/validate-all.sh",
-    "validate:all:quick": "./scripts/validate-all.sh --skip-packaging"
+    "validate:all:quick": "./scripts/validate-all.sh --skip-packaging",
+    "validate:packaged-openclaw-release-gates": "node scripts/validate-packaged-openclaw-release-gates.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

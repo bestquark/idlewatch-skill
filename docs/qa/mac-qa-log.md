@@ -33,6 +33,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
 
+## QA cycle update — 2026-02-23 21:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Release gate consolidation:** Added a new validator `validate:packaged-openclaw-release-gates` to group trusted-release OpenClaw checks (health, stats-fallback, cache-recovery) into one explicit gate.
+- ✅ **Monitoring reliability hardening:** Trusted release workflow now runs release gates through one command, reducing duplication and ensuring all OpenClaw checks target the same signed artifact once packaging is complete.
+- ✅ **Packaging scripts/docs updates:** Documented the new release gate command in `README.md` and `docs/packaging/macos-dmg.md`.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-release-gates --silent` passed locally (when run with a previously built `dist/IdleWatch.app`).
+- ✅ Existing full sweep (`npm run validate:all --silent`) remains green after docs/CI updates: **20 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Release verification path now has a single explicit OpenClaw release-gate entrypoint for maintainability and clearer CI intent.
+- 🧨 **OpenClaw integration gap remains:** remote write-path confirmation is still blocked by missing Firebase write credentials.
+- ⚠️ **Packaging trust risk remains:** signing/notary secrets required for full trusted release execution in CI.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-23 21:45 America/Toronto
 
 ### Completed this cycle
