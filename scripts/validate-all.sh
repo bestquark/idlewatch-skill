@@ -57,21 +57,21 @@ run_validator "validate:openclaw-release-gates" npm run validate:openclaw-releas
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
   skip_validator "validate:packaged-metadata"
   skip_validator "validate:packaged-bundled-runtime"
-  skip_validator "validate:packaged-dry-run-schema"
-  skip_validator "validate:packaged-usage-health"
-  skip_validator "validate:packaged-usage-age-slo"
-  skip_validator "validate:packaged-openclaw-release-gates"
-  skip_validator "validate:packaged-usage-recovery-e2e"
-  skip_validator "validate:packaged-usage-alert-rate-e2e"
-  skip_validator "validate:packaged-usage-probe-noise-e2e"
+  skip_validator "validate:packaged-dry-run-schema:reuse-artifact"
+  skip_validator "validate:packaged-usage-health:reuse-artifact"
+  skip_validator "validate:packaged-usage-age-slo:reuse-artifact"
+  skip_validator "validate:packaged-openclaw-release-gates:reuse-artifact"
+  skip_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"
+  skip_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"
+  skip_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"
   skip_validator "validate:dmg-install"
   skip_validator "validate:dmg-checksum"
 else
   run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
-  run_validator "validate:packaged-dry-run-schema"                  npm run validate:packaged-dry-run-schema --silent
-  run_validator "validate:packaged-usage-health"                   npm run validate:packaged-usage-health --silent
-  run_validator "validate:packaged-usage-age-slo"                   npm run validate:packaged-usage-age-slo --silent
+  run_validator "validate:packaged-dry-run-schema:reuse-artifact"                  npm run validate:packaged-dry-run-schema:reuse-artifact --silent
+  run_validator "validate:packaged-usage-health:reuse-artifact"                   npm run validate:packaged-usage-health:reuse-artifact --silent
+  run_validator "validate:packaged-usage-age-slo:reuse-artifact"                   npm run validate:packaged-usage-age-slo:reuse-artifact --silent
   run_validator "validate:packaged-openclaw-release-gates:reuse-artifact (artifact reuse mode)" npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
   run_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"         npm run validate:packaged-usage-recovery-e2e:reuse-artifact --silent
   run_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"       npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact --silent

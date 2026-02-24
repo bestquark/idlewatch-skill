@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-24 07:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging script reliability hardening:** aligned `scripts/validate-all.sh` packaged-sweep entries with artifact-reuse wrappers for OpenClaw checks:
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-usage-health:reuse-artifact`
+  - `validate:packaged-usage-age-slo:reuse-artifact`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e:reuse-artifact`
+  - `validate:packaged-usage-alert-rate-e2e:reuse-artifact`
+  - `validate:packaged-usage-probe-noise-e2e:reuse-artifact`
+- ✅ **Validation:** `SKIP_PACKAGING=1 npm run validate:all --silent` ✅ (**20 pass, 0 fail, 0 skip**) with reuse-wrapper packaging stage names consistent across run/skip lists.
+
+### Notes
+
+- ✅ **Commit status:** script-only reliability improvement + QA log entry completed.
+
 ## QA cycle update — 2026-02-24 07:20 America/Toronto
 
 ### Completed this cycle
