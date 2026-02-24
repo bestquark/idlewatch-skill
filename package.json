@@ -53,6 +53,7 @@
     "validate:packaged-openclaw-release-gates": "node scripts/validate-packaged-openclaw-release-gates.mjs",
     "validate:openclaw-release-gates": "node scripts/validate-openclaw-release-gates.mjs",
     "validate:openclaw-release-gates:all": "npm run validate:openclaw-release-gates --silent && npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent",
+    "validate:packaged-openclaw-release-gates:all": "npm run validate:packaged-openclaw-release-gates --silent && npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent",
     "validate:packaged-openclaw-release-gates:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates --silent",
     "validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-cache-recovery-e2e --silent",
     "validate:packaged-openclaw-stats-ingestion:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion --silent",

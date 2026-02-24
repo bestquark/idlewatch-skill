@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-24 07:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging command docs/scripting cleanup:** documented the new packaged/full OpenClaw release helper parity for local workflows in docs:
+  - `README.md` now explicitly documents `validate:packaged-openclaw-release-gates:all` usage context.
+  - `docs/packaging/macos-dmg.md` now notes host+packaged paired gate options and the new local all-in-one wrappers for release validation.
+- ✅ **No behavioral risk:** this cycle was docs-only, preserving previously stabilized parser/release-gate logic.
+- ✅ **Validation:** `npm run test:unit` ✅ (**267 pass, 0 fail**) and `npm run validate:packaged-openclaw-release-gates:all --silent` ✅.
+
+### Notes
+
+- ✅ **Commit status:** docs cleanup and QA update completed and pushed.
+
 ## QA cycle update — 2026-02-24 07:40 America/Toronto
 
 ### Completed this cycle
