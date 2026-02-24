@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 05:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw parser reliability (high-value alias hardening):** added `model_name` alias normalization and resolution in status-session parsing so sessions exposing legacy snake_case model keys parse correctly.
+- ✅ **Monitoring reliability coverage:** added fixture + regression test `openclaw-status-session-model-name.json` / `supports model_name alias in status sessions payload`.
+- ✅ **Validation sweep:** `npm run validate:openclaw-release-gates:all --silent` and `npm run validate:all --silent` both passed with full suite (`20 pass, 0 fail, 0 skip`).
+- ✅ **Packaging/scripts/docs:** no packaging logic change needed this cycle; parser reliability change is directly tied to more resilient OpenClaw stats ingestion before packaging gates consume parsed usage snapshots.
+
+### Notes
+
+- ✅ **Commit status:** parser + fixture + test + QA log updated.
+
 ## QA cycle update — 2026-02-24 05:20 America/Toronto
 
 ### Completed this cycle

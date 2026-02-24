@@ -1,0 +1,18 @@
+{
+  "status": {
+    "stats": {
+      "current": {
+        "sessions": [
+          {
+            "sessionId": "name-case",
+            "agentId": "agent-name",
+            "model_name": "claude-3-opus",
+            "total_tokens": "888",
+            "updatedAt": 1771289000000,
+            "tokens_per_minute": "25.5"
+          }
+        ]
+      }
+    }
+  }
+}

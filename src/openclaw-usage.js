@@ -223,6 +223,7 @@ const OPENCLAW_ALIAS_KEY_MAP = {
   recent_sessions: 'recentSessions',
   active_sessions: 'activeSessions',
   default_model: 'defaultModel',
+  model_name: 'modelName',
   session_id: 'sessionId',
   agent_id: 'agentId',
   usage_ts: 'usageTs'
@@ -261,6 +262,7 @@ function hasAnySessionSignal(value) {
     value.agent_id,
     value.model,
     value.modelName,
+    value.model_name,
     value.totalTokens,
     value.total_tokens,
     value.inputTokens,
@@ -493,18 +495,28 @@ function parseFromStatusJson(parsed) {
 
     const defaultsModel = pickString(
       defaults.model,
+      defaults.modelName,
       defaults.defaultModel,
       defaults?.default_model,
+      defaults?.model_name,
       parsed?.defaultModel,
       parsed?.default_model,
+      parsed?.modelName,
+      parsed?.model_name,
       parsed?.status?.defaultModel,
       parsed?.status?.default_model,
+      parsed?.status?.modelName,
+      parsed?.status?.model_name,
       parsed?.status?.data?.defaultModel,
       parsed?.status?.data?.default_model,
       parsed?.result?.defaultModel,
       parsed?.result?.default_model,
+      parsed?.result?.modelName,
+      parsed?.result?.model_name,
       parsed?.data?.defaultModel,
-      parsed?.data?.default_model
+      parsed?.data?.default_model,
+      parsed?.data?.modelName,
+      parsed?.data?.model_name
     )
     if (!defaultsModel) return null
     return {
@@ -521,20 +533,32 @@ function parseFromStatusJson(parsed) {
   const model = pickString(
     session.model,
     session.modelName,
+    session.model_name,
     session?.usage?.model,
+    session?.usage?.modelName,
+    session?.usage?.model_name,
     session?.defaultModel,
     session?.default_model,
     defaults.model,
-    parsed?.default_model,
+    defaults.modelName,
+    defaults?.model_name,
     parsed?.defaultModel,
+    parsed?.default_model,
+    parsed?.modelName,
+    parsed?.model_name,
     parsed?.status?.model,
     parsed?.status?.modelName,
+    parsed?.status?.model_name,
     parsed?.status?.defaultModel,
     parsed?.status?.default_model,
     parsed?.result?.defaultModel,
     parsed?.result?.default_model,
+    parsed?.result?.modelName,
+    parsed?.result?.model_name,
     parsed?.data?.defaultModel,
-    parsed?.data?.default_model
+    parsed?.data?.default_model,
+    parsed?.data?.modelName,
+    parsed?.data?.model_name
   )
   const totalTokens = pickNumber(
     session.totalTokens,

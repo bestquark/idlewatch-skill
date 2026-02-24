@@ -165,6 +165,18 @@ test('parses session array payload with model in defaultModel field', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('supports model_name alias in status sessions payload', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-session-model-name.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'claude-3-opus')
+  assert.equal(usage.totalTokens, 888)
+  assert.equal(usage.tokensPerMin, 25.5)
+  assert.equal(usage.sessionId, 'name-case')
+  assert.equal(usage.agentId, 'agent-name')
+  assert.equal(usage.usageTimestampMs, 1771289000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('supports string snake-case total_tokens in sessions array payloads', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-status-stats-current-sessions-snake-tokens.json'))
   assert.ok(usage)
