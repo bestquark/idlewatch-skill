@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 04:06 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability (parser):** added support for `status.stats.current.sessions` array envelopes in `extractUsageEnvelope` + array-to-session normalization, improving probe parsing for a valid OpenClaw payload shape.
+- ✅ **OpenClaw stats ingestion coverage:** added fixture + unit test for `status.stats.current.sessions` and verified parse selection chooses the freshest session by `updatedAt`/`age`.
+- ✅ **Packaging + docs scripts improvements:** added `validate:openclaw-release-gates:all` script for host+packaged gate batching and documented it in README; updated README with parser-shape coverage note.
+- ✅ **Validation run:** `npm run test:unit` completed successfully (247 tests).
+
+### Notes
+
+- ✅ **Commit status:** parser updates, docs updates, and QA note added in this cycle.
+
 ## QA cycle update — 2026-02-24 04:00 America/Toronto
 
 ### Completed this cycle

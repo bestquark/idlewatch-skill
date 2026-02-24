@@ -108,6 +108,7 @@ Validation helpers:
 - `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
 - `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path).
 - `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-stats-ingestion` + `validate:openclaw-cache-recovery-e2e`) in one gate.
+- `npm run validate:openclaw-release-gates:all` runs both host and packaged OpenClaw release gates in one command (`validate:openclaw-release-gates` + `validate:packaged-openclaw-release-gates:reuse-artifact`) and is the shortest local loop before CI.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one artifact-aware release gate.
@@ -195,6 +196,7 @@ OpenClaw parsing hardened in this release:
 - mixed timestamp names, epoch-seconds variants (`1771278800`), and alternate session container keys are supported
 - wrapped status payload shapes (`result` root object, `data.result` wrappers, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
 - direct session object payloads (`session`, `activeSession`, `currentSession`) are now handled alongside array/map forms
+- sessions as arrays are supported (for example `status.stats.current.sessions`) in addition to map/object `sessions` containers
 - sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers
 - metadata keys like `sessions.defaults` are ignored during session-map selection so tokenized sessions are not shadowed by defaults payloads
 - stale-token markers like `"totalTokensFresh": "false"` are correctly interpreted as freshness metadata rather than causing parser failure
@@ -289,3 +291,17 @@ Trusted release workflow policy:
 - OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health` before artifact upload.
 - The trusted pipeline now also runs `npm run validate:packaged-openclaw-release-gates`, which validates: `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` against the signed artifact before upload (with `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so checks validate the already-built artifact directly). By default this gate enforces OpenClaw presence (`IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1`) unless explicitly disabled (`0|false|off|no`); set `1|true|on|yes` to force on.
 - Trusted release gate also enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` to fail fast if packaged usage age is excessively stale.
+
+
+## Reusable OpenClaw release-gate helpers
+
+For CI / script chaining, artifact-aware convenience helpers are available:
+
+- `npm run validate:packaged-openclaw-release-gates:reuse-artifact`
+- `npm run validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`
+- `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+- `npm run validate:packaged-usage-recovery-e2e:reuse-artifact`
+- `npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact`
+- `npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact`
+
+Each wrapper sets `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so it reuses the already-built packaged artifact in a run.

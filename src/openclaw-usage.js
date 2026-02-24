@@ -292,6 +292,7 @@ function hasAnySessionSignal(value) {
 
 function extractUsageEnvelope(value, depth = 0) {
   if (!value || typeof value !== 'object') return null
+  if (Array.isArray(value)) return value.length > 0 ? value : null
   if (depth > 6) return null
 
   const nextKeys = [
@@ -303,6 +304,7 @@ function extractUsageEnvelope(value, depth = 0) {
     'recent',
     'recentSessions',
     'activeSessions',
+    'sessions',
     'stats',
     'sessionUsage',
     'usage',
@@ -680,20 +682,22 @@ function parseGenericUsage(parsed) {
     return envelope && typeof envelope === 'object' ? envelope : null
   }, null)
 
-  const usageTotals = usage?.totals || usage?.summary || usage?.usageTotals || usage?.usage?.totals || usage?.usage?.summary
-  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usage?.model, usage?.modelName, usageTotals?.model, usage?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
+  const usageRecord = Array.isArray(usage) ? pickBestRecentSession(usage) : usage
+
+  const usageTotals = usageRecord?.totals || usageRecord?.summary || usageRecord?.usageTotals || usageRecord?.usage?.totals || usageRecord?.usage?.summary
+  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usageRecord?.model, usageRecord?.modelName, usageTotals?.model, usageRecord?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
   const totalTokens = pickNumber(
-    usage?.totalTokens,
+    usageRecord?.totalTokens,
     usage?.total_tokens,
-    usage?.tokenCount,
-    usage?.token_count,
-    usage?.tokens,
-    usage?.tokenUsage?.total,
-    usage?.token_usage?.total,
-    usage?.tokens?.total,
-    usage?.tokens?.sum,
-    usage?.inputTokens && usage?.outputTokens ? usage.inputTokens + usage.outputTokens : null,
-    usage?.input_tokens && usage?.output_tokens ? usage.input_tokens + usage.output_tokens : null,
+    usageRecord?.tokenCount,
+    usageRecord?.token_count,
+    usageRecord?.tokens,
+    usageRecord?.tokenUsage?.total,
+    usageRecord?.token_usage?.total,
+    usageRecord?.tokens?.total,
+    usageRecord?.tokens?.sum,
+    usageRecord?.inputTokens && usageRecord?.outputTokens ? usageRecord.inputTokens + usageRecord.outputTokens : null,
+    usageRecord?.input_tokens && usageRecord?.output_tokens ? usageRecord.input_tokens + usageRecord.output_tokens : null,
     usageTotals?.total,
     usageTotals?.totalTokens,
     usageTotals?.total_tokens,
@@ -708,14 +712,14 @@ function parseGenericUsage(parsed) {
     parsed?.totals?.total_tokens
   )
   const tokensPerMin = pickNumber(
-    usage?.tokensPerMinute,
-    usage?.tokens_per_minute,
-    usage?.tpm,
-    usage?.tokenRate,
-    usage?.requestsPerMinute,
-    usage?.rps,
-    usage?.tokens?.perMin,
-    usage?.tokens?.perMinute,
+    usageRecord?.tokensPerMinute,
+    usageRecord?.tokens_per_minute,
+    usageRecord?.tpm,
+    usageRecord?.tokenRate,
+    usageRecord?.requestsPerMinute,
+    usageRecord?.rps,
+    usageRecord?.tokens?.perMin,
+    usageRecord?.tokens?.perMinute,
     usageTotals?.tokensPerMinute,
     usageTotals?.tokens_per_minute,
     usageTotals?.rps,
@@ -734,30 +738,30 @@ function parseGenericUsage(parsed) {
       parsed?.session_id,
       parsed?.payload?.sessionId,
       parsed?.payload?.session_id,
-      usage?.sessionId,
-      usage?.session_id,
-      usage?.id
+      usageRecord?.sessionId,
+      usageRecord?.session_id,
+      usageRecord?.id
     ),
     agentId: pickString(
       parsed?.agentId,
       parsed?.agent_id,
       parsed?.payload?.agentId,
       parsed?.payload?.agent_id,
-      usage?.agentId,
-      usage?.agent_id
+      usageRecord?.agentId,
+      usageRecord?.agent_id
     ),
     usageTimestampMs: pickTimestamp(
-      usage?.updatedAt,
-      usage?.updated_at,
-      usage?.updatedAtMs,
-      usage?.ts,
-      usage?.time,
-      usage?.timestamp,
-      usage?.tsMs,
-      usage?.timestampMs,
-      usage?.usageTs,
-      usage?.usage_timestamp,
-      usage?.usageTimestampMs,
+      usageRecord?.updatedAt,
+      usageRecord?.updated_at,
+      usageRecord?.updatedAtMs,
+      usageRecord?.ts,
+      usageRecord?.time,
+      usageRecord?.timestamp,
+      usageRecord?.tsMs,
+      usageRecord?.timestampMs,
+      usageRecord?.usageTs,
+      usageRecord?.usage_timestamp,
+      usageRecord?.usageTimestampMs,
       usageTotals?.updatedAt,
       usageTotals?.updated_at,
       usageTotals?.updatedAtMs,

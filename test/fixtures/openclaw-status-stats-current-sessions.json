@@ -1,0 +1,28 @@
+{
+  "status": {
+    "stats": {
+      "current": {
+        "sessions": [
+          {
+            "sessionId": "old-session",
+            "agentId": "agent-old",
+            "model": "gpt-4.1",
+            "totalTokens": 100,
+            "updatedAt": 1771270000000
+          },
+          {
+            "sessionId": "active-session",
+            "agentId": "agent-active",
+            "model": "gpt-5.3-codex",
+            "totalTokens": 4321,
+            "updatedAt": 1771279100000,
+            "tokensPerMinute": 66.6
+          }
+        ],
+        "totals": {
+          "totalTokens": 4421
+        }
+      }
+    }
+  }
+}
