@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-24 05:37 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Reliability hardening in parser selection:** fixed status-vs-generic score conflict in `parseOpenClawUsage`.
+  - The parser now evaluates both status and generic payload interpretations and keeps the higher-confidence match.
+  - This resolves cases where status parsing returned a weak `partial` object while generic payloads in the same command output contained richer usage signals.
+- ✅ **Regression coverage:** added fixture + unit test `supports model_name in generic usage payloads` for top-level `model_name` payloads.
+- ✅ **Validation:** `npm run test:unit`, `npm run validate:openclaw-release-gates:all --silent`, and `npm run validate:all --silent` all passed (`259 pass` then `20 pass, 0 fail, 0 skip`).
+
+### Notes
+
+- ✅ **Commit status:** parser selection + coverage + QA log update completed.
+
 ## QA cycle update — 2026-02-24 05:32 America/Toronto
 
 ### Completed this cycle

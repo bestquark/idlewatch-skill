@@ -1,0 +1,9 @@
+{
+  "model_name": "llama-3.3",
+  "total_tokens": "135",
+  "tokens_per_minute": "21.5",
+  "session_id": "generic-model-name",
+  "agent_id": "agent-generic",
+  "updatedAt": 1771324000000,
+  "ageMs": 12000
+}

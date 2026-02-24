@@ -711,7 +711,39 @@ function parseGenericUsage(parsed) {
   const usageRecord = Array.isArray(usage) ? pickBestRecentSession(usage) : usage
 
   const usageTotals = usageRecord?.totals || usageRecord?.summary || usageRecord?.usageTotals || usageRecord?.usage?.totals || usageRecord?.usage?.summary
-  const model = pickString(parsed?.model, parsed?.default_model, parsed?.modelName, parsed?.status?.model, parsed?.status?.default_model, parsed?.status?.modelName, usageRecord?.model, usageRecord?.modelName, usageRecord?.defaultModel, usageRecord?.default_model, usageTotals?.model, usageRecord?.modelName, parsed?.result?.model, parsed?.data?.model, parsed?.data?.defaultModel, parsed?.data?.default_model, parsed?.payload?.model, parsed?.payload?.defaultModel, parsed?.payload?.default_model)
+  const model = pickString(
+    parsed?.model,
+    parsed?.default_model,
+    parsed?.modelName,
+    parsed?.model_name,
+    parsed?.status?.model,
+    parsed?.status?.default_model,
+    parsed?.status?.modelName,
+    parsed?.status?.model_name,
+    usageRecord?.model,
+    usageRecord?.modelName,
+    usageRecord?.model_name,
+    usageRecord?.defaultModel,
+    usageRecord?.default_model,
+    usageTotals?.model,
+    usageTotals?.modelName,
+    usageTotals?.model_name,
+    usageTotals?.defaultModel,
+    usageTotals?.default_model,
+    parsed?.result?.model,
+    parsed?.result?.modelName,
+    parsed?.result?.model_name,
+    parsed?.data?.model,
+    parsed?.data?.modelName,
+    parsed?.data?.model_name,
+    parsed?.data?.defaultModel,
+    parsed?.data?.default_model,
+    parsed?.payload?.model,
+    parsed?.payload?.modelName,
+    parsed?.payload?.model_name,
+    parsed?.payload?.defaultModel,
+    parsed?.payload?.default_model
+  )
   const totalTokens = pickNumber(
     usageRecord?.totalTokens,
     usageRecord?.total_tokens,
@@ -871,11 +903,7 @@ export function parseOpenClawUsage(raw) {
       if (score > bestScore) {
         bestMatch = fromStatus
         bestScore = score
-        if (score >= 10) {
-          return bestMatch
-        }
       }
-      continue
     }
 
     const fromGeneric = parseGenericUsage(normalized)
@@ -884,10 +912,11 @@ export function parseOpenClawUsage(raw) {
       if (score > bestScore) {
         bestMatch = fromGeneric
         bestScore = score
-        if (score >= 10) {
-          return bestMatch
-        }
       }
+    }
+
+    if (bestScore >= 10) {
+      return bestMatch
     }
   }
 

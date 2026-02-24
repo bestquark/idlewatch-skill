@@ -67,6 +67,19 @@ test('parses generic usage payloads', () => {
   })
 })
 
+
+
+test('supports model_name in generic usage payloads', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-usage-model-name-generic.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'llama-3.3')
+  assert.equal(usage.totalTokens, 135)
+  assert.equal(usage.tokensPerMin, 21.5)
+  assert.equal(usage.sessionId, 'generic-model-name')
+  assert.equal(usage.agentId, 'agent-generic')
+  assert.equal(usage.usageTimestampMs, 1771324000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
 test('parses status wrapper payloads under status.current', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-status-status-wrapper.json'))
   assert.ok(usage)
