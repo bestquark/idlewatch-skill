@@ -1,0 +1,2 @@
+[31m[warn][0m starting OpenClaw probe
+{"status":"ok","sessions":{"active":[{"sessionId":"ansi1","agentId":"agent-ansi","model":"gpt-5.3-codex","totalTokens":4444,"updatedAt":1771309900000,"totalTokensFresh":true}]}}[32m[done][0m

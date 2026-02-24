@@ -262,6 +262,17 @@ test('parses stderr payload even when command exits non-zero', () => {
   assert.equal(got.integrationStatus, 'ok')
 })
 
+test('ignores ANSI escape noise and parses JSON session payload', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-ansi-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'gpt-5.3-codex')
+  assert.equal(got.totalTokens, 4444)
+  assert.equal(got.sessionId, 'ansi1')
+  assert.equal(got.agentId, 'agent-ansi')
+  assert.equal(got.usageTimestampMs, 1771309900000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)

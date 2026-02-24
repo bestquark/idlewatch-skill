@@ -29,9 +29,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 22:57)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 23:15)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 23:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Parser reliability improvement:** Added unit coverage for OpenClaw noise formats with ANSI escape sequences, including prefixed/suffixed escape-coded warnings around JSON payloads, ensuring parser keeps selecting valid JSON candidates.
+- ✅ **Monitoring reliability:** Increased resilience to real CLI stderr/stdout corruption patterns in OpenClaw status output without weakening core parsing behavior.
+- ✅ **Validation sweep:** Full validation sweep still passes with no regressions.
+
+### Validation details
+
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (added ANSI-noise fixture coverage).
+- ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** OpenClaw parser now explicitly validated against escaped terminal-output noise, reducing false negatives in real-world packaged monitor runs.
+- 🧨 **OpenClaw integration gap remains:** full remote write-path check is still blocked by missing Firebase write credentials (`validate:firebase-write-required-once`).
+- ⚠️ **Distribution trust risk remains:** signed/notarized release path still requires Apple credentials on this host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 22:57 America/Toronto
 
