@@ -48,9 +48,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-24 01:40)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 02:20)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 02:20 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep rerun:** Ran `npm run validate:all` with reuse-artifact mode checks.
+- ✅ **Result:** **18 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry + OpenClaw checks confirmed:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e:reuse-artifact`
+
+### Feature / risk notes
+
+- ✅ No regressions observed in current stability checks.
+- 🧨 OpenClaw integration gap remains: `validate:firebase-write-required-once` still blocked without Firebase write credentials.
+- ⚠️ DMG packaging trust risk remains: missing signing/notary env still blocks `validate:trusted-prereqs`.
+
+### Notes
+
+- ✅ **Commit status:** QA log documentation update only for this cycle.
 
 ## QA cycle update — 2026-02-24 01:40 America/Toronto
 
