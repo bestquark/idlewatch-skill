@@ -1,3 +1,39 @@
+## QA cycle update — 2026-02-24 09:20 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **15 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Feature/bugs status:** no new regressions; parser and release-wrapper updates from 09:15 remain stable.
+- ✅ **OpenClaw integration checks:** `validate:firebase-emulator-mode` still passes.
+- ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account setup).
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+
+### Notes
+
+- ✅ **Commit status:** QA log documentation only this cycle.
+
+## QA cycle update — 2026-02-24 09:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring/packaging reliability:** added top-level convenience release wrappers in `package.json` for consolidated OpenClaw verification (`validate:release-gate`, `validate:release-gate:all`) and wired them into CI/validation orchestration paths to avoid missing host+packaged coverage gaps.
+- ✅ **Outcome:** one-command release validation now maps to both host and packaged resilience checks consistently.
+- ✅ **Validation:** `npm run test:unit` and `SKIP_PACKAGING=1 npm run validate:all --silent` run successfully in this cycle.
+
+### Notes
+
+- ✅ **Commit status:** package scripts, CI/validate-all wrapper wiring, docs, and QA log completed.
+
 ## QA cycle update — 2026-02-24 09:10 America/Toronto
 
 ### Completed this cycle
