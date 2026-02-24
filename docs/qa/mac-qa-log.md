@@ -29,9 +29,34 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:25)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:30)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep re-run:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Result:** **20 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry + OpenClaw validations confirmed:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-cache-recovery-e2e`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:packaged-openclaw-stats-ingestion`
+  - `validate:packaged-openclaw-cache-recovery-e2e`
+
+### Distribution + OpenClaw risk checks
+
+- ✅ `validate:firebase-emulator-mode` (dry-run, emulator mode) passed.
+- ✅ `validate:packaged-*` OpenClaw ingestion checks remained green in this run.
+- 🧨 **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still blocked by missing Firebase write credentials.
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked due missing `MACOS_CODESIGN_IDENTITY` / notary profile on this host.
+
+### Notes
+
+- ✅ **Commit status:** no source code changes this cycle; QA log only.
 
 ## QA cycle update — 2026-02-23 21:25 America/Toronto
 
