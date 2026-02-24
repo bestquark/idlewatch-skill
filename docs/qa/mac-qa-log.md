@@ -1,3 +1,22 @@
+## QA cycle update — 2026-02-24 01:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Script hygiene:** added and documented `:reuse-artifact` OpenClaw wrappers for all host/packaged validator commands to make CI and local reuse explicit and consistent.
+- ✅ **Workflow consistency:** switched validation invocations in `scripts/validate-all.sh` and CI to the artifact-reuse wrappers where applicable.
+- ✅ **Packaging reliability:** avoids repeated packaging during a single run and keeps validator behavior stable when an artifact is already available.
+
+### Validation details
+
+- ✅ `npm run validate:openclaw-release-gates:reuse-artifact --silent` passed.
+- ✅ `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent` passed.
+- ✅ `npm run validate:all --silent` passed (post-wrapper migration).
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
+
 # IdleWatch Mac QA Readiness Log
 
 Date: 2026-02-16  
@@ -29,9 +48,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-24 01:30)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 01:40)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 01:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep rerun:** Ran `npm run validate:all` with release-gate reuse mode.
+- ✅ **Result:** **18 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry + OpenClaw checks confirmed:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e:reuse-artifact`
+
+### OpenClaw/packaging notes
+
+- ✅ `validate:firebase-emulator-mode` (emulator dry-run) passed.
+- 🧨 **OpenClaw integration gap persists:** remote write-path validation (`validate:firebase-write-required-once`) still blocked by missing Firebase write credentials.
+- ⚠️ **DMG packaging trust risk persists:** trusted prerequisite check remains blocked by missing `MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE` in this environment.
+
+### Notes
+
+- ✅ **Commit status:** no source code changes this cycle; QA log documentation only.
 
 ## QA cycle update — 2026-02-24 01:30 America/Toronto
 
