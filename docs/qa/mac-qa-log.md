@@ -29,9 +29,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:27)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:35)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 00:35 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw parser reliability expansion:** added fixture and unit test coverage for mixed terminal noise sequences (CSI + OSC + DCS together) to validate parser robustness under real-world noisy CLI output.
+- ✅ **Monitoring reliability:** parser pass count increased to include mixed-noise case, now covering 30 targeted OpenClaw parser tests (0 fail).
+- ✅ **Validation continuity:** full validation sweep remains green after noise-regression hardening.
+
+### Validation details
+
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (30 pass, 0 fail).
+- ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
+
+### Features / risks observed
+
+- ✅ **Feature:** this closes another common ingestion edge case where probe output contains multiple control sequence formats in a single stream.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification still blocked by Firebase write credentials (`validate:firebase-write-required-once`).
+- ⚠️ **Distribution trust risk remains:** release notarization trust path still depends on Apple credentials in this environment.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-24 00:27 America/Toronto
 

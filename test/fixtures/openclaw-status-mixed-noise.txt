@@ -1,0 +1,1 @@
+[2J[?25h]0;OpenClaw ProbeP0;2;1 12:34:56\\{"status":"ok","sessions":{"active":[{"sessionId":"mixed-ansi","agentId":"agent-mixed","model":"gemini-pro","totalTokens":1010,"updatedAt":1771317600000,"totalTokensFresh":true}]}}

@@ -330,6 +330,18 @@ test('strips DCS control sequences before parsing JSON', () => {
   assert.equal(got.integrationStatus, 'ok')
 })
 
+
+test('strips mixed terminal noise sequences together', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-mixed-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'gemini-pro')
+  assert.equal(got.totalTokens, 1010)
+  assert.equal(got.sessionId, 'mixed-ansi')
+  assert.equal(got.agentId, 'agent-mixed')
+  assert.equal(got.usageTimestampMs, 1771317600000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)
