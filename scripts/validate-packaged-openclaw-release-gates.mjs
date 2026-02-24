@@ -21,9 +21,16 @@ function ensureReleaseArtifact() {
   }
 }
 
+function shouldRequireOpenClaw(rawValue) {
+  const raw = String(rawValue ?? '1').trim().toLowerCase()
+  if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'no') return false
+  if (raw === '1' || raw === 'true' || raw === 'on' || raw === 'yes') return true
+  return true
+}
+
 function runValidator(name, extraEnv = {}) {
-  const enforceOpenClawUsage = process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE || '1'
-  const requireOpenClaw = String(process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE).toLowerCase() === '0' ? '0' : enforceOpenClawUsage
+  const requireOpenClawUsage = shouldRequireOpenClaw(process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE)
+  const requireOpenClaw = requireOpenClawUsage ? '1' : '0'
 
   const result = spawnSync('npm', ['run', name, '--silent'], {
     cwd: repoRoot,

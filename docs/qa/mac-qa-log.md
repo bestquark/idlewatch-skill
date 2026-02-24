@@ -29,7 +29,7 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 22:43)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 23:05)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
 
@@ -101,6 +101,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 ### Notes
 
 - ✅ **Commit status:** no code changes this cycle; QA log documentation update only.
+
+## QA cycle update — 2026-02-23 23:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Release-gate robustness improvement:** Hardened `validate:packaged-openclaw-release-gates` to consistently parse `IDLEWATCH_REQUIRE_OPENCLAW_USAGE` values (`1/true/on/yes` enable, `0/false/off/no` disable).
+- ✅ **Caller reliability improvement:** Gate now uses a single normalized interpretation for OpenClaw requirement and always passes an explicit `IDLEWATCH_REQUIRE_OPENCLAW_USAGE` flag to subcommands, preventing ambiguous env handling.
+- ✅ **Docs aligned:** Packaging and trusted-release docs now explicitly document accepted `IDLEWATCH_REQUIRE_OPENCLAW_USAGE` toggles.
+
+### Validation details
+
+- ✅ `npm run validate:packaged-openclaw-release-gates --silent` passed with explicit boolean parsing behavior.
+- ✅ `npm run validate:all --silent` remains green: **19 pass, 0 fail, 0 skip**.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** Cleaner config semantics for release checks when toggling OpenClaw enforcement in CI/debug flows.
+- 🧨 **OpenClaw integration gap remains:** full write-path verification still blocked without Firebase write credentials.
+- ⚠️ **Distribution trust risk remains:** signing/notary verification still depends on Apple credentials on this host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 22:45 America/Toronto
 
