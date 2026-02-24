@@ -288,8 +288,8 @@ Trusted-release workflow required secrets:
 - `APPLE_NOTARY_API_KEY_P8`
 
 Trusted release workflow policy:
-- OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health` before artifact upload.
-- The trusted pipeline now also runs `npm run validate:packaged-openclaw-release-gates`, which validates: `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` against the signed artifact before upload (with `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so checks validate the already-built artifact directly). By default this gate enforces OpenClaw presence (`IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1`) unless explicitly disabled (`0|false|off|no`); set `1|true|on|yes` to force on.
+- OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health:reuse-artifact` before artifact upload.
+- The trusted pipeline now also runs `npm run validate:packaged-openclaw-release-gates:reuse-artifact`, which validates: `validate:packaged-usage-health:reuse-artifact`, `validate:packaged-openclaw-stats-ingestion:reuse-artifact`, and `validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact` against the signed artifact before upload (with the wrapper setting `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so checks validate the already-built artifact directly). By default this gate enforces OpenClaw presence (`IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1`) unless explicitly disabled (`0|false|off|no`); set `1|true|on|yes` to force on.
 - Trusted release gate also enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` to fail fast if packaged usage age is excessively stale.
 
 

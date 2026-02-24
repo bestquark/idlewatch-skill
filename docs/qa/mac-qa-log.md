@@ -1,3 +1,19 @@
+## QA cycle update — 2026-02-24 05:17 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging docs + release CI consistency:** switched trusted release CI to use the explicit artifact-reuse wrapper command `npm run validate:packaged-openclaw-release-gates:reuse-artifact` (instead of calling the base script + manual `IDLEWATCH_SKIP_PACKAGE_MACOS`).
+- ✅ **Packaging docs + scripts alignment:** updated `docs/packaging/macos-dmg.md` and `README.md` trusted-release text to reflect that trusted release gates now execute via the reuse wrapper chain:
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-health:reuse-artifact`
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`
+- ✅ **Validation:** `npm run test:unit` ✅ (**255 pass, 0 fail**) to ensure no regressions from docs/release-script changes.
+
+### Notes
+
+- ✅ **Commit status:** workflow + docs updates + QA entry completed.
+
 ## QA cycle update — 2026-02-24 05:12 America/Toronto
 
 ### Completed this cycle
