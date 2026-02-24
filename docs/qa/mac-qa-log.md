@@ -29,9 +29,33 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:20)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 21:25)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-23 21:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI OpenClaw stats coverage expanded:** Added both `validate:openclaw-stats-ingestion` and `validate:packaged-openclaw-stats-ingestion` to CI workflow steps, so stats-fallback parsing is now validated in PR/push Node and macOS packaging jobs.
+- ✅ **CI reliability hardening:** `validate:openclaw-stats-ingestion` now runs on every matrix node-tests job, and packaged stats ingestion now runs on macOS packaging smoke.
+
+### Validation details
+
+- ✅ `npm run validate:openclaw-stats-ingestion --silent` passed.
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion --silent` passed.
+- ✅ `npm run validate-all --silent` remains green after CI-workflow coverage changes.
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** CI now enforces both host and packaged stats fallback parsing, reducing divergence risk between local and packaged validation paths.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification in packaging is still blocked without Firebase write credentials.
+- ⚠️ **DMG signing/notarization risk remains:** unsigned/notarized artifacts still affect trusted-release confidence.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 
 ## QA cycle update — 2026-02-23 21:17 America/Toronto
 

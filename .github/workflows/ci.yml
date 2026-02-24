@@ -56,6 +56,9 @@ jobs:
       - name: Validate OpenClaw cache recovery from stale fallback
         run: npm run validate:openclaw-cache-recovery-e2e
 
+      - name: Validate OpenClaw stats-ingestion fallback parse
+        run: npm run validate:openclaw-stats-ingestion
+
   macos-packaging-smoke:
     name: macOS packaging scaffold smoke
     runs-on: macos-latest
@@ -94,6 +97,9 @@ jobs:
 
       - name: Validate packaged OpenClaw parser resilience for non-zero-exit noisy probes
         run: npm run validate:packaged-usage-probe-noise-e2e
+
+      - name: Validate packaged OpenClaw stats fallback parse
+        run: npm run validate:packaged-openclaw-stats-ingestion
 
       - name: Validate packaged OpenClaw cache recovery from stale fallback
         run: npm run validate:packaged-openclaw-cache-recovery-e2e
