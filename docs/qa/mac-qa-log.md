@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 04:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging script maintenance:** standardized `scripts/validate-all.sh` to invoke the new packaged OpenClaw `:reuse-artifact` validator wrappers directly, eliminating repeated raw artifact-gating boilerplate and making reuse behavior explicit in validation output.
+- ✅ **Validation coverage:** ran `npm run validate:all --silent` successfully with `18 pass, 0 fail, 0 skip`.
+- ✅ **Monitoring reliability / OpenClaw ingestion:** retained parser hardening and array-based status.stats parsing from prior cycle and kept `validate:openclaw-release-gates` green under this run.
+
+### Notes
+
+- ✅ **Commit status:** script tweak and QA note only in this cycle.
+
 ## QA cycle update — 2026-02-24 04:10 America/Toronto
 
 ### Completed this cycle

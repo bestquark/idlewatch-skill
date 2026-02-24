@@ -68,10 +68,10 @@ else
   run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
   run_validator "validate:packaged-usage-age-slo"              npm run validate:packaged-usage-age-slo --silent
-  run_validator "validate:packaged-openclaw-release-gates (artifact reuse mode)" env IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates --silent
-  run_validator "validate:packaged-usage-recovery-e2e"          npm run validate:packaged-usage-recovery-e2e --silent
-  run_validator "validate:packaged-usage-alert-rate-e2e"       npm run validate:packaged-usage-alert-rate-e2e --silent
-  run_validator "validate:packaged-usage-probe-noise-e2e"      npm run validate:packaged-usage-probe-noise-e2e --silent
+  run_validator "validate:packaged-openclaw-release-gates:reuse-artifact (artifact reuse mode)" npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
+  run_validator "validate:packaged-usage-recovery-e2e:reuse-artifact"         npm run validate:packaged-usage-recovery-e2e:reuse-artifact --silent
+  run_validator "validate:packaged-usage-alert-rate-e2e:reuse-artifact"       npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact --silent
+  run_validator "validate:packaged-usage-probe-noise-e2e:reuse-artifact"      npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact --silent
   run_validator "validate:dmg-install"                         npm run validate:dmg-install --silent
   run_validator "validate:dmg-checksum"                        npm run validate:dmg-checksum --silent
 fi
