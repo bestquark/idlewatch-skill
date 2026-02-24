@@ -58,6 +58,29 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 - ✅ **Commit status:** no source changes this cycle; QA log documentation only.
 
+## QA cycle update — 2026-02-24 01:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging reliability:** updated `validate:packaged-usage-recovery-e2e` to honor `IDLEWATCH_SKIP_PACKAGE_MACOS=1`, preventing duplicate repackaging when a prebuilt artifact is already available in validation suites.
+- ✅ **CI sweep optimization:** `.github/workflows/ci.yml` now runs packaged usage-recovery validation in artifact-reuse mode (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) after packaging gate steps.
+- ✅ **Doc/validation consistency:** kept `validate:all` passing with stable behavior under reused-artifact packaging mode for noisy-probe recovery checks.
+
+### Validation details
+
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-usage-recovery-e2e --silent` passed.
+- ✅ `npm run validate:all --silent` passed: **18 pass, 0 fail, 0 skip**.
+
+### Features / risks observed
+
+- ✅ **Feature:** reduces CI package churn and lowers false failure risk from repeated packaging for the same validation run.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification still requires Firebase write credentials.
+- ⚠️ **Distribution trust risk remains:** signed/notarized release checks still depend on Apple credentials on this host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
+
 ## QA cycle update — 2026-02-24 00:54 America/Toronto
 
 ### Completed this cycle

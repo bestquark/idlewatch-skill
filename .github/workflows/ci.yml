@@ -104,6 +104,8 @@ jobs:
         run: npm run validate:packaged-openclaw-release-gates --silent
 
       - name: Validate packaged OpenClaw usage stale-threshold recovery
+        env:
+          IDLEWATCH_SKIP_PACKAGE_MACOS: '1'
         run: npm run validate:packaged-usage-recovery-e2e
 
       - name: Build unsigned DMG
