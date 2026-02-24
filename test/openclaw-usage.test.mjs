@@ -319,6 +319,17 @@ test('strips OSC/title control sequences before parsing JSON', () => {
   assert.equal(got.integrationStatus, 'ok')
 })
 
+test('strips DCS control sequences before parsing JSON', () => {
+  const got = parseOpenClawUsage(fixture('openclaw-status-dcs-noise.txt'))
+  assert.ok(got)
+  assert.equal(got.model, 'deepseek-coder')
+  assert.equal(got.totalTokens, 6000)
+  assert.equal(got.sessionId, 'dcs1')
+  assert.equal(got.agentId, 'agent-dcs')
+  assert.equal(got.usageTimestampMs, 1771316600000)
+  assert.equal(got.integrationStatus, 'ok')
+})
+
 test('parses stats payload with nested current object under status.stats', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-current-wrapper2.json'))
   assert.ok(usage)

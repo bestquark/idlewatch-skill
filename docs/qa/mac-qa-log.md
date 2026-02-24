@@ -29,9 +29,32 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 23:55)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:15)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 00:15 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw parser hardening (terminal-control coverage):** extended noise stripping in `extractOpenClawNoise` to remove DCS (`ESC P ... ESC\`) control sequences before JSON extraction.
+- ✅ **Monitoring reliability:** added fixture `openclaw-status-dcs-noise.txt` and new unit test `strips DCS control sequences before parsing JSON`.
+- ✅ **Validation:** full test and full validation sweep still pass after DCS/noise hardening.
+
+### Validation details
+
+- ✅ `npm run test:unit -- test/openclaw-usage.test.mjs` passed (**29 pass, 0 fail**).
+- ✅ `npm run validate:all --silent` passed: **19 pass, 0 fail, 0 skip**.
+
+### Features / risks observed
+
+- ✅ **Feature:** parser now tolerates an additional terminal control sequence class seen in real-world CLI environments (DCS payload wrappers), reducing false-negative ingestion events.
+- 🧨 **OpenClaw integration gap remains:** remote write-path confirmation still requires credentials for `validate:firebase-write-required-once`.
+- ⚠️ **Distribution trust risk remains:** signed/notarized release execution still requires Apple credentials on this host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-23 23:55 America/Toronto
 
