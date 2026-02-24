@@ -1,14 +1,28 @@
-## QA cycle update — 2026-02-24 04:15 America/Toronto
+## QA cycle update — 2026-02-24 04:20 America/Toronto
 
 ### Completed this cycle
 
-- ✅ **Packaging script maintenance:** standardized `scripts/validate-all.sh` to invoke the new packaged OpenClaw `:reuse-artifact` validator wrappers directly, eliminating repeated raw artifact-gating boilerplate and making reuse behavior explicit in validation output.
-- ✅ **Validation coverage:** ran `npm run validate:all --silent` successfully with `18 pass, 0 fail, 0 skip`.
-- ✅ **Monitoring reliability / OpenClaw ingestion:** retained parser hardening and array-based status.stats parsing from prior cycle and kept `validate:openclaw-release-gates` green under this run.
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **18 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry/feature checks:** validated OpenClaw and packaging telemetry paths with:
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e`
+  - `validate:packaged-usage-alert-rate-e2e`
+  - `validate:packaged-usage-probe-noise-e2e`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Packaging/runtime bug/feature status:** no new regressions; prior parser hardening and status payload fixes remain green and release-gate wrappers still behave consistently.
+- ⚠️ **OpenClaw integration gap:** `validate:firebase-write-required-once` remains blocked until Firebase write credentials are configured (`FIREBASE_PROJECT_ID` + service-account flow).
+- ⚠️ **DMG packaging risk:** `validate:trusted-prereqs` still blocked by missing Apple signing/notarization env (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`) in this environment.
+- ✅ **OpenClaw emulator validation:** `validate:firebase-emulator-mode` still passes in dry-run + emulator configuration.
 
 ### Notes
 
-- ✅ **Commit status:** script tweak and QA note only in this cycle.
+- ✅ **Commit status:** QA log documentation only in this cycle.
 
 ## QA cycle update — 2026-02-24 04:10 America/Toronto
 
