@@ -29,9 +29,30 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:16)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-24 00:27)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion, packaged-openclaw-cache-recovery-e2e)
+
+## QA cycle update — 2026-02-24 00:27 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Documentation maintenance:** updated `README.md` validation helper list to include `validate:packaged-openclaw-release-gates` and document that it groups usage-health, stats, and cache-recovery checks into one artifact-aware release gate.
+- ✅ **Packaging/docs alignment:** this keeps operator runbooks in sync with the actual release validation execution model and reduces configuration drift.
+
+### Validation details
+
+- ✅ `node -e "console.log('docs update only')"` (documentation validation)
+
+### Features / risks observed
+
+- ✅ **Feature:** easier discoverability of the consolidated release gate for OpenClaw telemetry checks.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification still blocked by Firebase write credentials.
+- ⚠️ **Distribution trust risk remains:** signed/notarized release execution still requires Apple credentials on this host.
+
+### Notes
+
+- ✅ **Commit status:** source changes committed and pushed in this cycle.
 
 ## QA cycle update — 2026-02-24 00:16 America/Toronto
 

@@ -109,6 +109,7 @@ Validation helpers:
 - `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path).
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
+- `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one artifact-aware release gate.
 
 ## OpenClaw usage ingestion (best effort)
 
