@@ -53,11 +53,8 @@ jobs:
       - name: Validate usage alert-rate quality gate
         run: npm run validate:usage-alert-rate-e2e
 
-      - name: Validate OpenClaw cache recovery from stale fallback
-        run: npm run validate:openclaw-cache-recovery-e2e
-
-      - name: Validate OpenClaw stats-ingestion fallback parse
-        run: npm run validate:openclaw-stats-ingestion
+      - name: Validate OpenClaw host release gates (usage health + stats + stale cache recovery)
+        run: npm run validate:openclaw-release-gates --silent
 
   macos-packaging-smoke:
     name: macOS packaging scaffold smoke

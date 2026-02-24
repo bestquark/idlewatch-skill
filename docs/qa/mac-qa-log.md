@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 06:58 America/Toronto
+
+### Completed this cycle
+
+- ✅ **CI packaging reliability improvement:** aligned host OpenClaw smoke checks with the updated release-gate semantics by replacing the two separate host checks (`openclaw-cache-recovery-e2e` + `openclaw-stats-ingestion`) with a single `validate:openclaw-release-gates --silent` step in `.github/workflows/ci.yml`.
+  - This ensures CI validates host OpenClaw coverage in one place: **usage-health, stats ingestion, and stale-cache recovery**.
+- ✅ **Monitoring/ingestion confidence:** this removes partial gate drift where usage-health could be untested in host CI smoke while still being required in release validation.
+- ✅ **Validation:** `npm run test:unit` ✅ (**267 pass, 0 fail**) and `npm run validate:openclaw-release-gates --silent` ✅.
+
+### Notes
+
+- ✅ **Commit status:** CI workflow updated + QA log entry completed.
+
 ## QA cycle update — 2026-02-24 06:52 America/Toronto
 
 ### Completed this cycle
