@@ -1,3 +1,33 @@
+## QA cycle update — 2026-02-24 07:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **20 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-usage-health`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-usage-health:reuse-artifact`
+  - `validate:packaged-usage-age-slo:reuse-artifact`
+  - `validate:packaged-usage-recovery-e2e:reuse-artifact`
+  - `validate:packaged-usage-alert-rate-e2e:reuse-artifact`
+  - `validate:packaged-usage-probe-noise-e2e:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Feature/bugs status:** no new regressions; release validation behavior remains stable after recent docs/workflow edits.
+- ✅ **OpenClaw integration check:** `validate:firebase-emulator-mode` continues to pass.
+- ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account setup).
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+
+### Notes
+
+- ✅ **Commit status:** QA log documentation only in this cycle.
+
 ## QA cycle update — 2026-02-24 07:45 America/Toronto
 
 ### Completed this cycle
