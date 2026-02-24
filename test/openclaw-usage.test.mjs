@@ -104,7 +104,6 @@ test('parses status wrapper payloads under status.current', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
-
 test('returns null for invalid payload', () => {
   assert.equal(parseOpenClawUsage('not-json'), null)
 })

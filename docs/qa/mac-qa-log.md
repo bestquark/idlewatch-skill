@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-24 05:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability (OpenClaw parsing):** refined usage candidate arbitration in `parseOpenClawUsage` so status and generic parses are compared by confidence score with a deterministic preference for the stronger of the two when both are present.
+- ✅ **Test hygiene:** reduced test-file diff noise and kept parser regression coverage intact (mixed-output + generic-override behavior remains validated).
+- ✅ **Validation:** `npm run validate:all --silent` (**20 pass, 0 fail, 0 skip**) and `npm run test:unit` (**264 pass, 0 fail**).
+
+### Notes
+
+- ✅ **Commit status:** parser arbitration update + QA log entry completed.
+
 ## QA cycle update — 2026-02-24 05:51 America/Toronto
 
 ### Completed this cycle

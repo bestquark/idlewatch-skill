@@ -885,6 +885,7 @@ export function parseOpenClawUsage(raw) {
 
   let bestMatch = null
   let bestScore = -1
+  let bestSource = null
   let hasError = false
 
   for (const candidate of candidates) {
@@ -900,18 +901,20 @@ export function parseOpenClawUsage(raw) {
     const fromStatus = parseFromStatusJson(normalized)
     if (fromStatus) {
       const score = usageCandidateScore(fromStatus)
-      if (score > bestScore) {
+      if (score > bestScore || (score === bestScore && bestSource !== 'generic')) {
         bestMatch = fromStatus
         bestScore = score
+        bestSource = 'status'
       }
     }
 
     const fromGeneric = parseGenericUsage(normalized)
     if (fromGeneric) {
       const score = usageCandidateScore(fromGeneric)
-      if (score > bestScore) {
+      if (score > bestScore || (score === bestScore && bestSource !== 'generic')) {
         bestMatch = fromGeneric
         bestScore = score
+        bestSource = 'generic'
       }
     }
 
