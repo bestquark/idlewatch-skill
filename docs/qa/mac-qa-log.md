@@ -29,9 +29,40 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 222 unit tests pass, 0 fail (latest run: 2026-02-23 20:42)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 20:48)
 - All smoke tests green (dry-run, once, help)
-- All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery)
+- All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion)
+
+## QA cycle update — 2026-02-23 20:48 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep expanded:** Added and passed `validate:packaged-openclaw-stats-ingestion` in `npm run validate:all`.
+- ✅ **Monitoring reliability improvement:** Added packaged-only OpenClaw fallback check using mocked CLI output to verify stats fallback command (`stats --json`) is selected and successfully ingested by the packaged launcher.
+- ✅ **Packaging scripts/docs:** Added `validate:packaged-openclaw-stats-ingestion` to `package.json`, `validate-all`, and docs references for mac packaging validation coverage.
+- ✅ **Validation sweep refreshed:** Ran `npm run validate:all` (19 checks): all pass, 0 fail, 0 skip.
+
+### New validation details
+
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion` passed (mock-based, packaged launcher dry-run, stats fallback path).
+- ✅ `npm run validate:all` now includes 19 checks (added packaged stats ingestion validator).
+
+### Features / bugs / risks observed
+
+- ✅ **Feature:** New packaged OpenClaw fallback validator reduces regression risk where packaged launcher may continue selecting stale/disabled commands in status/usage drift scenarios.
+- 🧨 **OpenClaw integration gap:** remote write-path verification still blocked without credentials/secret material (`FIREBASE_*` write-mode checks).
+- ⚠️ **DMG distribution risk:** trusted distribution prerequisites still fail (`validate:trusted-prereqs`) because `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` are missing on this host.
+
+### Test health summary for this cycle
+
+- `npm run validate:all` result: **19 pass, 0 fail, 0 skip**.
+- `validate:openclaw-stats-ingestion`: ✅ pass.
+- `validate:packaged-openclaw-stats-ingestion`: ✅ pass.
+- `validate:trusted-prereqs` result: expected failure due missing signing identity/notary profile.
+
+### Notes
+
+- ✅ **Commit status:** packaging/validation changes committed and ready; latest cycle docs and script coverage shipped.
 
 ## QA cycle update — 2026-02-23 20:42 America/Toronto
 
