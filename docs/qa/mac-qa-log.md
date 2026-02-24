@@ -29,9 +29,37 @@ Owner: QA (Mac distribution + telemetry + OpenClaw integration)
 
 ### Test health
 
-- 225 unit tests pass, 0 fail (latest run: 2026-02-23 20:48)
+- 225 unit tests pass, 0 fail (latest run: 2026-02-23 20:57)
 - All smoke tests green (dry-run, once, help)
 - All packaging validators green (packaged-metadata, bundled-runtime, dmg-install, dmg-checksum, usage-age-slo, usage-recovery, alert-rate, probe-noise, cache-recovery, packaged-openclaw-stats-ingestion)
+
+## QA cycle update — 2026-02-23 20:57 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep refreshed:** Ran `npm run validate:all` from `idlewatch-skill`.
+- ✅ **Result:** **19 pass, 0 fail, 0 skip** (including both OpenClaw ingestion validators).
+- ✅ **OpenClaw smoke checks:**
+  - `validate:firebase-emulator-mode` (dry-run) passed.
+  - `validate:firebase-write-required-once` failed only due missing Firebase credentials (expected).
+- ✅ **Distribution validation:** `validate:trusted-prereqs` still fails fast for missing `MACOS_CODESIGN_IDENTITY` (and typically `MACOS_NOTARY_PROFILE`).
+
+### Features / bugs / risks observed
+
+- ✅ No new telemetry or packaging regressions in this run.
+- 🧨 **OpenClaw integration gap remains:** remote write-path verification in release/packaging mode still blocked without credentials.
+- ⚠️ **DMG signing/notarization risk remains:** unsigned/notarized artifacts can still block Gatekeeper and CI release confidence.
+
+### Test health summary for this cycle
+
+- `npm run validate:all` result: **19 pass, 0 fail, 0 skip**.
+- `validate:openclaw-stats-ingestion`: ✅ pass.
+- `validate:packaged-openclaw-stats-ingestion`: ✅ pass.
+- `validate:trusted-prereqs`: expected failure due missing signing/notary configuration.
+
+### Notes
+
+- ✅ **Commit status:** no source-code changes this cycle; QA log documentation updated.
 
 ## QA cycle update — 2026-02-23 20:48 America/Toronto
 
