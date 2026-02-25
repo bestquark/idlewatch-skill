@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-25 10:23 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Test discovery reliability fix:** changed `test:unit` script from bare `node --test` to `node --test 'test/*.test.mjs'` with explicit glob.
+  - Root cause of 279→186 count drift: `node --test` without a glob was discovering `.test.` files inside `dist/` and `node_modules/` (hundreds of zod, pino, mcporter, etc. dependency tests). Node.js glob resolution changes between versions caused unstable counts.
+  - With explicit glob: **93 pass, 0 fail** — stable, deterministic, only project tests.
+- ✅ **Validation:** `npm run test:unit` ✅ (93 pass) and `npm run validate:openclaw-release-gates --silent` ✅.
+- ✅ **No new bugs or regressions.**
+
+### Notes
+
+- ⚠️ **External blockers unchanged:** Firebase write creds and macOS codesign/notary secrets still missing.
+
 ## QA cycle update — 2026-02-25 05:30 America/Toronto
 
 ### Completed this cycle
