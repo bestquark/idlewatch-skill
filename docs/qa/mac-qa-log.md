@@ -1,4 +1,28 @@
-## QA cycle update — 2026-02-24 18:00 America/Toronto
+## QA cycle update — 2026-02-24 20:10 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **15 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Feature/bugs status:** stable; no new regressions found in this cycle.
+- ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account configuration).
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+
+### Notes
+
+- ✅ **Commit status:** QA log documentation only this cycle.
+
+## QA cycle update — 2026-02-24 18:10 America/Toronto
 
 ### Completed this cycle
 
@@ -13,7 +37,7 @@
   - `validate:packaged-dry-run-schema:reuse-artifact`
   - `validate:dmg-install`
   - `validate:dmg-checksum`
-- ✅ **Feature/bugs status:** stable; no new regressions detected in this 18:00 cycle.
+- ✅ **Feature/bugs status:** stable; no new regressions detected in this 18:10 cycle.
 - ✅ **OpenClaw integration checks:** `validate:firebase-emulator-mode` still passes.
 - ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` remains blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account setup).
 - ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
