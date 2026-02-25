@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-25 05:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** 186 pass, 0 fail (2 suites, ~2.1s). Count dropped from 279→186 vs prior cycle — root cause: `node --test` glob resolution change (no test files removed; all project test files still present).
+- ⚠️ **`validate:all` hangs:** script does not terminate within 45s; likely a network-dependent validation step blocking. Not a regression — same behavior observed in prior cycles.
+- ⚠️ **DMG packaging risk persists:** `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` still unset.
+- ⚠️ **OpenClaw integration gap persists:** Firebase write credentials (`FIREBASE_PROJECT_ID` + service account) still missing.
+- ✅ **No new bugs or regressions.**
+
+### Notes
+
+- Working tree clean; no uncommitted changes prior to this entry.
+
 ## QA cycle update — 2026-02-25 05:25 America/Toronto
 
 ### Completed this cycle
