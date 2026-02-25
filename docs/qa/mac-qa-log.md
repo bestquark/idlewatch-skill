@@ -1,3 +1,34 @@
+## QA cycle update — 2026-02-24 20:21 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **15 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e` ✅
+  - `validate:usage-alert-rate-e2e` ✅
+  - `validate:openclaw-release-gates` ✅
+  - `validate:packaged-openclaw-release-gates` ✅
+  - `validate:packaged-openclaw-robustness:reuse-artifact` ✅
+  - `validate:packaged-dry-run-schema:reuse-artifact` ✅
+  - `validate:dmg-install` ✅
+  - `validate:dmg-checksum` ✅
+- ✅ **Additional QA checks:**
+  - `validate:packaged-metadata` ✅
+  - `validate:packaged-bundled-runtime` ✅
+- ✅ **OpenClaw integration checks:** `validate:firebase-emulator-mode` ✅ (passes in emulator mode) 
+- ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` ❌ blocked — missing write credentials/config (`FIREBASE_PROJECT_ID` + service-account inputs) when `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`.
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` ❌ blocked — missing
+  - `MACOS_CODESIGN_IDENTITY`
+  - `MACOS_NOTARY_PROFILE`
+- 🐞 **Bugs/features observed:**
+  - ✅ No regressions detected vs. prior cycles.
+  - ✅ No new packaging feature regressions observed.
+
+### Notes
+
+- ✅ **Commit status:** QA log documentation only this cycle.
+
 ## QA cycle update — 2026-02-24 20:16 America/Toronto
 
 ### Completed this cycle
