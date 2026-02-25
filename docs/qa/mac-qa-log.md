@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-25 10:30 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** 93 pass, 0 fail (explicit glob, ~2.1s).
+- ✅ **OpenClaw release gates:** usage-health, stats ingestion (multi-shape), stale-cache recovery all green.
+- ✅ **No new bugs or regressions.**
+- ✅ **No feasible improvements remaining** — all open items blocked on external credentials (Firebase write creds, macOS codesign/notary secrets).
+
+### Notes
+
+- ⚠️ **External blockers unchanged:** Firebase write creds and macOS codesign/notary secrets still missing.
+- Working tree clean; nothing to commit beyond this log entry.
+
 ## QA cycle update — 2026-02-25 10:25 America/Toronto
 
 ### Completed this cycle
