@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-25 00:27 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** 279 pass, 0 fail, 0 skip (duration ~3.6s).
+- ✅ **Quick validation sweep:** 9 pass, 0 fail, 6 skip (packaging gates skipped via `--skip-packaging`).
+- ✅ **OpenClaw release gates:** `validate:openclaw-release-gates` passed — usage-health, stats ingestion (multi-shape), and stale-cache recovery all green.
+- ✅ **Telemetry validation:** `validate:usage-freshness-e2e` and `validate:usage-alert-rate-e2e` both pass.
+- ✅ **Smoke tests:** `smoke:help`, `smoke:dry-run`, `smoke:once` all pass.
+
+### Notes
+
+- ⚠️ **DMG packaging validations timeout** when run via `validate:all` (full suite); these appear to require a pre-built artifact or longer execution window. Quick suite correctly skips them. No regression — same behavior as prior cycles.
+- ⚠️ **Remaining external blockers (unchanged):**
+  - `validate:firebase-write-required-once` blocked pending write creds.
+  - `validate:trusted-prereqs` blocked pending macOS signing/notary secrets.
+- ✅ **No new bugs or regressions detected.**
+
 ## QA cycle update — 2026-02-24 20:37 America/Toronto
 
 ### Completed this cycle
