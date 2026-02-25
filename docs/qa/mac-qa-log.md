@@ -1,3 +1,31 @@
+## QA cycle update — 2026-02-24 20:31 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **15 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Bugs/features observed:** stable; no new QA-relevant regressions in monitoring/distribution path this cycle.
+- ✅ **OpenClaw integration check:** `validate:firebase-emulator-mode` still passes in emulator mode (`IDLEWATCH_REQUIRE_FIREBASE_WRITES` can be satisfied in emulator path when configured).
+- ⚠️ **OpenClaw integration gap:** `validate:firebase-write-required-once` ❌ still blocked due missing write creds/config:
+  - Missing `FIREBASE_PROJECT_ID` and service-account settings (`FIREBASE_SERVICE_ACCOUNT_FILE` / `FIREBASE_SERVICE_ACCOUNT_JSON` / `FIREBASE_SERVICE_ACCOUNT_B64`) when `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`.
+- ⚠️ **DMG packaging risk:** `validate:trusted-prereqs` ❌ still blocked by missing trusted-distribution secrets:
+  - Missing `MACOS_CODESIGN_IDENTITY`
+  - Missing `MACOS_NOTARY_PROFILE`
+
+### Notes
+
+- ✅ **Commit status:** `docs/qa/mac-qa-log.md` updated this cycle.
+
 ## QA cycle update — 2026-02-24 20:27 America/Toronto
 
 ### Completed this cycle
