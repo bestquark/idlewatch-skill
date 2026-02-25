@@ -1,0 +1,19 @@
+{
+  "ts": 1771304500000,
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "status-current-stats-02",
+            "agentId": "agent-status-current",
+            "model": "gpt-5.3-codex-pro",
+            "totalTokens": 2048,
+            "tokensPerMinute": 42,
+            "updatedAt": 1771304500000
+          }
+        }
+      }
+    }
+  }
+}

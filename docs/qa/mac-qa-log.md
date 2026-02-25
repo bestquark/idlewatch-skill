@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-24 20:37 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added a new OpenClaw stats-shape matrix validation in `validate-openclaw-stats-ingestion` and packaged stats ingestion by exercising both `status.result` and `status.current` payload layouts with `openclaw stats --json` fallback, reducing parser risk for mixed CLI versions.
+- ✅ **OpenClaw stats ingestion:** added fixture + unit coverage for `status.current.stats.current` session payloads (`test/fixtures/openclaw-stats-status-current-wrapper.json`, `openclaw-usage.test.mjs`).
+- ✅ **Packaging scripts/docs:** broadened release validation docs to explicitly call out coverage of both stats payload layouts in `README.md` and `docs/packaging/macos-dmg.md`; updated `scripts/validate-openclaw-stats-ingestion.mjs` and `scripts/validate-packaged-openclaw-stats-ingestion.mjs` to assert both payload shapes in one execution path.
+- ✅ **Validation:** ran `npm run test:unit`, `npm run validate:openclaw-stats-ingestion --silent`, `npm run validate:openclaw-release-gates --silent`, and `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion --silent`.
+- ✅ **Packaging verification:** `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent` passed.
+
+### Notes
+
+- ⚠️ **Remaining external blockers:**
+  - `validate:firebase-write-required-once` remains blocked pending write creds (`FIREBASE_PROJECT_ID` + service-account config).
+  - `validate:trusted-prereqs` remains blocked pending macOS signing/notary secrets.
+
+- ✅ **Commit status:** parser fixture/test + OpenClaw stats ingestion scripts + docs + QA log updated.
+
 ## QA cycle update — 2026-02-24 20:31 America/Toronto
 
 ### Completed this cycle

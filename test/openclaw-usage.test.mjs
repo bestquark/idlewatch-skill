@@ -262,6 +262,18 @@ test('parses status payload with nested sessions object and totals in totals.nes
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses status.current.stats.stats-in-legacy-shape payload', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-stats-status-current-wrapper.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex-pro')
+  assert.equal(usage.totalTokens, 2048)
+  assert.equal(usage.tokensPerMin, 42)
+  assert.equal(usage.sessionId, 'status-current-stats-02')
+  assert.equal(usage.agentId, 'agent-status-current')
+  assert.equal(usage.usageTimestampMs, 1771304500000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses wrapped status payload with direct session array and nested usage totals', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-status-wrap-session-object.json'))
   assert.ok(usage)

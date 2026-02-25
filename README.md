@@ -107,10 +107,10 @@ Validation helpers:
 - `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
 - `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
 - `npm run validate:openclaw-usage-health` validates that dry-run telemetry stays on `source.usage=openclaw` with healthy integration/ingestion in OpenClaw-required mode (mocked CLI probe path).
-- `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path).
+- `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path), covering `status.result.stats.current`, `status.current.stats.current`, and adjacent legacy variants.
 - `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-usage-health`, `validate:openclaw-stats-ingestion`, and `validate:openclaw-cache-recovery-e2e`) in one gate.
 - `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
-- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
+- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including both `status.result` and `status.current` stats payload layouts.
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
 - `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).

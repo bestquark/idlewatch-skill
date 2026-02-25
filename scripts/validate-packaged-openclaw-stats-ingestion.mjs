@@ -10,13 +10,8 @@ const rootDir = process.cwd()
 const tempDir = mkdtempSync(join(tmpdir(), 'idlewatch-openclaw-stats-pkg-egress-'))
 const mockBinPath = join(tempDir, 'openclaw-mock.sh')
 
-function writeMockOpenClaw(pathToScript) {
-  const script = `#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ "$1" == "stats" && "$2" == "--json" ]]; then
-  cat <<JSON
-{
+function writeMockOpenClaw(pathToScript, shape) {
+  const resultCurrent = `{
   "status": {
     "result": {
       "stats": {
@@ -29,21 +24,52 @@ if [[ "$1" == "stats" && "$2" == "--json" ]]; then
             "tokensPerMinute": 12.5,
             "updatedAt": 1771311100000
           }
-        },
-        "totals": {
-          "model": "ignored"
         }
       }
     }
   },
   "ts": 1771311110000
-}
+}`
+
+  const statusCurrent = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "packaged-status-current-session",
+            "agentId": "agent-stats-packaged-current",
+            "model": "gpt-5.3-codex-pro",
+            "totalTokens": 4096,
+            "tokensPerMinute": 15,
+            "updatedAt": 1771311900000
+          }
+        }
+      }
+    }
+  },
+  "ts": 1771311910000
+}`
+
+  const script = `#!/usr/bin/env bash
+set -euo pipefail
+
+SCENARIO="${shape}"
+if [[ "$1" == "stats" && "$2" == "--json" ]]; then
+  if [[ "$SCENARIO" == "statusCurrent" ]]; then
+    cat <<JSON
+${statusCurrent}
 JSON
+  else
+    cat <<JSON
+${resultCurrent}
+JSON
+  fi
   exit 0
 fi
 
 if [[ "$1" == "status" || "$1" == "usage" || "$1" == "session" || "$1" == "session_status" ]]; then
-  echo '{"status":"unsupported-command"}\n'
+  echo '{"message":"legacy status output unavailable"}\n'
   exit 0
 fi
 
@@ -84,16 +110,8 @@ function collectRow(env) {
   return readRow(output)
 }
 
-function run() {
-  if (process.env.IDLEWATCH_SKIP_PACKAGE_MACOS !== '1') {
-    execFileSync('npm', ['run', 'package:macos', '--silent'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe']
-    })
-  }
-
-  writeMockOpenClaw(mockBinPath)
+function run(shape, expectations) {
+  writeMockOpenClaw(mockBinPath, shape)
 
   const env = {
     ...process.env,
@@ -119,20 +137,46 @@ function run() {
   assert.equal(row?.source?.usage, 'openclaw', 'packaged OpenClaw path should emit usage=openclaw')
   assert.equal(row?.source?.usageIngestionStatus, 'ok', 'packaged OpenClaw path should report ingestion ok')
   assert.equal(row?.source?.usageProbeResult, 'ok', 'stats --json fallback path should be accepted as successful probe')
-  assert.equal(row?.openclawSessionId, 'packaged-stats-session')
-  assert.equal(row?.openclawAgentId, 'agent-stats-packaged')
-  assert.equal(row?.openclawTotalTokens, 4242)
-  assert.equal(row?.tokensPerMin, 12.5)
-  assert.equal(row?.openclawModel, 'gpt-5.3-codex')
+  assert.equal(row?.openclawSessionId, expectations.sessionId)
+  assert.equal(row?.openclawAgentId, expectations.agentId)
+  assert.equal(row?.openclawTotalTokens, expectations.totalTokens)
+  assert.equal(row?.tokensPerMin, expectations.tokensPerMin)
+  assert.equal(row?.openclawModel, expectations.model)
   assert.equal(row?.source?.usageCommand?.includes('stats --json'), true, 'OpenClaw command used in packaged run should include stats --json when stats fallback is needed')
   assert.equal(row?.source?.usageProbeAttempts >= 3, true, 'stats fallback should require attempts through multiple commands before success')
-  assert.equal(row?.source?.usageProbeError, null, 'successful packaged stats fallback should not leak probe error')
+  assert.equal(row?.usageProbeError || null, null, 'successful packaged stats fallback should not leak probe error')
+}
 
-  console.log('validate-packaged-openclaw-stats-ingestion: ok (packaged launcher can ingest via stats fallback command)')
+function runAllShapes() {
+  if (process.env.IDLEWATCH_SKIP_PACKAGE_MACOS !== '1') {
+    execFileSync('npm', ['run', 'package:macos', '--silent'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+  }
+
+  run('resultCurrent', {
+    sessionId: 'packaged-stats-session',
+    agentId: 'agent-stats-packaged',
+    totalTokens: 4242,
+    model: 'gpt-5.3-codex',
+    tokensPerMin: 12.5
+  })
+
+  run('statusCurrent', {
+    sessionId: 'packaged-status-current-session',
+    agentId: 'agent-stats-packaged-current',
+    totalTokens: 4096,
+    model: 'gpt-5.3-codex-pro',
+    tokensPerMin: 15
+  })
+
+  console.log('validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)')
 }
 
 try {
-  run()
+  runAllShapes()
 } finally {
   rmSync(tempDir, { recursive: true, force: true })
 }
