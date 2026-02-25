@@ -325,7 +325,7 @@ function loadMemPressure() {
 }
 
 function resolveOpenClawBinaries() {
-  const explicit = process.env.IDLEWATCH_OPENCLAW_BIN?.trim()
+  const explicit = (process.env.IDLEWATCH_OPENCLAW_BIN?.trim()) || (process.env.IDLEWATCH_OPENCLAW_BIN_HINT?.trim())
   const homeDir = process.env.HOME?.trim()
 
   if (OPENCLAW_BIN_STRICT && explicit) {
@@ -536,8 +536,12 @@ function loadOpenClawUsage(forceRefresh = false) {
 
   if (preferredOpenClawProbe) {
     sweeps = 1
-    const cachedResult = evaluateProbe(preferredOpenClawProbe.binPath, preferredOpenClawProbe.args, true)
-    if (cachedResult) return cachedResult
+    if (!isBinaryAvailable(preferredOpenClawProbe.binPath)) {
+      preferredOpenClawProbe = null
+    } else {
+      const cachedResult = evaluateProbe(preferredOpenClawProbe.binPath, preferredOpenClawProbe.args, true)
+      if (cachedResult) return cachedResult
+    }
   }
 
   for (let sweep = 0; sweep <= OPENCLAW_PROBE_RETRIES; sweep++) {

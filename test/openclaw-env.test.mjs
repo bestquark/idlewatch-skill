@@ -271,3 +271,50 @@ exit 42\n`,
     rmSync(tempDir, { recursive: true, force: true })
   }
 })
+
+test('accepts legacy IDLEWATCH_OPENCLAW_BIN_HINT as explicit binary path in strict mode', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-bin-hint-'))
+  const mockBin = path.join(tempDir, 'openclaw-hint-mock.sh')
+
+  try {
+    writeFileSync(
+      mockBin,
+      `#!/usr/bin/env bash
+set -euo pipefail
+cat <<'JSON'
+{"sessions":{"defaults":{"model":"gpt-5.3-codex"},"recent":[{"sessionId":"hint-session","agentId":"main","model":"gpt-5.3-codex","totalTokens":2222,"updatedAt":1771280100000,"totalTokensFresh":true}]},"ts":1771280100123}
+JSON
+`,
+      { encoding: 'utf8' }
+    )
+    chmodSync(mockBin, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+      env: {
+        ...process.env,
+        IDLEWATCH_OPENCLAW_BIN: '',
+        IDLEWATCH_OPENCLAW_BIN_HINT: mockBin,
+        IDLEWATCH_OPENCLAW_BIN_STRICT: '1',
+        IDLEWATCH_OPENCLAW_USAGE: 'auto',
+        IDLEWATCH_OPENCLAW_PROBE_RETRIES: '0',
+        IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS: '500',
+        IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS: '1000',
+        IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH: path.join(tempDir, 'openclaw-last-good.json')
+      },
+      encoding: 'utf8'
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    const lines = run.stdout.trim().split('\n').filter(Boolean)
+    const jsonLine = [...lines].reverse().find((line) => line.startsWith('{') && line.endsWith('}'))
+    assert.ok(jsonLine)
+    const payload = JSON.parse(jsonLine)
+
+    assert.equal(payload.source.usage, 'openclaw')
+    assert.equal(payload.source.usageProbeResult, 'ok')
+    assert.equal(payload.source.usageCommand, `${mockBin} status --json`)
+    assert.equal(payload.openclawSessionId, 'hint-session')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})

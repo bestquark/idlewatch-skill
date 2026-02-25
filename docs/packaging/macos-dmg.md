@@ -62,7 +62,7 @@ Each packaged app includes `Contents/Resources/packaging-metadata.json` with bui
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
-- `IDLEWATCH_OPENCLAW_BIN_HINT="/opt/homebrew/bin/openclaw"` — legacy launcher hint (supported for compatibility).
+- `IDLEWATCH_OPENCLAW_BIN_HINT="/opt/homebrew/bin/openclaw"` — legacy launcher hint (supported for compatibility). When `IDLEWATCH_OPENCLAW_BIN` is unset, this is used as the strict-mode explicit fallback as well.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
 - `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.

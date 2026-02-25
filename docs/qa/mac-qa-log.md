@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-24 20:27 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** improved OpenClaw probe fallback behavior by making stored preferred probes validate executability before reusing and by honoring the legacy `IDLEWATCH_OPENCLAW_BIN_HINT` as the strict-mode fallback when `IDLEWATCH_OPENCLAW_BIN` is unset.
+- ✅ **OpenClaw stats ingestion:** added regression coverage in strict-mode hint-path scenarios (`openclaw-env.test.mjs`) to verify the monitored sample still lands on OpenClaw with successful parsing via hint-based CLI resolution.
+- ✅ **Packaging docs:** updated `README.md` + `docs/packaging/macos-dmg.md` to document explicit fallback behavior for `IDLEWATCH_OPENCLAW_BIN_HINT` under strict mode.
+- ✅ **Validation:** ran `npm run test:unit` and `npm run validate:openclaw-release-gates --silent`.
+
+### Notes
+
+- ✅ **Commit status:** `bin/idlewatch-agent.js`, `test/openclaw-env.test.mjs`, `README.md`, `docs/packaging/macos-dmg.md`, `docs/qa/mac-qa-log.md` updated and ready for commit.
+
 ## QA cycle update — 2026-02-24 20:21 America/Toronto
 
 ### Completed this cycle

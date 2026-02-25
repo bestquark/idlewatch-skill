@@ -134,7 +134,7 @@ Binary resolution order for the OpenClaw probe:
 - Successful probe command/args are cached for the life of the process so subsequent samples and forced stale-threshold refreshes reuse the known-good command first before full probe sweep.
 
 - `IDLEWATCH_OPENCLAW_BIN` optionally pins the exact OpenClaw binary path for packaged/non-interactive runtimes.
-- `IDLEWATCH_OPENCLAW_BIN_STRICT=1` (optional) limits probing to only the explicit bin above when set, useful for deterministic tests.
+- `IDLEWATCH_OPENCLAW_BIN_STRICT=1` (optional) limits probing to only the explicit bin above when set, useful for deterministic tests. If `IDLEWATCH_OPENCLAW_BIN` is unset, `IDLEWATCH_OPENCLAW_BIN_HINT` is used as the explicit fallback in strict mode for launcher compatibility.
 - `IDLEWATCH_OPENCLAW_BIN_HINT` is also supported for launcher compatibility in existing packaged flows.
 - `IDLEWATCH_NODE_BIN` optionally pins the Node binary used by packaged app launcher (`IdleWatch.app`).
 - `IDLEWATCH_NODE_RUNTIME_DIR` optionally bundles a portable Node runtime into `IdleWatch.app` (`<runtime>/bin/node` required) so installed apps can run on hosts without a global Node install.
