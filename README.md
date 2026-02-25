@@ -109,13 +109,15 @@ Validation helpers:
 - `npm run validate:openclaw-usage-health` validates that dry-run telemetry stays on `source.usage=openclaw` with healthy integration/ingestion in OpenClaw-required mode (mocked CLI probe path).
 - `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path).
 - `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-usage-health`, `validate:openclaw-stats-ingestion`, and `validate:openclaw-cache-recovery-e2e`) in one gate.
-- `npm run validate:openclaw-release-gates:all` runs both host and packaged OpenClaw release gates in one command (`validate:openclaw-release-gates` + `validate:packaged-openclaw-release-gates:reuse-artifact`) and is the shortest local loop before CI.
+- `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
 - `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).
 - `npm run validate:packaged-openclaw-release-gates:reuse-artifact` validates the same three checks against an already-packaged artifact (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) and is the command used in CI/release smoke for repeatable execution.
-- `npm run validate:packaged-openclaw-robustness:reuse-artifact` runs the full packaged resilience slice in one command: `packaged-usage-age-slo`, `packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, and `packaged-openclaw-release-gates:reuse-artifact`.
+- `npm run validate:packaged-openclaw-robustness` runs the full packaged resilience slice in one command (`packaged-usage-age-slo`, `packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, `packaged-openclaw-release-gates`).
+- `npm run validate:packaged-openclaw-robustness:reuse-artifact` runs the same resilience slice against an already-packaged artifact.
+
 
 ## OpenClaw usage ingestion (best effort)
 
@@ -312,3 +314,8 @@ For CI / script chaining, artifact-aware convenience helpers are available:
 - `npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact`
 
 Each wrapper sets `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so it reuses the already-built packaged artifact in a run.
+
+## Release validation helpers
+- `validate:release-gate`: host OpenClaw release checks plus packaged robustness checks in one command on macOS; on non-macOS it performs host checks only.
+- `validate:release-gate-all`: full host OpenClaw checks + packaged release checks (`validate:openclaw-release-gates:all`) and packaged robustness checks (fresh `validate:packaged-openclaw-robustness`) on macOS; host-only on non-macOS.
+- `validate:packaged-openclaw-robustness` is the fresh-packaging packaged resilience slice (`usage-age-slo`, `usage-alert-rate-e2e`, `usage-probe-noise-e2e`, and `packaged-openclaw-release-gates`).

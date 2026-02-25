@@ -1,3 +1,30 @@
+## QA cycle update — 2026-02-24 20:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging/reliability script hardening:** tightened release gate sequencing so OpenClaw release checks are platform-aware and no longer run packaged reuse checks on non-macOS hosts.
+- ✅ **Added missing release-gate helper:** introduced `validate:packaged-openclaw-robustness` to provide a fresh-packaging packaged resilience command for local full-gate runs.
+- ✅ **Docs alignment:** updated `README.md` and `docs/packaging/macos-dmg.md` to match actual release-gate behavior and to surface `packaged-openclaw-robustness` in workflow guidance.
+- ✅ **Validation sweep:** ran `npm run validate:all`.
+- ✅ **Result:** **15 pass, 0 fail, 0 skip**.
+- ✅ **Telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **Feature/bugs status:** stable; no new regressions found in this cycle.
+- ⚠️ **OpenClaw integration gap persists:** `validate:firebase-write-required-once` still blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account configuration).
+- ⚠️ **DMG packaging risk persists:** `validate:trusted-prereqs` still blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+
+### Notes
+
+- ✅ **Commit status:** `README.md`, `docs/packaging/macos-dmg.md`, `package.json`, `docs/qa/mac-qa-log.md` updated.
+
 ## QA cycle update — 2026-02-24 20:10 America/Toronto
 
 ### Completed this cycle

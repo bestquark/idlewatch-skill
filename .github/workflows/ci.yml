@@ -54,7 +54,7 @@ jobs:
         run: npm run validate:usage-alert-rate-e2e
 
       - name: Validate OpenClaw host release gates (usage health + stats + stale cache recovery)
-        run: npm run validate:openclaw-release-gates --silent
+        run: npm run validate:release-gate-all --silent
 
   macos-packaging-smoke:
     name: macOS packaging scaffold smoke
