@@ -1,3 +1,29 @@
+## QA cycle update — 2026-02-27 17:50 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit coverage:** `npm run test:unit --silent` ✅ (**93 pass, 0 fail**).
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (host mode: `validate-openclaw-usage-health`, `validate-openclaw-stats-ingestion`, `validate-openclaw-cache-recovery-e2e`) with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`
+  - `validate:packaged-openclaw-release-gates` with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact` with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+- ✅ **DMG packaging checks:** `validate:dmg-install` ✅, `validate:dmg-checksum` ✅, `validate:packaged-metadata` ✅, `validate:packaged-bundled-runtime` ✅.
+- ✅ **Monitoring/feature status:** no functional regressions observed in monitor/distribution behavior; no new bugs found.
+- ⚠️ **OpenClaw integration status:**
+  - `validate:firebase-emulator-mode` ✅ (local emulator-mode smoke still passes and emits schema-valid metrics).
+  - `validate:firebase-write-required-once` ❌ blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account config).
+- ✅ **Runtime/integration checks:** `validate:packaged-openclaw-release-gates:reuse-artifact` confirms host-equivalent coverage in packaged artifact for health/stats/cache-recovery flow.
+
+### Notes
+
+- DMG install validation was previously flaky and appears stabilized in this cycle after timeout/diagnostics work in earlier releases; now completes cleanly with 60s dry-run timeout.
+- Remaining external blockers unchanged: `validate:trusted-prereqs` fails without `MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE`, and `validate:firebase-write-required-once` fails without Firebase write credentials.
+
 ## QA cycle update — 2026-02-27 17:45 America/Toronto
 
 ### Completed this cycle
