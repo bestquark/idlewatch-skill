@@ -1,3 +1,44 @@
+## QA cycle update — 2026-02-27 18:17 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** `npm run test:unit --silent` ✅ (**95 pass, 0 fail**).
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+- ✅ **Packaging checks run:**
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+- ✅ **OpenClaw integration checks run:**
+  - `validate:firebase-emulator-mode`
+  - `validate:firebase-write-required-once`
+- ✅ **Monitor/distribution feature status:** no functional regressions observed; host and packaged OpenClaw release gates remain stable and deterministic under `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000`.
+
+### Bugs / features observed
+
+- ✅ No new bugs introduced this cycle.
+- ✅ DMG install retry loop now consistently passes on first attempt in this environment (with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000`).
+
+### DMG packaging risks
+
+- ⚠️ `validate:trusted-prereqs` remains blocked in the local environment due missing trusted distribution secrets (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`), so signing/notary/Stapling path is not yet covered.
+- ✅ `validate:packaged-bundled-runtime` and `validate:dmg-install` pass with current timeout and retry settings.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` is still effectively blocked without write-capable Firebase configuration unless emulator mode is used; behavior is correctly rejecting required writes in local-only mode, but end-to-end real-write verification remains unexercised without `FIREBASE_PROJECT_ID` + service account credentials.
+
+### Notes
+
+- Log of this run captured at:
+  - `logs/qa/mac-qa-cmds-20260227181755.log`
+- Working tree after QA run: clean.
+
 ## QA cycle update — 2026-02-27 18:07 America/Toronto
 
 ### Completed this cycle
