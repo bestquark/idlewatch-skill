@@ -1,3 +1,19 @@
+## QA cycle update — 2026-02-27 18:58 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added a shared telemetry JSON extractor in `scripts/lib/telemetry-row-parser.mjs` and swapped it into all OpenClaw/usage/e2e validation scripts that previously used last-line JSON parsing. This removes flake from ANSI/control-noise and mixed-output runs by validating the newest valid JSON candidate from full stdout/stderr capture.
+- ✅ **OpenClaw stats ingestion:** expanded parser hardening with shared candidate extraction in stats/integration validation (`validate-openclaw-stats-ingestion.mjs`, `validate-openclaw-usage-health.mjs`, cached-recovery and packaged OpenClaw validator variants) so stats fallback paths keep passing under noisy launcher output.
+- ✅ **Packaging scripts/docs:** validated the extractor path is now documented for `validate:dmg-install` and `validate:packaged-bundled-runtime` and added `test/telemetry-row-parser.test.mjs` for parser behavior on noisy multiline ANSI+JSON logs.
+- ✅ **Validation run:** `npm run test:unit --silent` ✅ (99 pass, 0 fail).
+- ✅ **Validation run (host):** `validate:usage-freshness-e2e`, `validate:usage-alert-rate-e2e`, `validate:openclaw-stats-ingestion`, `validate:openclaw-usage-health` all ✅.
+- ✅ **Packaging check:** `validate:packaged-openclaw-release-gates:reuse-artifact`, `validate:packaged-dry-run-schema:reuse-artifact`, `validate:dmg-install`, `validate:dmg-checksum`, and `validate:packaged-bundled-runtime` ✅ in this environment.
+
+### Notes
+
+- Working tree now includes new shared parser helper and coverage in `test/telemetry-row-parser.test.mjs`.
+- Ongoing external blockers unchanged from prior cycles (`validate:trusted-prereqs`, `validate:firebase-write-required-once`).
+
 ## QA cycle update — 2026-02-27 18:42 America/Toronto
 
 ### Completed this cycle

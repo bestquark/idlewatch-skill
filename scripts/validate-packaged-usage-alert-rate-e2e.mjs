@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { readTelemetryJsonRow } from './lib/telemetry-row-parser.mjs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -24,11 +25,8 @@ JSON
   chmodSync(pathToFile, 0o755)
 }
 
-function readRow(stdout) {
-  const lines = String(stdout).trim().split('\n').map((line) => line.trim()).filter(Boolean)
-  const jsonLine = [...lines].reverse().find((line) => line.startsWith('{') && line.endsWith('}'))
-  assert.ok(jsonLine, 'did not find telemetry JSON line in packaged dry-run output')
-  return JSON.parse(jsonLine)
+function readRow(output) {
+  return readTelemetryJsonRow(output)
 }
 
 function runSample(ageMs, overrides = {}) {

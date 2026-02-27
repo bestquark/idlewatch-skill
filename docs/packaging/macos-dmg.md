@@ -128,12 +128,14 @@ Optional environment variables:
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app.
   - Runs OpenClaw-enabled dry-run first and retries up to `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` with increasing timeout (`+IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) plus optional backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`) before a disabled-usage launchability pass (`IDLEWATCH_OPENCLAW_USAGE=off`).
   - Uses bounded attach/detach timeouts and emits the last ~60 lines of failed attempt output to make hangs diagnosable.
+  - Uses shared noise-tolerant JSON extraction from `scripts/lib/telemetry-row-parser.mjs`, so ANSI/control frames in launcher output do not mask valid telemetry rows.
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
   - If the OpenClaw-enabled dry-run path does not emit telemetry within the timeout window, the script retries with extended timeout and then falls back to `IDLEWATCH_OPENCLAW_USAGE=off` for deterministic launchability checks.
   - In `IDLEWATCH_OPENCLAW_USAGE=off`, schema validation expects `source.usage=disabled` and `usageFreshnessState=disabled`, so launchability checks remain deterministic even without local OpenClaw CLI availability.
+  - Applies the same shared telemetry-row extractor used by other validators, keeping schema checks robust when runtime output includes ANSI frames or partial JSON lines.
 - Clean-machine verification note:
   - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
   - This script is self-contained (Node-only) and does not depend on host Python tooling.
