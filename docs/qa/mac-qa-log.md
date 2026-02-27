@@ -1,3 +1,34 @@
+## QA cycle update — 2026-02-27 17:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA pass (automated):** performed `npm run test:unit --silent` and key telemetry/packaging checks for QA signal continuity.
+- ✅ **Telemetry validation checks:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (host mode: usage-health / stats-ingestion / cache-recovery)
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+- ✅ **Unit tests:** `npm run test:unit --silent` ✅ (**93 pass, 0 fail**).
+- ⚠️ **Feature/bug notes:** no functional regressions observed in monitor/distribution flow.
+
+### DMG packaging risks
+
+- ⚠️ `validate:dmg-install` is currently **hanging on this host** when run via `scripts/validate-dmg-install.sh`; appears to stall during dry-run execution of the DMG-installed launcher (no terminal output after attach phase). This prevents reliable confirmation of full install-to-run validation for this cycle.
+- ✅ `validate:dmg-checksum` passed for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ `validate:trusted-prereqs` fails because signing/notary envs are missing (`MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`), so signed distribution and notary risk profile are still unverified.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` remains blocked by missing live write configuration (`FIREBASE_PROJECT_ID` + service account fields), so successful real-write telemetry path is still unverified.
+- ✅ OpenClaw runtime ingestion checks remain green in host and packaged release-gate validation paths above.
+
+### Notes
+
+- Remaining external blockers unchanged: no Firebase write credentials and no macOS codesign/notary credentials.
+
 ## QA cycle update — 2026-02-27 17:35 America/Toronto
 
 ### Completed this cycle
