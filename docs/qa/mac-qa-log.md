@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-27 17:45 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added bounded `hdiutil` lifecycle and richer timeout diagnostics to `scripts/validate-dmg-install.sh` (attach timeout, detach timeout, and per-attempt output capture) to prevent silent hangs on slower/failing hosts.
+- ✅ **Packaging scripts/docs:** documented new DMG validator timeout controls and diagnostic behavior in `docs/packaging/macos-dmg.md`.
+- ✅ **Validation:** `bash -n scripts/validate-dmg-install.sh` ✅, `npm run test:unit --silent` ✅ (93 pass, 0 fail), `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000 npm run validate:openclaw-release-gates --silent` ✅, `npm run validate:dmg-install --silent` ✅.
+- ✅ **Monitoring reliability:** continue using the higher timeout envelope (`IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`) for OpenClaw release-gate validators and the now-hardened DMG install validation loop.
+
+### Notes
+
+- `validate:packaged-openclaw-release-gates` is still expected to skip without `dist/IdleWatch.app` unless packaging is run first; not a regression.
+- External blockers unchanged: `validate:trusted-prereqs` (missing signing/notary envs) and `validate:firebase-write-required-once` (missing Firebase write creds).
+
 ## QA cycle update — 2026-02-27 17:40 America/Toronto
 
 ### Completed this cycle

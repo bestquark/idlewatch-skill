@@ -81,6 +81,8 @@ Optional environment variables:
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS=3` — number of timeout/retry attempts for packaged validator dry-runs. Set to `1` to keep strict single-pass behavior.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.
+- `IDLEWATCH_DMG_ATTACH_TIMEOUT_MS=30000` — maximum wall time for `hdiutil attach` in `validate:dmg-install`.
+- `IDLEWATCH_DMG_DETACH_TIMEOUT_MS=8000` — timeout for ejecting the DMG in cleanup.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
@@ -125,6 +127,7 @@ Optional environment variables:
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app.
   - Runs OpenClaw-enabled dry-run first and retries up to `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` with increasing timeout (`+IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) plus optional backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`) before a disabled-usage launchability pass (`IDLEWATCH_OPENCLAW_USAGE=off`).
+  - Uses bounded attach/detach timeouts and emits the last ~60 lines of failed attempt output to make hangs diagnosable.
 - `npm run validate:packaged-bundled-runtime`
   - Repackages with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
