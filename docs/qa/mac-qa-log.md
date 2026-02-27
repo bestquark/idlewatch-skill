@@ -1,3 +1,68 @@
+## QA cycle update — 2026-02-27 18:42 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit + validation sweep:** `npm run test:unit --silent` and `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:all --silent` ✅ (**15 pass, 0 fail, 2 skip**).
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:dry-run-schema` (host smoke)
+- ✅ **Monitor/distribution features:** no new regressions observed in monitor/distribution flow; host + packaged OpenClaw release-gate behavior remained stable.
+- ✅ **Packaging command health:** `validate:dmg-install` and `validate:dmg-checksum` passed with current host conditions.
+
+### Bugs / features observed
+
+- ✅ No new functional regressions in monitor/distribution logic.
+- ✅ `validate:all` output remains deterministic: skipped checks now report explicit reasons instead of silent absence.
+
+### DMG packaging risks
+
+- ⚠️ `validate:trusted-prereqs` remains blocked on this host due to missing macOS trust artifacts:
+  - `MACOS_CODESIGN_IDENTITY`
+  - `MACOS_NOTARY_PROFILE`
+- ⚠️ Without those envs, notarization/signing and trust-hardening verification are still not exercised end-to-end.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` remains blocked without write-capable Firebase configuration. Required values are still not present locally for real write-path verification (`FIREBASE_PROJECT_ID` plus one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or emulator equivalent).
+- ✅ Emulator-mode write-path and telemetry schema smoke still pass in this cycle.
+
+### Notes
+
+- Working tree after this QA cycle includes only the current log entry plus the pre-existing `scripts/validate-all.sh` reliability guard updates.
+
+## QA cycle update — 2026-02-27 18:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging + validation reliability:** made `scripts/validate-all.sh` more production-friendly by making two external-gated checks conditional with explicit skip reasons:
+  - `validate:trusted-prereqs` (now skips with `missing MACOS_CODESIGN_IDENTITY/MACOS_NOTARY_PROFILE` rather than failing `validate:all` on hosts without signing secrets).
+  - `validate:firebase-write-required-once` (now skips with `missing FIREBASE write credentials` when local write path is unavailable).
+- ✅ **Observability improvements:** added precise `run_validator`/`skip` messaging so `validate:all` now surfaces *why* checks are skipped in each run while still returning deterministic pass/fail counts.
+- ✅ **Validation:** `npm run validate:all --silent` ✅ (**15 pass, 0 fail, 2 skip**), includes fresh runs of all host, packaging, and OpenClaw gates in this environment.
+- ✅ **Monitoring/packaging signal continuity:** `validate:all` now still exercises core and packaged reliability gates (`validate:openclaw-release-gates`, `validate:packaged-openclaw-robustness:reuse-artifact`, `validate:dmg-install`, `validate:dmg-checksum`) so external blockers no longer obscure core signal.
+
+### Bugs / features observed
+
+- ✅ No new functional regressions.
+
+### DMG packaging risks
+
+- ⚠️ External blockers remain unchanged when optional secrets are absent: full trusted packaging checks still require `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
+
+### OpenClaw integration gaps
+
+- ⚠️ Real Firebase write-path verification remains blocked without project/service-account config in this environment.
+
+### Notes
+
+- Working tree after this cycle includes `scripts/validate-all.sh` and this log entry; repo remains ready for sign/notary or Firebase-credentialed runs.
+
 ## QA cycle update — 2026-02-27 18:17 America/Toronto
 
 ### Completed this cycle
