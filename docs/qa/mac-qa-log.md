@@ -1,3 +1,18 @@
+## QA cycle update — 2026-02-27 18:07 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** hardened `scripts/validate-dry-run-schema.mjs` output parsing to recover valid telemetry JSON even when log framing changes (ANSI/noise and multiline JSON blocks), so `--dry-run` schema checks validate the best candidate row before failing on timeout.
+- ✅ **Monitoring reliability:** added deterministic 90-second timeout baseline for packaged install/runtime validator smoke paths by setting `validate:dmg-install` / `validate-packaged-bundled-runtime` defaults (`IDLEWATCH_DRY_RUN_TIMEOUT_MS`) to `90000`.
+- ✅ **OpenClaw stats ingestion:** no behavior change to parser logic itself, but improved parser robustness in schema validation reduces false negatives on OpenClaw-instrumented telemetry rows under noisy launch output.
+- ✅ **Packaging scripts/docs:** updated `README.md` and `docs/packaging/macos-dmg.md` with new timeout default behavior.
+- ✅ **Testing:** added coverage for noisy multiline JSON rows in `test/validate-dry-run-schema.test.mjs`.
+- ✅ **Validation:** `npm run test:unit --silent`.
+
+### Notes
+
+- `validate:dmg-install` remains retry-capable by design but is now less likely to fail on first attempt.
+
 ## QA cycle update — 2026-02-27 18:01 America/Toronto
 
 ### Completed this cycle

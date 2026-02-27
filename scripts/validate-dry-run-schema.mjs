@@ -21,6 +21,82 @@ function collectOutput(stderrBuffer, stdoutBuffer) {
   return String(output || '')
 }
 
+function stripControlNoise(raw) {
+  return String(raw)
+    .replace(/\x1b\][^\x07\x1b]*\x07/g, '')
+    .replace(/\x1b\][^\x07\x1b]*\x1b\\/g, '')
+    .replace(/\x9b\][^\x07\x1b]*\x07/g, '')
+    .replace(/\x9b[^\x07\x1b]*\x1b\\/g, '')
+    .replace(/\x1b[PXZ^_].*?(?:\x1b\\|\x9c)/gs, '')
+    .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, '')
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')
+    .replace(/\r/g, '')
+}
+
+function extractJsonCandidates(raw) {
+  const text = stripControlNoise(raw)
+  const candidates = []
+
+  for (let start = 0; start < text.length; start += 1) {
+    const open = text[start]
+    if (open !== '{' && open !== '[') continue
+
+    const close = open === '{' ? '}' : ']'
+    let depth = 0
+    let inString = false
+    let escaped = false
+    let end = -1
+
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i]
+
+      if (inString) {
+        if (escaped) {
+          escaped = false
+          continue
+        }
+        if (ch === '\\') {
+          escaped = true
+          continue
+        }
+        if (ch === '"') {
+          inString = false
+          continue
+        }
+        continue
+      }
+
+      if (ch === '"') {
+        inString = true
+        continue
+      }
+
+      if (ch === open) {
+        depth += 1
+        continue
+      }
+
+      if (ch === close) {
+        depth -= 1
+        if (depth === 0) {
+          end = i
+          break
+        }
+        if (depth < 0) {
+          break
+        }
+      }
+    }
+
+    if (end > start) {
+      candidates.push(text.slice(start, end + 1))
+      start = end
+    }
+  }
+
+  return candidates
+}
+
 function run() {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
@@ -32,6 +108,7 @@ function run() {
 
   const out = collectOutput(result.stdout, result.stderr)
   const timedOut = result.error?.code === 'ETIMEDOUT' || result.signal === 'SIGINT'
+  const maybeCandidates = extractJsonCandidates(out)
 
   if (timedOut) {
     console.error(`dry-run timed out after ${DRY_RUN_TIMEOUT_MS}ms; attempting to validate captured output from partial row`)
@@ -46,21 +123,19 @@ function run() {
     console.error(`dry-run exited with non-zero status ${result.status}; validating captured output anyway`)
   }
 
-  if (!out) {
-    throw new Error('No output captured from dry-run command')
+  for (let i = maybeCandidates.length - 1; i >= 0; i -= 1) {
+    const candidate = maybeCandidates[i]
+    try {
+      const row = JSON.parse(candidate)
+      validateRow(row)
+      console.log(`dry-run schema ok (${command} ${args.join(' ')})`)
+      return
+    } catch {
+      // ignore and continue with the next JSON candidate
+    }
   }
 
-  const lines = out
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-
-  const jsonLine = [...lines].reverse().find((line) => line.startsWith('{') && line.endsWith('}'))
-  assert.ok(jsonLine, 'No telemetry JSON row found in dry-run output')
-
-  const row = JSON.parse(jsonLine)
-  validateRow(row)
-  console.log(`dry-run schema ok (${command} ${args.join(' ')})`)
+  throw new Error('No telemetry JSON row found in dry-run output')
 }
 
 
@@ -134,8 +209,8 @@ function validateRow(row) {
   assert.ok(['openclaw', 'disabled', 'unavailable'].includes(source.usage), 'source.usage invalid')
   assert.ok(['ok', 'stale', 'disabled', 'unavailable'].includes(source.usageIntegrationStatus), 'source.usageIntegrationStatus invalid')
   assert.ok(['ok', 'disabled', 'unavailable'].includes(source.usageIngestionStatus), 'source.usageIngestionStatus invalid')
-  assert.ok(['fresh', 'aging', 'stale', 'unknown', 'disabled', 'unavailable'].includes(source.usageActivityStatus), 'source.usageActivityStatus invalid')
   assert.ok(['fresh', 'aging', 'stale', 'unknown', 'disabled', 'unavailable'].includes(source.usageFreshnessState), 'source.usageFreshnessState invalid')
+  assert.ok(['fresh', 'aging', 'stale', 'unknown', 'disabled', 'unavailable'].includes(source.usageActivityStatus), 'source.usageActivityStatus invalid')
   assert.equal(typeof source.usageNearStale, 'boolean', 'source.usageNearStale must be boolean')
   assert.equal(typeof source.usagePastStaleThreshold, 'boolean', 'source.usagePastStaleThreshold must be boolean')
   assert.equal(typeof source.usageRefreshAttempted, 'boolean', 'source.usageRefreshAttempted must be boolean')
@@ -169,7 +244,7 @@ function validateRow(row) {
   assert.equal(row.fleet.usage.totalTokens, row.openclawTotalTokens, 'fleet usage totalTokens must mirror legacy field')
   assert.equal(row.fleet.usage.model, row.openclawModel, 'fleet usage model must mirror legacy field')
   assert.equal(row.fleet.usage.sessionId, row.openclawSessionId, 'fleet usage sessionId must mirror legacy field')
-  assert.equal(row.fleet.usage.agentId, row.openclawAgentId, 'fleet usage agentId must mirror legacy field')
+  assert.equal(row.fleet.usage.agentId, row.openclawAgentId, 'fleet usage.agentId must mirror legacy field')
 
   if (source.usage === 'openclaw') {
     assert.ok(row.openclawSessionId, 'openclawSessionId required when source.usage=openclaw')
