@@ -473,3 +473,15 @@ test('parses stats payload with nested current object under status.stats', () =>
   assert.equal(usage.usageTimestampMs, 1771295000000)
   assert.equal(usage.integrationStatus, 'ok')
 })
+
+test('parses usage timestamp aliases in snake_case ms fields', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-ts-ms-alias.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 1500)
+  assert.equal(usage.tokensPerMin, 77)
+  assert.equal(usage.sessionId, 'ts-ms-session')
+  assert.equal(usage.agentId, 'agent-ts-ms')
+  assert.equal(usage.usageTimestampMs, 1771319900000)
+  assert.equal(usage.integrationStatus, 'ok')
+})

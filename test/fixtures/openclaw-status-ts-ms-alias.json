@@ -1,0 +1,14 @@
+{
+  "status": {
+    "current": {
+      "session": {
+        "sessionId": "ts-ms-session",
+        "agentId": "agent-ts-ms",
+        "model": "gpt-5.3-codex",
+        "totalTokens": 1500,
+        "tokensPerMinute": 77,
+        "usage_ts_ms": 1771319900000
+      }
+    }
+  }
+}

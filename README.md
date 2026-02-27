@@ -201,6 +201,7 @@ OpenClaw parsing hardened in this release:
 - stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
 - mixed timestamp names, epoch-seconds variants (`1771278800`), and alternate session container keys are supported
 - wrapped status payload shapes (`result` root object, `data.result` wrappers, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
+- timestamp aliases in both `snake_case` and millis variants are normalized (for example `usage_ts`, `usage_ts_ms`, `ts_ms`) so parser keeps working across CLI serializers
 - direct session object payloads (`session`, `activeSession`, `currentSession`) are now handled alongside array/map forms
 - sessions as arrays are supported (for example `status.stats.current.sessions`) in addition to map/object `sessions` containers
 - sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers

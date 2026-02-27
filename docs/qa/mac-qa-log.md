@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-27 17:55 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw stats ingestion reliability:** hardened timestamp parsing for additional millisecond aliases (`usage_ts_ms`, `ts_ms`) and wired parser coverage through `parseOpenClawUsage`.
+- ✅ **Monitoring reliability:** added dedicated unit coverage for timestamp-normalization edge case in noisy status payloads to ensure usage freshness stays deterministic across parser alias variants.
+- ✅ **Packaging scripts/docs:** updated release/docs notes to document the new timestamp-alias normalization path (`README.md` OpenClaw parser notes).
+- ✅ **Validation:** `npm run test:unit --silent` ✅ (**94 pass, 0 fail**) and `validate-openclaw-stats-ingestion` / `validate-openclaw-usage-health` ✅ after parser update.
+
+### Notes
+
+- No external credentials were required for this cycle; release-gate blockers remain: `validate:trusted-prereqs` (missing signing/notary envs) and `validate:firebase-write-required-once` (missing Firebase write credentials).
+
 ## QA cycle update — 2026-02-27 17:50 America/Toronto
 
 ### Completed this cycle
