@@ -1,3 +1,41 @@
+## QA cycle update — 2026-02-27 07:52 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** `npm run test:unit` ✅ (**93 pass, 0 fail**).
+- ✅ **Telemetry validation checks:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates:all` (host checks passed)
+  - `validate:packaged-openclaw-release-gates:reuse-artifact` with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000` (pass)
+- ✅ **Packaging/DMG checks:**
+  - `validate:trusted-prereqs` ❌ blocked by missing signing/notary env (`MACOS_CODESIGN_IDENTITY`)
+  - `validate:dmg-install` ✅ against `dist/IdleWatch-0.1.0-unsigned.dmg`
+  - `validate:dmg-checksum` ✅
+- ✅ **OpenClaw integration checks:**
+  - `validate:firebase-emulator-mode` ✅
+  - `validate:firebase-write-required-once` ❌ blocked by missing Firebase write credentials/config (`FIREBASE_PROJECT_ID` + service-account settings)
+- ✅ **Bugs/features observed:** no functional regressions introduced in monitor/distribution flow.
+- ⚠️ **Observed gap:** default packaged OpenClaw release gate timeout is fragile (`dry-run timed out after 15000ms`) but passes when `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000` is used.
+
+### Notes
+
+- Working tree has only this log update pending.
+
+## QA cycle update — 2026-02-25 15:25 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** 93 pass, 0 fail (explicit glob, ~2.1s).
+- ✅ **OpenClaw release gates:** usage-health, stats ingestion (multi-shape), stale-cache recovery all green.
+- ✅ **No new bugs or regressions.**
+- ✅ **No feasible improvements remaining** — all open items blocked on external credentials (Firebase write creds, macOS codesign/notary secrets).
+
+### Notes
+
+- ⚠️ **External blockers unchanged:** Firebase write creds and macOS codesign/notary secrets still missing.
+- Working tree clean; nothing to commit beyond this log entry.
+
 ## QA cycle update — 2026-02-25 10:30 America/Toronto
 
 ### Completed this cycle
