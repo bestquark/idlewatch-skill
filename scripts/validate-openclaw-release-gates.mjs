@@ -3,6 +3,8 @@ import { spawnSync } from 'node:child_process'
 
 const repoRoot = process.cwd()
 
+const RELEASE_GATE_TIMEOUT_MS = process.env.IDLEWATCH_DRY_RUN_TIMEOUT_MS || '60000'
+
 function shouldRequireOpenClaw(rawValue) {
   const raw = String(rawValue ?? '1').trim().toLowerCase()
   if (raw === '0' || raw === 'false' || raw === 'off' || raw === 'no') return false
@@ -21,6 +23,7 @@ function runValidator(name, extraEnv = {}) {
     env: {
       ...process.env,
       IDLEWATCH_REQUIRE_OPENCLAW_USAGE: requireOpenClaw,
+      IDLEWATCH_DRY_RUN_TIMEOUT_MS: RELEASE_GATE_TIMEOUT_MS,
       ...extraEnv
     }
   })
