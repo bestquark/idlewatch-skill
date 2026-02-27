@@ -1,3 +1,41 @@
+## QA cycle update — 2026-02-27 18:01 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit + runtime validation:** `npm run test:unit --silent` ✅ (**94 pass, 0 fail**) and host+packaged telemetry release gates completed.
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (`IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`)
+  - `validate:packaged-openclaw-release-gates:reuse-artifact` (`IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`)
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+- ✅ **DMG packaging checks:**
+  - `validate:dmg-install` ✅ (passed on attempt 2 with retry; attempt 1 hit 60s dry-run timeout before telemetry JSON emission)
+  - `validate:dmg-checksum` ✅
+- ✅ **Feature checks:** no functional regressions observed in monitor/distribution behavior; OpenClaw probe/ingestion/recovery path remains stable for host and packaged artifacts.
+
+### Bugs / features observed
+
+- ⚠️ **Observed behavior:** `validate:dmg-install` intermittently times out on first run with `dry-run schema validation failed: No telemetry JSON row found`, but succeeds on retry with incremental timeout backoff.
+- ✅ **Bug-resistance improvements from prior cycles remain effective:** parser and timeout guardrails continue to stabilize host/packaged telemetry flow.
+
+### DMG packaging risks
+
+- `validate:dmg-install` remains **retry-dependent** on this host; disabling retries would reintroduce flaky failures.
+- `validate:trusted-prereqs` still blocked by missing signing/notary credentials (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`), so notarization and full trust-hardening checks are not covered.
+
+### OpenClaw integration gaps
+
+- `validate:firebase-write-required-once` still blocked without Firebase write credentials/config (`FIREBASE_PROJECT_ID` + service-account inputs).
+- `validate:firebase-emulator-mode` ✅ still passes (schema-valid output path).
+- Host and packaged OpenClaw release-gate flows remain green for usage-health, stats fallback, and cache-recovery.
+
+### Notes
+
+- External blockers unchanged: missing Firebase write credentials and missing macOS codesign/notary secrets.
+
 ## QA cycle update — 2026-02-27 17:55 America/Toronto
 
 ### Completed this cycle
