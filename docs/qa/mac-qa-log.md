@@ -1,20 +1,32 @@
-## QA cycle update — 2026-02-27 17:23 America/Toronto
+## QA cycle update — 2026-02-27 17:27 America/Toronto
 
 ### Completed this cycle
 
-- ✅ **Monitoring reliability:** hardened full validation tooling for non-macOS hosts by adding automatic macOS-only packaging-gate behavior in `scripts/validate-all.sh` (packaging validators are now auto-skipped outside Darwin).
-  - This prevents false failures in shared/non-mac CI jobs and makes validation sweeps reliable across mixed environments.
-- ✅ **OpenClaw stats ingestion:** improved packaged and DMG validation resilience by increasing the baseline `IDLEWATCH_DRY_RUN_TIMEOUT_MS` to `60000` for:
-  - `scripts/validate-packaged-bundled-runtime.sh`
-  - `scripts/validate-dmg-install.sh`
-  - release-gate behavior already in place remains unchanged.
-- ✅ **Packaging scripts/docs:** aligned docs with the timeout changes and documented expected retry progression (`60000` baseline + `10000` bonus) in `docs/packaging/macos-dmg.md`.
-- ✅ **Validation:** `./scripts/validate-all.sh` now skips packaging stage automatically on non-macOS unless explicitly not skipping; docs now match runtime defaults for packaged dry-run timeout behavior.
+- ✅ **Validation sweep:** `npm run validate:all --silent` ✅ (**15 pass, 0 fail, 0 skip**).
+- ✅ **Telemetry validation checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:dmg-install`
+  - `validate:dmg-checksum`
+  - `validate:bin`, `test:unit`, `smoke:help`, `smoke:dry-run`, `smoke:once`, `validate:dry-run-schema`
+- ✅ **Unit coverage:** `npm run test:unit` ✅ (**93 pass, 0 fail**).
+- ✅ **Bugs/features observed:** no functional regressions found in monitor/distribution behavior. OpenClaw fallback and fallback-cache arbitration remain stable after recent parser and timeout hardening.
+- ⚠️ **DMG packaging risks:**
+  - `validate:trusted-prereqs` still blocked by missing macOS trust config (`MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`).
+  - Signed/distribution packaging can’t be fully exercised without trusted credentials.
+- ⚠️ **OpenClaw integration gaps:**
+  - `validate:firebase-write-required-once` ❌ blocked by missing write credentials (`FIREBASE_PROJECT_ID` + service-account config).
+  - `validate:firebase-emulator-mode` ✅ still passes in emulator path, but real write path remains unverified.
 
 ### Notes
 
-- ✅ Working tree changed with implementation updates; no functional behavior changes outside packaging/validation reliability.
-- ⚠️ External blockers still unchanged: Firebase write credentials and macOS signing/notary secrets remain missing for release-only checks.
+- Working tree has no source changes this cycle; only this QA log entry was added.
+- External blockers remain unchanged (Firebase write creds, macOS signing/notary secrets).
 
 ## QA cycle update — 2026-02-27 13:30 America/Toronto
 
