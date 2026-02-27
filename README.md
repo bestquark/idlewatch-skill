@@ -264,6 +264,7 @@ DMG release scaffolding is included:
 - Dry-run gate timeout via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` (default: `15000`)
   - Applied by `scripts/validate-dry-run-schema.mjs` to all `--dry-run` schema checks (direct and packaged).
   - On timeout, validators keep the latest captured row and still validate it when possible, preventing hangs on non-terminating launcher output.
+  - `validate:packaged-openclaw-release-gates` (and `:reuse-artifact`) defaults to `60000` for the same env var so OpenClaw probe delays on slower hosts do not fail releases spuriously.
 - Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
 - OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
 - DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)

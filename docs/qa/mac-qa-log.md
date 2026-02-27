@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-27 07:53 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** fixed a flaky release-gate timing failure mode by making `validate:packaged-openclaw-release-gates` default to a safer `IDLEWATCH_DRY_RUN_TIMEOUT_MS=60000`.
+  - This avoids false negatives on slower hosts where OpenClaw probe latency exceeds `15000ms`.
+- ✅ **OpenClaw stats ingestion:** verified no regressions and confirmed `validate:packaged-openclaw-release-gates` still exercises both status-stat ingestion validation steps (`validate:packaged-usage-health` + `validate:packaged-openclaw-stats-ingestion`).
+- ✅ **Packaging scripts/docs:**
+  - updated `scripts/validate-packaged-openclaw-release-gates.mjs` to enforce the 60s timeout default.
+  - updated `README.md` + `docs/packaging/macos-dmg.md` to document the release-gate timeout behavior.
+- ✅ **Validation:** `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates --silent` ✅
+
+### Notes
+
+- ✅ **Observed gap:** default packaged OpenClaw release-gate timeout fragility has been mitigated by the higher default in the release-gate wrapper.
+- Blockers still external: `validate:trusted-prereqs` (missing macOS signing/notary env), `validate:firebase-write-required-once` (missing Firebase write credentials/config).
+- Working tree now includes the above script/docs changes for this cycle's release.
+
 ## QA cycle update — 2026-02-27 07:52 America/Toronto
 
 ### Completed this cycle

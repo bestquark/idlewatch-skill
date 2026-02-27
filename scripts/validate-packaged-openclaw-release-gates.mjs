@@ -28,6 +28,8 @@ function shouldRequireOpenClaw(rawValue) {
   return true
 }
 
+const RELEASE_GATE_TIMEOUT_MS = process.env.IDLEWATCH_DRY_RUN_TIMEOUT_MS || '60000'
+
 function runValidator(name, extraEnv = {}) {
   const requireOpenClawUsage = shouldRequireOpenClaw(process.env.IDLEWATCH_REQUIRE_OPENCLAW_USAGE)
   const requireOpenClaw = requireOpenClawUsage ? '1' : '0'
@@ -40,6 +42,7 @@ function runValidator(name, extraEnv = {}) {
       ...process.env,
       IDLEWATCH_SKIP_PACKAGE_MACOS: '1',
       IDLEWATCH_REQUIRE_OPENCLAW_USAGE: requireOpenClaw,
+      IDLEWATCH_DRY_RUN_TIMEOUT_MS: RELEASE_GATE_TIMEOUT_MS,
       ...extraEnv
     }
   })
