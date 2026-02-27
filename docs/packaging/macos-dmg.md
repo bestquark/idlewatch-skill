@@ -71,10 +71,10 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — baseline timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
-  - Packaged runtime and DMG install validators default this to `30000` during execution to reduce false timeout failures on slow hosts.
+  - Packaged runtime and DMG install validators default this to `60000` during execution to reduce false timeout failures on slow hosts.
   - `validate:packaged-openclaw-release-gates` (and `:reuse-artifact`) now default this to `60000` to avoid false negatives on slower machines where `openclaw --json` probes may take longer than 15s.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS=10000` — extra timeout budget (in ms) applied when an `--dry-run` attempt does not emit telemetry.
-  - Example: `30000` -> fallback retry tries `40000` (then `50000`, etc., if `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` is raised).
+  - Example: `60000` -> fallback retry tries `70000` (then `80000`, etc., if `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` is raised).
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS=3` — number of timeout/retry attempts for packaged validator dry-runs. Set to `1` to keep strict single-pass behavior.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.

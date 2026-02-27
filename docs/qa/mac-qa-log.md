@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-27 17:23 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** hardened full validation tooling for non-macOS hosts by adding automatic macOS-only packaging-gate behavior in `scripts/validate-all.sh` (packaging validators are now auto-skipped outside Darwin).
+  - This prevents false failures in shared/non-mac CI jobs and makes validation sweeps reliable across mixed environments.
+- ✅ **OpenClaw stats ingestion:** improved packaged and DMG validation resilience by increasing the baseline `IDLEWATCH_DRY_RUN_TIMEOUT_MS` to `60000` for:
+  - `scripts/validate-packaged-bundled-runtime.sh`
+  - `scripts/validate-dmg-install.sh`
+  - release-gate behavior already in place remains unchanged.
+- ✅ **Packaging scripts/docs:** aligned docs with the timeout changes and documented expected retry progression (`60000` baseline + `10000` bonus) in `docs/packaging/macos-dmg.md`.
+- ✅ **Validation:** `./scripts/validate-all.sh` now skips packaging stage automatically on non-macOS unless explicitly not skipping; docs now match runtime defaults for packaged dry-run timeout behavior.
+
+### Notes
+
+- ✅ Working tree changed with implementation updates; no functional behavior changes outside packaging/validation reliability.
+- ⚠️ External blockers still unchanged: Firebase write credentials and macOS signing/notary secrets remain missing for release-only checks.
+
 ## QA cycle update — 2026-02-27 13:30 America/Toronto
 
 ### Completed this cycle

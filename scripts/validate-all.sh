@@ -14,6 +14,11 @@ for arg in "$@"; do
   esac
 done
 
+IS_MACOS=0
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  IS_MACOS=1
+fi
+
 PASS=0
 FAIL=0
 SKIP=0
@@ -35,7 +40,8 @@ run_validator() {
 
 skip_validator() {
   local name="$1"
-  printf "%-55s ⏭ skip (--skip-packaging)\n" "$name"
+  local reason=${2:-"--skip-packaging"}
+  printf "%-55s ⏭ skip (%s)\n" "$name" "$reason"
   SKIP=$((SKIP + 1))
 }
 
@@ -61,6 +67,13 @@ if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
   skip_validator "validate:packaged-openclaw-robustness:reuse-artifact"
   skip_validator "validate:dmg-install"
   skip_validator "validate:dmg-checksum"
+elif [[ "$IS_MACOS" -ne 1 ]]; then
+  skip_validator "validate:packaged-metadata" "non-macOS host"
+  skip_validator "validate:packaged-bundled-runtime" "non-macOS host"
+  skip_validator "validate:packaged-dry-run-schema:reuse-artifact" "non-macOS host"
+  skip_validator "validate:packaged-openclaw-robustness:reuse-artifact" "non-macOS host"
+  skip_validator "validate:dmg-install" "non-macOS host"
+  skip_validator "validate:dmg-checksum" "non-macOS host"
 else
   run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
