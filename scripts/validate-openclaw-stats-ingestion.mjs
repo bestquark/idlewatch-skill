@@ -111,6 +111,26 @@ function writeMockOpenClaw(pathToScript, shape) {
   "ts": 1771313400000
 }`
 
+  const statusCurrentUsageTimestamp = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "status-current-usage-timestamp",
+            "agentId": "agent-stats-usage-timestamp",
+            "model": "qwen-lite",
+            "totalTokens": 3333,
+            "tokensPerMinute": 9.75,
+            "usage_timestamp": "2026-02-27T09:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  "ts": 1771319100000
+}`
+
   const script = `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -136,6 +156,10 @@ JSON
   elif [[ "$SCENARIO" == "statusCurrentUpdatedAtMs" ]]; then
     cat <<JSON
 ${statusCurrentUpdatedAtMs}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentUsageTimestamp" ]]; then
+    cat <<JSON
+${statusCurrentUsageTimestamp}
 JSON
   else
     cat <<JSON
@@ -223,6 +247,14 @@ function runAllShapes() {
     totalTokens: 512,
     model: 'qwen3',
     tokensPerMin: 16
+  })
+
+  run('statusCurrentUsageTimestamp', {
+    sessionId: 'status-current-usage-timestamp',
+    agentId: 'agent-stats-usage-timestamp',
+    totalTokens: 3333,
+    model: 'qwen-lite',
+    tokensPerMin: 9.75
   })
 
   run('statusCurrentUpdatedAtMs', {

@@ -44,6 +44,20 @@ function readCurrentCommit() {
   }
 }
 
+function readCurrentWorkingTreeClean() {
+  try {
+    const porcelain = execSync('git status --porcelain', {
+      cwd: rootDir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    }).trim()
+
+    return porcelain.length === 0
+  } catch {
+    return null
+  }
+}
+
 function resolveSourceCommit(metadata) {
   const value = metadata?.sourceGitCommit
   if (typeof value !== 'string') return ''
@@ -83,6 +97,26 @@ function validateSourceCommit(metadata, currentCommit) {
     console.error('Rebuild artifact first:')
     console.error('  npm run package:macos')
     fail('Packaged artifact is stale and does not match current git revision.')
+  }
+}
+
+function validateSourceDirty(metadata, currentIsClean) {
+  if (!metadata || typeof metadata !== 'object' || currentIsClean === null) return
+
+  const requireDirtyMatch = shouldRequireGitMatch(process.env.IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH)
+  if (!requireDirtyMatch) return
+
+  if (typeof metadata.sourceGitDirty !== 'boolean') {
+    console.error('packaging metadata is missing a valid sourceGitDirty flag; skipping dirty-state matching.')
+    return
+  }
+
+  const metadataWasClean = metadata.sourceGitDirty === false
+  if (currentIsClean !== metadataWasClean) {
+    console.error('Reusable packaged artifact dirty-state does not match current workspace clean-state.')
+    console.error(`Current working tree clean: ${currentIsClean}`)
+    console.error(`Packaged artifact built with clean workspace: ${metadataWasClean}`)
+    fail('Rebuild artifact first: dirty-state mismatch for reusable artifact.')
   }
 }
 
@@ -128,7 +162,9 @@ function main() {
 
   validateMetadataConsistency(metadata)
   const currentCommit = readCurrentCommit()
+  const currentIsClean = readCurrentWorkingTreeClean()
   validateSourceCommit(metadata, currentCommit)
+  validateSourceDirty(metadata, currentIsClean)
   validateFreshness(metadata)
 
   console.log('packaged artifact reusable validation ok')

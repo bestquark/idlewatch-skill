@@ -56,6 +56,9 @@ const FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST
 const OPENCLAW_USAGE_MODE = (process.env.IDLEWATCH_OPENCLAW_USAGE || 'auto').toLowerCase()
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
 const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS || 2500)
+const OPENCLAW_PROBE_MAX_OUTPUT_BYTES = process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES
+  ? Number(process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES)
+  : 2 * 1024 * 1024
 const OPENCLAW_BIN_STRICT = process.env.IDLEWATCH_OPENCLAW_BIN_STRICT === '1'
 const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
   ? Number(process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES)
@@ -72,6 +75,13 @@ if (!Number.isFinite(INTERVAL_MS) || INTERVAL_MS <= 0) {
 if (!Number.isFinite(OPENCLAW_PROBE_TIMEOUT_MS) || OPENCLAW_PROBE_TIMEOUT_MS <= 0) {
   console.error(
     `Invalid IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS: ${process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS}. Expected a positive number.`
+  )
+  process.exit(1)
+}
+
+if (!Number.isFinite(OPENCLAW_PROBE_MAX_OUTPUT_BYTES) || OPENCLAW_PROBE_MAX_OUTPUT_BYTES <= 0) {
+  console.error(
+    `Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: undefined. Expected a positive number.`
   )
   process.exit(1)
 }
@@ -442,6 +452,7 @@ function loadOpenClawUsage(forceRefresh = false) {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         timeout: OPENCLAW_PROBE_TIMEOUT_MS,
+        maxBuffer: OPENCLAW_PROBE_MAX_OUTPUT_BYTES,
         env: probeEnv
       })
       return { out, error: null, status: 'ok', durationMs: Date.now() - startMs }

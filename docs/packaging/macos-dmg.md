@@ -70,6 +70,7 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$HOME/Library/LaunchAgents"` — override plist root for install/uninstall scripts.
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
+- `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES=2097152` — maximum bytes captured per OpenClaw probe call (increase for noisy/progress-heavy OpenClaw outputs).
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — baseline timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
   - Packaged runtime and DMG install validators default this to `90000` during execution to reduce false timeout failures on slow hosts.
   - OpenClaw release-gate helpers now default this to `60000` (kept aligned with host release gates unless package-specific override is needed):
@@ -153,7 +154,7 @@ Optional environment variables:
 ## CI integration
 
 - Baseline packaging smoke: `.github/workflows/ci.yml` (`macos-packaging-smoke` job; includes bundled-runtime launcher validation via `npm run validate:packaged-bundled-runtime` (or `...:reuse-artifact` when `dist/` is prebuilt), packaged app telemetry schema check via `npm run validate:packaged-dry-run-schema:reuse-artifact`, packaged usage-health validation via `npm run validate:packaged-usage-health:reuse-artifact`, and OpenClaw robustness coverage via `npm run validate:packaged-openclaw-robustness:reuse-artifact` (age-SLO, alert-rate transitions, probe-noise resilience, and OpenClaw release checks), plus checksum validation via `npm run validate:dmg-checksum` and DMG install validation via `npm run validate:dmg-install`).
-- All packaged `:reuse-artifact` wrappers run `npm run validate:packaged-artifact` first, which checks `dist/` launcher presence, metadata integrity, and source-commit freshness so stale artifacts fail with a fast rebuild hint.
+- All packaged `:reuse-artifact` wrappers run `npm run validate:packaged-artifact` first, which checks `dist/` launcher presence, metadata integrity, source-commit freshness, and (by default) clean/dirty working-tree parity so mismatched build contexts fail fast with a rebuild hint.
 - Core validation coverage also runs `npm run validate:openclaw-release-gates` (host health/stats/cache guardrail) and `npm run validate:packaged-openclaw-release-gates:reuse-artifact` (which bundles `validate:packaged-usage-health:reuse-artifact`, `validate:packaged-openclaw-stats-ingestion:reuse-artifact`, and `validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`) to guard both host and packaged OpenClaw-health behavior, `stats --json` fallback path, and packaged recovery behavior when probe output is noisy or stale. `validate:openclaw-stats-ingestion` and packaged stats ingestion now explicitly cover `status.result`, `status.current`, and timestamp-alias variants (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`) used in the wild.
 - For local scripted workflows, `npm run validate:openclaw-release-gates:all` (host-only on non-macOS, adds packaged reuse on macOS) plus `npm run validate:packaged-openclaw-release-gates:all` provide staged host+packaged coverage in one command.
 

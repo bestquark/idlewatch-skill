@@ -1,3 +1,22 @@
+## QA cycle update — 2026-02-27 23:54 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added configurable OpenClaw probe output capture handling in runtime collector (`bin/idlewatch-agent.js`) with new `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` knob (default 2MB), so noisy terminal/progress output cannot silently truncate command transcripts and trigger false parse misses.
+- ✅ **OpenClaw stats ingestion:** expanded stats-fallback coverage in both host and packaged validators for `usage_timestamp` (ISO-string alias) in `status.current.stats.current` payloads.
+  - Updated scripts: `scripts/validate-openclaw-stats-ingestion.mjs`, `scripts/validate-packaged-openclaw-stats-ingestion.mjs`.
+- ✅ **Packaging scripts/docs:** hardened reusable artifact preflight with clean/dirty working-tree parity checks in `scripts/validate-packaged-artifact.mjs` and `scripts/validate-packaged-bundled-runtime.sh`.
+- ✅ `docs/packaging/macos-dmg.md` now documents `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` plus source dirty-state matching in reusable checks, and `README.md` documents the same probe output limit for operators.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent`
+- ✅ `npm run validate:openclaw-stats-ingestion --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0 npm run validate:packaged-openclaw-stats-ingestion --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime --silent`
+- ✅ `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-artifact --silent`
+- ⚠️ `npm run validate:packaged-artifact --silent` (default) still fails as expected because this workspace currently has uncommitted changes and the existing dist artifact was built from a clean revision; this validates that stale/dirty mismatches now fail fast.
+
 ## QA cycle update — 2026-02-27 23:44 America/Toronto
 
 ### Completed this cycle

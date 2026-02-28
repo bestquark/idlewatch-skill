@@ -153,6 +153,8 @@ Binary resolution order for the OpenClaw probe:
   (default: `floor((IDLEWATCH_USAGE_STALE_MS + IDLEWATCH_USAGE_STALE_GRACE_MS)*0.85)`).
 - `IDLEWATCH_USAGE_STALE_GRACE_MS` adds a grace window before `usageIntegrationStatus`
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
+- `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` caps OpenClaw probe output capture size for each command
+  (default: `2097152` / 2MB). Increasing helps on noisy terminals, reducing ENOBUFS-like parse failures.
 - `IDLEWATCH_OPENCLAW_PROBE_RETRIES` retries full OpenClaw probe sweeps after the first pass
   to reduce transient command failures (default: `1`).
 - `IDLEWATCH_USAGE_REFRESH_REPROBES` controls how many extra forced uncached reprobes run

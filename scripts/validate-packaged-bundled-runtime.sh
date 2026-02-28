@@ -33,6 +33,11 @@ NODE
 RUNTIME_DIR="$($NODE_BIN -e 'const path = require("path"); console.log(path.resolve(process.argv[1], "..", ".."))' "$NODE_BIN")"
 METADATA_PATH="$ROOT_DIR/dist/IdleWatch.app/Contents/Resources/packaging-metadata.json"
 CURRENT_GIT_COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || true)"
+REQUIRE_SOURCE_DIRTY_MATCH="${IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH:-1}"
+CURRENT_GIT_DIRTY="0"
+if [[ -n "$CURRENT_GIT_COMMIT" && -n "$(git -C "$ROOT_DIR" status --porcelain 2>/dev/null)" ]]; then
+  CURRENT_GIT_DIRTY="1"
+fi
 BUNDLED_RUNTIME_REQUIRED="${IDLEWATCH_BUNDLED_RUNTIME_REQUIRED:-1}"
 RESTRICTED_PATH="/usr/bin:/bin"
 ORIGINAL_PATH="${PATH:-/usr/bin:/bin}"
@@ -66,12 +71,23 @@ else
   fi
 
   METADATA_GIT_COMMIT="$(read_metadata_field sourceGitCommit)"
-  if [[ -n "$CURRENT_GIT_COMMIT" && -n "$METADATA_GIT_COMMIT" && "$METADATA_GIT_COMMIT" != "$CURRENT_GIT_COMMIT" ]]; then
+  METADATA_GIT_DIRTY="$(read_metadata_field sourceGitDirty)"
+  if [[ "$REQUIRE_SOURCE_DIRTY_MATCH" != "0" && -n "$CURRENT_GIT_COMMIT" && -n "$METADATA_GIT_COMMIT" && "$METADATA_GIT_COMMIT" != "$CURRENT_GIT_COMMIT" ]]; then
     echo "Reused packaged artifact is stale for this workspace revision." >&2
     echo "Current commit : $CURRENT_GIT_COMMIT" >&2
     echo "Packaged commit: $METADATA_GIT_COMMIT" >&2
     echo "Rebuild artifact first with npm run package:macos (or run validate:packaged-bundled-runtime without IDLEWATCH_SKIP_PACKAGE_MACOS)." >&2
     exit 1
+  fi
+
+  if [[ "$REQUIRE_SOURCE_DIRTY_MATCH" != "0" && -n "$CURRENT_GIT_COMMIT" && -n "$METADATA_GIT_COMMIT" && -n "$METADATA_GIT_DIRTY" ]]; then
+    if [[ "$CURRENT_GIT_DIRTY" != "$METADATA_GIT_DIRTY" ]]; then
+      echo "Reused packaged artifact was built from a different working-tree cleanliness state." >&2
+      echo "Current working-tree dirty: $CURRENT_GIT_DIRTY" >&2
+      echo "Packaged artifact clean-state: $METADATA_GIT_DIRTY" >&2
+      echo "Rebuild artifact first with npm run package:macos (or clear IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0)." >&2
+      exit 1
+    fi
   fi
 
   echo "Using existing packaged app at: $DIST_LAUNCHER"
