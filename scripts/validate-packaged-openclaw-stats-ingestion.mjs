@@ -72,6 +72,26 @@ function writeMockOpenClaw(pathToScript, shape) {
   "ts": 1771312510000
 }`
 
+  const statusCurrentUsageTs = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "packaged-status-current-usage-ts",
+            "agentId": "agent-stats-packaged-usage-ts",
+            "model": "gpt-5.3-codex-pro",
+            "totalTokens": 2900,
+            "tokensPerMinute": 19,
+            "usage_ts": 1771312600000,
+            "ts_ms": 1771312601000
+        }
+      }
+    }
+  },
+  "ts": 1771312610000
+}`
+
   const statusCurrentUsageTimestampMs = `{
   "status": {
     "current": {
@@ -186,6 +206,10 @@ JSON
   elif [[ "$SCENARIO" == "statusCurrentTsMs" ]]; then
     cat <<JSON
 ${statusCurrentTsMs}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentUsageTs" ]]; then
+    cat <<JSON
+${statusCurrentUsageTs}
 JSON
   elif [[ "$SCENARIO" == "statusCurrentUsageTimestampMs" ]]; then
     cat <<JSON
@@ -318,6 +342,14 @@ function runAllShapes() {
     totalTokens: 3210,
     model: 'gpt-5.3-codex-pro',
     tokensPerMin: 18
+  })
+
+  run('statusCurrentUsageTs', {
+    sessionId: 'packaged-status-current-usage-ts',
+    agentId: 'agent-stats-packaged-usage-ts',
+    totalTokens: 2900,
+    model: 'gpt-5.3-codex-pro',
+    tokensPerMin: 19
   })
 
   run('statusCurrentUsageTimestampMs', {

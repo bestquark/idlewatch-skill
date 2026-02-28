@@ -510,6 +510,18 @@ test('parses usage timestamp aliases in usage_timestamp_ms fields', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses usage timestamp aliases in usage_ts fields', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-usage-ts-alias.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 1900)
+  assert.equal(usage.tokensPerMin, 44)
+  assert.equal(usage.sessionId, 'usage-ts-session')
+  assert.equal(usage.agentId, 'agent-usage-ts')
+  assert.equal(usage.usageTimestampMs, 1771319000000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses usage_time timestamp alias in generic payloads', () => {
   const usage = parseOpenClawUsage(JSON.stringify({
     current: {

@@ -64,6 +64,7 @@ Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
 - `IDLEWATCH_OPENCLAW_BIN_HINT="/opt/homebrew/bin/openclaw"` — legacy launcher hint (supported for compatibility). When `IDLEWATCH_OPENCLAW_BIN` is unset, this is used as the strict-mode explicit fallback as well.
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
+- `IDLEWATCH_SKIP_SOURCEMAP_VALIDATION="1"` — temporarily disables packaged sourcemap integrity validation during `package:macos` (use only for emergency/debug scenarios).
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
 - `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.
 - `IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent"` — override LaunchAgent label.
@@ -104,6 +105,7 @@ Optional environment variables:
   - Creates `dist/IdleWatch.app`
   - Generates the package tarball via `npm pack --json` and selects the reported filename deterministically (instead of relying on glob/mtime heuristics), then expands it into `Contents/Resources/payload/package`
   - Installs production runtime dependencies into packaged payload (`npm ci --omit=dev` when a lockfile is available, otherwise `npm install --omit=dev`) so mounted-DMG launches do not rely on workspace/global `node_modules`
+- Validates packaged JavaScript sourcemap integrity immediately after dependency install (`node scripts/validate-packaged-sourcemaps.mjs`). If any `sourceMappingURL` points to a missing external file, packaging fails early with a concrete path list to force a clean rebuild and avoid non-deterministic DMG noise.
   - Generates a working launcher (`Contents/MacOS/IdleWatch`) that runs:
     - `<node> Contents/Resources/payload/package/bin/idlewatch-agent.js ...`
     - Node binary resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime (`Contents/Resources/runtime/node/bin/node`, when `IDLEWATCH_NODE_RUNTIME_DIR` is supplied at package time) → `PATH` (`node`)

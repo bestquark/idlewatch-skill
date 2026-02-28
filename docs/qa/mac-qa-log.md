@@ -1,3 +1,26 @@
+## QA cycle update — 2026-02-28 5:52 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Implemented a new packaged sourcemap preflight guard in `scripts/package-macos.sh` (`validate-packaged-sourcemaps.mjs`) that runs before finalizing the app bundle.
+- ✅ Updated sourcemap preflight for practical reliability: external `sourceMappingURL` references in `node_modules` are logged as warnings and skipped, avoiding false-repro blocking from third-party packages without shipped maps.
+- ✅ Expanded OpenClaw stats ingestion validation coverage for `usage_ts` timestamp aliases:
+  - `scripts/validate-openclaw-stats-ingestion.mjs`
+  - `scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+  - `test/openclaw-usage.test.mjs` (+ `test/fixtures/openclaw-status-usage-ts-alias.json`)
+- ✅ Updated packaging docs in `docs/packaging/macos-dmg.md` with sourcemap-check behavior, debug skip, and variable reference.
+- ✅ Re-ran validation pass:
+  - `npm run test:unit --silent`
+  - `node scripts/validate-openclaw-stats-ingestion.mjs`
+  - `node scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+  - `npm run package:macos --silent`
+
+### Notes
+
+- ⚠️ Full package builds still emit dependency sourcemap skip notices (currently expected), but app-packaged sourcemap checks now fail fast for project-owned files only.
+
+---
+
 ## QA cycle update — 2026-02-28 5:44 AM America/Toronto
 
 ### Completed this cycle
