@@ -1,3 +1,59 @@
+## QA cycle update — 2026-02-27 23:21 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA sweep executed** for IdleWatch Mac monitor/distribution, with full command logging at `logs/qa/mac-qa-cycle-20260227232118.log`.
+- ✅ **Telemetry + distribution checks covered:** usage freshness, usage alert-rate, OpenClaw release gates (host + packaged), bundled-runtime checks, DMG smoke, metadata integrity, and environment-gated prerequisite checks.
+- ✅ **Packaging artifact health:** `validate:packaged-bundled-runtime` initially failed under `:reuse-artifact` due stale artifact metadata; reran `validate:packaged-bundled-runtime` to rebuild and re-validate successfully.
+- ✅ **No monitor regressions detected** in core freshness/alert state-machine behavior this cycle.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**)
+- ✅ `npm run validate:usage-freshness-e2e --silent`
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent`
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-stats-ingestion --silent`
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+- ✅ `npm run validate:packaged-dry-run-schema:reuse-artifact` (**with** `IDLEWATCH_SKIP_PACKAGE_MACOS=1`)
+- ⚠️ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime:reuse-artifact --silent` **(failed due stale artifact)**
+- ✅ `npm run validate:packaged-bundled-runtime --silent` (rerun after rebuild)
+- ✅ `npm run validate:packaged-metadata --silent`
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+- ✅ `npm run validate:dmg-checksum --silent`
+- ✅ `npm run validate:firebase-emulator-mode --silent`
+- ⚠️ `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent` **(blocked: local env writes disabled)**
+- ⚠️ `npm run validate:trusted-prereqs --silent` **(blocked: missing MACOS_CODESIGN_IDENTITY)**
+
+### Bugs/features observed
+
+- ⚠️ **Bug observed:** `validate:packaged-bundled-runtime:reuse-artifact` can fail when the current `dist/IdleWatch.app` is stale or missing the bundled-runtime metadata expected by the validator.
+  - Fix path used this cycle: `npm run validate:packaged-bundled-runtime --silent` rebuilt artifact and revalidated cleanly.
+- ✅ `usage-freshness` and `usage-alert-rate` transitions remain stable (`open` to `aging` to stale/notice/warning boundaries unchanged).
+- ✅ Packaged OpenClaw health/stats/cache recovery validation remains stable with dry-run JSON extraction and retry behavior.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-install --silent` (with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000`) and `validate:dmg-checksum --silent` passed for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ DMG installer validation remains timing-sensitive; continue using 90s timeout and retries in host automation.
+- ⚠️ `validate:trusted-prereqs` remains environment-gated and still cannot validate signing/notary/trust chain without:
+  - `MACOS_CODESIGN_IDENTITY`
+  - `MACOS_NOTARY_PROFILE`
+- ⚠️ Rebuild behavior means distribution checks should ensure artifact freshness checks precede reuse-mode runtime validation in CI/local automation.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` requires Firebase write mode with one of:
+  - `FIREBASE_PROJECT_ID` + `FIREBASE_SERVICE_ACCOUNT_FILE`
+  - or `FIREBASE_PROJECT_ID` + `FIREBASE_SERVICE_ACCOUNT_JSON`
+  - or `FIREBASE_PROJECT_ID` + `FIREBASE_SERVICE_ACCOUNT_B64`
+  - or `FIREBASE_PROJECT_ID` + `FIRESTORE_EMULATOR_HOST` for emulator.
+- ⚠️ Real Firebase write-path assurance remains unvalidated in this environment (local-only mode only).
+- ✅ OpenClaw parser/ingestion behavior remains healthy for host and packaged dry-run paths used in this cycle.
+
 ## QA cycle update — 2026-02-27 23:13 America/Toronto
 
 ### Completed this cycle
