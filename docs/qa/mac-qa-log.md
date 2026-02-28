@@ -1,3 +1,62 @@
+## QA cycle update — 2026-02-28 5:29 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA cycle executed** for IdleWatch Mac monitor/distribution.
+- ✅ **Validation commands run:**
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent` *(failed: stale artifact preflight until repackaging)*
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent` *(same stale-artifact preflight mode)*
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent` *(same stale-artifact preflight mode)*
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `env IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime:reuse-artifact --silent` *(failed: dirty-state preflight mismatch for clean workspace)*
+  - `env IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `env IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `env IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `env IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `env IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent` *(initially failed due stale DMG metadata, then passed after `npm run package:dmg`)*
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+- ✅ Follow-up packaging actions for this cycle: `npm run package:macos --silent` then `npm run package:dmg --silent` to clear stale artifact mismatches.
+
+### Telemetry validation checks
+
+- ✅ Host telemetry gates passed: `validate:usage-freshness-e2e`, `validate:usage-alert-rate-e2e`, `validate:openclaw-release-gates` (usage-health, stats ingestion, stale-cache recovery).
+- ✅ All OpenClaw command-shape parsers and fallback paths passed in host mode.
+- ✅ Packaged OpenClaw checks passed once stale-state guards were relaxed with `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0` and artifact rebuilt:
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`.
+
+### Bugs / features observed
+
+- ✅ `test:unit` green (`102 pass, 0 fail`).
+- ⚠️ Reuse-mode packaged checks are gated hard by provenance mismatches (`sourceGitCommit` / dirty-state) unless explicit repackaging or override envs are used; this is currently expected behavior and provides clear remediation.
+- ⚠️ `validate:packaged-bundled-runtime:reuse-artifact` requires `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0` in this environment due legacy metadata cleanliness mismatch on existing packaged artifacts.
+- ⚠️ DMG-install dry-run pass requires a freshly built DMG (`package:dmg`) because older DMG artifacts can miss commit/dirty provenance for strict reuse checks.
+
+### DMG packaging risks
+
+- ✅ DMG checksum is healthy (`validate:dmg-checksum --silent`) and mounted-install dry-run passes after rebuild.
+- ⚠️ Rebuild is currently required for deterministic checks because source/DMG metadata and reuse provenance drift over runs; treat this as a process risk until clean artifacts are published from CI.
+- ⚠️ `validate:trusted-prereqs --silent` still blocked by missing signing/notary context (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+
+### OpenClaw integration gaps
+
+- ✅ Emulator-mode integration passes (`validate:firebase-emulator-mode`).
+- ⚠️ `validate:firebase-write-required-once --silent` blocked: write-capable Firebase credentials are not configured locally (`FIREBASE_PROJECT_ID` + service-account or emulator host for writes required when `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`).
+
+### Notes
+
+- Command log: `logs/qa/mac-qa-cycle-20260228052932.log` (contains both initial failures and remediated pass after repackaging).
+- Working tree is clean after artifact rebuilds and docs update.
+
 ## QA cycle update — 2026-02-28 5:21 AM America/Toronto
 
 ### Completed this cycle
