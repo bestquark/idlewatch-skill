@@ -87,6 +87,8 @@ Optional environment variables:
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
 - `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` — explicit CI-only bypass for tag builds; disables auto-strict guard that otherwise blocks unsigned `refs/tags/*` packaging.
+- `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1` — when set to `1` (default), `validate:packaged-bundled-runtime:reuse-artifact` requires `nodeRuntimeBundled=1` in metadata and enforces strict PATH-scrubbed validation.
+- `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1` — allows `validate:packaged-bundled-runtime:reuse-artifact` to validate non-bundled artifacts by falling back to current host PATH when `nodeRuntimeBundled!=1`.
 
 - `scripts/package-macos.sh`
   - Creates `dist/IdleWatch.app`
@@ -134,6 +136,7 @@ Optional environment variables:
   - If `IDLEWATCH_SKIP_PACKAGE_MACOS=1`, the validator reuses an existing `dist/IdleWatch.app` artifact instead of repackaging (useful for repeated CI/test runs).
     - Reuse mode now verifies the reused artifact is compatible with the current workspace: it must be built with bundled runtime metadata and (when available) the same `sourceGitCommit` as the current `HEAD` before launch checks run.
     - If checks fail, rerun with a fresh package (`npm run package:macos` or remove `IDLEWATCH_SKIP_PACKAGE_MACOS`).
+  - If `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0`, non-bundled artifacts can still be validated in host-PATH launchability mode using `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1`.
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
   - If the OpenClaw-enabled dry-run path does not emit telemetry within the timeout window, the script retries with extended timeout and then falls back to `IDLEWATCH_OPENCLAW_USAGE=off` for deterministic launchability checks.
@@ -141,7 +144,7 @@ Optional environment variables:
   - Failed attempt output is preserved in temp attempt logs and the last 60 lines are echoed to stderr, so intermittent startup hangs are easier to diagnose.
   - Applies the same shared noise-tolerant JSON extractor used by other validators, keeping schema checks robust when runtime output includes ANSI/control frames.
 - `npm run validate:packaged-bundled-runtime:reuse-artifact`
-  - Fast path for validation pipelines that already ran `package:macos` (or a previous packaging step): reuses the same artifact and skips repackaging while keeping all bundled-runtime launchability assertions.
+  - Fast path for validation pipelines that already ran `package:macos` (or a previous packaging step): reuses the same artifact and skips repackaging while keeping all launchability assertions.
 - Clean-machine verification note:
   - For external QA, treat `validate:packaged-bundled-runtime` output plus a fresh `validate:dmg-install` smoke run from a separate macOS account/environment as your clean-machine gate for end-user install friction.
   - This script is self-contained (Node-only) and does not depend on host Python tooling.

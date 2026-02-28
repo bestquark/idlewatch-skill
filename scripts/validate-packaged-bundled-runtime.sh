@@ -33,6 +33,9 @@ NODE
 RUNTIME_DIR="$($NODE_BIN -e 'const path = require("path"); console.log(path.resolve(process.argv[1], "..", ".."))' "$NODE_BIN")"
 METADATA_PATH="$ROOT_DIR/dist/IdleWatch.app/Contents/Resources/packaging-metadata.json"
 CURRENT_GIT_COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || true)"
+BUNDLED_RUNTIME_REQUIRED="${IDLEWATCH_BUNDLED_RUNTIME_REQUIRED:-1}"
+RESTRICTED_PATH="/usr/bin:/bin"
+ORIGINAL_PATH="${PATH:-/usr/bin:/bin}"
 
 if [[ "${IDLEWATCH_SKIP_PACKAGE_MACOS:-0}" != "1" ]]; then
   if [[ ! -x "$RUNTIME_DIR/bin/node" ]]; then
@@ -54,10 +57,11 @@ else
     exit 1
   fi
 
-  if [[ "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
+  if [[ "$BUNDLED_RUNTIME_REQUIRED" == "1" && "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
     echo "Reused packaged artifact is not bundled-runtime aware. Rebuild first:" >&2
     echo "  npm run package:macos" >&2
     echo "(required for node-free PATH validation in bundled-runtime check)" >&2
+    echo "If this is expected, set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 to run launchability-only validation." >&2
     exit 1
   fi
 
@@ -80,10 +84,25 @@ fi
 
 npm run validate:packaged-metadata --silent
 
-if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
-  echo "Note: node is available in restricted PATH; this mode still validates bundled runtime fallback via explicit launcher/runtime resolution but is not a pure no-node-path check." >&2
+NODE_RUNTIME_BUNDLED="$(read_metadata_field nodeRuntimeBundled)"
+
+if [[ "$NODE_RUNTIME_BUNDLED" == "1" ]]; then
+  VALIDATION_PATH="$RESTRICTED_PATH"
+  echo "Running strict path-scrubbed launchability validation using PATH=$RESTRICTED_PATH"
+elif [[ "${IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED:-1}" == "1" ]]; then
+  if PATH="$RESTRICTED_PATH" command -v node >/dev/null 2>&1; then
+    VALIDATION_PATH="$RESTRICTED_PATH"
+    echo "Node is available in restricted PATH; still validating with PATH=$RESTRICTED_PATH to keep behavior deterministic."
+  else
+    VALIDATION_PATH="$ORIGINAL_PATH"
+    echo "Non-bundled artifact detected; node is not available in PATH=$RESTRICTED_PATH." >&2
+    echo "Falling back to current PATH for launchability verification in non-bundled mode." >&2
+    echo "Set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1 and provide IDLEWATCH_NODE_RUNTIME_DIR for strict node-free validation." >&2
+  fi
 else
-  echo "Using a Node-free PATH to validate that launcher falls back to bundled runtime cleanly." >&2
+  VALIDATION_PATH="$RESTRICTED_PATH"
+  echo "Non-bundled artifact detected but strict path mode requested; this run requires bundled runtime validation." >&2
+  exit 1
 fi
 
 IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-90000}"
@@ -96,6 +115,7 @@ run_packaged_dry_run() {
   local openclaw_usage=${1:-auto}
   local timeout_ms=${2}
   local attempt=${3}
+  local validation_path=${4}
   local attempt_log="$TMP_APPS/packaged-dry-run-${openclaw_usage}-attempt-${attempt}.log"
 
   if ! env \
@@ -103,10 +123,10 @@ run_packaged_dry_run() {
     IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
     IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
     HOME="$HOME" \
-    PATH="/usr/bin:/bin" \
+    PATH="$validation_path" \
     "$NODE_BIN" "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" \
       "$DIST_LAUNCHER" --dry-run --once >"$attempt_log" 2>&1; then
-    echo "Attempt ${attempt} failed for IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage}. Last output:" >&2
+    echo "Attempt ${attempt} failed for IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage} with PATH=$validation_path. Last output:" >&2
     tail -n 60 "$attempt_log" >&2 || true
     return 1
   fi
@@ -123,7 +143,7 @@ run_packaged_dry_run_with_retries() {
   while (( attempt <= DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); do
     local sleep_ms=0
     echo "Attempt ${attempt}/${DRY_RUN_TIMEOUT_MAX_ATTEMPTS}: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage} timeout=${timeout_ms}ms" >&2
-    if run_packaged_dry_run "$openclaw_usage" "$timeout_ms" "$attempt"; then
+    if run_packaged_dry_run "$openclaw_usage" "$timeout_ms" "$attempt" "$VALIDATION_PATH"; then
       return 0
     fi
 
@@ -147,7 +167,7 @@ set -e
 
 if [[ $rc -ne 0 ]]; then
   if run_packaged_dry_run_with_retries off; then
-    echo "bundled runtime validation ok (launcher path-only check under restricted PATH)" >&2
+    echo "bundled runtime validation ok (launcher path-only check ${VALIDATION_PATH:+under PATH=$VALIDATION_PATH})" >&2
     echo "OpenClaw-enabled dry-run did not emit telemetry within timeout/backoff window; launchability path remains healthy." >&2
     exit 0
   fi
@@ -157,4 +177,8 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 echo "bundled runtime validation ok"
-echo "validated launcher dry-run under restricted PATH in ${IDLEWATCH_DRY_RUN_TIMEOUT_MS}ms baseline (+${DRY_RUN_TIMEOUT_RETRY_BONUS_MS}ms retry increments, up to ${DRY_RUN_TIMEOUT_MAX_ATTEMPTS} attempts)"
+if [[ "$NODE_RUNTIME_BUNDLED" == "1" ]]; then
+  echo "validated launcher dry-run under restricted PATH in ${IDLEWATCH_DRY_RUN_TIMEOUT_MS}ms baseline (+${DRY_RUN_TIMEOUT_RETRY_BONUS_MS}ms retry increments, up to ${DRY_RUN_TIMEOUT_MAX_ATTEMPTS} attempts)"
+else
+  echo "validated launcher dry-run for non-bundled artifact under PATH=${VALIDATION_PATH} in ${IDLEWATCH_DRY_RUN_TIMEOUT_MS}ms baseline (+${DRY_RUN_TIMEOUT_RETRY_BONUS_MS}ms retry increments, up to ${DRY_RUN_TIMEOUT_MAX_ATTEMPTS} attempts)"
+fi

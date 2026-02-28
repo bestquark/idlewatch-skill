@@ -1,3 +1,28 @@
+## QA cycle update — 2026-02-27 23:39 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability + packaging resilience improvement:** added a non-bundled fallback path for `validate:packaged-bundled-runtime` so existing non-bundled artifacts can still be launchability-validated without forcing a rebuild, while keeping strict node-free checks enabled by default.
+  - New behavior: default mode still requires bundled runtime metadata for strict PATH-scrubbed validation.
+  - New env toggles for this validator: `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0` plus `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1` for host-PATH fallback verification.
+- ✅ **OpenClaw stats ingestion robustness:** re-ran ingestion and cache-recovery validators to confirm packaged and host fallback parsing remain healthy after this cycle's scripting changes.
+- ✅ **Packaging scripts/docs:** updated `scripts/validate-packaged-bundled-runtime.sh` and `docs/packaging/macos-dmg.md` with explicit non-bundled validation guidance and environment switches, and documented when strict bundled runtime checks can be intentionally relaxed.
+
+### Telemetry validation checks
+
+- ✅ `npm run validate:packaged-bundled-runtime --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1 npm run validate:packaged-bundled-runtime --silent`
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-stats-ingestion --silent`
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion --silent`
+- ✅ `npm run validate:openclaw-stats-ingestion --silent`
+- ⚠️ `npm run validate:firebase-write-required-once --silent` (still blocked: Firebase writes not configured)
+- ⚠️ `npm run validate:trusted-prereqs --silent` (still blocked: missing `MACOS_CODESIGN_IDENTITY`)
+
+### Bugs/features
+
+- ✅ Non-bundled runtime compatibility is now verifiable in launchability-only mode via explicit env toggles, reducing blocked validation false negatives in hosts that cannot enforce node-free PATH checks.
+- ✅ `validate:packaged-bundled-runtime` now emits explicit operator guidance when strict mode is disabled and PATH fallback is used.
+
 ## QA cycle update — 2026-02-27 23:32 America/Toronto
 
 ### Completed this cycle
