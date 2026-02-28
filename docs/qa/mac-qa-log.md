@@ -1,3 +1,24 @@
+## QA cycle update — 2026-02-27 23:28 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Cross-command packaging reliability:** added a shared reusable-artifact preflight (`npm run validate:packaged-artifact`) and wired it into all packaged `:reuse-artifact` validators so stale/foreign `dist/IdleWatch.app` runs fail fast before dry-run execution.
+  - Reuse mode now checks launcher executable, metadata presence/shape, optional bundled-runtime marker, and source-commit match to current `HEAD` by default.
+- ✅ **OpenClaw stats ingestion reliability:** retained existing packaged stats ingestion coverage while centralizing the reusable artifact guard used by `validate:packaged-openclaw-stats-ingestion:reuse-artifact` and all other packaged reuse gates.
+- ✅ **Packaging scripts/docs:** documented the new artifact reuse preflight in `README.md` and `docs/packaging/macos-dmg.md`, with explicit note on stale-commit rebuild behavior and `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0` override.
+
+### Validation checks
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**).
+- ✅ `npm run validate:packaged-artifact --silent` (expected failure due stale artifact in current workspace; confirms stale guard path works).
+- ✅ `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+- ✅ `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+
+### Notes
+
+- This was a reliability/maintenance cycle focused on reducing false negatives in packaged reuse pipelines without weakening existing OpenClaw checks.
+
+
 ## QA cycle update — 2026-02-27 23:21 America/Toronto
 
 ### Completed this cycle

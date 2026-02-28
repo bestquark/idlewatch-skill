@@ -110,11 +110,15 @@ Validation helpers:
 - `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path), covering `status.result.stats.current`, `status.current.stats.current`, and adjacent legacy variants, including millisecond timestamp aliases (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`).
 - `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-usage-health`, `validate:openclaw-stats-ingestion`, and `validate:openclaw-cache-recovery-e2e`) in one gate.
 - `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
+- `npm run validate:packaged-artifact` validates a reusable `dist/IdleWatch.app` before running any `:reuse-artifact` validator (metadata integrity, launcher executability, and matching source commit with current `HEAD` by default).
+  - Disable commit matching for one-off local experiments by setting `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0`.
+  - If the reuse gate requires bundled runtime, use `npm run validate:packaged-artifact:bundled-runtime`.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and millisecond timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
 - `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).
 - `npm run validate:packaged-openclaw-release-gates:reuse-artifact` validates the same three checks against an already-packaged artifact (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) and is the command used in CI/release smoke for repeatable execution.
+  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact` and all packaged `:reuse-artifact` validators now run through `validate:packaged-artifact` first, so stale artifacts from older commits fail fast with a rebuild hint.
 - `npm run validate:packaged-openclaw-robustness` runs the full packaged resilience slice in one command (`packaged-usage-age-slo`, `packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, `packaged-openclaw-release-gates`).
 - `npm run validate:packaged-openclaw-robustness:reuse-artifact` runs the same resilience slice against an already-packaged artifact.
 
