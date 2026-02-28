@@ -38,7 +38,8 @@ CURRENT_GIT_DIRTY="0"
 if [[ -n "$CURRENT_GIT_COMMIT" && -n "$(git -C "$ROOT_DIR" status --porcelain 2>/dev/null)" ]]; then
   CURRENT_GIT_DIRTY="1"
 fi
-BUNDLED_RUNTIME_REQUIRED="${IDLEWATCH_BUNDLED_RUNTIME_REQUIRED:-1}"
+BUNDLED_RUNTIME_REQUIRED_RAW="${IDLEWATCH_BUNDLED_RUNTIME_REQUIRED+x}"
+BUNDLED_RUNTIME_REQUIRED="${IDLEWATCH_BUNDLED_RUNTIME_REQUIRED:-0}"
 RESTRICTED_PATH="/usr/bin:/bin"
 ORIGINAL_PATH="${PATH:-/usr/bin:/bin}"
 
@@ -62,12 +63,20 @@ else
     exit 1
   fi
 
-  if [[ "$BUNDLED_RUNTIME_REQUIRED" == "1" && "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
-    echo "Reused packaged artifact is not bundled-runtime aware. Rebuild first:" >&2
-    echo "  npm run package:macos" >&2
-    echo "(required for node-free PATH validation in bundled-runtime check)" >&2
-    echo "If this is expected, set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 to run launchability-only validation." >&2
-    exit 1
+  if [[ "$BUNDLED_RUNTIME_REQUIRED" == "1" ]]; then
+    if [[ "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
+      echo "Reused packaged artifact is not bundled-runtime aware. Rebuild first:" >&2
+      echo "  npm run package:macos" >&2
+      echo "(required for node-free PATH validation in bundled-runtime check)" >&2
+      echo "To force launchability-only non-bundled validation, set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0." >&2
+      exit 1
+    fi
+  elif [[ "$BUNDLED_RUNTIME_REQUIRED_RAW" != "1" ]]; then
+    if [[ "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
+      echo "Non-bundled artifact detected in reuse mode; running launchability fallback (recommended for non-deterministic reuse checks)." >&2
+      echo "This keeps non-bundled artifacts supportable while still validating launcher startup semantics." >&2
+      echo "Set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1 to enforce strict node-free validation." >&2
+    fi
   fi
 
   METADATA_GIT_COMMIT="$(read_metadata_field sourceGitCommit)"

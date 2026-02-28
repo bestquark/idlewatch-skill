@@ -88,7 +88,7 @@ Optional environment variables:
 - `MACOS_NOTARY_PROFILE="<keychain-profile>"` — notarizes/staples DMG during `build-dmg.sh`.
 - `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` — strict mode; fails packaging unless signing/notarization prerequisites are present.
 - `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` — explicit CI-only bypass for tag builds; disables auto-strict guard that otherwise blocks unsigned `refs/tags/*` packaging.
-- `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1` — when set to `1` (default), `validate:packaged-bundled-runtime:reuse-artifact` requires `nodeRuntimeBundled=1` in metadata and enforces strict PATH-scrubbed validation.
+- `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1` — when set to `1`, `validate:packaged-bundled-runtime`/`:reuse-artifact` requires `nodeRuntimeBundled=1` in metadata and enforces strict PATH-scrubbed validation. In reuse mode, this defaults to `0` so prebuilt non-bundled artifacts can still validate launchability with host PATH fallback; set `1` to force strict node-free checks.
 - `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1` — allows `validate:packaged-bundled-runtime:reuse-artifact` to validate non-bundled artifacts by falling back to current host PATH when `nodeRuntimeBundled!=1`.
 
 - `scripts/package-macos.sh`
@@ -135,9 +135,9 @@ Optional environment variables:
 - `npm run validate:packaged-bundled-runtime`
   - By default, rebuilds the app with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - If `IDLEWATCH_SKIP_PACKAGE_MACOS=1`, the validator reuses an existing `dist/IdleWatch.app` artifact instead of repackaging (useful for repeated CI/test runs).
-    - Reuse mode now verifies the reused artifact is compatible with the current workspace: it must be built with bundled runtime metadata and (when available) the same `sourceGitCommit` as the current `HEAD` before launch checks run.
+    - Reuse mode now verifies the reused artifact is compatible with the current workspace (and, when strict mode is enabled, requires bundled runtime metadata); when strict mode is off it can still run launchability checks for non-bundled artifacts via fallback PATH logic.
     - If checks fail, rerun with a fresh package (`npm run package:macos` or remove `IDLEWATCH_SKIP_PACKAGE_MACOS`).
-  - If `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0`, non-bundled artifacts can still be validated in host-PATH launchability mode using `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1`.
+  - Non-bundled artifacts can still be validated in host-PATH launchability mode using `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1` (this remains the default fallback in reuse mode).
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
   - If the OpenClaw-enabled dry-run path does not emit telemetry within the timeout window, the script retries with extended timeout and then falls back to `IDLEWATCH_OPENCLAW_USAGE=off` for deterministic launchability checks.

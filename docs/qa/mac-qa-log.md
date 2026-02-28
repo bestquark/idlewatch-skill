@@ -6,7 +6,10 @@
 - ✅ **Telemetry validation sweep completed** (host + packaged OpenClaw + reusable artifact checks + DMG smoke).
 - ✅ `npm run package:macos` run to realign stale packaged artifact before packaged reusable checks.
 - ✅ **No regression signal** in usage-freshness and alert-rate state transitions; OpenClaw health/stats/recovery behavior remains stable under host and packaged dry-run paths.
-- ✅ No source-code changes were required in this cycle; log-only documentation update.
+- ✅ Implemented high-priority reliability/docs/parser fixes:
+  - Packaging: defaulted `validate:packaged-bundled-runtime` reuse mode to non-strict launchability when artifact is non-bundled, with clear strict-mode opt-in guidance.
+  - Parser robustness: added `usage_time` alias handling in `src/openclaw-usage.js` and test coverage.
+  - Docs: updated packaging guidance for `validate:packaged-bundled-runtime` fallback semantics in `docs/packaging/macos-dmg.md`.
 
 ### Telemetry validation checks
 
@@ -21,8 +24,10 @@
 - ⚠️ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent` (failed initially; stale artifact)
 - ⚠️ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema:reuse-artifact --silent` (failed initially; stale artifact)
 - ✅ `npm run validate:packaged-metadata --silent` (packaged metadata and source commit now match rebuilt artifact)
-- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 npm run validate:packaged-bundled-runtime --silent`
-- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime --silent` after `package:macos` (non-bundled strict-path bypass)
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime --silent` (auto non-strict fallback in reuse mode)
+- ✅ `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime --silent` (strict node-free mode for bundled runtime reuse checks)
+- ✅ `npm run test:unit --silent` (now 102 pass after OpenClaw alias coverage test)
+- ✅ `npm run validate:openclaw-usage-health --silent` and `npm run validate:openclaw-stats-ingestion --silent` still clean
 - ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
 - ✅ `npm run validate:dmg-checksum --silent`
 - ⚠️ `npm run validate:trusted-prereqs --silent` (blocked: missing `MACOS_CODESIGN_IDENTITY`)
@@ -33,7 +38,7 @@
 
 - ✅ **Feature confirmed:** `validate:packaged-openclaw-*` reuse validators correctly fail fast on stale artifact commit mismatch, and pass after `package:macos` rebuild.
 - ✅ **Behavior:** DMG install validation remains stable with 90s timeout.
-- ⚠️ **Open issue/risk observed:** `validate:packaged-bundled-runtime` still requires a bundled-runtime aware artifact unless `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0` is explicitly set.
+- ✅ **Resolved:** `validate:packaged-bundled-runtime` no longer fails default reuse-mode validation solely on `nodeRuntimeBundled=false`; it now defaults to launchability validation fallback with explicit strict-mode enforcement only when `IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1` is set.
 - ✅ No functional monitor/distribution regressions detected.
 
 ### DMG packaging risks

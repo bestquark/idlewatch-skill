@@ -230,6 +230,7 @@ const OPENCLAW_ALIAS_KEY_MAP = {
   usage_ts_ms: 'usageTsMs',
   usage_timestamp: 'usageTimestamp',
   usage_timestamp_ms: 'usageTsMs',
+  usage_time: 'usageTimestamp',
   updated_at_ms: 'updatedAtMs',
   ts_ms: 'tsMs'
 }
@@ -288,7 +289,8 @@ function hasAnySessionSignal(value) {
     value.usage_timestamp,
     value.usage_timestamp_ms,
     value.usageTimestamp,
-    value.usageTimestampMs
+    value.usageTimestampMs,
+    value.usage_time
   ]
 
   if (directSignals.some((field) => Number.isFinite(Number(field)) || (typeof field === 'string' && field.trim().length > 0) || field === true || field === false)) {
@@ -548,6 +550,7 @@ function parseFromStatusJson(parsed) {
         parsed?.usageTimestampMs,
         parsed?.usage_timestamp,
         parsed?.usage_timestamp_ms,
+        parsed?.usage_time,
         parsed?.updatedAt,
         parsed?.updated_at,
         parsed?.updatedAtMs,
@@ -621,6 +624,7 @@ function parseFromStatusJson(parsed) {
       session.usageTimestamp,
       session.usage_timestamp,
       session.usage_timestamp_ms,
+      session?.usage_time,
       session.tsMs,
       session?.usage?.updatedAt,
       session?.usage?.updated_at,
@@ -643,6 +647,7 @@ function parseFromStatusJson(parsed) {
       parsed?.usageTimestamp,
       parsed?.usage_timestamp,
       parsed?.usage_timestamp_ms,
+      parsed?.usage_time,
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
@@ -866,6 +871,7 @@ function parseGenericUsage(parsed) {
       usageRecord?.usageTimestamp,
       usageRecord?.usage_timestamp,
       usageRecord?.usage_timestamp_ms,
+      usageRecord?.usage_time,
       usageRecord?.usageTimestampMs,
       usageTotals?.updatedAt,
       usageTotals?.updated_at,
@@ -881,6 +887,7 @@ function parseGenericUsage(parsed) {
       usageTotals?.usageTimestamp,
       usageTotals?.usage_timestamp,
       usageTotals?.usage_timestamp_ms,
+      usageTotals?.usage_time,
       parsed?.payload?.updatedAt,
       parsed?.payload?.updated_at,
       parsed?.payload?.updatedAtMs,
@@ -893,6 +900,7 @@ function parseGenericUsage(parsed) {
       parsed?.payload?.usageTimestamp,
       parsed?.payload?.usage_timestamp,
       parsed?.payload?.usage_timestamp_ms,
+      parsed?.payload?.usage_time,
       parsed?.payload?.usageTimestampMs,
       parsed?.ts,
       parsed?.time,
@@ -903,6 +911,7 @@ function parseGenericUsage(parsed) {
       parsed?.usageTimestamp,
       parsed?.usage_timestamp,
       parsed?.usage_timestamp_ms,
+      parsed?.usage_time,
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
@@ -919,6 +928,7 @@ function parseGenericUsage(parsed) {
       parsed?.status?.usageTimestamp,
       parsed?.status?.usage_timestamp,
       parsed?.status?.usage_timestamp_ms,
+      parsed?.status?.usage_time,
       parsed?.status?.usageTsMs
     ),
     integrationStatus: 'ok'

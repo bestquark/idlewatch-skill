@@ -498,6 +498,26 @@ test('parses usage timestamp aliases in usage_timestamp_ms fields', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses usage_time timestamp alias in generic payloads', () => {
+  const usage = parseOpenClawUsage(JSON.stringify({
+    current: {
+      model: 'gpt-5.3-codex',
+      totalTokens: 1500,
+      sessionId: 'time-alias',
+      agentId: 'agent-time',
+      usage_time: '2026-02-28T00:00:00.000Z'
+    }
+  }))
+
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 1500)
+  assert.equal(usage.sessionId, 'time-alias')
+  assert.equal(usage.agentId, 'agent-time')
+  assert.equal(usage.usageTimestampMs, Date.parse('2026-02-28T00:00:00.000Z'))
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses usage timestamp aliases in updated_at_ms fields', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-status-updated-at-ms-alias.json'))
   assert.ok(usage)
