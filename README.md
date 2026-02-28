@@ -107,10 +107,10 @@ Validation helpers:
 - `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
 - `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
 - `npm run validate:openclaw-usage-health` validates that dry-run telemetry stays on `source.usage=openclaw` with healthy integration/ingestion in OpenClaw-required mode (mocked CLI probe path).
-- `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path), covering `status.result.stats.current`, `status.current.stats.current`, and adjacent legacy variants.
+- `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path), covering `status.result.stats.current`, `status.current.stats.current`, and adjacent legacy variants, including millisecond timestamp aliases (`usage_ts_ms`, `usage_timestamp_ms`, `ts_ms`).
 - `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-usage-health`, `validate:openclaw-stats-ingestion`, and `validate:openclaw-cache-recovery-e2e`) in one gate.
 - `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
-- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and millisecond timestamp alias payload variants (`usage_ts_ms`/`ts_ms`).
+- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and millisecond timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `ts_ms`).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
 - `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).
@@ -201,7 +201,7 @@ OpenClaw parsing hardened in this release:
 - stringified numeric fields (for example `"totalTokens": "12345"` or `"updatedAt": "1771278999999"`) are now accepted
 - mixed timestamp names, epoch-seconds variants (`1771278800`), and alternate session container keys are supported
 - wrapped status payload shapes (`result` root object, `data.result` wrappers, top-level `sessions` array, nested usage totals/`totals` object) are supported with precedence-aware session selection
-- timestamp aliases in both `snake_case` and millis variants are normalized (for example `usage_ts`, `usage_ts_ms`, `ts_ms`) so parser keeps working across CLI serializers
+- timestamp aliases in both `snake_case` and millis variants are normalized (for example `usage_ts`, `usage_ts_ms`, `usage_timestamp`, `usage_timestamp_ms`, `ts_ms`) so parser keeps working across CLI serializers
 - direct session object payloads (`session`, `activeSession`, `currentSession`) are now handled alongside array/map forms
 - sessions as arrays are supported (for example `status.stats.current.sessions`) in addition to map/object `sessions` containers
 - sessions maps keyed by session id are supported (`sessions` as object map) to avoid regressions on alternate OpenClaw serializers

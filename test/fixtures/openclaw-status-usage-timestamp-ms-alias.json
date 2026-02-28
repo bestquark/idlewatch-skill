@@ -1,0 +1,14 @@
+{
+  "status": {
+    "current": {
+      "session": {
+        "sessionId": "ts-ms-underscore-session",
+        "agentId": "agent-ts-ms-underscore",
+        "model": "qwen3",
+        "totalTokens": 1717,
+        "tokensPerMinute": 22,
+        "usage_timestamp_ms": 1771321200000
+      }
+    }
+  }
+}

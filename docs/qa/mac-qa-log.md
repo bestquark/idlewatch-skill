@@ -1,3 +1,23 @@
+## QA cycle update — 2026-02-27 19:40 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** expanded OpenClaw stats alias parsing in both live collector and validation paths for additional millisecond timestamp field variants observed in-the-wild (`usage_timestamp`, `usage_timestamp_ms`), including direct status-wrapper and test coverage, to reduce parser false negatives across CLI serializer changes.
+- ✅ **OpenClaw stats ingestion:** updated `scripts/validate-openclaw-stats-ingestion.mjs` with a new fixture scenario for `status.current.stats.current.session.usage_timestamp_ms` and kept packed stats-gate coverage explicit in CI/docs.
+- ✅ **Packaging scripts/docs:** hardened runtime validation diagnostics by preserving failed dry-run attempt logs and surfacing the last 60 lines on failure in packaged runtime checks; documented this behavior in macOS packaging docs.
+- ✅ **Docs hygiene:** synchronized `README.md` and `docs/packaging/macos-dmg.md` to explicitly list supported timestamp-alias variants for `openclaw-stats` ingestion checks.
+- ✅ **Validation checks run:** `npm run validate:openclaw-stats-ingestion --silent`; `npm run test:unit --silent` (100 pass, 0 fail).
+
+### Bugs / features observed
+
+- ✅ No new monitor regressions observed on this cycle.
+- ✅ Both host and packaged OpenClaw stats-fallback parsing paths now handle the newly surfaced timestamp aliases via shared telemetry-row extraction.
+- ⚠️ `validate:firebase-write-required-once` remains blocked in this host context without Firebase write credentials/emulator.
+
+### Notes
+
+- Command log: this implementation cycle was executed from cron; command outputs are in interactive terminal session logs (no dedicated `logs/qa/...` artifact generated in this run).
+
 ## QA cycle update — 2026-02-27 19:33 America/Toronto
 
 ### Completed this cycle

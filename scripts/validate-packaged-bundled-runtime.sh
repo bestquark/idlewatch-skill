@@ -3,6 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_LAUNCHER="$ROOT_DIR/dist/IdleWatch.app/Contents/MacOS/IdleWatch"
+TMP_APPS="$(mktemp -d -t idlewatch-packaged-runtime.XXXXXX)"
+
+cleanup_tmp() {
+  rm -rf "$TMP_APPS"
+}
+trap cleanup_tmp EXIT
 
 NODE_BIN="$(command -v node || true)"
 if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
@@ -26,7 +32,9 @@ if [[ ! -x "$DIST_LAUNCHER" ]]; then
 fi
 
 if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
-  echo "Note: node found in PATH during validation. Script continues by verifying launcher can run from a restricted PATH that intentionally omits typical package-manager Node locations." >&2
+  echo "Note: node is available in restricted PATH; this mode still validates bundled runtime fallback via explicit launcher/runtime resolution but is not a pure no-node-path check." >&2
+else
+  echo "Using a Node-free PATH to validate that launcher falls back to bundled runtime cleanly." >&2
 fi
 
 npm run validate:packaged-metadata --silent
@@ -40,14 +48,24 @@ DRY_RUN_TIMEOUT_BACKOFF_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS:-2000}"
 run_packaged_dry_run() {
   local openclaw_usage=${1:-auto}
   local timeout_ms=${2}
+  local attempt=${3}
+  local attempt_log="$TMP_APPS/packaged-dry-run-${openclaw_usage}-attempt-${attempt}.log"
 
-  IDLEWATCH_DRY_RUN_TIMEOUT_MS="$timeout_ms" \
-  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
-  IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
-  HOME="$HOME" \
-  PATH="/usr/bin:/bin" \
-  "$NODE_BIN" "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" \
-    "$DIST_LAUNCHER" --dry-run --once
+  if ! env \
+    IDLEWATCH_DRY_RUN_TIMEOUT_MS="$timeout_ms" \
+    IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="$IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS" \
+    IDLEWATCH_OPENCLAW_USAGE="$openclaw_usage" \
+    HOME="$HOME" \
+    PATH="/usr/bin:/bin" \
+    "$NODE_BIN" "$ROOT_DIR/scripts/validate-dry-run-schema.mjs" \
+      "$DIST_LAUNCHER" --dry-run --once >"$attempt_log" 2>&1; then
+    echo "Attempt ${attempt} failed for IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage}. Last output:" >&2
+    tail -n 60 "$attempt_log" >&2 || true
+    return 1
+  fi
+
+  cat "$attempt_log" >&2
+  return 0
 }
 
 run_packaged_dry_run_with_retries() {
@@ -58,7 +76,7 @@ run_packaged_dry_run_with_retries() {
   while (( attempt <= DRY_RUN_TIMEOUT_MAX_ATTEMPTS )); do
     local sleep_ms=0
     echo "Attempt ${attempt}/${DRY_RUN_TIMEOUT_MAX_ATTEMPTS}: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=${openclaw_usage} timeout=${timeout_ms}ms" >&2
-    if run_packaged_dry_run "$openclaw_usage" "$timeout_ms"; then
+    if run_packaged_dry_run "$openclaw_usage" "$timeout_ms" "$attempt"; then
       return 0
     fi
 

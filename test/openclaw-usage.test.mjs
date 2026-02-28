@@ -485,3 +485,15 @@ test('parses usage timestamp aliases in snake_case ms fields', () => {
   assert.equal(usage.usageTimestampMs, 1771319900000)
   assert.equal(usage.integrationStatus, 'ok')
 })
+
+test('parses usage timestamp aliases in usage_timestamp_ms fields', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-usage-timestamp-ms-alias.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'qwen3')
+  assert.equal(usage.totalTokens, 1717)
+  assert.equal(usage.tokensPerMin, 22)
+  assert.equal(usage.sessionId, 'ts-ms-underscore-session')
+  assert.equal(usage.agentId, 'agent-ts-ms-underscore')
+  assert.equal(usage.usageTimestampMs, 1771321200000)
+  assert.equal(usage.integrationStatus, 'ok')
+})

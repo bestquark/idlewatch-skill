@@ -228,6 +228,8 @@ const OPENCLAW_ALIAS_KEY_MAP = {
   agent_id: 'agentId',
   usage_ts: 'usageTs',
   usage_ts_ms: 'usageTsMs',
+  usage_timestamp: 'usageTimestamp',
+  usage_timestamp_ms: 'usageTsMs',
   ts_ms: 'tsMs'
 }
 
@@ -280,7 +282,11 @@ function hasAnySessionSignal(value) {
     value.timestampMs,
     value.tsMs,
     value.usageTs,
-    value.usageTsMs
+    value.usageTsMs,
+    value.usage_timestamp,
+    value.usage_timestamp_ms,
+    value.usageTimestamp,
+    value.usageTimestampMs
   ]
 
   if (directSignals.some((field) => Number.isFinite(Number(field)) || (typeof field === 'string' && field.trim().length > 0) || field === true || field === false)) {
@@ -603,6 +609,9 @@ function parseFromStatusJson(parsed) {
       session.timestamp,
       session.time,
       session.usageTs,
+      session.usageTimestamp,
+      session.usage_timestamp,
+      session.usage_timestamp_ms,
       session.tsMs,
       session?.usage?.updatedAt,
       session?.usage?.updated_at,
@@ -612,6 +621,9 @@ function parseFromStatusJson(parsed) {
       session?.usage?.tsMs,
       session?.usage?.time,
       session?.usage?.usageTs,
+      session?.usage?.usageTimestamp,
+      session?.usage?.usage_timestamp,
+      session?.usage?.usage_timestamp_ms,
       session?.usage?.usageTsMs,
       parsed?.ts,
       parsed?.time,
@@ -619,7 +631,9 @@ function parseFromStatusJson(parsed) {
       parsed?.tsMs,
       parsed?.timestampMs,
       parsed?.usageTs,
+      parsed?.usageTimestamp,
       parsed?.usage_timestamp,
+      parsed?.usage_timestamp_ms,
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
@@ -631,6 +645,9 @@ function parseFromStatusJson(parsed) {
       parsed?.status?.ts,
       parsed?.status?.tsMs,
       parsed?.status?.usageTs,
+      parsed?.status?.usageTimestamp,
+      parsed?.status?.usage_timestamp,
+      parsed?.status?.usage_timestamp_ms,
       parsed?.status?.usageTsMs
     ) ??
     (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.timestamp))
@@ -835,7 +852,9 @@ function parseGenericUsage(parsed) {
       usageRecord?.timestampMs,
       usageRecord?.usageTs,
       usageRecord?.usageTsMs,
+      usageRecord?.usageTimestamp,
       usageRecord?.usage_timestamp,
+      usageRecord?.usage_timestamp_ms,
       usageRecord?.usageTimestampMs,
       usageTotals?.updatedAt,
       usageTotals?.updated_at,
@@ -847,7 +866,9 @@ function parseGenericUsage(parsed) {
       usageTotals?.tsMs,
       usageTotals?.usageTs,
       usageTotals?.usageTsMs,
+      usageTotals?.usageTimestamp,
       usageTotals?.usage_timestamp,
+      usageTotals?.usage_timestamp_ms,
       parsed?.payload?.updatedAt,
       parsed?.payload?.updated_at,
       parsed?.payload?.updatedAtMs,
@@ -857,7 +878,9 @@ function parseGenericUsage(parsed) {
       parsed?.payload?.tsMs,
       parsed?.payload?.usageTs,
       parsed?.payload?.usageTsMs,
+      parsed?.payload?.usageTimestamp,
       parsed?.payload?.usage_timestamp,
+      parsed?.payload?.usage_timestamp_ms,
       parsed?.payload?.usageTimestampMs,
       parsed?.ts,
       parsed?.time,
@@ -865,7 +888,9 @@ function parseGenericUsage(parsed) {
       parsed?.tsMs,
       parsed?.timestampMs,
       parsed?.usageTs,
+      parsed?.usageTimestamp,
       parsed?.usage_timestamp,
+      parsed?.usage_timestamp_ms,
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
@@ -877,6 +902,9 @@ function parseGenericUsage(parsed) {
       parsed?.status?.ts,
       parsed?.status?.tsMs,
       parsed?.status?.usageTs,
+      parsed?.status?.usageTimestamp,
+      parsed?.status?.usage_timestamp,
+      parsed?.status?.usage_timestamp_ms,
       parsed?.status?.usageTsMs
     ),
     integrationStatus: 'ok'
