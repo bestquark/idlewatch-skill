@@ -1,3 +1,47 @@
+## QA cycle update — 2026-02-28 5:44 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA cycle executed** for IdleWatch Mac on cron slot.
+- ✅ Ran `npm run validate:all --silent` (12 pass, 3 fail, 2 skip).
+- ✅ Remediated strict-reuse and DMG preflight drift by rebuilding artifacts and rerunning targeted validators.
+- ✅ Artifact refresh actions taken:
+  - `npm run package:macos`
+  - `npm run package:dmg`
+  - `npm run validate:packaged-bundled-runtime --silent`
+- ✅ Final reusable/runtime checks were re-run with compatibility override where required: `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0`.
+- ✅ Validation outputs captured under recent `logs/qa/mac-qa-cycle-2026022809*.log.*` files produced this cycle.
+
+### Telemetry validation checks
+
+- ✅ Host validation sweep: `test:unit`, `validate:usage-freshness-e2e`, `validate:usage-alert-rate-e2e`, `validate:openclaw-release-gates`.
+- ✅ Packaged base checks: `validate:packaged-bundled-runtime`, `validate:packaged-metadata`.
+- ⚠️ `validate:packaged-dry-run-schema:reuse-artifact` and `validate:packaged-openclaw-robustness:reuse-artifact` fail in strict mode on this host when source dirty-state provenance differs from current workspace (`clean` vs built artifact dirty-state).
+- ✅ Both strict-fail cases pass with `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0` in this environment.
+- ✅ Packaged OpenClaw release gates pass (`validate:packaged-openclaw-release-gates:reuse-artifact`) after artifact refresh/override.
+- ✅ Trust/path checks: `validate:trusted-prereqs` skipped (missing signing/notary envs), `validate:firebase-emulator-mode` passes, `validate:firebase-write-required-once` blocked by local config.
+
+### Bugs / features observed
+
+- ✅ No monitor regressions detected in usage freshness, alert transitions, or OpenClaw host-path coverage this cycle.
+- ⚠️ **Reusable-artifact strictness remains intentionally conservative:** dirty-state mismatch blocks stale/unknown provenance artifacts before runtime checks.
+- ⚠️ **DMG packaging fragility observed:** an early `build-dmg.sh` run can fail with a missing sourcemap path (`ignore-enoent.js.map`) when dist state is stale/inconsistent; a full clean repackaging resolves it.
+- ✅ Rebuild pipeline `package:macos` + `package:dmg` currently restores a healthy dry-run/install path for this host.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-checksum --silent` passes for freshly rebuilt unsigned DMG.
+- ✅ `validate:dmg-install --silent` passes after fresh `package:dmg`.
+- ⚠️ Full trust-chain verification remains environment-gated until signing/notary secrets are configured (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+- ⚠️ Deterministic reuse in this host still requires artifact refresh or intentional override (`IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0`) before strict reuse checks.
+
+### OpenClaw integration gaps
+
+- ✅ Emulator-mode write/path checks are healthy.
+- ⚠️ Real write-path verification remains blocked without write-capable Firebase credentials.
+  - Required: `FIREBASE_PROJECT_ID` + one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or `FIRESTORE_EMULATOR_HOST` (for emulator mode).
+- ✅ OpenClaw parser and release-gate behavior remain stable; no new ingestion/shape regressions observed.
+
 ## QA cycle update — 2026-02-28 5:35 AM America/Toronto
 
 ### Completed this cycle
