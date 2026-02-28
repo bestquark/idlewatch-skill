@@ -1,3 +1,65 @@
+## QA cycle update — 2026-02-28 10:40 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Ran IdleWatch Mac monitor/distribution QA cycle at cron slot and captured command output in `logs/qa/mac-qa-cycle-202602281040.log`.
+- ✅ Validation commands run:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+  - `npm run package:macos --silent`
+  - `npm run package:dmg --silent`
+- ✅ `npm run test:unit --silent` passed (`105 pass, 0 fail`).
+
+### Telemetry validation checks
+
+- ✅ Host telemetry validations passed:
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (usage-health, stats-ingestion, stale-cache recovery)
+- ⚠️ Reuse-mode packaged OpenClaw checks (`packaged-openclaw-*` and `packaged-dry-run-schema`) initially failed due reusable artifact commit mismatch.
+- ✅ After `npm run package:macos`, these reuse checks passed under compatibility override (`IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0`).
+
+### Bugs / features observed
+
+- ✅ Confirmed a stable parser surface: usage freshness/alert checks remain stable and OpenClaw payload variants still parse under noisy/non-zero-exit outputs.
+- ✅ `validate:packaged-bundled-runtime --silent` rebuilt artifacts and validated launchability under strict PATH-scrubbed launch checks (`bundled runtime validation ok`).
+- ✅ `validate:packaged-bundled-runtime:reuse-artifact` now correctly enforces clean-state provenance and fails fast when workspace dirty-state doesn't match, with explicit rebuild guidance.
+- ⚠️ `validate:packaged-openclaw-* :reuse-artifact` continues to be provenance-sensitive without overrides when `dist` is stale.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-checksum --silent` remains green.
+- ⚠️ `validate:dmg-install` failed until `package:macos`/`package:dmg` refreshed artifacts due commit drift.
+- ✅ After refresh, `validate:dmg-install` passed under 90s timeout with compatible source provenance override.
+- ⚠️ Trust/notarization path still blocked locally by missing:
+  - `MACOS_CODESIGN_IDENTITY`
+  - `MACOS_NOTARY_PROFILE`
+
+### OpenClaw integration gaps
+
+- ✅ Emulator mode remains healthy (`validate:firebase-emulator-mode`).
+- ⚠️ Write-path verification remains blocked when `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` without full Firebase config.
+  - Missing at minimum: `FIREBASE_PROJECT_ID` + one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or `FIRESTORE_EMULATOR_HOST`.
+
 ## QA cycle update — 2026-02-28 10:36 AM America/Toronto
 
 ### Completed this cycle
