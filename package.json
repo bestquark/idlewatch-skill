@@ -28,6 +28,7 @@
     "validate:firebase-write-required-once": "IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
     "validate:dmg-install": "./scripts/validate-dmg-install.sh",
     "validate:packaged-bundled-runtime": "./scripts/validate-packaged-bundled-runtime.sh",
+    "validate:packaged-bundled-runtime:reuse-artifact": "IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime --silent",
     "validate:dmg-checksum": "./scripts/validate-dmg-checksum.sh",
     "validate:usage-freshness-e2e": "node scripts/validate-usage-freshness-e2e.mjs",
     "validate:usage-alert-rate-e2e": "node scripts/validate-usage-alert-rate-e2e.mjs",

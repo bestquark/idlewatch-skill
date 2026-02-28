@@ -104,24 +104,28 @@ fi
 
 # --- Packaging ---
 if [[ "$SKIP_PACKAGING" -eq 1 ]]; then
+  skip_validator "package:macos"
   skip_validator "validate:packaged-metadata"
   skip_validator "validate:packaged-bundled-runtime"
+  skip_validator "validate:packaged-bundled-runtime:reuse-artifact"
   skip_validator "validate:packaged-dry-run-schema:reuse-artifact"
   skip_validator "validate:packaged-openclaw-robustness:reuse-artifact"
   skip_validator "validate:dmg-install"
   skip_validator "validate:dmg-checksum"
 elif [[ "$IS_MACOS" -ne 1 ]]; then
+  skip_validator "package:macos" "non-macOS host"
   skip_validator "validate:packaged-metadata" "non-macOS host"
   skip_validator "validate:packaged-bundled-runtime" "non-macOS host"
+  skip_validator "validate:packaged-bundled-runtime:reuse-artifact" "non-macOS host"
   skip_validator "validate:packaged-dry-run-schema:reuse-artifact" "non-macOS host"
   skip_validator "validate:packaged-openclaw-robustness:reuse-artifact" "non-macOS host"
   skip_validator "validate:dmg-install" "non-macOS host"
   skip_validator "validate:dmg-checksum" "non-macOS host"
 else
-  run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
   run_validator "validate:packaged-bundled-runtime"            npm run validate:packaged-bundled-runtime --silent
-  run_validator "validate:packaged-dry-run-schema:reuse-artifact"                  npm run validate:packaged-dry-run-schema:reuse-artifact --silent
-  run_validator "validate:packaged-openclaw-robustness:reuse-artifact"                   npm run validate:packaged-openclaw-robustness:reuse-artifact --silent
+  run_validator "validate:packaged-metadata"                   npm run validate:packaged-metadata --silent
+  run_validator "validate:packaged-dry-run-schema:reuse-artifact"  npm run validate:packaged-dry-run-schema:reuse-artifact --silent
+  run_validator "validate:packaged-openclaw-robustness:reuse-artifact" npm run validate:packaged-openclaw-robustness:reuse-artifact --silent
   run_validator "validate:dmg-install"                         npm run validate:dmg-install --silent
   run_validator "validate:dmg-checksum"                        npm run validate:dmg-checksum --silent
 fi

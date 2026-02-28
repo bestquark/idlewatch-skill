@@ -23,8 +23,18 @@ if [[ ! -x "$RUNTIME_DIR/bin/node" ]]; then
   exit 1
 fi
 
-echo "Packaging IdleWatch.app with bundled runtime: $RUNTIME_DIR"
-IDLEWATCH_NODE_RUNTIME_DIR="$RUNTIME_DIR" npm run package:macos --silent
+if [[ "${IDLEWATCH_SKIP_PACKAGE_MACOS:-0}" != "1" ]]; then
+  echo "Packaging IdleWatch.app with bundled runtime: $RUNTIME_DIR"
+  IDLEWATCH_NODE_RUNTIME_DIR="$RUNTIME_DIR" npm run package:macos --silent
+else
+  if [[ -x "$DIST_LAUNCHER" ]]; then
+    echo "Using existing packaged app at: $DIST_LAUNCHER"
+  else
+    echo "IDLEWATCH_SKIP_PACKAGE_MACOS=1 but packaged launcher is missing: $DIST_LAUNCHER" >&2
+    echo "Run with IDLEWATCH_SKIP_PACKAGE_MACOS unset or prebuild via npm run package:macos first." >&2
+    exit 1
+  fi
+fi
 
 if [[ ! -x "$DIST_LAUNCHER" ]]; then
   echo "Packaged launcher missing: $DIST_LAUNCHER" >&2
@@ -36,7 +46,6 @@ if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
 else
   echo "Using a Node-free PATH to validate that launcher falls back to bundled runtime cleanly." >&2
 fi
-
 npm run validate:packaged-metadata --silent
 
 IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-90000}"

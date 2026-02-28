@@ -1,3 +1,32 @@
+## QA cycle update — 2026-02-27 22:56 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability + packaging runtime gate:** introduced bundled-runtime validator reuse support to avoid duplicate repackaging when an artifact already exists.
+- ✅ **OpenClaw stats ingestion monitoring reliability:** preserved existing `stats --json` timestamp-alias coverage while reducing packaging-cycle flakiness by running bundled-runtime validation from one canonical packaging point in `validate-all`.
+- ✅ **Packaging scripts/docs:** added explicit reuse-artifact packaging runtime gate mode (`validate:packaged-bundled-runtime:reuse-artifact`) and documented `IDLEWATCH_SKIP_PACKAGE_MACOS` behavior in `docs/packaging/macos-dmg.md`.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**).
+- ✅ `npm run validate:packaged-metadata --silent`.
+- ✅ `npm run validate:packaged-dry-run-schema:reuse-artifact --silent`.
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` is still sensitive to local OpenClaw output availability in this environment.
+  - In this run it failed in this host because no telemetry row reached dry-run capture in the current host setup.
+  - The command path is preserved and now reused instead of re-repackaging every time.
+- ⚠️ `npm run validate:packaged-bundled-runtime:reuse-artifact --silent` was not run against this run's artifact because it requires an `IDLEWATCH_NODE_RUNTIME_DIR`-enabled package to exercise runtime-only fallback semantics (now documented).
+
+### Changes this cycle
+
+- ✅ `scripts/validate-packaged-bundled-runtime.sh`: added `IDLEWATCH_SKIP_PACKAGE_MACOS` fast path.
+- ✅ `scripts/validate-all.sh`: switched macOS packaging section to single canonical bundled-runtime packaging run and reused that artifact for downstream reuse validators.
+- ✅ `package.json`: added `validate:packaged-bundled-runtime:reuse-artifact` script.
+- ✅ `docs/packaging/macos-dmg.md`: updated `validate:packaged-bundled-runtime` semantics and added reuse-artifact docs.
+
+### Notes
+
+- This cycle focused on packaging runtime reliability and reducing validator timeouts/redundant repackaging in mac QA workflows.
+
 ## QA cycle update — 2026-02-27 22:49 America/Toronto
 
 ### Completed this cycle
