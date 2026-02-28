@@ -1,3 +1,16 @@
+## QA cycle update — 2026-02-28 12:20 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit tests:** `npm run test:unit --silent` ✅ (**102 pass, 0 fail**).
+- ✅ **No new bugs or regressions.**
+- ✅ **No feasible improvements remaining** — all open items blocked on external credentials (Firebase write creds, macOS codesign/notary secrets).
+
+### Notes
+
+- ⚠️ **External blockers unchanged:** Firebase write creds and macOS codesign/notary secrets still missing.
+- Working tree clean; nothing to commit beyond this log entry.
+
 ## QA cycle update — 2026-02-28 12:12 AM America/Toronto
 
 ### Completed this cycle
