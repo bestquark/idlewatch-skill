@@ -1,4 +1,72 @@
-## QA cycle update — 2026-02-28 6:10 AM America/Toronto
+## QA cycle update — 2026-02-28 10:18 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Ran monitor/distribution QA sweep for IdleWatch Mac at cron slot (20m cadence).
+- ✅ Command logs captured:
+  - `logs/qa/mac-qa-cycle-20260228101848.log`
+  - `logs/qa/mac-qa-cycle-20260228102036.postrun.log`
+  - `logs/qa/mac-qa-cycle-20260228102108.compat.log`
+- ✅ Validation commands run:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+  - `npm run package:macos --silent`
+  - `npm run package:dmg --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+
+### Telemetry validation checks
+
+- ✅ **Host monitor telemetry** continues to be healthy:
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (`usage-health`, `stats-ingestion`, cache-recovery)
+- ✅ `validate:packaged-openclaw-release-gates:reuse-artifact`, `validate:packaged-openclaw-stats-ingestion:reuse-artifact`, and `validate:packaged-openclaw-robustness:reuse-artifact` all pass when reusing artifacts with `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0` after rebuild.
+- ⚠️ Reuse checks without compatibility override still fail hard on workspace clean-state mismatch (`clean=true` vs artifact `clean=false`), which blocks deterministic pass/fail without explicit override or republish.
+- ⚠️ `validate:packaged-bundled-runtime:reuse-artifact` fails under this environment even with dirty override; failure is reproducible as missing telemetry row in restricted PATH dry-runs:
+  - `No telemetry JSON row found in dry-run output`
+
+### Bugs / features observed
+
+- ✅ No monitor runtime regressions detected in freshness/alert behavior for both host and packaged smoke runs.
+- ⚠️ New/recurring packaging behavior: fresh package rebuilds on the host now emit packaged artifact metadata with `sourceGitDirty=false`, while baseline checks now consistently run against `sourceGitDirty=true`, producing repeated strict preflight failures unless override is used.
+- ✅ `validate:packaged-bundled-runtime` (build path, non-reuse mode) remains healthy after sourcemap/metadata validation and launch dry-run.
+- ✅ Rebuild cadence now deterministic for `packaged-openclaw-*:reuse-artifact` checks when override is enabled.
+
+### DMG packaging risks
+
+- ✅ DMG checksum validation remains green: `validate:dmg-checksum`.
+- ✅ `validate:dmg-install` passes with compatibility override after a fresh `package:dmg`:
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+- ⚠️ Without override, DMG and packaged-OpenClaw reuse checks are currently blocked by stale/dirty-state provenance mismatch.
+- ⚠️ `validate:trusted-prereqs --silent` blocked by missing signing and notarization secrets:
+  - `MACOS_CODESIGN_IDENTITY`
+  - `MACOS_NOTARY_PROFILE`
+- ⚠️ The non-bundled packaged runtime path remains the weak point for strict reuse launchability (`validate:packaged-bundled-runtime:reuse-artifact`), and could hide launchability regressions unless bundled mode is explicitly required.
+
+### OpenClaw integration gaps
+
+- ✅ Emulator path still validates: `validate:firebase-emulator-mode`.
+- ⚠️ Real write-path checks remain blocked without write-capable Firebase credentials:
+  - `FIREBASE_PROJECT_ID` plus one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or `FIRESTORE_EMULATOR_HOST` when using `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`.
+- ✅ OpenClaw release-gate parsers and fallback recovery continue to pass in both host and packaged compatibility runs.
+
 
 ### Completed this cycle
 
