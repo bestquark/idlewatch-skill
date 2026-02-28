@@ -1,3 +1,24 @@
+## QA cycle update — 2026-02-28 4:21 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability improvement (packaging runtime path):** improved `scripts/package-macos.sh` tarball ingestion to use `npm pack --json` output as the authoritative artifact name (instead of `ls -t idlewatch-skill-*.tgz`) before extraction.
+  - This removes ambiguity/misselection risk when multiple tarballs are present or filenames drift.
+  - Added immediate cleanup of the generated source tarball after packaging so local workspaces remain deterministic and uncluttered for subsequent QA runs.
+- ✅ **Packaging scripts/docs:** updated packaging docs (`docs/packaging/macos-dmg.md`) to document the deterministic tarball resolution path used by `package-macos.sh`.
+- ✅ **OpenClaw stats ingestion reliability check still green:** ran packaged stats ingestion validator with the updated packaging output path.
+
+### Checks run
+
+- ✅ `npm run package:macos --silent`
+- ✅ `npm run test:unit --silent`
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion --silent`
+
+### Notes
+
+- Working tree now includes code and docs updates from this cycle.
+- External blockers remain unchanged (`validate:trusted-prereqs` and Firebase write-path validation still await env/config secrets).
+
 ## QA cycle update — 2026-02-28 12:21 AM America/Toronto
 
 ### Completed this cycle

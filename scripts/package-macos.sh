@@ -39,13 +39,16 @@ rm -rf "$APP_DIR" "$DIST_DIR/dmg-root"
 mkdir -p "$RESOURCES_DIR" "$MACOS_DIR"
 
 pushd "$ROOT_DIR" >/dev/null
-npm pack --silent >/dev/null
-PKG_TGZ="$(ls -t idlewatch-skill-*.tgz | head -n1)"
+TMP_PACK_INFO="$(mktemp)"
+npm pack --silent --json >"$TMP_PACK_INFO"
+PKG_TGZ="$(node -e 'const fs = require("fs"); const txt = fs.readFileSync(0, "utf8"); let data = null; try { data = JSON.parse(txt.trim()); } catch { process.exit(1) } const entry = Array.isArray(data) ? data[0] : data; const filename = entry && (entry.filename || entry.name); if (!filename) process.exit(1); process.stdout.write(String(filename));' <"$TMP_PACK_INFO")"
+rm -f "$TMP_PACK_INFO"
 cp "$PKG_TGZ" "$RESOURCES_DIR/"
 PAYLOAD_DIR="$RESOURCES_DIR/payload"
 rm -rf "$PAYLOAD_DIR"
 mkdir -p "$PAYLOAD_DIR"
 tar -xzf "$RESOURCES_DIR/$PKG_TGZ" -C "$PAYLOAD_DIR"
+rm -f "$PKG_TGZ"
 
 PAYLOAD_PKG_DIR="$PAYLOAD_DIR/package"
 if [[ ! -f "$PAYLOAD_PKG_DIR/package.json" ]]; then
