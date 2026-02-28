@@ -272,6 +272,50 @@ exit 42\n`,
   }
 })
 
+test('accepts OpenClaw JSON from mixed stdout+stderr on non-zero-exit command', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-mixed-'))
+  const mockBin = path.join(tempDir, 'openclaw-mock.sh')
+
+  try {
+    writeFileSync(
+      mockBin,
+      `#!/usr/bin/env bash
+set -euo pipefail
+echo 'openclaw wrapper initializing...'
+echo '{"sessions":{"defaults":{"model":"gpt-5.3-codex"},"recent":[{"sessionId":"mixed-session","agentId":"main","model":"gpt-5.3-codex","totalTokens":6789,"updatedAt":1771290000000,"totalTokensFresh":true}]},"ts":1771290001234}' >&2
+exit 42\n`,
+      { encoding: 'utf8' }
+    )
+    chmodSync(mockBin, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+      env: {
+        ...process.env,
+        IDLEWATCH_OPENCLAW_BIN: mockBin,
+        IDLEWATCH_OPENCLAW_USAGE: 'auto',
+        IDLEWATCH_OPENCLAW_PROBE_RETRIES: '0',
+        IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS: '500',
+        IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS: '1000',
+        IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH: path.join(tempDir, 'openclaw-last-good.json')
+      },
+      encoding: 'utf8'
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    const lines = run.stdout.trim().split('\n').filter(Boolean)
+    const jsonLine = [...lines].reverse().find((line) => line.startsWith('{') && line.endsWith('}'))
+    assert.ok(jsonLine)
+    const payload = JSON.parse(jsonLine)
+
+    assert.equal(payload.source.usage, 'openclaw')
+    assert.equal(payload.source.usageProbeResult, 'ok')
+    assert.equal(payload.openclawSessionId, 'mixed-session')
+    assert.match(payload.source.usageProbeError, /command-exited/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('accepts legacy IDLEWATCH_OPENCLAW_BIN_HINT as explicit binary path in strict mode', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-bin-hint-'))
   const mockBin = path.join(tempDir, 'openclaw-hint-mock.sh')

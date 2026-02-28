@@ -1,3 +1,15 @@
+## QA cycle update — 2026-02-28 10:36 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Monitoring reliability hardening shipped for OpenClaw probe collection: probe output is now merged from both stdout and stderr before JSON extraction in the production path.
+- ✅ Regression test added for mixed-stream OpenClaw output behavior under non-zero-exit command handling in `test/openclaw-env.test.mjs`.
+- ✅ Packaging/docs update completed for OpenClaw ingestion reliability notes:
+  - `README.md`
+  - `docs/packaging/macos-dmg.md`
+- ✅ `npm run test:unit --silent` passed after change (`105 pass, 0 fail`).
+- ✅ Working tree includes only targeted code/docs/test improvements for this cycle.
+
 ## QA cycle update — 2026-02-28 10:31 AM America/Toronto
 
 ### Completed this cycle

@@ -4,7 +4,7 @@ import { accessSync, constants } from 'node:fs'
 import os from 'os'
 import path from 'path'
 import process from 'process'
-import { execFileSync } from 'child_process'
+import { spawnSync } from 'node:child_process'
 import { createRequire } from 'module'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
@@ -448,14 +448,45 @@ function loadOpenClawUsage(forceRefresh = false) {
   function runProbe(binPath, args) {
     const startMs = Date.now()
     try {
-      const out = execFileSync(binPath, args, {
+      const result = spawnSync(binPath, args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         timeout: OPENCLAW_PROBE_TIMEOUT_MS,
         maxBuffer: OPENCLAW_PROBE_MAX_OUTPUT_BYTES,
         env: probeEnv
       })
-      return { out, error: null, status: 'ok', durationMs: Date.now() - startMs }
+
+      const stdoutPayload = typeof result.stdout === 'string' ? result.stdout.trim() : ''
+      const stderrPayload = typeof result.stderr === 'string' ? result.stderr.trim() : ''
+      const status = result.status === 0 ? 'ok' : 'ok-with-stderr'
+      const commandStatus = result.status
+      const combinedOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
+
+      if (combinedOutput) {
+        return {
+          out: combinedOutput,
+          error: status === 'ok'
+            ? null
+            : `command-exited-${String(commandStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
+          status,
+          durationMs: Date.now() - startMs
+        }
+      }
+
+      if (result.error?.code === 'ENOENT') {
+        return { out: null, error: 'openclaw-not-found', status: 'command-error', durationMs: Date.now() - startMs }
+      }
+
+      if (result.status !== 0) {
+        return {
+          out: null,
+          error: `command-exited-${String(commandStatus || 'nonzero')}`,
+          status: 'command-error',
+          durationMs: Date.now() - startMs
+        }
+      }
+
+      return { out: null, error: null, status: 'ok', durationMs: Date.now() - startMs }
     } catch (err) {
       const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
       const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
@@ -464,7 +495,7 @@ function loadOpenClawUsage(forceRefresh = false) {
       const cmdStatus = err?.status
 
       if (stdoutPayload || stderrPayload) {
-        const candidateOutput = stdoutPayload || stderrPayload
+        const candidateOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
         return {
           out: candidateOutput,
           error: `command-exited-${String(cmdStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
