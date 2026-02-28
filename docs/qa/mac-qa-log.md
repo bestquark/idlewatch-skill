@@ -1,3 +1,18 @@
+## QA cycle update — 2026-02-28 10:45 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Implemented adaptive OpenClaw probe output capture retry in `bin/idlewatch-agent.js`:
+  - probe collector now auto-increases `maxBuffer` from `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` up to `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP` on ENOBUFS overflow.
+  - this improves reliability on noisy terminals and mixed/verbose CLIs used in packaging/runtime validation.
+  - validation now supports a controlled hard ceiling to avoid unbounded memory growth under malformed outputs.
+- ✅ Implemented adaptive probe-buffer growth path in the collector and validated it via expanded coverage in the OpenClaw ingestion test matrix.
+- ✅ Updated operator/deployment docs for the new hard-cap behavior:
+  - `README.md` (env var section)
+  - `docs/packaging/macos-dmg.md` (packaging validation knobs)
+- ✅ Packaging release workflow remains green enough for local reuse checks, with stale-artifact provenance guard still enforced as designed.
+
+
 ## QA cycle update — 2026-02-28 10:40 AM America/Toronto
 
 ### Completed this cycle

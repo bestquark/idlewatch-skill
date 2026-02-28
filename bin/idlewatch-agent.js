@@ -17,7 +17,7 @@ import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: os tmp dir)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
 }
 
 const require = createRequire(import.meta.url)
@@ -59,6 +59,9 @@ const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TI
 const OPENCLAW_PROBE_MAX_OUTPUT_BYTES = process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES
   ? Number(process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES)
   : 2 * 1024 * 1024
+const OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP = process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP
+  ? Number(process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP)
+  : 16 * 1024 * 1024
 const OPENCLAW_BIN_STRICT = process.env.IDLEWATCH_OPENCLAW_BIN_STRICT === '1'
 const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
   ? Number(process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES)
@@ -82,6 +85,13 @@ if (!Number.isFinite(OPENCLAW_PROBE_TIMEOUT_MS) || OPENCLAW_PROBE_TIMEOUT_MS <= 
 if (!Number.isFinite(OPENCLAW_PROBE_MAX_OUTPUT_BYTES) || OPENCLAW_PROBE_MAX_OUTPUT_BYTES <= 0) {
   console.error(
     `Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: undefined. Expected a positive number.`
+  )
+  process.exit(1)
+}
+
+if (!Number.isFinite(OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP) || OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP < OPENCLAW_PROBE_MAX_OUTPUT_BYTES) {
+  console.error(
+    `Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP: ${process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP}. Must be a number >= IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES.`
   )
   process.exit(1)
 }
@@ -447,73 +457,100 @@ function loadOpenClawUsage(forceRefresh = false) {
 
   function runProbe(binPath, args) {
     const startMs = Date.now()
-    try {
-      const result = spawnSync(binPath, args, {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: OPENCLAW_PROBE_TIMEOUT_MS,
-        maxBuffer: OPENCLAW_PROBE_MAX_OUTPUT_BYTES,
-        env: probeEnv
-      })
+    let limit = OPENCLAW_PROBE_MAX_OUTPUT_BYTES
 
-      const stdoutPayload = typeof result.stdout === 'string' ? result.stdout.trim() : ''
-      const stderrPayload = typeof result.stderr === 'string' ? result.stderr.trim() : ''
-      const status = result.status === 0 ? 'ok' : 'ok-with-stderr'
-      const commandStatus = result.status
-      const combinedOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
+    while (limit <= OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP) {
+      try {
+        const result = spawnSync(binPath, args, {
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: OPENCLAW_PROBE_TIMEOUT_MS,
+          maxBuffer: limit,
+          env: probeEnv
+        })
 
-      if (combinedOutput) {
-        return {
-          out: combinedOutput,
-          error: status === 'ok'
-            ? null
-            : `command-exited-${String(commandStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
-          status,
-          durationMs: Date.now() - startMs
+        const stdoutPayload = typeof result.stdout === 'string' ? result.stdout.trim() : ''
+        const stderrPayload = typeof result.stderr === 'string' ? result.stderr.trim() : ''
+        const status = result.status === 0 ? 'ok' : 'ok-with-stderr'
+        const commandStatus = result.status
+        const combinedOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
+
+        if (combinedOutput) {
+          return {
+            out: combinedOutput,
+            error: status === 'ok'
+              ? null
+              : `command-exited-${String(commandStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
+            status,
+            maxBuffer: limit,
+            durationMs: Date.now() - startMs
+          }
         }
-      }
 
-      if (result.error?.code === 'ENOENT') {
-        return { out: null, error: 'openclaw-not-found', status: 'command-error', durationMs: Date.now() - startMs }
-      }
+        if (result.error?.code === 'ENOENT') {
+          return {
+            out: null,
+            error: 'openclaw-not-found',
+            status: 'command-error',
+            maxBuffer: limit,
+            durationMs: Date.now() - startMs
+          }
+        }
 
-      if (result.status !== 0) {
+        if (result.status !== 0) {
+          return {
+            out: null,
+            error: `command-exited-${String(commandStatus || 'nonzero')}`,
+            status: 'command-error',
+            maxBuffer: limit,
+            durationMs: Date.now() - startMs
+          }
+        }
+
+        return { out: null, error: null, status: 'ok', maxBuffer: limit, durationMs: Date.now() - startMs }
+      } catch (err) {
+        const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
+        const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
+        const stdoutPayload = stdoutText.trim()
+        const stderrPayload = stderrText.trim()
+        const cmdStatus = err?.status
+
+        if ((err?.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' || err?.code === 'ENOBUFS') && limit < OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP) {
+          limit = Math.min(limit * 2, OPENCLAW_PROBE_MAX_OUTPUT_BYTES_HARD_CAP)
+          continue
+        }
+
+        if (stdoutPayload || stderrPayload) {
+          const candidateOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
+          return {
+            out: candidateOutput,
+            error: `command-exited-${String(cmdStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
+            status: 'ok-with-stderr',
+            maxBuffer: limit,
+            durationMs: Date.now() - startMs
+          }
+        }
+
+        if (err?.code === 'ENOENT') {
+          return { out: null, error: 'openclaw-not-found', status: 'command-error', maxBuffer: limit, durationMs: Date.now() - startMs }
+        }
+
         return {
           out: null,
-          error: `command-exited-${String(commandStatus || 'nonzero')}`,
+          error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed',
           status: 'command-error',
+          maxBuffer: limit,
           durationMs: Date.now() - startMs
         }
       }
+    }
 
-      return { out: null, error: null, status: 'ok', durationMs: Date.now() - startMs }
-    } catch (err) {
-      const stdoutText = typeof err?.stdout === 'string' ? err.stdout : ''
-      const stderrText = typeof err?.stderr === 'string' ? err.stderr : ''
-      const stdoutPayload = stdoutText.trim()
-      const stderrPayload = stderrText.trim()
-      const cmdStatus = err?.status
-
-      if (stdoutPayload || stderrPayload) {
-        const candidateOutput = [stdoutPayload, stderrPayload].filter(Boolean).join('\n')
-        return {
-          out: candidateOutput,
-          error: `command-exited-${String(cmdStatus || 'nonzero')}: ${(stderrPayload || 'non-zero-exit').split('\n')[0].slice(0, 120)}`,
-          status: 'ok-with-stderr',
-          durationMs: Date.now() - startMs
-        }
-      }
-
-      if (err?.code === 'ENOENT') {
-        return { out: null, error: 'openclaw-not-found', status: 'command-error', durationMs: Date.now() - startMs }
-      }
-
-      return {
-        out: null,
-        error: err?.message ? String(err.message).split('\n')[0].slice(0, 180) : 'command-failed',
-        status: 'command-error',
-        durationMs: Date.now() - startMs
-      }
+    return {
+      out: null,
+      error: 'command-failed: max-buffer-limit-reached',
+      status: 'command-error',
+      maxBuffer: limit,
+      durationMs: Date.now() - startMs
     }
   }
 

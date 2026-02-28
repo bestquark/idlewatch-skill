@@ -362,3 +362,4 @@ JSON
     rmSync(tempDir, { recursive: true, force: true })
   }
 })
+

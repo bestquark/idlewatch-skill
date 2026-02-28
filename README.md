@@ -156,6 +156,9 @@ Binary resolution order for the OpenClaw probe:
   flips to `stale` (default: `min(IDLEWATCH_INTERVAL_MS, 10000)`).
 - `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` caps OpenClaw probe output capture size for each command
   (default: `2097152` / 2MB). Increasing helps on noisy terminals, reducing ENOBUFS-like parse failures.
+- `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP` sets the upper ceiling for adaptive output-buffer retries when
+  the command output exceeds the base cap (default: `16777216` / 16MB). Keep this conservative in shared/legacy
+  environments to avoid memory spikes from runaway process logs.
 - Probe output parsing merges both stdout and stderr in the probe collector, so mixed-output CLIs
   that print progress in stdout but emit JSON in stderr still parse successfully in one sweep.
 - `IDLEWATCH_OPENCLAW_PROBE_RETRIES` retries full OpenClaw probe sweeps after the first pass

@@ -72,6 +72,7 @@ Optional environment variables:
 - `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
 - `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES=2097152` — maximum bytes captured per OpenClaw probe call (increase for noisy/progress-heavy OpenClaw outputs).
+- `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP=16777216` — hard ceiling for automatic capture growth on noisy outputs before giving up.
 - OpenClaw probe output is merged from stdout+stderr before JSON extraction, so mixed-output CLIs remain parseable during packaged validation and local collection.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=15000` — baseline timeout in milliseconds for `--dry-run` validation helpers (prevents launchers that emit continuous output from hanging validation).
   - Packaged runtime and DMG install validators default this to `90000` during execution to reduce false timeout failures on slow hosts.
