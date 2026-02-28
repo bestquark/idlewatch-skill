@@ -1,0 +1,14 @@
+{
+  "status": {
+    "current": {
+      "session": {
+        "sessionId": "ts-ms-updated-at-session",
+        "agentId": "agent-ts-ms-updated-at",
+        "model": "gpt-5.3-codex-spark",
+        "totalTokens": 2500,
+        "tokensPerMinute": 31.2,
+        "updated_at_ms": 1771325000000
+      }
+    }
+  }
+}

@@ -230,6 +230,7 @@ const OPENCLAW_ALIAS_KEY_MAP = {
   usage_ts_ms: 'usageTsMs',
   usage_timestamp: 'usageTimestamp',
   usage_timestamp_ms: 'usageTsMs',
+  updated_at_ms: 'updatedAtMs',
   ts_ms: 'tsMs'
 }
 
@@ -276,6 +277,7 @@ function hasAnySessionSignal(value) {
     value.updatedAt,
     value.updated_at,
     value.updatedAtMs,
+    value.updated_at_ms,
     value.ts,
     value.time,
     value.timestamp,
@@ -542,8 +544,14 @@ function parseFromStatusJson(parsed) {
         parsed?.timestampMs,
         parsed?.usageTs,
         parsed?.usageTsMs,
+        parsed?.usageTimestamp,
         parsed?.usageTimestampMs,
-        parsed?.usage_timestamp
+        parsed?.usage_timestamp,
+        parsed?.usage_timestamp_ms,
+        parsed?.updatedAt,
+        parsed?.updated_at,
+        parsed?.updatedAtMs,
+        parsed?.updated_at_ms
       ),
       integrationStatus: 'partial'
     }
@@ -606,6 +614,7 @@ function parseFromStatusJson(parsed) {
       session.updatedAt,
       session.updated_at,
       session.updatedAtMs,
+      session.updated_at_ms,
       session.timestamp,
       session.time,
       session.usageTs,
@@ -637,9 +646,11 @@ function parseFromStatusJson(parsed) {
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
+      parsed?.updated_at_ms,
       parsed?.status?.updatedAt,
       parsed?.status?.updated_at,
       parsed?.status?.updatedAtMs,
+      parsed?.status?.updated_at_ms,
       parsed?.status?.timestamp,
       parsed?.status?.time,
       parsed?.status?.ts,
@@ -859,6 +870,7 @@ function parseGenericUsage(parsed) {
       usageTotals?.updatedAt,
       usageTotals?.updated_at,
       usageTotals?.updatedAtMs,
+      usageTotals?.updated_at_ms,
       usageTotals?.ts,
       usageTotals?.time,
       usageTotals?.timestamp,
@@ -894,9 +906,11 @@ function parseGenericUsage(parsed) {
       parsed?.updatedAt,
       parsed?.updated_at,
       parsed?.updatedAtMs,
+      parsed?.updated_at_ms,
       parsed?.status?.updatedAt,
       parsed?.status?.updated_at,
       parsed?.status?.updatedAtMs,
+      parsed?.status?.updated_at_ms,
       parsed?.status?.timestamp,
       parsed?.status?.time,
       parsed?.status?.ts,

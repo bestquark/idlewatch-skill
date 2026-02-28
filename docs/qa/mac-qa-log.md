@@ -1,3 +1,32 @@
+## QA cycle update — 2026-02-27 22:42 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability (OpenClaw parser):** added `updated_at_ms` timestamp alias support in the shared parser and normalized alias map, including generic/status/session timestamp arbitration paths (`src/openclaw-usage.js`).
+- ✅ **OpenClaw stats ingestion:** expanded ingestion fixtures and assertions for `stats --json` payloads that only expose `updated_at_ms` as the freshness signal (host + packaged).
+  - Host: `scripts/validate-openclaw-stats-ingestion.mjs` now covers `statusCurrentUpdatedAtMs`.
+  - Packaged: `scripts/validate-packaged-openclaw-stats-ingestion.mjs` now covers `statusCurrentUpdatedAtMs` too.
+- ✅ **Packaging docs & compatibility notes:** documented new alias coverage in `README.md` and `docs/packaging/macos-dmg.md` so release-gate intent matches parser acceptance in production/packaged paths.
+- ✅ **Test coverage:** added fixture `test/fixtures/openclaw-status-updated-at-ms-alias.json` and regression test `parses usage timestamp aliases in updated_at_ms fields`.
+
+### Checks run
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**).
+- ✅ `npm run validate:openclaw-stats-ingestion --silent`.
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`.
+- ✅ `npm run validate:openclaw-release-gates --silent`.
+- ✅ `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`.
+
+### OpenClaw integration notes
+
+- ⚠️ `validate:firebase-write-required-once` remains blocked in this environment without Firebase write-capable credentials/emulator mode (same as previous cycles).
+- ⚠️ `validate:trusted-prereqs` still gated by missing signing/notarization creds.
+
+### Notes
+
+- Command log artifacts were not separately redirected this cycle, as checks were run inline and validated in-session output.
+
+
 ## QA cycle update — 2026-02-27 19:47 America/Toronto
 
 ### Completed this cycle

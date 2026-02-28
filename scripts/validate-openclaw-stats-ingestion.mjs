@@ -91,6 +91,26 @@ function writeMockOpenClaw(pathToScript, shape) {
   "ts": 1771308900000
 }`
 
+  const statusCurrentUpdatedAtMs = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "status-current-updated-at-ms",
+            "agentId": "agent-stats-updated-at-ms",
+            "model": "gpt-5.3-codex-pro",
+            "totalTokens": 876,
+            "tokensPerMinute": 11,
+            "updated_at_ms": 1771313300000
+          }
+        }
+      }
+    }
+  },
+  "ts": 1771313400000
+}`
+
   const script = `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -112,6 +132,10 @@ JSON
   elif [[ "$SCENARIO" == "statusCurrentUsageTimestampMs" ]]; then
     cat <<JSON
 ${statusCurrentUsageTimestampMs}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentUpdatedAtMs" ]]; then
+    cat <<JSON
+${statusCurrentUpdatedAtMs}
 JSON
   else
     cat <<JSON
@@ -199,6 +223,14 @@ function runAllShapes() {
     totalTokens: 512,
     model: 'qwen3',
     tokensPerMin: 16
+  })
+
+  run('statusCurrentUpdatedAtMs', {
+    sessionId: 'status-current-updated-at-ms',
+    agentId: 'agent-stats-updated-at-ms',
+    totalTokens: 876,
+    model: 'gpt-5.3-codex-pro',
+    tokensPerMin: 11
   })
 
   console.log('validate-openclaw-stats-ingestion: ok (stats-only command path parsed and ingested across multiple payload shapes)')
