@@ -1,3 +1,36 @@
+## QA cycle update — 2026-02-27 18:59 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Validation sweep run:** `npm run test:unit --silent` ✅ (**99 pass, 0 fail**).
+- ✅ **Monitor/distribution telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (host OpenClaw + usage-health + stats ingestion + stale-cache recovery)
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+- ✅ **Packaging checks run:** `validate:dmg-install`, `validate:dmg-checksum`.
+- ✅ **Monitor/distribution status:** no new regression signals; host and packaged release-gate behavior remained stable, including JSON extraction, timestamp arbitration, and stale-cache recovery under the OpenClaw dry-run path.
+
+### Bugs / features observed
+
+- ✅ No new bugs detected.
+- ✅ No packaging regressions observed in monitor/distribution signal chain.
+- ✅ DMG install validation completed on first attempt with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000ms` and one retry-capable schema validation attempt.
+
+### DMG packaging risks
+
+- ⚠️ `validate:trusted-prereqs` remains unverified here because `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` are not set in this environment, so code-sign/notarization trust checks continue to be environment-gated.
+- ✅ Runtime packaging checks (`validate:packaged-bundled-runtime`, `validate:dmg-install`, `validate:dmg-checksum`) pass with current artifact and timeout profile.
+
+### OpenClaw integration gaps
+
+- ⚠️ Real write-path validation remains blocked without Firebase write-capable credentials (`validate:firebase-write-required-once`): requires `FIREBASE_PROJECT_ID` plus one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, or `FIREBASE_SERVICE_ACCOUNT_B64`.
+- ✅ Emulator-mode and release ingestion checks continue to pass locally.
+
+
 ## QA cycle update — 2026-02-27 18:58 America/Toronto
 
 ### Completed this cycle
