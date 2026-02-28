@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-27 19:07 America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw stats ingestion (packaged):** extended `validate:packaged-openclaw-stats-ingestion` coverage to include `status.current` timestamp-alias payloads (`usage_ts_ms`/`ts_ms`) in addition to existing `status.result` and `status.current` shape checks, reducing false negatives from version-varying OpenClaw CLI outputs.
+- ✅ **Monitoring reliability:** added coverage for another noisy CLI-shape variant in the packaged stats path so packaged dry-run ingestion keeps passing when `usage_ts_ms` is used in fallback payloads.
+- ✅ **Packaging docs:** updated `README.md` and `docs/packaging/macos-dmg.md` to document the expanded packaged stats-ingestion shape coverage (including timestamp aliases).
+- ✅ **Validation run:** `npm run validate:packaged-openclaw-stats-ingestion` ✅ and `npm run test:unit --silent` ✅ (`99 pass, 0 fail`).
+
+### Notes
+
+- This was a targeted, feasible reliability pass with no external blockers introduced.
+- External blockers remain unchanged: `validate:trusted-prereqs` (requires `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE`) and `validate:firebase-write-required-once` (requires Firebase write credentials for live write verification).
+
 ## QA cycle update — 2026-02-27 18:59 America/Toronto
 
 ### Completed this cycle

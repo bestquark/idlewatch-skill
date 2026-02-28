@@ -52,6 +52,26 @@ function writeMockOpenClaw(pathToScript, shape) {
   "ts": 1771311910000
 }`
 
+  const statusCurrentTsMs = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "packaged-status-current-tsms-session",
+            "agentId": "agent-stats-packaged-tsms",
+            "model": "gpt-5.3-codex-pro",
+            "totalTokens": 3210,
+            "tokensPerMinute": 18,
+            "usage_ts_ms": 1771312500000,
+            "ts_ms": 1771312501000
+        }
+      }
+    }
+  },
+  "ts": 1771312510000
+}`
+
   const script = `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -60,6 +80,10 @@ if [[ "$1" == "stats" && "$2" == "--json" ]]; then
   if [[ "$SCENARIO" == "statusCurrent" ]]; then
     cat <<JSON
 ${statusCurrent}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentTsMs" ]]; then
+    cat <<JSON
+${statusCurrentTsMs}
 JSON
   else
     cat <<JSON
@@ -164,6 +188,14 @@ function runAllShapes() {
     totalTokens: 4096,
     model: 'gpt-5.3-codex-pro',
     tokensPerMin: 15
+  })
+
+  run('statusCurrentTsMs', {
+    sessionId: 'packaged-status-current-tsms-session',
+    agentId: 'agent-stats-packaged-tsms',
+    totalTokens: 3210,
+    model: 'gpt-5.3-codex-pro',
+    tokensPerMin: 18
   })
 
   console.log('validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)')
