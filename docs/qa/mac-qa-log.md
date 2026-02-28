@@ -1,3 +1,57 @@
+## QA cycle update — 2026-02-28 4:59 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Monitor/distribution QA cycle executed for IdleWatch Mac monitor/distribution.
+- ✅ Packaging/build pipeline state: reusable packaged artifact checks ran, and stale-artifact protection behaved as designed (`packaged-*` reuse mode checks rejected stale artifact on first pass, then `validate:packaged-bundled-runtime` repackaged cleanly to current commit).
+- ✅ Validation checks executed:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-stats-ingestion --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-cache-recovery-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+
+### Telemetry validation checks
+
+- ✅ **Host telemetry gate checks passed**: usage freshness, usage-alert-rate cadence boundaries, OpenClaw usage-health, stats-ingestion, stale-cache recovery.
+- ✅ **Packaged telemetry gate checks passed in reusable mode after repackaging**.
+  - `packaged-openclaw-release-gates:reuse-artifact` now executes only after artifact commit parity is restored.
+  - `packaged-openclaw-stats-ingestion:reuse-artifact` and `packaged-openclaw-robustness:reuse-artifact` pass once artifact is rebuilt.
+- ✅ **dmg-install dry-run validation passes with 90s timeout**.
+
+### Bugs / features observed
+
+- ✅ `test:unit` passed with **102 tests, 0 failures**.
+- ✅ Reusable artifact strictness works as intended: stale packaged artifact correctly blocked in reuse paths with clear rebuild guidance.
+- ✅ Post-rebuild packaged runtime validation (`validate:packaged-bundled-runtime`) confirms node-free PATH launchability checks are green in this environment.
+- ⚠️ `validate:dmg-install` reported missing `sourceGitDirty` provenance on first check and auto-fell back to non-strict dirty-state behavior before continuing; this remains a known metadata gap to resolve for fully strict checks.
+
+### DMG packaging risks
+
+- ✅ DMG checksum and install smoke checks are green for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ `validate:trusted-prereqs` remains blocked by missing `MACOS_CODESIGN_IDENTITY` (and full signed/notarized path is still not executable locally).
+- ✅ `validate:packaged-bundled-runtime` and `validate:dmg-install` are stable under explicit 90s timeout and retry profile.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` still blocked in this host because Firebase write creds are not configured for write mode.
+- ✅ Emulator-mode write-path smoke remains healthy (`validate:firebase-emulator-mode`).
+- ℹ️ OpenClaw parser compatibility remains stable for tested host and packaged payloads (including alias/multiple timestamp shapes) in this cycle.
+
 ## QA cycle update — 2026-02-28 4:48 AM America/Toronto
 
 ### Completed this cycle
