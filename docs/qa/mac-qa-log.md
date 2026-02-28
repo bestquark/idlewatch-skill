@@ -1,3 +1,47 @@
+## QA cycle update — 2026-02-27 19:16 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit validation:** `npm run test:unit --silent` ✅ (**99 pass, 0 fail**).
+- ✅ **Monitor/distribution telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (`validate-openclaw-usage-health`, `validate-openclaw-stats-ingestion`, `validate-openclaw-cache-recovery-e2e`)
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-usage-probe-noise-e2e:reuse-artifact`
+  - `validate:packaged-usage-alert-rate-e2e:reuse-artifact`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:openclaw-usage-health`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-metadata`
+- ✅ **Distribution checks run:** `validate:dmg-install`, `validate:dmg-checksum` both ✅.
+- ✅ **Packaging/monitoring status:** Host and packaged OpenClaw release gates remained stable; stale-cache recovery, stats fallback parsing, and dry-run schema extraction continue passing under shared noisy-output parser logic.
+
+### Bugs / features observed
+
+- ✅ No regressions detected in monitor/distribution behavior this cycle.
+- ✅ No new feature gaps or behavioral breaks in telemetry freshness/alert-rate paths.
+- ⚠️ `validate:packaged-bundled-runtime` still reports `MACOS_CODESIGN_IDENTITY` unset and skips signing by design; this is informational and expected in this environment.
+
+### DMG packaging risks
+
+- ⚠️ DMG install remains timing-sensitive but passed on first attempt with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000` and retry framework enabled (attempts configured in validator).
+- ⚠️ `validate:trusted-prereqs` blocked by missing trust environment (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`) so full signing/notary/stapling trust-hardening path is not exercised here.
+- ✅ DMG checksum validation and installer dry-run smoke checks continue to pass with current artifact.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` remains blocked without write-capable Firebase credentials (`FIREBASE_PROJECT_ID` plus one of `FIREBASE_SERVICE_ACCOUNT_FILE|FIREBASE_SERVICE_ACCOUNT_JSON|FIREBASE_SERVICE_ACCOUNT_B64`; emulator override may be used for local testing).
+- ✅ Emulator-mode/fallback behavior remains stable and explicitly reports requirement gating when writes are requested without proper config.
+- ✅ OpenClaw payload parser compatibility remains strong across host and packaged paths (`status.current` wrappers, alias timestamps, noisy/non-zero-exit outputs).
+
+### Notes
+
+- Command log: `logs/qa/mac-qa-cmds-20260227191251.log`
+
+
 ## QA cycle update — 2026-02-27 19:07 America/Toronto
 
 ### Completed this cycle
