@@ -1,3 +1,43 @@
+## QA cycle update — 2026-02-27 22:49 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA run completed** for mac with host + packaged OpenClaw telemetry validation and DMG smoke checks.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**).
+- ✅ `npm run validate:usage-freshness-e2e --silent`.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`.
+- ✅ `npm run validate:openclaw-release-gates --silent`.
+- ✅ `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`.
+- ✅ `npm run validate:dmg-install --silent` (executed with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000`, passed on first attempt).
+- ✅ `npm run validate:dmg-checksum --silent`.
+- ⚠️ `npm run validate:trusted-prereqs --silent` remains gated by missing `MACOS_CODESIGN_IDENTITY` + `MACOS_NOTARY_PROFILE`.
+- ⚠️ `npm run validate:firebase-write-required-once --silent` blocked by missing Firebase write configuration.
+- ⚠️ `npm run validate:packaged-bundled-runtime --silent` did not complete within cron host timeout window (command timed out and was interrupted).
+
+### Bugs/features observed
+
+- ✅ No new monitor regressions detected in this cycle.
+- ✅ Parser behavior remains robust with alias-heavy OpenClaw payloads and noisy output in tested host/packaged validation paths.
+- ✅ No changes required in runtime logic for this cycle’s checks.
+
+### DMG packaging risks
+
+- ✅ DMG install-and-dry-run is still passing for current unsigned artifact.
+- ⚠️ Trust and notarization path remains unverified without signing/notary credentials.
+- ⚠️ `packaged-bundled-runtime` execution time remains a known host sensitivity; keep longer timeout/retry budget in CI host for long packaging jobs.
+
+### OpenClaw integration gaps
+
+- ⚠️ Write-path cannot be fully validated on this host without `FIREBASE_PROJECT_ID` and one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or `FIRESTORE_EMULATOR_HOST` in write mode.
+- ✅ Ingest/stat/gate checks remain stable for host + packaged OpenClaw status parsing and stale-cache recovery.
+
+### Notes
+
+- Host command artifacts were captured in terminal session outputs during this cycle.
+
 ## QA cycle update — 2026-02-27 22:42 America/Toronto
 
 ### Completed this cycle
