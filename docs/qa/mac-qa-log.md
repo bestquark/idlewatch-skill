@@ -1,3 +1,52 @@
+## QA cycle update — 2026-02-28 4:33 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA cycle executed** for IdleWatch Mac with reusable packaged artifact guards and DMG smoke validation.
+- ✅ **Telemetry checks passed** across host and packaged OpenClaw validators after artifact refresh; stale-commit reuse guards are now behaving as designed.
+- ✅ **Packaging/build health:** `validate:packaged-bundled-runtime --silent` rebuilt artifact successfully; `validate:dmg-install --silent` now passes on the refreshed DMG path.
+- ✅ **Logging continuity:** cycle command logs captured under `logs/qa/mac-qa-cycle-2026022804*.log.out.*`.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent` (**102 pass, 0 fail**).
+- ✅ `npm run validate:usage-freshness-e2e --silent`.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-stats-ingestion --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-cache-recovery-e2e --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-dry-run-schema:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-metadata --silent`.
+- ✅ `npm run validate:packaged-bundled-runtime --silent`.
+- ✅ `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`.
+- ✅ `npm run validate:dmg-checksum --silent`.
+- ⚠️ `npm run validate:trusted-prereqs --silent` (still gated: missing `MACOS_CODESIGN_IDENTITY`; expected on this host).
+- ✅ `npm run validate:firebase-emulator-mode --silent`.
+- ⚠️ `npm run validate:firebase-write-required-once --silent` (still blocked by missing write-mode configuration in this host).
+
+### Bugs/features observed
+
+- ✅ **No monitor regressions** in freshness/alert/ingestion behavior.
+- ✅ **OpenClaw payload compatibility remains healthy** (usage-health, stats-ingestion, and cache recovery for both host and packaged reuse validators).
+- ✅ **Reuse-mode strictness works:** packaged reuse validators fail fast on stale artifacts, then pass after `validate:packaged-bundled-runtime` rebuilt `dist/IdleWatch.app` and updated metadata.
+- ✅ `validate:dmg-install --silent` now consistently reports a valid dry-run row on first attempt with `90000ms` timeout in this environment.
+
+### DMG packaging risks
+
+- ✅ DMG checksum and install validations are currently green for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Reuse preflight still reports: `sourceGitDirty` may be missing for artifacts built without that field; `validate:dmg-install` warns and intentionally skips dirty-state matching in that case.
+- ⚠️ Trust chain remains unverified without signing/notary secrets (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+
+### OpenClaw integration gaps
+
+- ⚠️ Real write-path verification remains blocked without configured Firebase write credentials / emulator host (`FIREBASE_PROJECT_ID` + service-account inputs, or `FIRESTORE_EMULATOR_HOST` with project).
+- ⚠️ Distribution trust-chain validation remains gated by missing signing/notary environment.
+- ✅ Host and packaged OpenClaw parser/release-gate paths are otherwise healthy for alias-heavy payloads and noisy launch output.
+
 ## QA cycle update — 2026-02-28 4:26 AM America/Toronto
 
 ### Completed this cycle
