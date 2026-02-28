@@ -1,3 +1,63 @@
+## QA cycle update — 2026-02-28 6:00 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Ran monitor/distribution QA sweep for IdleWatch Mac on the 20m cron slot.
+- ✅ Command logs captured:
+  - `logs/qa/mac-qa-cycle-20260228060039.log`
+  - `logs/qa/mac-qa-cycle-20260228060135.postrun.log`
+  - `logs/qa/mac-qa-cycle-20260228060218.tailrun.log`
+- ✅ Unit + host telemetry checks:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+- ✅ Distribution and OpenClaw checks executed (non-strict and strict preflight outcomes recorded):
+  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `npm run validate:packaged-bundled-runtime --silent` (passes to sourcemap validation stage; packaging continuation was interrupted during this cycle)
+  - `npm run validate:packaged-metadata --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+
+### Telemetry validation checks
+
+- ✅ Host telemetry is healthy:
+  - freshness e2e and alert-rate e2e pass.
+  - OpenClaw release gates pass in host mode (`usage-health`, `stats-ingestion`, `cache-recovery`).
+- ✅ Packaged OpenClaw schema/reuse checks are functional, but **strict reuse preflight is currently blocked by artifact drift**:
+  - `packaged-openclaw-robustness:reuse-artifact` and `packaged-openclaw-stats-ingestion:reuse-artifact` report **reusable artifact dirty-state mismatch** versus current clean workspace.
+  - `packaged-dry-run-schema:reuse-artifact` and `packaged-bundled-runtime:reuse-artifact` report the same dirty-state mismatch unless `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0`.
+- ✅ With compatibility override + explicit rematch assumptions, checks execute; however the artifact metadata directory is intermittently missing after interrupted repackaging in this run, so some `reuse` paths fall back to rebuild guidance.
+
+### Bugs / features observed
+
+- ✅ No monitor behavior regressions observed in this run (freshness/alert transitions remain stable).
+- ✅ DMG checksum and emulator-path checks still pass.
+- ✅ OpenClaw parser/gated flows continue to produce valid rows and statuses in host mode and preflight checks.
+- ⚠️ Packaged runtime repackaging remains fragile under manual kill/timeout pressure; `validate:packaged-bundled-runtime` can be interrupted after sourcemap checks and leave metadata unavailable for subsequent `reuse` validators.
+- ⚠️ Reuse-mode checks are strict by design on workspace dirty-state and commit provenance. Current tree is `clean=true`, while existing artifact was built with `sourceGitDirty=false`, causing strict-mode gating.
+
+### DMG packaging risks
+
+- ✅ DMG checksum remains green (`validate:dmg-checksum`).
+- ⚠️ `validate:dmg-install --silent` currently blocked by packaged app commit mismatch and requests a rebuild (`d78c810...` vs `c23c7e9...`).
+- ⚠️ `validate:trusted-prereqs --silent` remains blocked by missing signing identity: `MACOS_CODESIGN_IDENTITY` (and related notary profile).
+- ⚠️ Packaging/reuse health depends on preserving complete `dist/IdleWatch.app/Contents/Resources/packaging-metadata.json` after runtime validation pass.
+
+### OpenClaw integration gaps
+
+- ✅ Emulator mode still passes (`validate:firebase-emulator-mode`).
+- ⚠️ Real write-path verification remains blocked without write-capable Firebase credentials or emulator host wiring:
+  - Required: `FIREBASE_PROJECT_ID` + one of `FIREBASE_SERVICE_ACCOUNT_FILE` / `FIREBASE_SERVICE_ACCOUNT_JSON` / `FIREBASE_SERVICE_ACCOUNT_B64` or `FIRESTORE_EMULATOR_HOST`.
+
+---
+
 ## QA cycle update — 2026-02-28 5:52 AM America/Toronto
 
 ### Completed this cycle
