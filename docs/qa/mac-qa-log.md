@@ -1,3 +1,59 @@
+## QA cycle update — 2026-02-28 5:13 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA cycle executed** for IdleWatch Mac under cron slot.
+- ✅ Validation commands run this cycle:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+
+### Telemetry validation checks
+
+- ✅ Host telemetry/monitoring checks passed: freshness + alert-rate transitions + OpenClaw release-gate gates.
+- ✅ Host `validate-openclaw-release-gates` passed with 90s timeout and completed the health, stats-ingestion, and stale-cache recovery path.
+- ⚠️ Reuse-path packaged OpenClaw checks (`packaged-openclaw-release-gates:reuse-artifact`, `packaged-openclaw-stats-ingestion:reuse-artifact`, `packaged-openclaw-robustness:reuse-artifact`, `packaged-dry-run-schema:reuse-artifact`) failed fast due commit mismatch before reuse validation and correctly requested artifact rebuild.
+- ✅ After rebuild behavior, `validate:packaged-bundled-runtime --silent` and non-strict reuse mode completed and validated launcher dry-run under restricted PATH.
+
+### Bugs / features observed
+
+- ✅ `test:unit` remains green (**102 pass, 0 fail**).
+- ✅ Reusable artifact preflight continues to fail-fast correctly on stale `sourceGitCommit` mismatch; rebuild prompt is explicit and actionable.
+- ⚠️ First-party packaged-artifact reuse preflight currently blocks strict source-commit gates after this repo edit set; requires explicit repackaging to continue with strict reuse validations.
+- ⚠️ `validate:packaged-bundled-runtime:reuse-artifact` remained blocked by missing strict provenance fields for this run (`sourceGitCommit`, `sourceGitDirtyKnown`) until a repackaging pass; non-strict override mode passed.
+- ✅ DMG checksum and mount/install dry-run validation still pass with 90s timeout in this host when strict mode is relaxed for dirty-state where applicable.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-checksum --silent` passed for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ Reproducibility risk persists: `validate:packaged-* --reuse-artifact` and `validate:dmg-install` depend on fresh `dist/IdleWatch.app` + `packaging-metadata.json`; stale artifacts trigger clean hard-fail + rebuild guidance (currently with dirty-state provenance gaps on some paths).
+- ⚠️ `validate:trusted-prereqs --silent` remains blocked by missing `MACOS_CODESIGN_IDENTITY` and cannot verify signed/notarized/Staple trust chain locally.
+
+### OpenClaw integration gaps
+
+- ✅ Emulator mode remains healthy (`validate:firebase-emulator-mode --silent`).
+- ⚠️ Write-path integration still blocked without write-capable Firebase configuration when `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`:
+  - missing required combination of `FIREBASE_PROJECT_ID` plus service account (FILE / JSON / B64) or emulator host wiring for write semantics.
+
+### Notes
+
+- Command log captured at `logs/qa/mac-qa-cycle-20260228051300.log`.
+- Working tree in this cycle remained clean after the validation pass (no source changes to source code beyond existing state).
+
+
 ## QA cycle update — 2026-02-28 5:07 AM America/Toronto
 
 ### Completed this cycle
