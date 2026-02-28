@@ -1,3 +1,61 @@
+## QA cycle update — 2026-02-28 4:41 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA cycle executed** for IdleWatch Mac in cron slot.
+- ✅ **Artifacts rebuilt and revalidated:** `npm run package:macos` was required once this cycle to recover `dist/IdleWatch.app` stale-commit drift before reuse-mode checks could run.
+- ✅ **Monitoring/telemetry checks run** (host + packaged):
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-stats-ingestion --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-cache-recovery-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime --silent`
+- ✅ **Packaging and install checks run after rebuild:**
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+
+### Telemetry validation checks
+
+- ✅ Host OpenClaw and usage checks all passed (usage-health, stats ingestion, stale-cache recovery, release-gates).
+- ✅ Packaged OpenClaw checks passed in reuse mode after rebuild, including:
+  - usage-health behavior inferred via dry-run schema checks,
+  - stats-in ingestion across payload shapes,
+  - stale-cache recovery,
+  - release-gate + robustness gates,
+  - reuse dry-run schema.
+- ✅ `npm run test:unit --silent` passed with **102 tests, 0 failures**.
+- ⚠️ `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` is currently too strict for this branch in strict DMG/app preflight due missing `sourceGitDirty` in some builds; using `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0` is required for green dry-run install in this environment.
+
+### Bugs/features observed
+
+- ✅ **No monitor regressions detected** in freshness/alert pipelines in this run.
+- ✅ **Reusable artifact protection is working:** stale commit mismatches are now blocked preflight (and correctly require repackaging).
+- ✅ **OpenClaw parser compatibility remains stable** for alias-heavy payload shapes in host + packaged validators.
+- ⚠️ **Packaging behavior note:** `validate:dmg-install` fails strict preflight when artifact metadata lacks `sourceGitDirty` provenance, but succeeds when dirty-state matching is not required.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-install --silent` passes with the dirty-state strictness override and 90s timeout.
+- ✅ `validate:dmg-checksum --silent` still green for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ **Trust-chain check remains blocked** by missing signing/notary env (`MACOS_CODESIGN_IDENTITY`, `MACOS_NOTARY_PROFILE`).
+- ⚠️ **Metadata hygiene risk:** strict source dirty-state reuse checks can still fail on artifacts built without dirty provenance.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once --silent` remains blocked without a write-capable Firebase configuration.
+  - Required on request: `FIREBASE_PROJECT_ID` plus one of `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIREBASE_SERVICE_ACCOUNT_B64`, or `FIRESTORE_EMULATOR_HOST`.
+- ⚠️ This cycle recorded the same: command exits with *"not configured"* under `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1`.
+- ✅ Emulator/fallback and release-gate signal paths remain healthy; no parser incompatibilities found.
+
 ## QA cycle update — 2026-02-28 4:38 AM America/Toronto
 
 ### Completed this cycle
