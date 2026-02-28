@@ -1,3 +1,17 @@
+## QA cycle update — 2026-02-28 4:38 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** added stricter reusable preflight semantics for `sourceGitDirty` in `validate-packaged-artifact.mjs` so strict reuse checks now fail fast when dirty-state provenance is missing (instead of silently skipping), preventing false reuse of legacy artifacts.
+- ✅ **OpenClaw stats ingestion:** expanded stats-ingestion fallback coverage for additional timestamp alias `usage_time` in both host and packaged validators (`stats --json` payloads with `status.current.stats.current`), closing parser variance gaps in real-world CLI shapes.
+- ✅ **Packaging/docs:** documented `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH` fail-closed behavior and clarified rebuild guidance for artifacts missing dirty-state provenance in `docs/packaging/macos-dmg.md`.
+- ✅ **Validation checks executed:** `npm run test:unit --silent`, `node scripts/validate-openclaw-stats-ingestion.mjs`, and `node scripts/validate-packaged-openclaw-stats-ingestion.mjs`.
+
+### Notes
+
+- ✅ Reusable artifact compatibility is still healthy for current `dist/IdleWatch.app`.
+- ⚠️ Trust-chain and Firebase write-path checks remain gated by external credentials as before.
+
 ## QA cycle update — 2026-02-28 4:33 AM America/Toronto
 
 ### Completed this cycle

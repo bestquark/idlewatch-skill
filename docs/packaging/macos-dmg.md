@@ -83,7 +83,7 @@ Optional environment variables:
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.
 - `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1` — when validating reusable artifacts (including DMG-installed artifacts), require current checkout commit to match `packaging-metadata.json.sourceGitCommit`.
-- `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty`.
+- `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty`; reusable artifacts missing `sourceGitDirty` now fail fast with rebuild guidance (instead of silently skipping the match).
 - `IDLEWATCH_PACKAGED_ARTIFACT_MAX_AGE_MS=<ms>` — if set, fail reusable artifact validation when metadata `builtAt` exceeds this age.
 - `IDLEWATCH_ARTIFACT_DIR=<path>` — override artifact root when invoking `validate-packaged-artifact.mjs` against non-dist app bundles (used by `validate:dmg-install`).
 - `IDLEWATCH_DMG_ATTACH_TIMEOUT_MS=30000` — maximum wall time for `hdiutil attach` in `validate:dmg-install`.

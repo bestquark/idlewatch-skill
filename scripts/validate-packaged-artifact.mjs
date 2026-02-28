@@ -110,8 +110,8 @@ function validateSourceDirty(metadata, currentIsClean) {
   if (!requireDirtyMatch) return
 
   if (typeof metadata.sourceGitDirty !== 'boolean') {
-    console.error('packaging metadata is missing a valid sourceGitDirty flag; skipping dirty-state matching.')
-    return
+    console.error('Reusable packaged artifact does not include sourceGitDirty metadata; rebuild with a version that writes it before strict dirty-state reuse checks.')
+    fail('Rebuild artifact first: missing sourceGitDirty provenance for strict dirty-state match.')
   }
 
   const metadataWasClean = metadata.sourceGitDirty === false
