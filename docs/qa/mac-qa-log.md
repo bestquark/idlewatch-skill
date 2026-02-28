@@ -2,6 +2,68 @@
 
 ### Completed this cycle
 
+- ✅ Monitor/distribution QA cycle executed for IdleWatch Mac monitor/distribution (10:31 run context).
+- ✅ Command logs captured: `logs/qa/mac-qa-cycle-20260228103150.log`.
+- ✅ Validation commands run:
+  - `npm run test:unit --silent`
+  - `npm run validate:usage-freshness-e2e --silent`
+  - `npm run validate:usage-alert-rate-e2e --silent`
+  - `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent`
+  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime:reuse-artifact --silent`
+  - `npm run validate:packaged-metadata --silent`
+  - `npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent`
+  - `npm run validate:dmg-checksum --silent`
+  - `npm run validate:trusted-prereqs --silent`
+  - `npm run validate:firebase-emulator-mode --silent`
+  - `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 npm run validate:firebase-write-required-once --silent`
+  - `npm run validate:packaged-openclaw-stats-ingestion --silent`
+  - `npm run package:macos --silent`
+  - `npm run package:dmg --silent`
+- ✅ Remediation pass sequence performed: stale packaged artifacts were rebuilt and all `:reuse-artifact` checks re-ran cleanly under `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0`.
+
+### Telemetry validation checks
+
+- ✅ Host telemetry checks green:
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates` (usage-health, stats-ingestion, cache-recovery).
+- ⚠️ Reuse-mode OpenClaw checks initially failed stale-provenance preflight (app commit mismatch versus current HEAD).
+- ✅ Repacked `dist/IdleWatch.app` then passed reusable checks with compatibility override:
+  - `validate:packaged-openclaw-release-gates:reuse-artifact`
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:packaged-bundled-runtime:reuse-artifact`
+  - `validate:dmg-install`
+
+### Bugs / features observed
+
+- ✅ New/confirmed behavior: stale artifact preflight is consistently enforcing provenance checks before reuse validation, with explicit rebuild guidance.
+- ✅ Non-bundled reuse runtime currently validates via launchability fallback and emits strict-mode guidance (`IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1`) when node-free verification is unavailable.
+- ✅ `validate:packaged-openclaw-stats-ingestion` continues to pass on current build with extended timestamp-shape coverage.
+- ⚠️ No monitor-state regressions in freshness/alert-rate or parser behavior observed in this cycle.
+
+### DMG packaging risks
+
+- ✅ DMG checksum remains green after rebuild (`validate:dmg-checksum`).
+- ✅ DMG install smoke validation passes after `package:dmg` refresh.
+- ⚠️ DMG and packaged reuse checks remain sensitive to stale app/DMG metadata and can fail fast when provenance drifts.
+- ⚠️ Signed/notary trust verification remains blocked locally by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE` in this environment.
+
+### OpenClaw integration gaps
+
+- ⚠️ Live write-path smoke remains blocked: `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` still requires write configuration (`FIREBASE_PROJECT_ID` + service-account material or emulator host).
+- ✅ Emulator-mode write-path behavior remains healthy (`validate:firebase-emulator-mode`).
+- ✅ OpenClaw parser/ingestion paths remained stable after packaging refresh.
+
+## QA cycle update — 2026-02-28 10:31 AM America/Toronto
+
+### Completed this cycle
+
 - ✅ Addressed highest-priority packaging reliability blocker from this cycle: `validate:packaged-bundled-runtime:reuse-artifact` now falls back correctly when `node` is not available in scrubbed PATH.
   - Fix: tightened `PATH=/usr/bin:/bin` node-availability check in `scripts/validate-packaged-bundled-runtime.sh` to avoid shell hash table false-positives from `command -v`.
   - Result: non-bundled reuse checks now report launchability using host PATH fallback without reporting false "No telemetry JSON row" failures.
