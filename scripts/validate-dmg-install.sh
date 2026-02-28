@@ -80,6 +80,11 @@ if [[ ! -d "$APP_PATH" ]]; then
   exit 1
 fi
 
+if ! IDLEWATCH_ARTIFACT_DIR="$APP_PATH" node "$ROOT_DIR/scripts/validate-packaged-artifact.mjs"; then
+  echo "Mounted DMG artifact metadata/compatibility preflight failed." >&2
+  exit 1
+fi
+
 ditto "$APP_PATH" "$TMP_APPS/IdleWatch.app"
 INSTALLED_LAUNCHER="$TMP_APPS/IdleWatch.app/Contents/MacOS/IdleWatch"
 

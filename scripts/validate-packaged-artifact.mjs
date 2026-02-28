@@ -4,8 +4,11 @@ import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
 const rootDir = process.cwd()
-const artifactPath = join(rootDir, 'dist', 'IdleWatch.app', 'Contents', 'MacOS', 'IdleWatch')
-const metadataPath = join(rootDir, 'dist', 'IdleWatch.app', 'Contents', 'Resources', 'packaging-metadata.json')
+const artifactDir = process.env.IDLEWATCH_ARTIFACT_DIR?.trim()
+  ? process.env.IDLEWATCH_ARTIFACT_DIR.trim()
+  : join(rootDir, 'dist', 'IdleWatch.app')
+const artifactPath = join(artifactDir, 'Contents', 'MacOS', 'IdleWatch')
+const metadataPath = join(artifactDir, 'Contents', 'Resources', 'packaging-metadata.json')
 
 function fail(message) {
   console.error(message)

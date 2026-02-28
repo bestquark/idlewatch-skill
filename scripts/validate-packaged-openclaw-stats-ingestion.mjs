@@ -72,6 +72,26 @@ function writeMockOpenClaw(pathToScript, shape) {
   "ts": 1771312510000
 }`
 
+  const statusCurrentUsageTimestampMs = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "packaged-status-current-usage-timestamp-ms",
+            "agentId": "agent-stats-packaged-usage-timestamp-ms",
+            "model": "qwen-lite-packaged",
+            "totalTokens": 2121,
+            "tokensPerMinute": 22,
+            "usage_timestamp_ms": 1771317000000,
+            "ts_ms": 1771317001000
+        }
+      }
+    }
+  },
+  "ts": 1771317010000
+}`
+
   const statusCurrentUpdatedAtMs = `{
   "status": {
     "current": {
@@ -124,6 +144,10 @@ JSON
   elif [[ "$SCENARIO" == "statusCurrentTsMs" ]]; then
     cat <<JSON
 ${statusCurrentTsMs}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentUsageTimestampMs" ]]; then
+    cat <<JSON
+${statusCurrentUsageTimestampMs}
 JSON
   elif [[ "$SCENARIO" == "statusCurrentUpdatedAtMs" ]]; then
     cat <<JSON
@@ -244,6 +268,14 @@ function runAllShapes() {
     totalTokens: 3210,
     model: 'gpt-5.3-codex-pro',
     tokensPerMin: 18
+  })
+
+  run('statusCurrentUsageTimestampMs', {
+    sessionId: 'packaged-status-current-usage-timestamp-ms',
+    agentId: 'agent-stats-packaged-usage-timestamp-ms',
+    totalTokens: 2121,
+    model: 'qwen-lite-packaged',
+    tokensPerMin: 22
   })
 
   run('statusCurrentUsageTimestamp', {

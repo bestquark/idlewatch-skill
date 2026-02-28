@@ -82,6 +82,10 @@ Optional environment variables:
 - `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS=3` — number of timeout/retry attempts for packaged validator dry-runs. Set to `1` to keep strict single-pass behavior.
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.
+- `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1` — when validating reusable artifacts (including DMG-installed artifacts), require current checkout commit to match `packaging-metadata.json.sourceGitCommit`.
+- `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty`.
+- `IDLEWATCH_PACKAGED_ARTIFACT_MAX_AGE_MS=<ms>` — if set, fail reusable artifact validation when metadata `builtAt` exceeds this age.
+- `IDLEWATCH_ARTIFACT_DIR=<path>` — override artifact root when invoking `validate-packaged-artifact.mjs` against non-dist app bundles (used by `validate:dmg-install`).
 - `IDLEWATCH_DMG_ATTACH_TIMEOUT_MS=30000` — maximum wall time for `hdiutil attach` in `validate:dmg-install`.
 - `IDLEWATCH_DMG_DETACH_TIMEOUT_MS=8000` — timeout for ejecting the DMG in cleanup.
 - `MACOS_CODESIGN_IDENTITY="Developer ID Application: ..."` — signs `IdleWatch.app` during `package-macos.sh`.
@@ -129,6 +133,7 @@ Optional environment variables:
   - Strict signed + notarized local path (`IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1`)
 - `npm run validate:dmg-install`
   - Mounts latest DMG (or a provided path), copies `IdleWatch.app` into a temp Applications-like folder, then validates launcher dry-run schema from the copied app.
+  - Before launch dry-run, runs `scripts/validate-packaged-artifact.mjs` against mounted `IdleWatch.app` (`IDLEWATCH_ARTIFACT_DIR` override) so commit/dirty-state staleness is caught before expensive runtime checks.
   - Runs OpenClaw-enabled dry-run first and retries up to `IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS` with increasing timeout (`+IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`) plus optional backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`) before a disabled-usage launchability pass (`IDLEWATCH_OPENCLAW_USAGE=off`).
   - Uses bounded attach/detach timeouts and emits the last ~60 lines of failed attempt output to make hangs diagnosable.
   - Uses shared noise-tolerant JSON extraction from `scripts/lib/telemetry-row-parser.mjs`, so ANSI/control frames in launcher output do not mask valid telemetry rows.

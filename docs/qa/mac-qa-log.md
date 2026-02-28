@@ -1,3 +1,29 @@
+## QA cycle update — 2026-02-28 4:26 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** improved `validate:dmg-install` to run the same packaged artifact preflight used by other packaged validators by invoking `validate-packaged-artifact.mjs` against the mounted DMG app.
+  - This adds fast, deterministic source/metadata compatibility checks before launcher dry-run, including stale-commit/dirtiness drift detection in install smoke gates.
+- ✅ **OpenClaw stats ingestion:** expanded packaged stats-ingestion fallback coverage with an additional `usage_timestamp_ms` payload variant in
+  `scripts/validate-packaged-openclaw-stats-ingestion.mjs`.
+- ✅ **Packaging scripts/docs:** hardened artifact-path determinism for reusable checks by letting `scripts/validate-packaged-artifact.mjs` validate arbitrary app locations via
+  `IDLEWATCH_ARTIFACT_DIR` and documenting this behavior in `docs/packaging/macos-dmg.md`.
+  - `validate:dmg-install` now explicitly documents and enforces preflight compatibility checks by default.
+
+### Checks run
+
+- ✅ `npm run test:unit --silent`
+- ✅ `node scripts/validate-openclaw-stats-ingestion.mjs`
+- ✅ `node scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+- ✅ `node scripts/validate-packaged-artifact.mjs`
+- ✅ `npm run validate:dmg-install --silent`
+
+### Notes
+
+- `packaging-metadata.json` currently reports `sourceGitDirty` as missing in this branch for non-git-root launches; metadata preflight logs a soft warning and can be forced strict via
+  `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` once that field is consistently emitted.
+- Working tree was rebuilt with `npm run package:macos --silent` before install validation; stale-commit reuse checks now behave deterministically under current commit context.
+
 ## QA cycle update — 2026-02-28 4:21 AM America/Toronto
 
 ### Completed this cycle
