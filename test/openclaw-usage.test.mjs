@@ -189,6 +189,18 @@ test('parses stats payloads nested under data wrapper', () => {
   assert.equal(usage.integrationStatus, 'ok')
 })
 
+test('parses stats payloads with camelCase usageTime', () => {
+  const usage = parseOpenClawUsage(fixture('openclaw-status-stats-current-usage-time-camelcase.json'))
+  assert.ok(usage)
+  assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.totalTokens, 555)
+  assert.equal(usage.tokensPerMin, 22)
+  assert.equal(usage.sessionId, 'camelcase-session')
+  assert.equal(usage.agentId, 'agent-camel')
+  assert.equal(usage.usageTimestampMs, 1772191800000)
+  assert.equal(usage.integrationStatus, 'ok')
+})
+
 test('parses nested stats current.session wrapper payloads', () => {
   const usage = parseOpenClawUsage(fixture('openclaw-stats-nested-session-wrapper.json'))
   assert.ok(usage)

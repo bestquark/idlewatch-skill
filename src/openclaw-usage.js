@@ -230,6 +230,10 @@ const OPENCLAW_ALIAS_KEY_MAP = {
   usage_ts_ms: 'usageTsMs',
   usage_timestamp: 'usageTimestamp',
   usage_timestamp_ms: 'usageTsMs',
+  usageTimestamp: 'usageTimestamp',
+  usageTimestampMs: 'usageTsMs',
+  usageTime: 'usageTimestamp',
+  usageTimeMs: 'usageTsMs',
   usage_time: 'usageTimestamp',
   updated_at_ms: 'updatedAtMs',
   ts_ms: 'tsMs'

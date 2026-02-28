@@ -114,7 +114,7 @@ Validation helpers:
   - Disable commit matching for one-off local experiments by setting `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0`.
   - If the artifact lacks `sourceGitCommit`, validation fails fast in strict mode; set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1` only as a temporary compatibility bridge while you repackage.
   - If the reuse gate requires bundled runtime, use `npm run validate:packaged-artifact:bundled-runtime`.
-- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and millisecond timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`).
+- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `usage_timestamp`, `usageTime`, `updated_at_ms`, `ts_ms`, `ts`).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
 - `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
 - `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).

@@ -145,11 +145,33 @@ function writeMockOpenClaw(pathToScript, shape) {
             "tokensPerMinute": 14,
             "usage_time": "2026-02-27T09:20:00.000Z",
             "ts_ms": 1771317000000
+          }
         }
       }
     }
   },
   "ts": 1771317010000
+}`
+
+  const statusCurrentUsageTimeCamel = `{
+  "status": {
+    "current": {
+      "stats": {
+        "current": {
+          "session": {
+            "sessionId": "packaged-status-current-usage-time-camel",
+            "agentId": "agent-stats-packaged-usage-time-camel",
+            "model": "qwen-camel-packaged",
+            "totalTokens": 2333,
+            "tokensPerMinute": 17,
+            "usageTime": "2026-02-27T09:50:00.000Z",
+            "ts_ms": 1771319000000
+          }
+        }
+      }
+    }
+  },
+  "ts": 1771319010000
 }`
 
   const script = `#!/usr/bin/env bash
@@ -180,6 +202,10 @@ JSON
   elif [[ "$SCENARIO" == "statusCurrentUsageTime" ]]; then
     cat <<JSON
 ${statusCurrentUsageTime}
+JSON
+  elif [[ "$SCENARIO" == "statusCurrentUsageTimeCamel" ]]; then
+    cat <<JSON
+${statusCurrentUsageTimeCamel}
 JSON
   else
     cat <<JSON
@@ -316,6 +342,14 @@ function runAllShapes() {
     totalTokens: 1555,
     model: 'claude-mini-3.8-packaged',
     tokensPerMin: 14
+  })
+
+  run('statusCurrentUsageTimeCamel', {
+    sessionId: 'packaged-status-current-usage-time-camel',
+    agentId: 'agent-stats-packaged-usage-time-camel',
+    totalTokens: 2333,
+    model: 'qwen-camel-packaged',
+    tokensPerMin: 17
   })
 
   run('statusCurrentUpdatedAtMs', {

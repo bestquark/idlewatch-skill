@@ -1,4 +1,21 @@
+## QA cycle update — 2026-02-28 5:35 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **OpenClaw stats ingestion hardening:** added parser coverage for camelCase timestamp key `usageTime` and `usage_timestamp_ms` normalization in `OPENCLAW_ALIAS_KEY_MAP`.
+- ✅ **Validation coverage improved:** added explicit `statusCurrentUsageTimeCamel` coverage to:
+  - `scripts/validate-openclaw-stats-ingestion.mjs`
+  - `scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+  - `test/openclaw-usage.test.mjs`
+- ✅ **Unit + packaged stats validation executed:**
+  - `npm run test:unit --silent` (103 pass)
+  - `node scripts/validate-openclaw-stats-ingestion.mjs`
+  - `IDLEWATCH_SKIP_PACKAGE_MACOS=1 node scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+- ✅ **Packaging/docs touch:** refreshed README OpenClaw stats-alias coverage description to include camelCase alias support (`usageTime`) and milliseconds variants.
+- ✅ **Commit prepared for mainline push** after parser + validation updates.
+
 ## QA cycle update — 2026-02-28 5:29 AM America/Toronto
+
 
 ### Completed this cycle
 
