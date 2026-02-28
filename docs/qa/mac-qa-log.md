@@ -1,3 +1,49 @@
+## QA cycle update — 2026-02-27 19:47 America/Toronto
+
+### Completed this cycle
+
+- ✅ **QA scope executed:** monitor/distribution + packaging checks run for mac on 20m cron cadence.
+- ✅ **Unit validation:** `npm run test:unit --silent` (**100 pass, 0 fail**).
+- ✅ **Telemetry checks run:**
+  - `validate:openclaw-release-gates:all`
+  - `validate:packaged-openclaw-robustness:reuse-artifact`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-bundled-runtime`
+  - `validate:packaged-metadata`
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:openclaw-usage-health`
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:firebase-emulator-mode`
+- ✅ **Distribution checks run:** `validate:dmg-install --silent` and `validate:dmg-checksum --silent`.
+- ✅ **Command artifacts:** detailed command output captured in `logs/qa/mac-qa-cmds-20260227194748.log` and the separate `validate:dmg-install` run.
+
+### Bugs / features observed
+
+- ✅ No monitor regressions detected this cycle (usage freshness and alert-rate state machine behavior remains stable).
+- ✅ Parser robustness remains healthy for noisy JSON/noisy stderr, fallback-cache reprobe recovery, and OpenClaw stats timestamp alias variants.
+- ✅ `validate:packaged-bundled-runtime` confirmed launcher fallback works under restricted PATH and passes runtime-dry-run validation with retry windows.
+- ⚠️ Minor coverage gap: `validate:firebase-write-required-once` still wasn’t executed under write-capable credentials/emulator, so write-path guarantees remain unverified in this environment.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-install` passed for `dist/IdleWatch-0.1.0-unsigned.dmg` on first retry-enabled attempt.
+- ✅ `validate:dmg-checksum` still verifies artifact integrity.
+- ⚠️ Distribution trust/security path still not end-to-end validated here (`MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE` unset in this host; signed/notarized/ stapled verification remains gated).
+- ⚠️ `build-dmg` remains environment-sensitive on macOS tooling availability; keep automation timeouts aligned with CI runner headroom.
+
+### OpenClaw integration gaps
+
+- ⚠️ Real write-path integration still blocked without active Firebase write credentials (`FIREBASE_PROJECT_ID` + service-account material) or configured emulator writes.
+- ✅ OpenClaw payload parse + schema-health gates continue to be stable for both host and packaged launchers.
+- ✅ Fallback behavior remains healthy across stale/noise/reprobe scenarios; no drift observed since prior cycle.
+
+### Notes
+
+- Command timeout-sensitive validators were executed with explicit `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000` for release-gate paths and `30000` for final dmg-install validation pass.
+
 ## QA cycle update — 2026-02-27 19:40 America/Toronto
 
 ### Completed this cycle
