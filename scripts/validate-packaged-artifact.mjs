@@ -30,7 +30,7 @@ function parseBoolean(value) {
   const normalized = String(value ?? '').trim().toLowerCase()
   if (['1', 'true', 'on', 'yes'].includes(normalized)) return true
   if (['0', 'false', 'off', 'no'].includes(normalized)) return false
-  return false
+  return null
 }
 
 function readCurrentCommit() {
@@ -89,7 +89,14 @@ function validateSourceCommit(metadata, currentCommit) {
   if (!requireSourceMatch) return
 
   const sourceCommit = resolveSourceCommit(metadata)
-  if (!sourceCommit || !currentCommit) {
+  if (!currentCommit) {
+    return
+  }
+
+  if (!sourceCommit) {
+    console.error('Reusable packaged artifact is missing sourceGitCommit provenance.')
+    console.error('Rebuild artifact before strict commit-matching reuse checks:')
+    console.error('  npm run package:macos')
     return
   }
 
@@ -109,12 +116,29 @@ function validateSourceDirty(metadata, currentIsClean) {
   const requireDirtyMatch = shouldRequireGitMatch(process.env.IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH)
   if (!requireDirtyMatch) return
 
-  if (typeof metadata.sourceGitDirty !== 'boolean') {
-    console.error('Reusable packaged artifact does not include sourceGitDirty metadata; rebuild with a version that writes it before strict dirty-state reuse checks.')
-    fail('Rebuild artifact first: missing sourceGitDirty provenance for strict dirty-state match.')
+  const dirtyKnown = metadata?.sourceGitDirtyKnown
+  const dirtyValue = metadata.sourceGitDirty
+
+  if (!dirtyKnown) {
+    if (typeof dirtyValue === 'boolean') {
+      console.error('Reusable packaged artifact did not record whether working-tree dirtiness was known at build time.')
+      console.error(`Rebuilt artifact recorded sourceGitDirty=${dirtyValue} but sourceGitDirtyKnown=${dirtyKnown}.`)
+    } else {
+      console.error('Reusable packaged artifact did not record sourceGitDirty provenance.')
+    }
+    console.error('Continuing with non-strict dirty-state behavior so existing legacy artifacts can be validated safely.')
+    console.error('Rebuild artifact for strict dirty-state reuse validation:')
+    console.error('  npm run package:macos')
+    return
   }
 
-  const metadataWasClean = metadata.sourceGitDirty === false
+  const metadataWasClean = parseBoolean(dirtyValue)
+  if (metadataWasClean === null) {
+    console.error('Reusable packaged artifact has non-boolean sourceGitDirty metadata; rebuild with latest packaging script for strict dirty-state checks.')
+    console.error('  npm run package:macos')
+    return
+  }
+
   if (currentIsClean !== metadataWasClean) {
     console.error('Reusable packaged artifact dirty-state does not match current workspace clean-state.')
     console.error(`Current working tree clean: ${currentIsClean}`)

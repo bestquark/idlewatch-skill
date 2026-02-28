@@ -1,3 +1,21 @@
+## QA cycle update — 2026-02-28 4:48 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** made reusable artifact source provenance checks resilient to legacy metadata by adding `sourceGitDirtyKnown` to packaging metadata and teaching `validate-packaged-artifact.mjs` to enforce strict dirty-state verification only when provenance is explicitly known; legacy artifacts now show an actionable advisory instead of hard-rejecting strict runs.
+- ✅ **OpenClaw stats ingestion:** preserved strict probe fallback coverage and improved validation behavior consistency by enforcing explicit source-commit provenance checks in reusable checks, preventing non-reproducible reuse of unproven artifacts.
+- ✅ **Packaging scripts/docs:** updated `scripts/package-macos.sh` to persist dirty-state provenance confidence and documented the legacy-compatibility behavior for `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH` in `docs/packaging/macos-dmg.md`.
+- ✅ **Checks executed:**
+  - `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill && npm run test:unit --silent`
+  - `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill && IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 node scripts/validate-packaged-artifact.mjs`
+  - `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill && npm run validate:packaged-bundled-runtime --silent`
+  - `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill && IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-dry-run-schema:reuse-artifact --silent`
+
+### Notes
+
+- Monitoring and packaging behavior remains green for the refreshed artifact; stale-commit reuse checks still block and provide rebuild guidance when metadata commit differs.
+- External trust-chain and Firebase write-path hardening remains blocked by missing credentials/environment as before.
+
 ## QA cycle update — 2026-02-28 4:41 AM America/Toronto
 
 ### Completed this cycle
