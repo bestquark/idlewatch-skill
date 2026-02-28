@@ -58,7 +58,7 @@ OpenClaw command probing in the packaged runtime uses the same command preferenc
 This makes packaged installs more reliable in environments where `openclaw` is not on the default launcher `PATH`.
 
 
-Each packaged app includes `Contents/Resources/packaging-metadata.json` with build provenance (version, signing/runtime hints, payload filename, and launcher settings) to support supportability checks and deterministic QA.
+Each packaged app includes `Contents/Resources/packaging-metadata.json` with build provenance (version, signing/runtime hints, source git commit/clean-state, payload filename, and launcher settings) to support supportability checks and deterministic QA.
 
 Optional environment variables:
 - `IDLEWATCH_OPENCLAW_BIN="/opt/homebrew/bin/openclaw"` — pins OpenClaw binary path for packaged/non-interactive runtime usage collection.
@@ -132,6 +132,8 @@ Optional environment variables:
 - `npm run validate:packaged-bundled-runtime`
   - By default, rebuilds the app with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - If `IDLEWATCH_SKIP_PACKAGE_MACOS=1`, the validator reuses an existing `dist/IdleWatch.app` artifact instead of repackaging (useful for repeated CI/test runs).
+    - Reuse mode now verifies the reused artifact is compatible with the current workspace: it must be built with bundled runtime metadata and (when available) the same `sourceGitCommit` as the current `HEAD` before launch checks run.
+    - If checks fail, rerun with a fresh package (`npm run package:macos` or remove `IDLEWATCH_SKIP_PACKAGE_MACOS`).
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).
   - It validates required sample fields (`host`, `ts`, and `fleet`/`source` contract) while preventing false positives from log banners.
   - If the OpenClaw-enabled dry-run path does not emit telemetry within the timeout window, the script retries with extended timeout and then falls back to `IDLEWATCH_OPENCLAW_USAGE=off` for deterministic launchability checks.

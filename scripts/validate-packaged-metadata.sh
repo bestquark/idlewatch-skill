@@ -25,7 +25,16 @@ if (data.platform !== 'darwin') throw new Error('packaging metadata platform is 
 if (!data.bundleName) throw new Error('packaging metadata missing bundleName')
 if (!data.payloadTarball) throw new Error('packaging metadata missing payloadTarball')
 if (typeof data.nodeRuntimeBundled !== 'boolean') throw new Error('packaging metadata missing nodeRuntimeBundled')
+if (typeof data.sourceGitCommit !== 'undefined' && typeof data.sourceGitCommit !== 'string') {
+  throw new Error('packaging metadata sourceGitCommit must be a string when present')
+}
+if (typeof data.sourceGitDirty !== 'undefined' && typeof data.sourceGitDirty !== 'boolean') {
+  throw new Error('packaging metadata sourceGitDirty must be a boolean when present')
+}
 console.log(`packaging metadata ok for ${data.bundleName} ${data.version}`)
+if (data.sourceGitCommit) {
+  console.log(`source commit: ${data.sourceGitCommit}${data.sourceGitDirty ? ' (dirty)' : ''}`)
+}
 NODE
 
 echo "packaging metadata validation ok"

@@ -16,24 +16,61 @@ if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
   exit 1
 fi
 
-RUNTIME_DIR="$($NODE_BIN -e 'const path = require("path"); console.log(path.resolve(process.argv[1], "..", ".."))' "$NODE_BIN")"
+read_metadata_field() {
+  local field=$1
+  "$NODE_BIN" - "$METADATA_PATH" "$field" <<'NODE' | tr -d '\r'
+const fs = require('fs')
+const metadataPath = process.argv[2]
+const field = process.argv[3]
+const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'))
+const value = metadata[field]
+if (typeof value === 'undefined' || value === null) process.exit(0)
+if (typeof value === 'boolean') process.stdout.write(value ? '1' : '0')
+else process.stdout.write(String(value))
+NODE
+}
 
-if [[ ! -x "$RUNTIME_DIR/bin/node" ]]; then
-  echo "Resolved runtime dir is invalid (missing executable bin/node): $RUNTIME_DIR" >&2
-  exit 1
-fi
+RUNTIME_DIR="$($NODE_BIN -e 'const path = require("path"); console.log(path.resolve(process.argv[1], "..", ".."))' "$NODE_BIN")"
+METADATA_PATH="$ROOT_DIR/dist/IdleWatch.app/Contents/Resources/packaging-metadata.json"
+CURRENT_GIT_COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || true)"
 
 if [[ "${IDLEWATCH_SKIP_PACKAGE_MACOS:-0}" != "1" ]]; then
+  if [[ ! -x "$RUNTIME_DIR/bin/node" ]]; then
+    echo "Resolved runtime dir is invalid (missing executable bin/node): $RUNTIME_DIR" >&2
+    exit 1
+  fi
   echo "Packaging IdleWatch.app with bundled runtime: $RUNTIME_DIR"
   IDLEWATCH_NODE_RUNTIME_DIR="$RUNTIME_DIR" npm run package:macos --silent
 else
-  if [[ -x "$DIST_LAUNCHER" ]]; then
-    echo "Using existing packaged app at: $DIST_LAUNCHER"
-  else
+  if [[ ! -f "$METADATA_PATH" ]]; then
+    echo "IDLEWATCH_SKIP_PACKAGE_MACOS=1 but metadata is missing: $METADATA_PATH" >&2
+    echo "Run with IDLEWATCH_SKIP_PACKAGE_MACOS unset or prebuild via npm run package:macos first." >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$DIST_LAUNCHER" ]]; then
     echo "IDLEWATCH_SKIP_PACKAGE_MACOS=1 but packaged launcher is missing: $DIST_LAUNCHER" >&2
     echo "Run with IDLEWATCH_SKIP_PACKAGE_MACOS unset or prebuild via npm run package:macos first." >&2
     exit 1
   fi
+
+  if [[ "$(read_metadata_field nodeRuntimeBundled)" != "1" ]]; then
+    echo "Reused packaged artifact is not bundled-runtime aware. Rebuild first:" >&2
+    echo "  npm run package:macos" >&2
+    echo "(required for node-free PATH validation in bundled-runtime check)" >&2
+    exit 1
+  fi
+
+  METADATA_GIT_COMMIT="$(read_metadata_field sourceGitCommit)"
+  if [[ -n "$CURRENT_GIT_COMMIT" && -n "$METADATA_GIT_COMMIT" && "$METADATA_GIT_COMMIT" != "$CURRENT_GIT_COMMIT" ]]; then
+    echo "Reused packaged artifact is stale for this workspace revision." >&2
+    echo "Current commit : $CURRENT_GIT_COMMIT" >&2
+    echo "Packaged commit: $METADATA_GIT_COMMIT" >&2
+    echo "Rebuild artifact first with npm run package:macos (or run validate:packaged-bundled-runtime without IDLEWATCH_SKIP_PACKAGE_MACOS)." >&2
+    exit 1
+  fi
+
+  echo "Using existing packaged app at: $DIST_LAUNCHER"
 fi
 
 if [[ ! -x "$DIST_LAUNCHER" ]]; then
@@ -41,12 +78,13 @@ if [[ ! -x "$DIST_LAUNCHER" ]]; then
   exit 1
 fi
 
+npm run validate:packaged-metadata --silent
+
 if PATH="/usr/bin:/bin" command -v node >/dev/null 2>&1; then
   echo "Note: node is available in restricted PATH; this mode still validates bundled runtime fallback via explicit launcher/runtime resolution but is not a pure no-node-path check." >&2
 else
   echo "Using a Node-free PATH to validate that launcher falls back to bundled runtime cleanly." >&2
 fi
-npm run validate:packaged-metadata --silent
 
 IDLEWATCH_DRY_RUN_TIMEOUT_MS="${IDLEWATCH_DRY_RUN_TIMEOUT_MS:-90000}"
 IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS="${IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS:-4000}"

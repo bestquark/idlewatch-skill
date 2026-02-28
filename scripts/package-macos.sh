@@ -8,6 +8,11 @@ CONTENTS_DIR="$APP_DIR/Contents"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 VERSION="$(node -p "require('./package.json').version" 2>/dev/null || node -e "import('./package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version))")"
+SOURCE_GIT_COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || true)"
+SOURCE_GIT_DIRTY="false"
+if [[ -n "$SOURCE_GIT_COMMIT" ]] && [[ -n "$(git -C "$ROOT_DIR" status --porcelain 2>/dev/null || true)" ]]; then
+  SOURCE_GIT_DIRTY="true"
+fi
 CODESIGN_IDENTITY="${MACOS_CODESIGN_IDENTITY:-}"
 REQUIRE_TRUSTED="${IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION:-0}"
 NODE_RUNTIME_DIR="${IDLEWATCH_NODE_RUNTIME_DIR:-}"
@@ -107,7 +112,9 @@ cat > "$RESOURCES_DIR/packaging-metadata.json" <<METADATA
   "openclawBinHint": "${OPENCLAW_BIN_HINT:-}",
   "launcher": "Contents/MacOS/IdleWatch",
   "payloadTarball": "${PKG_TGZ}",
-  "payloadNode": "$(node -v 2>/dev/null || echo unknown)"
+  "payloadNode": "$(node -v 2>/dev/null || echo unknown)",
+  "sourceGitCommit": "${SOURCE_GIT_COMMIT}",
+  "sourceGitDirty": ${SOURCE_GIT_DIRTY}
 }
 METADATA
 

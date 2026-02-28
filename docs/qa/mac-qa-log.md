@@ -1,3 +1,26 @@
+## QA cycle update — 2026-02-27 23:13 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Packaging reliability improvement:** added a deterministic reuse-compatibility gate for `validate:packaged-bundled-runtime:reuse-artifact` behavior.
+  - `package-macos.sh` now records source revision metadata in `dist/IdleWatch.app/Contents/Resources/packaging-metadata.json` (`sourceGitCommit`, `sourceGitDirty`).
+  - `validate-packaged-bundled-runtime.sh` now validates reusable artifacts before launch checks when `IDLEWATCH_SKIP_PACKAGE_MACOS=1`:
+    - verifies the artifact was built with bundled runtime enabled,
+    - verifies the artifact commit matches current `HEAD` (when available),
+    - errors with actionable guidance to rebuild when stale.
+- ✅ **OpenClaw monitoring reliability:** reuse-path failures now fail fast with explicit actionable guidance instead of ambiguous telemetry-row misses in stale-artifact scenarios.
+- ✅ **Packaging scripts/docs:** documented metadata-based artifact freshness checks in `docs/packaging/macos-dmg.md` and kept parser metadata validation (`validate-packaged-metadata`) strict on new fields when present.
+
+### Checks run
+
+- ✅ `npm run validate:packaged-bundled-runtime --silent`.
+- ✅ `IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime --silent` (artifact reuse gate check path).
+- ✅ `npm run validate:packaged-metadata --silent`.
+
+### Notes
+
+- Remaining external gaps (`validate:trusted-prereqs`, `validate:firebase-write-required-once`) remain blocked by environment secrets/local config, unchanged.
+
 ## QA cycle update — 2026-02-27 23:05 America/Toronto
 
 ### Completed this cycle
