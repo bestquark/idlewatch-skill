@@ -83,8 +83,10 @@ Optional environment variables:
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.
 - `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1` — when validating reusable artifacts (including DMG-installed artifacts), require current checkout commit to match `packaging-metadata.json.sourceGitCommit`.
-- `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty` for artifacts that record that provenance (`sourceGitDirtyKnown: true`).
-  - For older/legacy artifacts without known dirty-state provenance, the validator prints an advisory and continues with non-strict dirty-state behavior so teams can still validate stale metadata while planning a rebuild (`npm run package:macos`).
+- `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty` for artifacts with reliable provenance (`sourceGitDirtyKnown: true`).
+  - For strict reuse-only workflows, this is fail-closed when provenance is incomplete.
+  - Set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=1` to temporarily keep compatibility with legacy artifacts that only expose `sourceGitDirty` or omit dirty provenance while planning a rebuild.
+  - Rebuild with `npm run package:macos` to regenerate canonical provenance (`sourceGitDirtyKnown: true`).
 - `IDLEWATCH_PACKAGED_ARTIFACT_MAX_AGE_MS=<ms>` — if set, fail reusable artifact validation when metadata `builtAt` exceeds this age.
 - `IDLEWATCH_ARTIFACT_DIR=<path>` — override artifact root when invoking `validate-packaged-artifact.mjs` against non-dist app bundles (used by `validate:dmg-install`).
 - `IDLEWATCH_DMG_ATTACH_TIMEOUT_MS=30000` — maximum wall time for `hdiutil attach` in `validate:dmg-install`.

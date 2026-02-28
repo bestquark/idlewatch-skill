@@ -31,6 +31,9 @@ if (typeof data.sourceGitCommit !== 'undefined' && typeof data.sourceGitCommit !
 if (typeof data.sourceGitDirty !== 'undefined' && typeof data.sourceGitDirty !== 'boolean') {
   throw new Error('packaging metadata sourceGitDirty must be a boolean when present')
 }
+if (typeof data.sourceGitDirtyKnown !== 'undefined' && typeof data.sourceGitDirtyKnown !== 'boolean') {
+  throw new Error('packaging metadata sourceGitDirtyKnown must be a boolean when present')
+}
 console.log(`packaging metadata ok for ${data.bundleName} ${data.version}`)
 if (data.sourceGitCommit) {
   console.log(`source commit: ${data.sourceGitCommit}${data.sourceGitDirty ? ' (dirty)' : ''}`)

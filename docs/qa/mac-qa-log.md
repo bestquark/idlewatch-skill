@@ -1,3 +1,26 @@
+## QA cycle update — 2026-02-28 5:07 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** made reusable artifact source provenance checks fail-closed when dirty-state confidence is missing under `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` in `scripts/validate-packaged-artifact.mjs`.
+- ✅ **Monitoring reliability:** added controlled compatibility override `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=1` for temporary validation of pre-existing legacy artifacts.
+- ✅ **Monitoring reliability / packaging:** aligned `scripts/validate-packaged-bundled-runtime.sh` to delegate reusable-artifact source/commit preflight to `validate-packaged-artifact.mjs` and keep drift behavior deterministic across reuse and non-skip mode.
+- ✅ **Packaging scripts/docs:** validated and documented strict dirty-state provenance behavior in `docs/packaging/macos-dmg.md`; noted failure mode and rebuild guidance for strict environments.
+- ✅ **Packaging scripts:** added explicit `sourceGitDirtyKnown` schema validation in `scripts/validate-packaged-metadata.sh`.
+- ✅ **Checks executed:**
+  - `npm run test:unit --silent`
+  - `npm run validate-packaged-openclaw-stats-ingestion --silent`
+  - `npm run validate:packaged-artifact --silent` *(expected fail in this cycle if strict dirty-state required and tree dirty)*
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-artifact --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-bundled-runtime --silent`
+  - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_SKIP_PACKAGE_MACOS=1 IDLEWATCH_OPENCLAW_USAGE=off npm run validate:dmg-install --silent`
+
+### Notes
+
+- Current working tree is dirty after in-cycle source edits; strict dirty-state matching correctly blocks `validate:packaged-artifact` and reuse-mode bundled-runtime checks when `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1`, confirming the enforcement change is active.
+- Legacy artifacts produced before `sourceGitDirtyKnown` can still be validated in controlled compatibility mode by setting `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=1` (currently not used in this cycle).
+
+
 ## QA cycle update — 2026-02-28 4:59 AM America/Toronto
 
 ### Completed this cycle

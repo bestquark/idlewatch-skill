@@ -110,33 +110,51 @@ function validateSourceCommit(metadata, currentCommit) {
   }
 }
 
+function shouldAllowLegacyDirtyMetadata(value) {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  return ['1', 'true', 'on', 'yes', 'allow'].includes(normalized)
+}
+
 function validateSourceDirty(metadata, currentIsClean) {
   if (!metadata || typeof metadata !== 'object' || currentIsClean === null) return
 
   const requireDirtyMatch = shouldRequireGitMatch(process.env.IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH)
   if (!requireDirtyMatch) return
 
-  const dirtyKnown = metadata?.sourceGitDirtyKnown
+  const dirtyKnown = metadata?.sourceGitDirtyKnown === true
   const dirtyValue = metadata.sourceGitDirty
 
   if (!dirtyKnown) {
     if (typeof dirtyValue === 'boolean') {
-      console.error('Reusable packaged artifact did not record whether working-tree dirtiness was known at build time.')
-      console.error(`Rebuilt artifact recorded sourceGitDirty=${dirtyValue} but sourceGitDirtyKnown=${dirtyKnown}.`)
+      console.error('Reusable packaged artifact did not reliably record dirty-state confidence at build time.')
+      console.error('Build metadata reported sourceGitDirty=' + dirtyValue + ' but sourceGitDirtyKnown is not true.')
     } else {
       console.error('Reusable packaged artifact did not record sourceGitDirty provenance.')
     }
-    console.error('Continuing with non-strict dirty-state behavior so existing legacy artifacts can be validated safely.')
-    console.error('Rebuild artifact for strict dirty-state reuse validation:')
+
+    if (shouldAllowLegacyDirtyMetadata(process.env.IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY)) {
+      console.error('Continuing with legacy compatibility mode (non-strict).')
+      console.error('Disable this path in strict runs via setting: IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=0 (or unset).')
+      console.error('Rebuild artifact for strict dirty-state reuse validation:')
+      console.error('  npm run package:macos')
+      return
+    }
+
+    console.error('Rebuilt artifact is required for strict dirty-state reuse validation.')
     console.error('  npm run package:macos')
-    return
+    fail('Rebuilt artifact is required for dirty-state validation; sourceGitDirtyKnown is missing.')
   }
 
   const metadataWasClean = parseBoolean(dirtyValue)
   if (metadataWasClean === null) {
     console.error('Reusable packaged artifact has non-boolean sourceGitDirty metadata; rebuild with latest packaging script for strict dirty-state checks.')
-    console.error('  npm run package:macos')
-    return
+    if (shouldAllowLegacyDirtyMetadata(process.env.IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY)) {
+      console.error('Continuing with legacy compatibility mode (non-strict).')
+      console.error('Disable this path in strict runs via setting: IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=0 (or unset).')
+      return
+    }
+
+    fail('Rebuild artifact first: sourceGitDirty must be boolean for strict dirty-state checks.')
   }
 
   if (currentIsClean !== metadataWasClean) {
@@ -146,6 +164,7 @@ function validateSourceDirty(metadata, currentIsClean) {
     fail('Rebuild artifact first: dirty-state mismatch for reusable artifact.')
   }
 }
+
 
 function validateFreshness(metadata) {
   const maxAgeMs = Number(process.env.IDLEWATCH_PACKAGED_ARTIFACT_MAX_AGE_MS || '')
