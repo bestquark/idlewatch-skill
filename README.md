@@ -112,6 +112,7 @@ Validation helpers:
 - `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
 - `npm run validate:packaged-artifact` validates a reusable `dist/IdleWatch.app` before running any `:reuse-artifact` validator (metadata integrity, launcher executability, and matching source commit with current `HEAD` by default).
   - Disable commit matching for one-off local experiments by setting `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0`.
+  - If the artifact lacks `sourceGitCommit`, validation fails fast in strict mode; set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1` only as a temporary compatibility bridge while you repackage.
   - If the reuse gate requires bundled runtime, use `npm run validate:packaged-artifact:bundled-runtime`.
 - `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and millisecond timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`).
 - `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.

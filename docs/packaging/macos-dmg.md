@@ -83,6 +83,8 @@ Optional environment variables:
 - `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS=2000` — optional backoff delay (ms) between retries in packaged validators. Helps avoid flapping when disk or mount pressure temporarily stalls output.
   - Set to `0` for tight loops when deterministic timing is already stable.
 - `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1` — when validating reusable artifacts (including DMG-installed artifacts), require current checkout commit to match `packaging-metadata.json.sourceGitCommit`.
+  - If the artifact lacks `sourceGitCommit`, validation fails fast and requests a fresh package by default.
+  - Set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1` to temporarily continue with older artifacts while planning a rebuild.
 - `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=1` — when set, require current working-tree cleanliness to match `packaging-metadata.json.sourceGitDirty` for artifacts with reliable provenance (`sourceGitDirtyKnown: true`).
   - For strict reuse-only workflows, this is fail-closed when provenance is incomplete.
   - Set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY=1` to temporarily keep compatibility with legacy artifacts that only expose `sourceGitDirty` or omit dirty provenance while planning a rebuild.

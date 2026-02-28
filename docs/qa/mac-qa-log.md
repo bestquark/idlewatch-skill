@@ -1,3 +1,22 @@
+## QA cycle update — 2026-02-28 5:21 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitoring reliability:** hardened reusable artifact preflight in `scripts/validate-packaged-artifact.mjs` by making `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH` fail-closed when `sourceGitCommit` is missing, preventing silent reuse of ambiguous artifacts in strict mode.
+- ✅ **Monitoring reliability / packaging:** added temporary compatibility override `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1` to keep compatibility with legacy artifacts only when explicitly requested.
+- ✅ **Packaging scripts/docs:** documented the new source-commit strictness/compatibility behavior in `README.md` and `docs/packaging/macos-dmg.md`; updated validator guidance so missing provenance is clearly actionable.
+- ✅ **Monitoring + OpenClaw ingestion:** no parser changes required in this pass; validation gates continue to cover `stats --json` fallback plus timestamp-alias variants and cache-recovery behavior.
+- ✅ **Validation executed:**
+  - `npm run test:unit --silent`
+  - `npm run validate:packaged-artifact --silent` *(failed due working-tree dirty mismatch)*
+  - `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-artifact --silent` *(failed on stale commit until rebuild)*
+  - `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=1 IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1 npm run validate:packaged-artifact --silent` *(passed in legacy-compat mode)*
+
+### Notes
+
+- Commit status: source + docs + packaging preflight updates completed; ready to push.
+
+
 ## QA cycle update — 2026-02-28 5:13 AM America/Toronto
 
 ### Completed this cycle

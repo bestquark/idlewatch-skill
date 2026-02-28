@@ -67,6 +67,11 @@ function resolveSourceCommit(metadata) {
   return value.trim()
 }
 
+function shouldAllowLegacyCommitMetadata(value) {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  return ['1', 'true', 'on', 'yes', 'allow'].includes(normalized)
+}
+
 function validateMetadataConsistency(metadata) {
   if (!metadata || typeof metadata !== 'object') {
     fail(`Malformed packaging metadata at ${metadataPath}`)
@@ -97,7 +102,14 @@ function validateSourceCommit(metadata, currentCommit) {
     console.error('Reusable packaged artifact is missing sourceGitCommit provenance.')
     console.error('Rebuild artifact before strict commit-matching reuse checks:')
     console.error('  npm run package:macos')
-    return
+
+    if (shouldAllowLegacyCommitMetadata(process.env.IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT)) {
+      console.error('Continuing with legacy compatibility mode (non-strict).')
+      console.error('Disable this path in strict runs via setting: IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=0 (or unset).')
+      return
+    }
+
+    fail('Rebuilt artifact is required for strict source-commit validation: sourceGitCommit is missing.')
   }
 
   if (sourceCommit !== currentCommit) {
