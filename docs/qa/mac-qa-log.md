@@ -1,3 +1,58 @@
+## QA cycle update — 2026-02-27 23:05 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Monitor/distribution QA run (cron 20m cadence) executed** for IdleWatch Mac monitor/distribution, including telemetry and packaging smoke checks.
+- ✅ **Command log captured:** `logs/qa/mac-qa-cycle-20260227230501.log` (initial run had one command-name issue corrected in retry logs below).
+- ✅ **Validated with packed artifact refresh:** after an initial stale-artifact-only dry-run anomaly, `validate:packaged-bundled-runtime` was rerun to repackage once and then revalidated successfully with artifact reuse.
+
+### Telemetry validation checks
+
+- ✅ `npm run test:unit --silent` (**101 pass, 0 fail**).
+- ✅ `npm run validate:usage-freshness-e2e --silent`.
+- ✅ `npm run validate:usage-alert-rate-e2e --silent`.
+- ✅ `npm run validate:openclaw-release-gates --silent`.
+- ✅ `npm run validate:openclaw-stats-ingestion --silent`.
+- ✅ `npm run validate:openclaw-usage-health --silent`.
+- ✅ `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-openclaw-robustness:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-bundled-runtime --silent`.
+- ✅ `npm run validate:packaged-bundled-runtime:reuse-artifact --silent`.
+- ✅ `npm run validate:packaged-metadata --silent`.
+- ✅ `npm run validate:dmg-install --silent` (with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000`).
+- ✅ `npm run validate:dmg-checksum --silent`.
+- ✅ `npm run validate:firebase-emulator-mode --silent`.
+- ⚠️ `npm run validate:trusted-prereqs --silent` blocked by missing `MACOS_CODESIGN_IDENTITY` / `MACOS_NOTARY_PROFILE`.
+- ⚠️ `npm run validate:firebase-write-required-once --silent` blocked by missing Firebase write credentials (local-only mode).
+
+### Bugs/features observed
+
+- ⚠️ Initial run of `validate:packaged-bundled-runtime:reuse-artifact` returned no telemetry row from packaged dry-run (`No telemetry JSON row found in dry-run output`).
+  - A fresh packaging validation run (`npm run validate:packaged-bundled-runtime`) rebuilt the app and then the check passed.
+  - This indicates the **reuse path is sensitive to stale/previous packaged artifacts** if upstream packaging changes are not propagated.
+- ✅ Core monitor paths continue to pass: freshness and alert-rate state transitions remain stable.
+- ✅ OpenClaw parser behavior remains compatible in host + packaged validation paths during this cycle.
+- ⚠️ A command typo occurred during first pass (`npm run usage-alert-rate-e2e` vs `npm run validate:usage-alert-rate-e2e`) and was corrected in retry.
+
+### DMG packaging risks
+
+- ✅ DMG install and checksum checks pass with current artifact.
+- ✅ Packaging metadata check continues to pass on the current `dist/` app.
+- ⚠️ **Trust and notarization** path remains unverified without signing/notary env credentials.
+- ⚠️ **Artifact-reuse risk** in `validate:packaged-bundled-runtime:reuse-artifact`: stale or non-current `dist/` packages can trigger false negatives for dry-run telemetry checks.
+
+### OpenClaw integration gaps
+
+- ⚠️ `validate:firebase-write-required-once` requires configured Firebase write path:
+  - `FIREBASE_PROJECT_ID` plus service-account material (`FIREBASE_SERVICE_ACCOUNT_FILE`, `..._JSON`, or `..._B64`) **or** emulator wiring (`FIRESTORE_EMULATOR_HOST`).
+- ✅ OpenClaw ingest/status checks (host + packaged) are healthy for supported status/stats shapes used in this cycle.
+- ✅ `validate:packaged-openclaw-stats-ingestion:reuse-artifact` confirms mock-backed parser coverage for multiple timestamp/shape variants.
+
+### Notes
+
+- New command log artifacts written to `logs/qa/` for this cycle; retry evidence is available in `mac-qa-cycle-20260227230501.*` files.
+
 ## QA cycle update — 2026-02-27 22:56 America/Toronto
 
 ### Completed this cycle
