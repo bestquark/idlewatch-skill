@@ -1,3 +1,44 @@
+## QA cycle update — 2026-02-27 19:33 America/Toronto
+
+### Completed this cycle
+
+- ✅ **Unit validation:** `npm run test:unit --silent` ✅ (**100 pass, 0 fail**).
+- ✅ **Monitor/distribution telemetry checks run:**
+  - `validate:usage-freshness-e2e`
+  - `validate:usage-alert-rate-e2e`
+  - `validate:openclaw-release-gates:all` (includes host OpenClaw gates + packaged release-gate reuse)
+  - `validate:packaged-openclaw-stats-ingestion:reuse-artifact`
+  - `validate:openclaw-stats-ingestion`
+  - `validate:packaged-dry-run-schema:reuse-artifact`
+  - `validate:packaged-metadata`
+  - `validate:packaged-bundled-runtime`
+- ✅ **Distribution checks run:** `validate:dmg-install`, `validate:dmg-checksum`.
+- ✅ **OpenClaw integration checks run:** `validate:firebase-emulator-mode`; `validate:firebase-write-required-once` attempted (blocked by missing write-mode config).
+- ✅ **Packaging status:** host and packaged OpenClaw release-gate checks remain stable; JSON extraction and timeout-retry behavior still produce expected recovery and health outputs.
+
+### Bugs / features observed
+
+- ✅ No new monitor regressions detected in freshness/alert/usage path this cycle.
+- ✅ `validate:packaged-bundled-runtime` successfully completed under restricted PATH and confirms launcher fallback is healthy when PATH omits system `node`.
+- ⚠️ `validate:firebase-write-required-once` still fails with local-only mode unless Firebase write config is present; current invocation without required credentials exits with explicit guard error.
+
+### DMG packaging risks
+
+- ✅ `validate:dmg-install` passed on first attempt with `IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000ms`, including retry scaffolding.
+- ✅ `validate:dmg-checksum` passed for `dist/IdleWatch-0.1.0-unsigned.dmg`.
+- ⚠️ `validate:packaged-bundled-runtime` remains time-sensitive due runtime packaging and bundling pass (first run hit manual process stop but completed on rerun), so keep CI timeout/monitoring alerts aligned for long packaging windows.
+- ⚠️ Signing/trust path still not end-to-end validated; this host lacks `MACOS_CODESIGN_IDENTITY`/`MACOS_NOTARY_PROFILE` for full trusted distribution verification.
+
+### OpenClaw integration gaps
+
+- ⚠️ Firebase write verification remains unexercised under real credentials: `validate:firebase-write-required-once` requires write-capable Firebase config (`FIREBASE_PROJECT_ID` plus service account credentials or emulator mode for local writes).
+- ⚠️ No dedicated emulator-backed write verification was completed in this cycle (command needed a running local Firestore emulator for guaranteed success).
+- ✅ Parser and schema compatibility remain strong for host and packaged flows (`status.current` wrappers, timestamp aliases, noisy/stderr JSON noise handling, and fallback-cache recovery).
+
+### Notes
+
+- Command log: `logs/qa/mac-qa-cmds-20260227193300.log`.
+
 ## QA cycle update — 2026-02-27 19:16 America/Toronto
 
 ### Completed this cycle

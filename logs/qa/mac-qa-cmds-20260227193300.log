@@ -1,0 +1,44 @@
+Ran QA command sequence for IdleWatch Mac QA cycle (19:33 ET):
+
+1) npm run test:unit --silent
+   - ✅ PASS (100 tests, 0 fail)
+
+2) IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:usage-freshness-e2e
+   - ✅ PASS
+
+3) IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:usage-alert-rate-e2e
+   - ✅ PASS
+
+4) npm run validate:openclaw-release-gates:all
+   - ✅ PASS (host + packaged release gates)
+
+5) npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact
+   - ✅ PASS
+
+6) npm run validate:openclaw-stats-ingestion
+   - ✅ PASS
+
+7) npm run validate:packaged-dry-run-schema:reuse-artifact
+   - ✅ PASS
+
+8) npm run validate:packaged-metadata
+   - ✅ PASS
+
+9) npm run validate:packaged-bundled-runtime
+   - ✅ PASS on rerun (restricted PATH launch fallback verified)
+
+10) npm run validate:dmg-install
+    - ✅ PASS
+
+11) npm run validate:dmg-checksum
+    - ✅ PASS (IdleWatch-0.1.0-unsigned.dmg)
+
+12) npm run validate:firebase-emulator-mode
+    - ✅ PASS (schema-valid dry-run output)
+
+13) npm run validate:firebase-write-required-once
+    - ❌ Expected failure: requires Firebase write configuration in non-local mode.
+
+14) FIREBASE_PROJECT_ID=idlewatch-dev FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once
+    - ⚠️ HUNG/unverified due Firestore emulator availability in run context.
+
