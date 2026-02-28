@@ -148,6 +148,7 @@ Optional environment variables:
   - By default, rebuilds the app with `IDLEWATCH_NODE_RUNTIME_DIR` pointed at the current Node runtime, validates the generated package metadata, then executes `IdleWatch.app/Contents/MacOS/IdleWatch --dry-run` in a PATH-scrubbed environment to confirm bundled runtime/path-resolution still works when the host PATH does not provide a Node binary.
   - If `IDLEWATCH_SKIP_PACKAGE_MACOS=1`, the validator reuses an existing `dist/IdleWatch.app` artifact instead of repackaging (useful for repeated CI/test runs).
     - Reuse mode now verifies the reused artifact is compatible with the current workspace (and, when strict mode is enabled, requires bundled runtime metadata); when strict mode is off it can still run launchability checks for non-bundled artifacts via fallback PATH logic.
+    - In fallback mode, the script checks Node presence with an absolute-path lookup (`which node`) to avoid shell hash-table false-positives in temporary PATH checks.
     - If checks fail, rerun with a fresh package (`npm run package:macos` or remove `IDLEWATCH_SKIP_PACKAGE_MACOS`).
   - Non-bundled artifacts can still be validated in host-PATH launchability mode using `IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED=1` (this remains the default fallback in reuse mode).
   - The validation is timeout-bound via `IDLEWATCH_DRY_RUN_TIMEOUT_MS`, retry count (`IDLEWATCH_DRY_RUN_TIMEOUT_MAX_ATTEMPTS`), and incremental timeout/backoff (`IDLEWATCH_DRY_RUN_TIMEOUT_RETRY_BONUS_MS`, `IDLEWATCH_DRY_RUN_TIMEOUT_BACKOFF_MS`).

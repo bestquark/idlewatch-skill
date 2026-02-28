@@ -94,7 +94,10 @@ if [[ "$NODE_RUNTIME_BUNDLED" == "1" ]]; then
   VALIDATION_PATH="$RESTRICTED_PATH"
   echo "Running strict path-scrubbed launchability validation using PATH=$RESTRICTED_PATH"
 elif [[ "${IDLEWATCH_USE_ORIGINAL_PATH_FOR_NON_BUNDLED:-1}" == "1" ]]; then
-  if PATH="$RESTRICTED_PATH" command -v node >/dev/null 2>&1; then
+  if node_path="$(PATH="$RESTRICTED_PATH" /usr/bin/env which node 2>/dev/null || true)" &&
+      [[ -n "$node_path" ]] &&
+      [[ "$node_path" == /* ]] &&
+      [[ -x "$node_path" ]]; then
     VALIDATION_PATH="$RESTRICTED_PATH"
     echo "Node is available in restricted PATH; still validating with PATH=$RESTRICTED_PATH to keep behavior deterministic."
   else

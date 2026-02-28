@@ -1,3 +1,24 @@
+## QA cycle update — 2026-02-28 10:31 AM America/Toronto
+
+### Completed this cycle
+
+- ✅ Addressed highest-priority packaging reliability blocker from this cycle: `validate:packaged-bundled-runtime:reuse-artifact` now falls back correctly when `node` is not available in scrubbed PATH.
+  - Fix: tightened `PATH=/usr/bin:/bin` node-availability check in `scripts/validate-packaged-bundled-runtime.sh` to avoid shell hash table false-positives from `command -v`.
+  - Result: non-bundled reuse checks now report launchability using host PATH fallback without reporting false "No telemetry JSON row" failures.
+- ✅ `IDLEWATCH_REQUIRE_SOURCE_DIRTY_MATCH=0 npm run validate:packaged-bundled-runtime:reuse-artifact --silent` now passes in this host environment.
+- ✅ `npm run test:unit --silent` passes (104 pass, 0 fail).
+- ✅ OpenClaw stats ingestion validators still pass:
+  - `node scripts/validate-openclaw-stats-ingestion.mjs`
+  - `node scripts/validate-packaged-openclaw-stats-ingestion.mjs`
+- ✅ Monitoring smoke check completed with OpenClaw stats/usage path verification and packaging checks after fix.
+- ✅ `node scripts/validate-packaged-openclaw-stats-ingestion.mjs` and `node scripts/validate-openclaw-stats-ingestion.mjs` remained green after changes.
+- ✅ Working tree remains minimal; only targeted script/docs updates this cycle.
+
+### Notes
+
+- Monitoring telemetry remains healthy (host + packaged `openclaw`/`stats` ingestion behavior unchanged).
+- The non-bundled reuse launchability validation path now intentionally degrades to host PATH when needed and logs explicit remediation guidance for strict mode (`IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=1` + `IDLEWATCH_NODE_RUNTIME_DIR`).
+
 ## QA cycle update — 2026-02-28 10:18 AM America/Toronto
 
 ### Completed this cycle
