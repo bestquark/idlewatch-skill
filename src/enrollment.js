@@ -64,7 +64,7 @@ function tryRustTui({ configDir, outputEnvFile }) {
 }
 
 function promptModeText() {
-  return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Uses default project and secure local key storage\n  2) Firestore emulator (local development)\n  3) Local-only (no cloud writes)\n`
+  return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Uses default project and secure local key storage\n  2) Local-only (no cloud writes)\n`
 }
 
 export async function runEnrollmentWizard(options = {}) {
@@ -92,8 +92,8 @@ export async function runEnrollmentWizard(options = {}) {
     console.log(promptModeText())
     console.log(`Storage path: ${configDir}`)
     console.log(`Environment file: ${outputEnvFile}`)
-    const modeInput = (await rl.question('\nMode [1/2/3] (default 1): ')).trim() || '1'
-    mode = modeInput === '2' ? 'emulator' : modeInput === '3' ? 'local' : 'production'
+    const modeInput = (await rl.question('\nMode [1/2] (default 1): ')).trim() || '1'
+    mode = modeInput === '2' ? 'local' : 'production'
   }
 
   if (!mode) mode = 'production'

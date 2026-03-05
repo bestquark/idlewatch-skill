@@ -81,7 +81,6 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
 
         let items = [
             "Managed cloud (recommended)",
-            "Firestore emulator (local dev)",
             "Local-only (no cloud writes)",
         ]
         .iter()
@@ -153,7 +152,7 @@ fn main() -> Result<()> {
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Up => selected = selected.saturating_sub(1),
-                    KeyCode::Down => selected = (selected + 1).min(2),
+                    KeyCode::Down => selected = (selected + 1).min(1),
                     KeyCode::Enter => break,
                     KeyCode::Char('q') | KeyCode::Esc => {
                         disable_raw_mode()?;
@@ -171,7 +170,6 @@ fn main() -> Result<()> {
 
     let mode = match selected {
         0 => "production",
-        1 => "emulator",
         _ => "local",
     };
 
@@ -189,12 +187,6 @@ fn main() -> Result<()> {
         env_lines.push("# Local-only mode (no Firebase writes).".to_string());
     } else {
         env_lines.push(format!("FIREBASE_PROJECT_ID={}", DEFAULT_PROJECT_ID));
-    }
-
-    if mode == "emulator" {
-        let host = read_line("Firestore emulator host [127.0.0.1:8080]: ")?;
-        let emulator_host = if host.is_empty() { "127.0.0.1:8080".to_string() } else { host };
-        env_lines.push(format!("FIRESTORE_EMULATOR_HOST={}", emulator_host));
     }
 
     if mode == "production" {

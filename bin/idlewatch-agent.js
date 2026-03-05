@@ -22,6 +22,21 @@ function printHelp() {
 
 const require = createRequire(import.meta.url)
 
+function parseEnvFileToObject(envFilePath) {
+  const raw = fs.readFileSync(envFilePath, 'utf8')
+  const env = {}
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const idx = trimmed.indexOf('=')
+    if (idx <= 0) continue
+    const key = trimmed.slice(0, idx).trim()
+    const value = trimmed.slice(idx + 1).trim()
+    if (key) env[key] = value
+  }
+  return env
+}
+
 const argv = process.argv.slice(2)
 const quickstartRequested = argv[0] === 'quickstart' || argv.includes('--quickstart')
 const args = new Set(argv)
@@ -34,9 +49,24 @@ if (quickstartRequested) {
   try {
     const result = await runEnrollmentWizard()
     console.log(`Enrollment complete. Mode=${result.mode} envFile=${result.outputEnvFile}`)
-    console.log(`Next step: set -a; source "${result.outputEnvFile}"; set +a`)
-    console.log('Then run: idlewatch-agent --once')
-    process.exit(0)
+
+    const enrolledEnv = parseEnvFileToObject(result.outputEnvFile)
+    const onceRun = spawnSync(process.execPath, [process.argv[1], '--once'], {
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        ...enrolledEnv
+      }
+    })
+
+    if (onceRun.status === 0) {
+      console.log('✅ Initial telemetry sample sent successfully.')
+      process.exit(0)
+    }
+
+    console.log('⚠️ Initial --once sample did not complete successfully.')
+    console.log(`You can retry with: set -a; source "${result.outputEnvFile}"; set +a && idlewatch-agent --once`)
+    process.exit(onceRun.status ?? 1)
   } catch (err) {
     console.error(`Enrollment failed: ${err.message}`)
     process.exit(1)
