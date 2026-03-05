@@ -23,19 +23,40 @@ function writeSecureFile(filePath, content) {
   }
 }
 
-function parseServiceAccountFile(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8')
-  const json = JSON.parse(raw)
-  if (json.type !== 'service_account') {
-    throw new Error('Credential file is not a service_account JSON key.')
-  }
-  if (!json.project_id) {
-    throw new Error('Credential file is missing project_id.')
-  }
-  return { raw, json }
+const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'openclaw']
+
+function commandExists(bin, args = ['--version']) {
+  const result = spawnSync(bin, args, { stdio: 'ignore' })
+  return result.status === 0
 }
 
-const DEFAULT_MANAGED_PROJECT_ID = 'idlewatch-f2b23'
+function detectAvailableMonitorTargets() {
+  const available = new Set(['cpu', 'memory'])
+
+  if (process.platform === 'darwin' || commandExists('nvidia-smi', ['--help'])) {
+    available.add('gpu')
+  }
+
+  if (commandExists('openclaw', ['--help'])) {
+    available.add('openclaw')
+  }
+
+  return [...available]
+}
+
+function normalizeMonitorTargets(raw, available) {
+  const fallback = ['cpu', 'memory', ...(available.includes('openclaw') ? ['openclaw'] : []), ...(available.includes('gpu') ? ['gpu'] : [])]
+  if (!raw) return fallback
+
+  const parsed = raw
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .filter((item) => MONITOR_TARGET_CHOICES.includes(item) && available.includes(item))
+
+  if (parsed.length === 0) return fallback
+  return [...new Set(parsed)]
+}
 
 function tryRustTui({ configDir, outputEnvFile }) {
   const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
@@ -64,7 +85,7 @@ function tryRustTui({ configDir, outputEnvFile }) {
 }
 
 function promptModeText() {
-  return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Uses default project and secure local key storage\n  2) Local-only (no cloud writes)\n`
+  return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Link this device with an API key from idlewatch.com/api\n  2) Local-only (no cloud writes)\n`
 }
 
 export async function runEnrollmentWizard(options = {}) {
@@ -73,18 +94,20 @@ export async function runEnrollmentWizard(options = {}) {
   const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
 
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
-  let projectId = options.projectId || process.env.IDLEWATCH_ENROLL_PROJECT_ID || DEFAULT_MANAGED_PROJECT_ID
-  let serviceAccountFile = options.serviceAccountFile || process.env.IDLEWATCH_ENROLL_SERVICE_ACCOUNT_FILE || null
   let cloudApiKey = options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null
-  let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://idlewatch.com/api/ingest'
-  let emulatorHost = options.emulatorHost || process.env.IDLEWATCH_ENROLL_EMULATOR_HOST || '127.0.0.1:8080'
+  let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
+
+  const availableMonitorTargets = detectAvailableMonitorTargets()
+  let monitorTargets = normalizeMonitorTargets(
+    options.monitorTargets || process.env.IDLEWATCH_MONITOR_TARGETS || '',
+    availableMonitorTargets
+  )
 
   if (!nonInteractive && tryRustTui({ configDir, outputEnvFile })) {
     return {
       mode: 'tui',
       configDir,
-      outputEnvFile,
-      projectId: DEFAULT_MANAGED_PROJECT_ID
+      outputEnvFile
     }
   }
 
@@ -99,23 +122,21 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if (!mode) mode = 'production'
-  if (!['production', 'emulator', 'local'].includes(mode)) {
+  if (!['production', 'local'].includes(mode)) {
     throw new Error(`Invalid enrollment mode: ${mode}`)
-  }
-
-  if (mode !== 'local' && !projectId) {
-    if (!rl) throw new Error('Missing project id (IDLEWATCH_ENROLL_PROJECT_ID).')
-    projectId = DEFAULT_MANAGED_PROJECT_ID
   }
 
   if ((mode === 'production') && !cloudApiKey) {
     if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
-    console.log('\nPaste the API key from idlewatch.com/dashboard.')
+    console.log('\nPaste the API key from idlewatch.com/api.')
     cloudApiKey = (await rl.question('Cloud API key: ')).trim()
   }
 
-  if (mode === 'emulator' && !emulatorHost && rl) {
-    emulatorHost = (await rl.question('Firestore emulator host [127.0.0.1:8080]: ')).trim() || '127.0.0.1:8080'
+  if (!nonInteractive && rl) {
+    console.log(`\nDetected monitor targets on this machine: ${availableMonitorTargets.join(', ')}`)
+    const suggested = monitorTargets.join(',')
+    const monitorInput = (await rl.question(`Monitor targets [${suggested}]: `)).trim()
+    monitorTargets = normalizeMonitorTargets(monitorInput || suggested, availableMonitorTargets)
   }
 
   const localLogPath = path.join(configDir, 'logs', `${os.hostname().replace(/[^a-zA-Z0-9_.-]/g, '_')}-metrics.ndjson`)
@@ -123,17 +144,14 @@ export async function runEnrollmentWizard(options = {}) {
 
   const envLines = [
     '# Generated by idlewatch-agent quickstart',
-    'IDLEWATCH_OPENCLAW_USAGE=auto',
+    `IDLEWATCH_MONITOR_TARGETS=${monitorTargets.join(',')}`,
+    `IDLEWATCH_OPENCLAW_USAGE=${monitorTargets.includes('openclaw') ? 'auto' : 'off'}`,
     `IDLEWATCH_LOCAL_LOG_PATH=${localLogPath}`,
     `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH=${localCachePath}`
   ]
 
   if (mode === 'local') {
     envLines.push('# Local-only mode (no cloud/Firebase writes).')
-  }
-
-  if (mode === 'emulator') {
-    envLines.push(`FIRESTORE_EMULATOR_HOST=${emulatorHost}`)
   }
 
   if (mode === 'production') {
@@ -153,6 +171,6 @@ export async function runEnrollmentWizard(options = {}) {
     mode,
     configDir,
     outputEnvFile,
-    projectId: projectId || null
+    monitorTargets
   }
 }

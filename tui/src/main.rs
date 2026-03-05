@@ -12,8 +12,17 @@ use std::{
     fs,
     io::{self, Write},
     path::{Path, PathBuf},
+    process::{Command, Stdio},
     time::Duration,
 };
+
+#[derive(Clone)]
+struct MonitorTarget {
+    key: &'static str,
+    label: &'static str,
+    available: bool,
+    selected: bool,
+}
 
 fn default_config_dir() -> PathBuf {
     if let Ok(dir) = std::env::var("IDLEWATCH_ENROLL_CONFIG_DIR") {
@@ -43,13 +52,59 @@ fn write_secure_file(path: &Path, content: &str) -> Result<()> {
     Ok(())
 }
 
+fn command_exists(cmd: &str, args: &[&str]) -> bool {
+    Command::new(cmd)
+        .args(args)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
 
-fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: usize, cfg: &Path) -> Result<()> {
+fn detect_monitor_targets() -> Vec<MonitorTarget> {
+    let openclaw_available = command_exists("openclaw", &["--help"]);
+    let gpu_available = cfg!(target_os = "macos") || command_exists("nvidia-smi", &["--help"]);
+
+    vec![
+        MonitorTarget {
+            key: "cpu",
+            label: "CPU usage",
+            available: true,
+            selected: true,
+        },
+        MonitorTarget {
+            key: "memory",
+            label: "Memory usage",
+            available: true,
+            selected: true,
+        },
+        MonitorTarget {
+            key: "gpu",
+            label: "GPU usage",
+            available: gpu_available,
+            selected: gpu_available,
+        },
+        MonitorTarget {
+            key: "openclaw",
+            label: "OpenClaw token telemetry",
+            available: openclaw_available,
+            selected: openclaw_available,
+        },
+    ]
+}
+
+fn render_mode_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: usize, cfg: &Path) -> Result<()> {
     terminal.draw(|f| {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
-            .constraints([Constraint::Length(4), Constraint::Length(8), Constraint::Length(3), Constraint::Min(1)])
+            .constraints([
+                Constraint::Length(4),
+                Constraint::Length(8),
+                Constraint::Length(3),
+                Constraint::Min(1),
+            ])
             .split(f.area());
 
         let title_block = Block::default()
@@ -107,6 +162,71 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
     Ok(())
 }
 
+fn render_monitor_menu(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+    cursor: usize,
+    monitors: &[MonitorTarget],
+) -> Result<()> {
+    terminal.draw(|f| {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints([
+                Constraint::Length(4),
+                Constraint::Length(10),
+                Constraint::Min(1),
+            ])
+            .split(f.area());
+
+        let title = Paragraph::new("Choose what to monitor")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Monitor Targets")
+                    .border_style(Style::default().fg(Color::Magenta)),
+            );
+        f.render_widget(title, chunks[0]);
+
+        let items = monitors
+            .iter()
+            .enumerate()
+            .map(|(idx, target)| {
+                let marker = if target.selected { "[x]" } else { "[ ]" };
+                let unavailable = if target.available { "" } else { " (not detected)" };
+                let line = format!("{} {}{}", marker, target.label, unavailable);
+
+                if idx == cursor {
+                    ListItem::new(format!("❯ {}", line)).style(
+                        Style::default()
+                            .fg(Color::Black)
+                            .bg(Color::LightMagenta)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                } else if target.available {
+                    ListItem::new(format!("  {}", line)).style(Style::default().fg(Color::Cyan))
+                } else {
+                    ListItem::new(format!("  {}", line)).style(Style::default().fg(Color::DarkGray))
+                }
+            })
+            .collect::<Vec<_>>();
+
+        let list = List::new(items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Targets")
+                .border_style(Style::default().fg(Color::Cyan)),
+        );
+        f.render_widget(list, chunks[1]);
+
+        let help = Paragraph::new("↑/↓ move • Space toggle • Enter continue")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
+        f.render_widget(help, chunks[2]);
+    })?;
+
+    Ok(())
+}
+
 fn read_line(prompt: &str) -> Result<String> {
     print!("{}", prompt);
     io::stdout().flush()?;
@@ -128,15 +248,54 @@ fn main() -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut selected = 0usize;
+    let mut selected_mode = 0usize;
     loop {
-        render_menu(&mut terminal, selected, &config_dir)?;
+        render_mode_menu(&mut terminal, selected_mode, &config_dir)?;
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
-                    KeyCode::Up => selected = selected.saturating_sub(1),
-                    KeyCode::Down => selected = (selected + 1).min(1),
+                    KeyCode::Up => selected_mode = selected_mode.saturating_sub(1),
+                    KeyCode::Down => selected_mode = (selected_mode + 1).min(1),
                     KeyCode::Enter => break,
+                    KeyCode::Char('q') | KeyCode::Esc => {
+                        disable_raw_mode()?;
+                        execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+                        return Ok(());
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    let mut monitor_targets = detect_monitor_targets();
+    let mut monitor_cursor = 0usize;
+
+    loop {
+        render_monitor_menu(&mut terminal, monitor_cursor, &monitor_targets)?;
+        if event::poll(Duration::from_millis(250))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Up => monitor_cursor = monitor_cursor.saturating_sub(1),
+                    KeyCode::Down => monitor_cursor = (monitor_cursor + 1).min(monitor_targets.len().saturating_sub(1)),
+                    KeyCode::Char(' ') => {
+                        if let Some(item) = monitor_targets.get_mut(monitor_cursor) {
+                            if item.available {
+                                item.selected = !item.selected;
+                            }
+                        }
+                    }
+                    KeyCode::Enter => {
+                        let selected_count = monitor_targets.iter().filter(|item| item.selected && item.available).count();
+                        if selected_count == 0 {
+                            for item in monitor_targets.iter_mut() {
+                                if item.key == "cpu" || item.key == "memory" {
+                                    item.selected = true;
+                                }
+                            }
+                        }
+                        break;
+                    }
                     KeyCode::Char('q') | KeyCode::Esc => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
@@ -151,18 +310,39 @@ fn main() -> Result<()> {
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
 
-    let mode = match selected {
+    let mode = match selected_mode {
         0 => "production",
         _ => "local",
     };
 
+    let selected_keys = monitor_targets
+        .iter()
+        .filter(|item| item.selected && item.available)
+        .map(|item| item.key)
+        .collect::<Vec<_>>();
+
+    let monitor_targets_csv = if selected_keys.is_empty() {
+        "cpu,memory".to_string()
+    } else {
+        selected_keys.join(",")
+    };
+
+    let monitor_openclaw = monitor_targets_csv.split(',').any(|item| item == "openclaw");
+
     let mut env_lines = vec![
         "# Generated by idlewatch-agent quickstart (Rust TUI)".to_string(),
-        "IDLEWATCH_OPENCLAW_USAGE=auto".to_string(),
-        format!("IDLEWATCH_LOCAL_LOG_PATH={}", config_dir.join("logs").join(format!("{}-metrics.ndjson", host)).display()),
+        format!("IDLEWATCH_MONITOR_TARGETS={}", monitor_targets_csv),
+        format!("IDLEWATCH_OPENCLAW_USAGE={}", if monitor_openclaw { "auto" } else { "off" }),
+        format!(
+            "IDLEWATCH_LOCAL_LOG_PATH={}",
+            config_dir.join("logs").join(format!("{}-metrics.ndjson", host)).display()
+        ),
         format!(
             "IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH={}",
-            config_dir.join("cache").join(format!("{}-openclaw-last-good.json", host)).display()
+            config_dir
+                .join("cache")
+                .join(format!("{}-openclaw-last-good.json", host))
+                .display()
         ),
     ];
 
@@ -171,11 +351,11 @@ fn main() -> Result<()> {
     }
 
     if mode == "production" {
-        let api_key = read_line("Cloud API key (from idlewatch.com/dashboard): ")?;
+        let api_key = read_line("Cloud API key (from idlewatch.com/api): ")?;
         if api_key.trim().is_empty() {
             return Err(anyhow!("cloud API key is required"));
         }
-        env_lines.push("IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest".to_string());
+        env_lines.push("IDLEWATCH_CLOUD_INGEST_URL=https://api.idlewatch.com/api/ingest".to_string());
         env_lines.push(format!("IDLEWATCH_CLOUD_API_KEY={}", api_key.trim()));
         env_lines.push("IDLEWATCH_REQUIRE_CLOUD_WRITES=1".to_string());
     }

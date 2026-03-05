@@ -37,6 +37,23 @@ function parseEnvFileToObject(envFilePath) {
   return env
 }
 
+function parseMonitorTargets(raw) {
+  const allowed = new Set(['cpu', 'memory', 'gpu', 'openclaw'])
+  const fallback = ['cpu', 'memory', 'openclaw', 'gpu']
+
+  if (!raw || typeof raw !== 'string') {
+    return new Set(fallback)
+  }
+
+  const parsed = raw
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((item) => allowed.has(item))
+
+  if (parsed.length === 0) return new Set(fallback)
+  return new Set(parsed)
+}
+
 const argv = process.argv.slice(2)
 const quickstartRequested = argv[0] === 'quickstart' || argv.includes('--quickstart')
 const args = new Set(argv)
@@ -84,6 +101,12 @@ const CREDS_JSON = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
 const CREDS_B64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64
 const FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST
 const OPENCLAW_USAGE_MODE = (process.env.IDLEWATCH_OPENCLAW_USAGE || 'auto').toLowerCase()
+const MONITOR_TARGETS = parseMonitorTargets(process.env.IDLEWATCH_MONITOR_TARGETS)
+const MONITOR_CPU = MONITOR_TARGETS.has('cpu')
+const MONITOR_MEMORY = MONITOR_TARGETS.has('memory')
+const MONITOR_GPU = MONITOR_TARGETS.has('gpu')
+const MONITOR_OPENCLAW = MONITOR_TARGETS.has('openclaw')
+const EFFECTIVE_OPENCLAW_MODE = MONITOR_OPENCLAW ? OPENCLAW_USAGE_MODE : 'off'
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
 const CLOUD_INGEST_URL = process.env.IDLEWATCH_CLOUD_INGEST_URL
 const CLOUD_API_KEY = process.env.IDLEWATCH_CLOUD_API_KEY
@@ -348,7 +371,7 @@ let openClawUsageCache = {
   value: {
     usage: null,
     probe: {
-      result: OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
+      result: EFFECTIVE_OPENCLAW_MODE === 'off' ? 'disabled' : 'unavailable',
       attempts: 0,
       sweeps: 0,
       command: null,
@@ -413,7 +436,7 @@ function resolveOpenClawBinaries() {
 }
 
 function loadOpenClawUsage(forceRefresh = false) {
-  if (OPENCLAW_USAGE_MODE === 'off') {
+  if (EFFECTIVE_OPENCLAW_MODE === 'off') {
     return {
       usage: null,
       probe: {
@@ -775,7 +798,20 @@ async function publish(row, retries = 2) {
 
 async function collectSample() {
   const sampleStartMs = Date.now()
-  let usageProbe = loadOpenClawUsage()
+  const openclawEnabled = EFFECTIVE_OPENCLAW_MODE !== 'off'
+
+  const disabledProbe = {
+    result: 'disabled',
+    attempts: 0,
+    sweeps: 0,
+    error: null,
+    durationMs: null,
+    usedFallbackCache: false,
+    fallbackAgeMs: null,
+    fallbackCacheSource: null
+  }
+
+  let usageProbe = openclawEnabled ? loadOpenClawUsage() : { usage: null, probe: disabledProbe }
   let usage = usageProbe.usage
   let usageFreshness = deriveUsageFreshness(usage, sampleStartMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   let usageRefreshAttempted = false
@@ -786,7 +822,8 @@ async function collectSample() {
 
   const shouldRefreshForNearStale = USAGE_REFRESH_ON_NEAR_STALE === 1 && usageFreshness.isNearStale
   const canRefreshFromCurrentState = usageProbe.probe.result === 'ok' || usageProbe.probe.result === 'fallback-cache'
-  if (usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
+
+  if (openclawEnabled && usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
     usageRefreshAttempted = true
     usageRefreshStartMs = Date.now()
 
@@ -819,11 +856,17 @@ async function collectSample() {
     usageFreshness = deriveUsageFreshness(usage, sampleAtMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   }
 
-  const gpu = process.platform === 'darwin'
-    ? gpuSampleDarwin()
-    : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null }
-  const memPressure = loadMemPressure()
-  const usedMemPct = memUsedPct()
+  const gpu = MONITOR_GPU
+    ? (process.platform === 'darwin'
+      ? gpuSampleDarwin()
+      : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null })
+    : { pct: null, source: 'disabled', confidence: 'none', sampleWindowMs: null }
+
+  const memPressure = MONITOR_MEMORY
+    ? loadMemPressure()
+    : { pct: null, cls: 'disabled', source: 'disabled' }
+
+  const usedMemPct = MONITOR_MEMORY ? memUsedPct() : null
 
   const usageIntegrationStatus = usage
     ? usageFreshness.isStale
@@ -831,19 +874,20 @@ async function collectSample() {
       : usage?.integrationStatus === 'partial'
         ? 'ok'
         : (usage?.integrationStatus ?? 'ok')
-    : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable')
+    : (openclawEnabled ? 'unavailable' : 'disabled')
 
   const source = {
-    usage: usage ? 'openclaw' : OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable',
+    monitorTargets: [...MONITOR_TARGETS],
+    usage: usage ? 'openclaw' : openclawEnabled ? 'unavailable' : 'disabled',
     usageIntegrationStatus,
-    usageIngestionStatus: OPENCLAW_USAGE_MODE === 'off'
-      ? 'disabled'
-      : usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
+    usageIngestionStatus: openclawEnabled
+      ? usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
         ? 'ok'
-        : 'unavailable',
+        : 'unavailable'
+      : 'disabled',
     usageActivityStatus: usage
       ? usageFreshness.freshnessState
-      : (OPENCLAW_USAGE_MODE === 'off' ? 'disabled' : 'unavailable'),
+      : (openclawEnabled ? 'unavailable' : 'disabled'),
     usageProbeResult: usageProbe.probe.result,
     usageProbeAttempts: usageProbe.probe.attempts,
     usageProbeSweeps: usageProbe.probe.sweeps,
@@ -854,11 +898,11 @@ async function collectSample() {
     usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
     usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
     usageFallbackCacheSource: usageProbe.probe.fallbackCacheSource,
-    usageFreshnessState: OPENCLAW_USAGE_MODE === 'off'
-      ? 'disabled'
-      : usage
+    usageFreshnessState: openclawEnabled
+      ? usage
         ? usageFreshness.freshnessState
-        : null,
+        : null
+      : 'disabled',
     usageNearStale: usage ? usageFreshness.isNearStale : false,
     usagePastStaleThreshold: usage ? usageFreshness.isPastStaleThreshold : false,
     usageRefreshAttempted,
@@ -884,22 +928,22 @@ async function collectSample() {
   const row = {
     host: HOST,
     ts: sampleAtMs,
-    cpuPct: cpuPct(),
-    memPct: usedMemPct,
-    memUsedPct: usedMemPct,
-    memPressurePct: memPressure.pct,
-    memPressureClass: memPressure.cls,
-    gpuPct: gpu.pct,
+    cpuPct: MONITOR_CPU ? cpuPct() : null,
+    memPct: MONITOR_MEMORY ? usedMemPct : null,
+    memUsedPct: MONITOR_MEMORY ? usedMemPct : null,
+    memPressurePct: MONITOR_MEMORY ? memPressure.pct : null,
+    memPressureClass: MONITOR_MEMORY ? memPressure.cls : 'disabled',
+    gpuPct: MONITOR_GPU ? gpu.pct : null,
     gpuSource: gpu.source,
     gpuConfidence: gpu.confidence,
     gpuSampleWindowMs: gpu.sampleWindowMs,
-    tokensPerMin: usage?.tokensPerMin ?? null,
-    openclawModel: usage?.model ?? null,
-    openclawTotalTokens: usage?.totalTokens ?? null,
-    openclawSessionId: usage?.sessionId ?? null,
-    openclawAgentId: usage?.agentId ?? null,
-    openclawUsageTs: usage?.usageTimestampMs ?? null,
-    openclawUsageAgeMs: usageFreshness.usageAgeMs,
+    tokensPerMin: MONITOR_OPENCLAW ? (usage?.tokensPerMin ?? null) : null,
+    openclawModel: MONITOR_OPENCLAW ? (usage?.model ?? null) : null,
+    openclawTotalTokens: MONITOR_OPENCLAW ? (usage?.totalTokens ?? null) : null,
+    openclawSessionId: MONITOR_OPENCLAW ? (usage?.sessionId ?? null) : null,
+    openclawAgentId: MONITOR_OPENCLAW ? (usage?.agentId ?? null) : null,
+    openclawUsageTs: MONITOR_OPENCLAW ? (usage?.usageTimestampMs ?? null) : null,
+    openclawUsageAgeMs: MONITOR_OPENCLAW ? usageFreshness.usageAgeMs : null,
     source
   }
 
@@ -970,7 +1014,7 @@ if (DRY_RUN || ONCE) {
     })
 } else {
   console.log(
-    `idlewatch-agent started host=${HOST} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} openclawUsage=${OPENCLAW_USAGE_MODE}`
+    `idlewatch-agent started host=${HOST} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE}`
   )
   loop()
 }
