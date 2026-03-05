@@ -17,7 +17,7 @@ npx idlewatch-skill quickstart
 npx idlewatch-skill --dry-run
 ```
 
-`quickstart` runs a first-run setup wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key under `~/.idlewatch/`.
+`quickstart` runs a first-run setup wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key under `~/.idlewatch/`. On hosts with Rust/Cargo available, quickstart launches a ratatui-powered onboarding flow first; otherwise it falls back to the text wizard.
 
 ## CLI options
 

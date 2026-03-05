@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline/promises'
 import process from 'node:process'
+import { spawnSync } from 'node:child_process'
 
 function defaultConfigDir() {
   return path.join(os.homedir(), '.idlewatch')
@@ -36,6 +37,32 @@ function parseServiceAccountFile(filePath) {
 
 const DEFAULT_MANAGED_PROJECT_ID = 'idlewatch-f2b23'
 
+function tryRustTui({ configDir, outputEnvFile }) {
+  const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
+  if (disabled) return false
+
+  const cargoProbe = spawnSync('cargo', ['--version'], { stdio: 'ignore' })
+  if (cargoProbe.status !== 0) return false
+
+  const manifestPath = path.resolve(process.cwd(), 'tui', 'Cargo.toml')
+  if (!fs.existsSync(manifestPath)) return false
+
+  const run = spawnSync('cargo', ['run', '--quiet', '--manifest-path', manifestPath], {
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      IDLEWATCH_ENROLL_CONFIG_DIR: configDir,
+      IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: outputEnvFile
+    }
+  })
+
+  if (run.status === 0) {
+    return true
+  }
+
+  return false
+}
+
 function promptModeText() {
   return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Uses default project and secure local key storage\n  2) Firestore emulator (local development)\n  3) Local-only (no cloud writes)\n`
 }
@@ -49,6 +76,15 @@ export async function runEnrollmentWizard(options = {}) {
   let projectId = options.projectId || process.env.IDLEWATCH_ENROLL_PROJECT_ID || DEFAULT_MANAGED_PROJECT_ID
   let serviceAccountFile = options.serviceAccountFile || process.env.IDLEWATCH_ENROLL_SERVICE_ACCOUNT_FILE || null
   let emulatorHost = options.emulatorHost || process.env.IDLEWATCH_ENROLL_EMULATOR_HOST || '127.0.0.1:8080'
+
+  if (!nonInteractive && tryRustTui({ configDir, outputEnvFile })) {
+    return {
+      mode: 'tui',
+      configDir,
+      outputEnvFile,
+      projectId: DEFAULT_MANAGED_PROJECT_ID
+    }
+  }
 
   let rl = null
   if (!nonInteractive) {
