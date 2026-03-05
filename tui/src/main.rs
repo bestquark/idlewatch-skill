@@ -60,16 +60,16 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
-            .constraints([Constraint::Length(10), Constraint::Length(8), Constraint::Length(3), Constraint::Min(1)])
+            .constraints([Constraint::Length(4), Constraint::Length(8), Constraint::Length(3), Constraint::Min(1)])
             .split(f.area());
 
         let title_block = Block::default()
             .borders(Borders::ALL)
             .title("IdleWatch")
-            .border_style(Style::default().fg(Color::Cyan));
+            .border_style(Style::default().fg(Color::Magenta));
 
-        let header = Paragraph::new("IdleWatch Setup\nSimple onboarding")
-            .style(Style::default().fg(Color::White))
+        let header = Paragraph::new("IdleWatch Setup")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
             .block(title_block);
         f.render_widget(header, chunks[0]);
 
@@ -84,11 +84,11 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
                 ListItem::new(format!("❯ {}", item)).style(
                     Style::default()
                         .fg(Color::Black)
-                        .bg(Color::Cyan)
+                        .bg(Color::LightMagenta)
                         .add_modifier(Modifier::BOLD),
                 )
             } else {
-                ListItem::new(format!("  {}", item)).style(Style::default().fg(Color::White))
+                ListItem::new(format!("  {}", item)).style(Style::default().fg(Color::Cyan))
             }
         })
         .collect::<Vec<_>>();
@@ -112,7 +112,7 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
         f.render_widget(path, chunks[2]);
 
         let help = Paragraph::new("↑/↓ move • Enter select • q quit")
-            .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD));
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
     Ok(())
