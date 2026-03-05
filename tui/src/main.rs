@@ -127,8 +127,8 @@ fn render_mode_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selec
             if i == selected {
                 ListItem::new(format!("❯ {}", item)).style(
                     Style::default()
-                        .fg(Color::Black)
-                        .bg(Color::LightMagenta)
+                        .fg(Color::White)
+                        .bg(Color::Blue)
                         .add_modifier(Modifier::BOLD),
                 )
             } else {
@@ -199,8 +199,8 @@ fn render_monitor_menu(
                 if idx == cursor {
                     ListItem::new(format!("❯ {}", line)).style(
                         Style::default()
-                            .fg(Color::Black)
-                            .bg(Color::LightMagenta)
+                            .fg(Color::White)
+                            .bg(Color::Blue)
                             .add_modifier(Modifier::BOLD),
                     )
                 } else if target.available {
