@@ -65,19 +65,13 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
 
         let title_block = Block::default()
             .borders(Borders::ALL)
-            .title("🐭 IdleWatch // Technopunk Setup")
-            .border_style(Style::default().fg(Color::Magenta));
+            .title("IdleWatch")
+            .border_style(Style::default().fg(Color::Cyan));
 
-        let ascii = Paragraph::new(r#"      .-''''-.        ____   __  ____
-    .'  .-.  '.     /\   \\ /  \/  __\\
-   /   /   \\   \\   /  \\   Y  /  /\  /\
-   |   | 00 |   |  / /\\ \\     /  / /\ \\
-   \\   \\_^_/   /  / ____ \\ |\\  \\ \\ \\_\\
-    '._     _.'  /_/    \\_\\| \\__\\ \\____/
-       '---'          C H R O N O  M O D E"#)
-        .style(Style::default().fg(Color::Cyan))
-        .block(title_block);
-        f.render_widget(ascii, chunks[0]);
+        let header = Paragraph::new("IdleWatch Setup\nSimple onboarding")
+            .style(Style::default().fg(Color::White))
+            .block(title_block);
+        f.render_widget(header, chunks[0]);
 
         let items = [
             "Managed cloud (recommended)",
@@ -90,11 +84,11 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
                 ListItem::new(format!("❯ {}", item)).style(
                     Style::default()
                         .fg(Color::Black)
-                        .bg(Color::LightGreen)
+                        .bg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
                 )
             } else {
-                ListItem::new(format!("  {}", item)).style(Style::default().fg(Color::Gray))
+                ListItem::new(format!("  {}", item)).style(Style::default().fg(Color::White))
             }
         })
         .collect::<Vec<_>>();
@@ -103,22 +97,22 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
             Block::default()
                 .borders(Borders::ALL)
                 .title("Mode")
-                .border_style(Style::default().fg(Color::Blue)),
+                .border_style(Style::default().fg(Color::Cyan)),
         );
         f.render_widget(list, chunks[1]);
 
         let path = Paragraph::new(format!("Config dir: {}", cfg.display()))
-            .style(Style::default().fg(Color::Yellow))
+            .style(Style::default().fg(Color::White))
             .block(
                 Block::default()
                     .borders(Borders::ALL)
                     .title("Storage")
-                    .border_style(Style::default().fg(Color::Green)),
+                    .border_style(Style::default().fg(Color::Cyan)),
             );
         f.render_widget(path, chunks[2]);
 
         let help = Paragraph::new("↑/↓ move • Enter select • q quit")
-            .style(Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD));
+            .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
     Ok(())
