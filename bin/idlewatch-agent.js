@@ -402,6 +402,39 @@ function loadMemPressure() {
   return sampled
 }
 
+function gpuSampleNvidiaSmi() {
+  try {
+    const probe = spawnSync(
+      'nvidia-smi',
+      ['--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
+      { encoding: 'utf8', timeout: 1500, maxBuffer: 256 * 1024 }
+    )
+
+    if (probe.error || probe.status !== 0) {
+      return { pct: null, source: 'nvidia-smi-unavailable', confidence: 'none', sampleWindowMs: null }
+    }
+
+    const values = (probe.stdout || '')
+      .split(/\r?\n/)
+      .map((line) => Number(line.trim()))
+      .filter((value) => Number.isFinite(value) && value >= 0)
+
+    if (values.length === 0) {
+      return { pct: null, source: 'nvidia-smi-empty', confidence: 'none', sampleWindowMs: null }
+    }
+
+    const average = values.reduce((sum, value) => sum + value, 0) / values.length
+    return {
+      pct: Math.max(0, Math.min(100, average)),
+      source: 'nvidia-smi',
+      confidence: 'medium',
+      sampleWindowMs: null
+    }
+  } catch {
+    return { pct: null, source: 'nvidia-smi-error', confidence: 'none', sampleWindowMs: null }
+  }
+}
+
 function resolveOpenClawBinaries() {
   const explicit = (process.env.IDLEWATCH_OPENCLAW_BIN?.trim()) || (process.env.IDLEWATCH_OPENCLAW_BIN_HINT?.trim())
   const homeDir = process.env.HOME?.trim()
@@ -859,7 +892,7 @@ async function collectSample() {
   const gpu = MONITOR_GPU
     ? (process.platform === 'darwin'
       ? gpuSampleDarwin()
-      : { pct: null, source: 'unsupported', confidence: 'none', sampleWindowMs: null })
+      : gpuSampleNvidiaSmi())
     : { pct: null, source: 'disabled', confidence: 'none', sampleWindowMs: null }
 
   const memPressure = MONITOR_MEMORY
