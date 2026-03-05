@@ -37,6 +37,8 @@ function parseServiceAccountFile(filePath) {
   return { raw, json }
 }
 
+const DEFAULT_MANAGED_PROJECT_ID = 'idlewatch-f2b23'
+
 function promptModeText() {
   return `\nSelect enrollment mode:\n  1) Production Firestore (recommended)\n  2) Firestore emulator (local development)\n  3) Local-only (no Firebase writes)\n`
 }
@@ -47,7 +49,7 @@ export async function runEnrollmentWizard(options = {}) {
   const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
 
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
-  let projectId = options.projectId || process.env.IDLEWATCH_ENROLL_PROJECT_ID || null
+  let projectId = options.projectId || process.env.IDLEWATCH_ENROLL_PROJECT_ID || DEFAULT_MANAGED_PROJECT_ID
   let serviceAccountFile = options.serviceAccountFile || process.env.IDLEWATCH_ENROLL_SERVICE_ACCOUNT_FILE || null
   let emulatorHost = options.emulatorHost || process.env.IDLEWATCH_ENROLL_EMULATOR_HOST || '127.0.0.1:8080'
 
@@ -68,7 +70,7 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (mode !== 'local' && !projectId) {
     if (!rl) throw new Error('Missing project id (IDLEWATCH_ENROLL_PROJECT_ID).')
-    projectId = (await rl.question('Firebase project id: ')).trim()
+    projectId = DEFAULT_MANAGED_PROJECT_ID
   }
 
   if ((mode === 'production') && !serviceAccountFile) {
