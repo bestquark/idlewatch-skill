@@ -17,7 +17,7 @@ npx idlewatch-skill quickstart
 npx idlewatch-skill --dry-run
 ```
 
-`quickstart` runs a first-run enrollment wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key in a user config directory (`~/Library/Application Support/IdleWatch` on macOS).
+`quickstart` runs a first-run setup wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key under `~/.idlewatch/`.
 
 ## CLI options
 
@@ -28,7 +28,7 @@ npx idlewatch-skill --dry-run
 
 ## Reliability improvements
 
-- Local NDJSON durability log at `logs/<host>-metrics.ndjson` (override via `IDLEWATCH_LOCAL_LOG_PATH`)
+- Local NDJSON durability log at `~/.idlewatch/logs/<host>-metrics.ndjson` (override via `IDLEWATCH_LOCAL_LOG_PATH`)
 - Retry-once+ for transient Firestore write failures
 - Non-overlapping scheduler loop (prevents concurrent sample overlap when host is busy)
 - Non-blocking CPU sampling using per-tick CPU deltas (no `Atomics.wait` stall)
@@ -65,7 +65,7 @@ The wizard supports:
 Then load generated env and run:
 
 ```bash
-set -a; source "$HOME/Library/Application Support/IdleWatch/idlewatch.env"; set +a
+set -a; source "$HOME/.idlewatch/idlewatch.env"; set +a
 idlewatch-agent --once
 ```
 
@@ -73,7 +73,7 @@ idlewatch-agent --once
 
 ```bash
 export FIREBASE_PROJECT_ID=your-project
-export FIREBASE_SERVICE_ACCOUNT_FILE="$HOME/Library/Application Support/IdleWatch/credentials/your-project-service-account.json"
+export FIREBASE_SERVICE_ACCOUNT_FILE="$HOME/.idlewatch/credentials/your-project-service-account.json"
 ```
 
 Raw JSON and base64 are still supported for compatibility, but **file-path credentials are preferred**:

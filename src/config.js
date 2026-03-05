@@ -60,13 +60,15 @@ export function buildConfig() {
     ? parseNumericEnv('IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS', 0, isPositiveFinite)
     : Math.max(USAGE_STALE_MS + USAGE_STALE_GRACE_MS, 120000)
 
+  const BASE_DIR = path.join(os.homedir(), '.idlewatch')
+
   const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
     ? path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
-    : path.resolve(process.cwd(), 'logs', `${SAFE_HOST}-metrics.ndjson`)
+    : path.join(BASE_DIR, 'logs', `${SAFE_HOST}-metrics.ndjson`)
 
   const OPENCLAW_LAST_GOOD_CACHE_PATH = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH
     ? path.resolve(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH)
-    : path.join(os.tmpdir(), `idlewatch-openclaw-last-good-${SAFE_HOST}.json`)
+    : path.join(BASE_DIR, 'cache', `${SAFE_HOST}-openclaw-last-good.json`)
 
   return Object.freeze({
     HOST,
