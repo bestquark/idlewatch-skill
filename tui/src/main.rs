@@ -10,7 +10,7 @@ use ratatui::{
 };
 use std::{
     fs,
-    io::{self, Write},
+    io,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     time::Duration,
@@ -227,12 +227,57 @@ fn render_monitor_menu(
     Ok(())
 }
 
-fn read_line(prompt: &str) -> Result<String> {
-    print!("{}", prompt);
-    io::stdout().flush()?;
-    let mut s = String::new();
-    io::stdin().read_line(&mut s)?;
-    Ok(s.trim().to_string())
+fn render_api_key_prompt(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+    input: &str,
+) -> Result<()> {
+    terminal.draw(|f| {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints([
+                Constraint::Length(4),
+                Constraint::Length(6),
+                Constraint::Min(1),
+            ])
+            .split(f.area());
+
+        let header = Paragraph::new("Link this device to your IdleWatch account")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Cloud API Key")
+                    .border_style(Style::default().fg(Color::Magenta)),
+            );
+        f.render_widget(header, chunks[0]);
+
+        let content = if input.trim().is_empty() {
+            "Paste your API key from idlewatch.com/api"
+        } else {
+            input
+        };
+
+        let input_style = if input.trim().is_empty() {
+            Style::default().fg(Color::DarkGray)
+        } else {
+            Style::default().fg(Color::White)
+        };
+
+        let input_box = Paragraph::new(content).style(input_style).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("API key")
+                .border_style(Style::default().fg(Color::Cyan)),
+        );
+        f.render_widget(input_box, chunks[1]);
+
+        let help = Paragraph::new("Paste key • Backspace edit • Enter continue • q quit")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
+        f.render_widget(help, chunks[2]);
+    })?;
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -307,13 +352,47 @@ fn main() -> Result<()> {
         }
     }
 
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-
     let mode = match selected_mode {
         0 => "production",
         _ => "local",
     };
+
+    let mut cloud_api_key_input = String::new();
+    if mode == "production" {
+        loop {
+            render_api_key_prompt(&mut terminal, &cloud_api_key_input)?;
+            if event::poll(Duration::from_millis(250))? {
+                match event::read()? {
+                    Event::Key(key) => match key.code {
+                        KeyCode::Enter => {
+                            if !cloud_api_key_input.trim().is_empty() {
+                                break;
+                            }
+                        }
+                        KeyCode::Backspace => {
+                            cloud_api_key_input.pop();
+                        }
+                        KeyCode::Char('q') | KeyCode::Esc => {
+                            disable_raw_mode()?;
+                            execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+                            return Ok(());
+                        }
+                        KeyCode::Char(c) => {
+                            cloud_api_key_input.push(c);
+                        }
+                        _ => {}
+                    },
+                    Event::Paste(text) => {
+                        cloud_api_key_input.push_str(&text);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    disable_raw_mode()?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
 
     let selected_keys = monitor_targets
         .iter()
@@ -351,12 +430,12 @@ fn main() -> Result<()> {
     }
 
     if mode == "production" {
-        let api_key = read_line("Cloud API key (from idlewatch.com/api): ")?;
-        if api_key.trim().is_empty() {
+        let api_key = cloud_api_key_input.trim().to_string();
+        if api_key.is_empty() {
             return Err(anyhow!("cloud API key is required"));
         }
         env_lines.push("IDLEWATCH_CLOUD_INGEST_URL=https://api.idlewatch.com/api/ingest".to_string());
-        env_lines.push(format!("IDLEWATCH_CLOUD_API_KEY={}", api_key.trim()));
+        env_lines.push(format!("IDLEWATCH_CLOUD_API_KEY={}", api_key));
         env_lines.push("IDLEWATCH_REQUIRE_CLOUD_WRITES=1".to_string());
     }
 
