@@ -59,13 +59,25 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
     terminal.draw(|f| {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
-            .margin(2)
-            .constraints([Constraint::Length(4), Constraint::Length(8), Constraint::Length(3), Constraint::Min(1)])
+            .margin(1)
+            .constraints([Constraint::Length(10), Constraint::Length(8), Constraint::Length(3), Constraint::Min(1)])
             .split(f.area());
 
-        let title = Paragraph::new("IdleWatch Setup\nOpenClaw-style onboarding")
-            .block(Block::default().borders(Borders::ALL).title("🐭 IdleWatch"));
-        f.render_widget(title, chunks[0]);
+        let title_block = Block::default()
+            .borders(Borders::ALL)
+            .title("🐭 IdleWatch // Technopunk Setup")
+            .border_style(Style::default().fg(Color::Magenta));
+
+        let ascii = Paragraph::new(r#"      .-''''-.        ____   __  ____
+    .'  .-.  '.     /\   \\ /  \/  __\\
+   /   /   \\   \\   /  \\   Y  /  /\  /\
+   |   | 00 |   |  / /\\ \\     /  / /\ \\
+   \\   \\_^_/   /  / ____ \\ |\\  \\ \\ \\_\\
+    '._     _.'  /_/    \\_\\| \\__\\ \\____/
+       '---'          C H R O N O  M O D E"#)
+        .style(Style::default().fg(Color::Cyan))
+        .block(title_block);
+        f.render_widget(ascii, chunks[0]);
 
         let items = [
             "Managed cloud (recommended)",
@@ -75,20 +87,39 @@ fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: 
         .iter()
         .enumerate()
         .map(|(i, item)| {
-            let prefix = if i == selected { "❯ " } else { "  " };
-            ListItem::new(format!("{}{}", prefix, item))
+            if i == selected {
+                ListItem::new(format!("❯ {}", item)).style(
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(Color::LightGreen)
+                        .add_modifier(Modifier::BOLD),
+                )
+            } else {
+                ListItem::new(format!("  {}", item)).style(Style::default().fg(Color::Gray))
+            }
         })
         .collect::<Vec<_>>();
 
-        let list = List::new(items).block(Block::default().borders(Borders::ALL).title("Mode"));
+        let list = List::new(items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Mode")
+                .border_style(Style::default().fg(Color::Blue)),
+        );
         f.render_widget(list, chunks[1]);
 
         let path = Paragraph::new(format!("Config dir: {}", cfg.display()))
-            .block(Block::default().borders(Borders::ALL).title("Storage"));
+            .style(Style::default().fg(Color::Yellow))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Storage")
+                    .border_style(Style::default().fg(Color::Green)),
+            );
         f.render_widget(path, chunks[2]);
 
         let help = Paragraph::new("↑/↓ move • Enter select • q quit")
-            .style(Style::default().fg(Color::Gray));
+            .style(Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
     Ok(())
