@@ -379,8 +379,8 @@ const MONITOR_GPU = MONITOR_TARGETS.has('gpu')
 const MONITOR_OPENCLAW = MONITOR_TARGETS.has('openclaw')
 const EFFECTIVE_OPENCLAW_MODE = MONITOR_OPENCLAW ? OPENCLAW_USAGE_MODE : 'off'
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
-const CLOUD_INGEST_URL = process.env.IDLEWATCH_CLOUD_INGEST_URL
-const CLOUD_API_KEY = process.env.IDLEWATCH_CLOUD_API_KEY
+const CLOUD_INGEST_URL = (process.env.IDLEWATCH_CLOUD_INGEST_URL || '').trim()
+const CLOUD_API_KEY = (process.env.IDLEWATCH_CLOUD_API_KEY || '').trim().replace(/^['"]|['"]$/g, '')
 const REQUIRE_CLOUD_WRITES = process.env.IDLEWATCH_REQUIRE_CLOUD_WRITES === '1'
 let cloudIngestKickedOut = false
 let cloudIngestKickoutReason = null

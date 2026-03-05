@@ -58,6 +58,25 @@ function normalizeMonitorTargets(raw, available) {
   return [...new Set(parsed)]
 }
 
+function normalizeCloudApiKey(raw) {
+  const trimmed = String(raw || '').trim()
+  if (!trimmed) return ''
+
+  const token = trimmed
+    .split(/\s+/)
+    .find((part) => part.startsWith('iwk_'))
+
+  if (token) {
+    return token.replace(/^['"]|['",]$/g, '')
+  }
+
+  return trimmed.replace(/^['"]|['"]$/g, '')
+}
+
+function looksLikeCloudApiKey(value) {
+  return /^iwk_[A-Za-z0-9_-]{20,}$/.test(String(value || '').trim())
+}
+
 function tryRustTui({ configDir, outputEnvFile }) {
   const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
   if (disabled) return false
@@ -94,7 +113,7 @@ export async function runEnrollmentWizard(options = {}) {
   const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
 
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
-  let cloudApiKey = options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null
+  let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
@@ -129,7 +148,7 @@ export async function runEnrollmentWizard(options = {}) {
   if ((mode === 'production') && !cloudApiKey) {
     if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
     console.log('\nPaste the API key from idlewatch.com/api.')
-    cloudApiKey = (await rl.question('Cloud API key: ')).trim()
+    cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
   }
 
   if (!nonInteractive && rl) {
@@ -155,8 +174,8 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if (mode === 'production') {
-    if (!cloudApiKey) {
-      throw new Error('Cloud API key is required for production mode.')
+    if (!cloudApiKey || !looksLikeCloudApiKey(cloudApiKey)) {
+      throw new Error('Cloud API key is invalid. Copy the full key from idlewatch.com/api (starts with iwk_).')
     }
     envLines.push(`IDLEWATCH_CLOUD_INGEST_URL=${cloudIngestUrl}`)
     envLines.push(`IDLEWATCH_CLOUD_API_KEY=${cloudApiKey}`)

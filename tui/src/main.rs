@@ -230,6 +230,7 @@ fn render_monitor_menu(
 fn render_api_key_prompt(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     input: &str,
+    error_message: Option<&str>,
 ) -> Result<()> {
     terminal.draw(|f| {
         let chunks = Layout::default()
@@ -238,6 +239,7 @@ fn render_api_key_prompt(
             .constraints([
                 Constraint::Length(4),
                 Constraint::Length(6),
+                Constraint::Length(2),
                 Constraint::Min(1),
             ])
             .split(f.area());
@@ -272,12 +274,38 @@ fn render_api_key_prompt(
         );
         f.render_widget(input_box, chunks[1]);
 
+        let warning = error_message.unwrap_or(" ");
+        let warning_widget = Paragraph::new(warning).style(
+            if error_message.is_some() {
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            },
+        );
+        f.render_widget(warning_widget, chunks[2]);
+
         let help = Paragraph::new("Paste key • Backspace edit • Enter continue • q quit")
             .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
-        f.render_widget(help, chunks[2]);
+        f.render_widget(help, chunks[3]);
     })?;
 
     Ok(())
+}
+
+fn normalize_api_key_input(raw: &str) -> String {
+    let trimmed = raw.trim();
+
+    for token in trimmed.split_whitespace() {
+        if token.starts_with("iwk_") {
+            return token.trim_matches(|c: char| c == '"' || c == '\'' || c == ',').to_string();
+        }
+    }
+
+    trimmed.trim_matches(|c: char| c == '"' || c == '\'').to_string()
+}
+
+fn looks_like_api_key(value: &str) -> bool {
+    value.starts_with("iwk_") && value.len() >= 20
 }
 
 fn main() -> Result<()> {
@@ -358,19 +386,31 @@ fn main() -> Result<()> {
     };
 
     let mut cloud_api_key_input = String::new();
+    let mut cloud_api_key_error: Option<String> = None;
     if mode == "production" {
         loop {
-            render_api_key_prompt(&mut terminal, &cloud_api_key_input)?;
+            render_api_key_prompt(
+                &mut terminal,
+                &cloud_api_key_input,
+                cloud_api_key_error.as_deref(),
+            )?;
             if event::poll(Duration::from_millis(250))? {
                 match event::read()? {
                     Event::Key(key) => match key.code {
                         KeyCode::Enter => {
-                            if !cloud_api_key_input.trim().is_empty() {
+                            let normalized = normalize_api_key_input(&cloud_api_key_input);
+                            if looks_like_api_key(&normalized) {
+                                cloud_api_key_input = normalized;
                                 break;
                             }
+                            cloud_api_key_error = Some(
+                                "Invalid key format. Copy the full key from idlewatch.com/api (starts with iwk_)."
+                                    .to_string(),
+                            );
                         }
                         KeyCode::Backspace => {
                             cloud_api_key_input.pop();
+                            cloud_api_key_error = None;
                         }
                         KeyCode::Char('q') | KeyCode::Esc => {
                             disable_raw_mode()?;
@@ -379,11 +419,13 @@ fn main() -> Result<()> {
                         }
                         KeyCode::Char(c) => {
                             cloud_api_key_input.push(c);
+                            cloud_api_key_error = None;
                         }
                         _ => {}
                     },
                     Event::Paste(text) => {
                         cloud_api_key_input.push_str(&text);
+                        cloud_api_key_error = None;
                     }
                     _ => {}
                 }
@@ -430,8 +472,8 @@ fn main() -> Result<()> {
     }
 
     if mode == "production" {
-        let api_key = cloud_api_key_input.trim().to_string();
-        if api_key.is_empty() {
+        let api_key = normalize_api_key_input(&cloud_api_key_input);
+        if !looks_like_api_key(&api_key) {
             return Err(anyhow!("cloud API key is required"));
         }
         env_lines.push("IDLEWATCH_CLOUD_INGEST_URL=https://api.idlewatch.com/api/ingest".to_string());
