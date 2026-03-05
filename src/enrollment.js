@@ -75,6 +75,8 @@ export async function runEnrollmentWizard(options = {}) {
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
   let projectId = options.projectId || process.env.IDLEWATCH_ENROLL_PROJECT_ID || DEFAULT_MANAGED_PROJECT_ID
   let serviceAccountFile = options.serviceAccountFile || process.env.IDLEWATCH_ENROLL_SERVICE_ACCOUNT_FILE || null
+  let cloudApiKey = options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null
+  let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://idlewatch.com/api/ingest'
   let emulatorHost = options.emulatorHost || process.env.IDLEWATCH_ENROLL_EMULATOR_HOST || '127.0.0.1:8080'
 
   if (!nonInteractive && tryRustTui({ configDir, outputEnvFile })) {
@@ -106,12 +108,10 @@ export async function runEnrollmentWizard(options = {}) {
     projectId = DEFAULT_MANAGED_PROJECT_ID
   }
 
-  if ((mode === 'production') && !serviceAccountFile) {
-    if (!rl) throw new Error('Missing service account file (IDLEWATCH_ENROLL_SERVICE_ACCOUNT_FILE).')
-    const suggestedCredentialPath = path.join(configDir, 'credentials', `${projectId}-service-account.json`)
-    console.log('\nPaste the path to your Firebase service-account JSON key.')
-    console.log(`Tip: you can keep a copy at ${suggestedCredentialPath}`)
-    serviceAccountFile = (await rl.question(`Service-account JSON path: `)).trim()
+  if ((mode === 'production') && !cloudApiKey) {
+    if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
+    console.log('\nPaste the API key from idlewatch.com/dashboard.')
+    cloudApiKey = (await rl.question('Cloud API key: ')).trim()
   }
 
   if (mode === 'emulator' && !emulatorHost && rl) {
@@ -129,9 +129,7 @@ export async function runEnrollmentWizard(options = {}) {
   ]
 
   if (mode === 'local') {
-    envLines.push('# Local-only mode (no Firebase writes).')
-  } else {
-    envLines.push(`FIREBASE_PROJECT_ID=${projectId}`)
+    envLines.push('# Local-only mode (no cloud/Firebase writes).')
   }
 
   if (mode === 'emulator') {
@@ -139,23 +137,12 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if (mode === 'production') {
-    const resolvedInput = path.resolve(serviceAccountFile)
-    if (!fs.existsSync(resolvedInput)) {
-      throw new Error(`Service account file not found: ${resolvedInput}`)
+    if (!cloudApiKey) {
+      throw new Error('Cloud API key is required for production mode.')
     }
-    const parsed = parseServiceAccountFile(resolvedInput)
-    if (projectId && parsed.json.project_id !== projectId) {
-      throw new Error(
-        `Service-account project_id (${parsed.json.project_id}) does not match FIREBASE_PROJECT_ID (${projectId}).`
-      )
-    }
-
-    const credentialDir = path.join(configDir, 'credentials')
-    ensureDir(credentialDir)
-    const securedCopyPath = path.join(credentialDir, `${projectId || parsed.json.project_id}-service-account.json`)
-    writeSecureFile(securedCopyPath, parsed.raw)
-    envLines.push(`FIREBASE_SERVICE_ACCOUNT_FILE=${securedCopyPath}`)
-    envLines.push('IDLEWATCH_REQUIRE_FIREBASE_WRITES=1')
+    envLines.push(`IDLEWATCH_CLOUD_INGEST_URL=${cloudIngestUrl}`)
+    envLines.push(`IDLEWATCH_CLOUD_API_KEY=${cloudApiKey}`)
+    envLines.push('IDLEWATCH_REQUIRE_CLOUD_WRITES=1')
   }
 
   writeSecureFile(outputEnvFile, `${envLines.join('\n')}\n`)

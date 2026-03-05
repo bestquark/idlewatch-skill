@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -8,15 +8,12 @@ use ratatui::{
     prelude::*,
     widgets::{Block, Borders, List, ListItem, Paragraph},
 };
-use serde_json::Value;
 use std::{
     fs,
     io::{self, Write},
     path::{Path, PathBuf},
     time::Duration,
 };
-
-const DEFAULT_PROJECT_ID: &str = "idlewatch-f2b23";
 
 fn default_config_dir() -> PathBuf {
     if let Ok(dir) = std::env::var("IDLEWATCH_ENROLL_CONFIG_DIR") {
@@ -46,14 +43,6 @@ fn write_secure_file(path: &Path, content: &str) -> Result<()> {
     Ok(())
 }
 
-fn parse_service_account(path: &Path) -> Result<Value> {
-    let raw = fs::read_to_string(path).context("failed to read service-account JSON")?;
-    let json: Value = serde_json::from_str(&raw).context("invalid JSON in service-account file")?;
-    if json.get("type").and_then(|v| v.as_str()) != Some("service_account") {
-        return Err(anyhow!("credential file is not a service_account JSON key"));
-    }
-    Ok(json)
-}
 
 fn render_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selected: usize, cfg: &Path) -> Result<()> {
     terminal.draw(|f| {
@@ -178,30 +167,17 @@ fn main() -> Result<()> {
     ];
 
     if mode == "local" {
-        env_lines.push("# Local-only mode (no Firebase writes).".to_string());
-    } else {
-        env_lines.push(format!("FIREBASE_PROJECT_ID={}", DEFAULT_PROJECT_ID));
+        env_lines.push("# Local-only mode (no cloud/Firebase writes).".to_string());
     }
 
     if mode == "production" {
-        let path = read_line("Service-account JSON path: ")?;
-        let input = PathBuf::from(path);
-        if !input.exists() {
-            return Err(anyhow!("service-account file not found"));
+        let api_key = read_line("Cloud API key (from idlewatch.com/dashboard): ")?;
+        if api_key.trim().is_empty() {
+            return Err(anyhow!("cloud API key is required"));
         }
-        let json = parse_service_account(&input)?;
-        let project_id = json
-            .get("project_id")
-            .and_then(|v| v.as_str())
-            .unwrap_or(DEFAULT_PROJECT_ID);
-
-        let creds_path = config_dir
-            .join("credentials")
-            .join(format!("{}-service-account.json", project_id));
-        let raw = fs::read_to_string(&input)?;
-        write_secure_file(&creds_path, &raw)?;
-        env_lines.push(format!("FIREBASE_SERVICE_ACCOUNT_FILE={}", creds_path.display()));
-        env_lines.push("IDLEWATCH_REQUIRE_FIREBASE_WRITES=1".to_string());
+        env_lines.push("IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest".to_string());
+        env_lines.push(format!("IDLEWATCH_CLOUD_API_KEY={}", api_key.trim()));
+        env_lines.push("IDLEWATCH_REQUIRE_CLOUD_WRITES=1".to_string());
     }
 
     write_secure_file(&env_file, &format!("{}\n", env_lines.join("\n")))?;

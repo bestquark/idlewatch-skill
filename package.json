@@ -1,9 +1,10 @@
 {
-  "name": "idlewatch-skill",
+  "name": "idlewatch",
   "version": "0.1.0",
   "description": "Host telemetry collector for IdleWatch",
   "type": "module",
   "bin": {
+    "idlewatch": "bin/idlewatch-agent.js",
     "idlewatch-agent": "bin/idlewatch-agent.js",
     "idlewatch-skill": "bin/idlewatch-agent.js"
   },

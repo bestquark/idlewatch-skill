@@ -17,7 +17,7 @@ import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n  IDLEWATCH_CLOUD_INGEST_URL         Optional cloud ingest endpoint (e.g. https://idlewatch.com/api/ingest)\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from dashboard for device linking\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n`)
 }
 
 const require = createRequire(import.meta.url)
@@ -85,6 +85,9 @@ const CREDS_B64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64
 const FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST
 const OPENCLAW_USAGE_MODE = (process.env.IDLEWATCH_OPENCLAW_USAGE || 'auto').toLowerCase()
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
+const CLOUD_INGEST_URL = process.env.IDLEWATCH_CLOUD_INGEST_URL
+const CLOUD_API_KEY = process.env.IDLEWATCH_CLOUD_API_KEY
+const REQUIRE_CLOUD_WRITES = process.env.IDLEWATCH_REQUIRE_CLOUD_WRITES === '1'
 const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS || 2500)
 const OPENCLAW_PROBE_MAX_OUTPUT_BYTES = process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES
   ? Number(process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES)
@@ -727,7 +730,34 @@ function loadOpenClawUsage(forceRefresh = false) {
 }
 
 async function publish(row, retries = 2) {
-  if (!appReady || DRY_RUN) return false
+  if (DRY_RUN) return false
+
+  if (CLOUD_INGEST_URL && CLOUD_API_KEY) {
+    let attempt = 0
+    while (attempt <= retries) {
+      try {
+        const response = await fetch(CLOUD_INGEST_URL, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-idlewatch-key': CLOUD_API_KEY
+          },
+          body: JSON.stringify(row)
+        })
+        if (!response.ok) {
+          throw new Error(`cloud_ingest_failed_${response.status}`)
+        }
+        return true
+      } catch (err) {
+        if (attempt >= retries) throw err
+        await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)))
+        attempt += 1
+      }
+    }
+    return false
+  }
+
+  if (!appReady) return false
   const db = admin.firestore()
   let attempt = 0
   while (attempt <= retries) {
@@ -888,6 +918,9 @@ async function tick() {
   const published = await publish(row)
   if (REQUIRE_FIREBASE_WRITES && ONCE && !published) {
     throw new Error('Firebase write was required but not executed. Check Firebase configuration and connectivity.')
+  }
+  if (REQUIRE_CLOUD_WRITES && ONCE && !published) {
+    throw new Error('Cloud write was required but not executed. Check API key and cloud connectivity.')
   }
 }
 
