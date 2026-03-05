@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'fs'
 import { accessSync, constants } from 'node:fs'
+import http from 'node:http'
 import os from 'os'
 import path from 'path'
 import process from 'process'
@@ -17,7 +18,7 @@ import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n  IDLEWATCH_CLOUD_INGEST_URL         Optional cloud ingest endpoint (e.g. https://idlewatch.com/api/ingest)\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from dashboard for device linking\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n`)
+  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart|dashboard] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  dashboard   Launch local dashboard from local IdleWatch logs\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n  IDLEWATCH_CLOUD_INGEST_URL         Optional cloud ingest endpoint (e.g. https://idlewatch.com/api/ingest)\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from dashboard for device linking\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n`)
 }
 
 const require = createRequire(import.meta.url)
@@ -54,12 +55,282 @@ function parseMonitorTargets(raw) {
   return new Set(parsed)
 }
 
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit += 1
+  }
+  const fixed = value >= 10 || unit === 0 ? value.toFixed(0) : value.toFixed(1)
+  return `${fixed} ${units[unit]}`
+}
+
+function resolveDashboardLogPath(host) {
+  if (process.env.IDLEWATCH_LOCAL_LOG_PATH) {
+    return path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
+  }
+
+  const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+  if (fs.existsSync(envFile)) {
+    try {
+      const parsed = parseEnvFileToObject(envFile)
+      if (parsed.IDLEWATCH_LOCAL_LOG_PATH) {
+        return path.resolve(parsed.IDLEWATCH_LOCAL_LOG_PATH)
+      }
+    } catch {
+      // ignore malformed env file and fallback
+    }
+  }
+
+  const safeHost = host.replace(/[^a-zA-Z0-9_.-]/g, '_')
+  return path.join(os.homedir(), '.idlewatch', 'logs', `${safeHost}-metrics.ndjson`)
+}
+
+function parseLocalRows(logPath, maxLines = 2500) {
+  if (!fs.existsSync(logPath)) return []
+
+  try {
+    const raw = fs.readFileSync(logPath, 'utf8')
+    const lines = raw.split(/\r?\n/).filter(Boolean)
+    const selected = lines.slice(Math.max(0, lines.length - maxLines))
+
+    return selected
+      .map((line) => {
+        try {
+          return JSON.parse(line)
+        } catch {
+          return null
+        }
+      })
+      .filter((item) => item && Number.isFinite(Number(item.ts)))
+      .sort((a, b) => Number(a.ts) - Number(b.ts))
+  } catch {
+    return []
+  }
+}
+
+function buildTokenDailyEstimate(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return []
+
+  const totals = new Map()
+  const previousBySource = new Map()
+
+  for (const row of rows) {
+    const ts = Number(row.ts || 0)
+    const tokensPerMin = Math.max(0, Number(row.tokensPerMin || 0))
+    const sourceKey = `${row.hostId || row.host || 'host'}::${row.deviceId || row.device || 'device'}`
+    const prevTs = previousBySource.get(sourceKey)
+
+    if (Number.isFinite(prevTs) && ts > prevTs && tokensPerMin > 0) {
+      const deltaMinutes = Math.max(0, Math.min(10, (ts - prevTs) / 60000))
+      const estimate = tokensPerMin * deltaMinutes
+      const day = new Date(ts)
+      const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+      totals.set(dayKey, (totals.get(dayKey) || 0) + estimate)
+    }
+
+    previousBySource.set(sourceKey, ts)
+  }
+
+  return [...totals.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, tokens]) => ({ day: day.slice(5), tokens: Math.round(tokens) }))
+}
+
+function buildLocalDashboardPayload(logPath) {
+  const rows = parseLocalRows(logPath)
+  let bytes = 0
+  try {
+    bytes = fs.statSync(logPath).size
+  } catch {
+    bytes = 0
+  }
+
+  const series = rows.map((row) => ({
+    ts: Number(row.ts || 0),
+    cpu: Number(row.cpuPct || 0),
+    memory: Number(row.memPct || 0),
+    gpu: Number(row.gpuPct || 0),
+    tokens: Number(row.tokensPerMin || 0)
+  }))
+
+  return {
+    logPath,
+    logBytes: bytes,
+    logSizeHuman: formatBytes(bytes),
+    sampleCount: rows.length,
+    latestTs: rows.length ? Number(rows[rows.length - 1].ts || 0) : null,
+    series,
+    tokenDaily: buildTokenDailyEstimate(rows)
+  }
+}
+
+function renderLocalDashboardHtml() {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IdleWatch local dashboard</title>
+    <style>
+      body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin:0; background:#0a0c1a; color:#eef1ff; }
+      .wrap { max-width: 1080px; margin: 30px auto; padding: 0 16px; }
+      .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+      .card { background:#121633; border:1px solid #2a2f5b; border-radius:12px; padding:12px; }
+      .label { color:#9ba5d8; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+      .value { margin-top:6px; font-size:18px; }
+      .chart { margin-top:10px; background:#121633; border:1px solid #2a2f5b; border-radius:12px; padding:12px; }
+      canvas { width:100% !important; height:280px !important; }
+      code { background:#1a1f42; border:1px solid #2f356e; border-radius:6px; padding:2px 6px; }
+      .sub { color:#98a2d6; font-size:13px; }
+      a { color:#7ce4ff; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>IdleWatch local dashboard</h1>
+      <p class="sub">Live view from your local NDJSON log file.</p>
+      <div class="grid">
+        <div class="card"><div class="label">Log path</div><div class="value"><code id="log-path">—</code></div></div>
+        <div class="card"><div class="label">Storage</div><div class="value" id="log-size">—</div></div>
+        <div class="card"><div class="label">Samples</div><div class="value" id="sample-count">—</div></div>
+        <div class="card"><div class="label">Last sample</div><div class="value" id="last-sample">—</div></div>
+      </div>
+      <div class="chart"><h3>System load (%)</h3><canvas id="system-chart"></canvas></div>
+      <div class="chart"><h3>Tokens / min</h3><canvas id="tokens-chart"></canvas></div>
+      <div class="chart"><h3>Token / day (estimate)</h3><canvas id="daily-chart"></canvas></div>
+    </main>
+    <script>
+      const fmt = (n) => Number.isFinite(n) ? n.toLocaleString() : '—';
+      const fmtTs = (ts) => Number.isFinite(ts) && ts > 0 ? new Date(ts).toLocaleString() : '—';
+      let systemChart, tokensChart, dailyChart;
+
+      function draw(payload) {
+        document.getElementById('log-path').textContent = payload.logPath || '—';
+        document.getElementById('log-size').textContent = payload.logSizeHuman || '0 B';
+        document.getElementById('sample-count').textContent = fmt(payload.sampleCount || 0);
+        document.getElementById('last-sample').textContent = fmtTs(payload.latestTs);
+
+        const labels = (payload.series || []).map((r) => new Date(r.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+        const cpu = (payload.series || []).map((r) => r.cpu ?? 0);
+        const memory = (payload.series || []).map((r) => r.memory ?? 0);
+        const gpu = (payload.series || []).map((r) => r.gpu ?? 0);
+        const tokens = (payload.series || []).map((r) => r.tokens ?? 0);
+        const dayLabels = (payload.tokenDaily || []).map((r) => r.day);
+        const dayTokens = (payload.tokenDaily || []).map((r) => r.tokens);
+
+        if (systemChart) systemChart.destroy();
+        if (tokensChart) tokensChart.destroy();
+        if (dailyChart) dailyChart.destroy();
+
+        systemChart = new Chart(document.getElementById('system-chart'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              { label: 'CPU', data: cpu, borderColor: '#00c853', tension: 0.2, pointRadius: 0 },
+              { label: 'Memory', data: memory, borderColor: '#2979ff', tension: 0.2, pointRadius: 0 },
+              { label: 'GPU', data: gpu, borderColor: '#a855f7', tension: 0.2, pointRadius: 0 }
+            ]
+          },
+          options: { responsive:true, plugins:{legend:{labels:{color:'#d8defa'}}}, scales:{x:{ticks:{color:'#9aa2d8'}}, y:{min:0,max:100,ticks:{color:'#9aa2d8'}}} }
+        });
+
+        tokensChart = new Chart(document.getElementById('tokens-chart'), {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Tokens/min', data: tokens, borderColor: '#ff7a18', tension: 0.2, pointRadius: 0 }] },
+          options: { responsive:true, plugins:{legend:{labels:{color:'#d8defa'}}}, scales:{x:{ticks:{color:'#9aa2d8'}}, y:{ticks:{color:'#9aa2d8'}}} }
+        });
+
+        dailyChart = new Chart(document.getElementById('daily-chart'), {
+          type: 'bar',
+          data: { labels: dayLabels, datasets: [{ label: 'Tokens/day', data: dayTokens, backgroundColor: '#22d3ee' }] },
+          options: { responsive:true, plugins:{legend:{labels:{color:'#d8defa'}}}, scales:{x:{ticks:{color:'#9aa2d8'}}, y:{ticks:{color:'#9aa2d8'}}} }
+        });
+      }
+
+      async function refresh() {
+        const response = await fetch('/api/local-status', { cache: 'no-store' });
+        const payload = await response.json();
+        draw(payload);
+      }
+
+      refresh();
+      setInterval(refresh, 10000);
+    </script>
+  </body>
+</html>`
+}
+
+function openUrl(url) {
+  try {
+    if (process.platform === 'darwin') {
+      spawnSync('open', [url], { stdio: 'ignore' })
+    } else if (process.platform === 'win32') {
+      spawnSync('cmd', ['/c', 'start', '', url], { stdio: 'ignore' })
+    } else {
+      spawnSync('xdg-open', [url], { stdio: 'ignore' })
+    }
+  } catch {
+    // no-op
+  }
+}
+
+function runLocalDashboard({ host }) {
+  const logPath = resolveDashboardLogPath(host)
+  const portRaw = Number(process.env.IDLEWATCH_DASHBOARD_PORT || 4373)
+  const port = Number.isFinite(portRaw) && portRaw > 0 ? portRaw : 4373
+
+  const server = http.createServer((req, res) => {
+    if (req.url === '/api/local-status') {
+      const payload = buildLocalDashboardPayload(logPath)
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify(payload))
+      return
+    }
+
+    if (req.url === '/health') {
+      const payload = buildLocalDashboardPayload(logPath)
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ ok: true, logPath: payload.logPath, samples: payload.sampleCount }))
+      return
+    }
+
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+    res.end(renderLocalDashboardHtml())
+  })
+
+  server.listen(port, '127.0.0.1', () => {
+    const url = `http://127.0.0.1:${port}`
+    const payload = buildLocalDashboardPayload(logPath)
+    console.log(`idlewatch local dashboard ready: ${url}`)
+    console.log(`log file: ${payload.logPath} (${payload.logSizeHuman})`)
+    openUrl(url)
+  })
+
+  server.on('error', (err) => {
+    console.error(`Local dashboard failed: ${err.message}`)
+    process.exit(1)
+  })
+}
+
 const argv = process.argv.slice(2)
 const quickstartRequested = argv[0] === 'quickstart' || argv.includes('--quickstart')
+const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard')
 const args = new Set(argv)
 if (args.has('--help') || args.has('-h')) {
   printHelp()
   process.exit(0)
+}
+
+if (dashboardRequested) {
+  const host = process.env.IDLEWATCH_HOST || os.hostname()
+  runLocalDashboard({ host })
+  await new Promise(() => {})
 }
 
 if (quickstartRequested) {
@@ -111,6 +382,9 @@ const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES ==
 const CLOUD_INGEST_URL = process.env.IDLEWATCH_CLOUD_INGEST_URL
 const CLOUD_API_KEY = process.env.IDLEWATCH_CLOUD_API_KEY
 const REQUIRE_CLOUD_WRITES = process.env.IDLEWATCH_REQUIRE_CLOUD_WRITES === '1'
+let cloudIngestKickedOut = false
+let cloudIngestKickoutReason = null
+let cloudIngestKickoutNotified = false
 const OPENCLAW_PROBE_TIMEOUT_MS = Number(process.env.IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS || 2500)
 const OPENCLAW_PROBE_MAX_OUTPUT_BYTES = process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES
   ? Number(process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES)
@@ -322,6 +596,21 @@ function ensureDirFor(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true })
 }
 
+function getLocalLogUsage() {
+  try {
+    const stat = fs.statSync(LOCAL_LOG_PATH)
+    return {
+      path: LOCAL_LOG_PATH,
+      bytes: Number(stat.size || 0)
+    }
+  } catch {
+    return {
+      path: LOCAL_LOG_PATH,
+      bytes: 0
+    }
+  }
+}
+
 function appendLocal(row) {
   try {
     ensureDirFor(LOCAL_LOG_PATH)
@@ -329,6 +618,7 @@ function appendLocal(row) {
   } catch (err) {
     console.error(`Local log append failed (${LOCAL_LOG_PATH}): ${err.message}`)
   }
+  return getLocalLogUsage()
 }
 
 function snapshotCpuTimes() {
@@ -789,6 +1079,8 @@ async function publish(row, retries = 2) {
   if (DRY_RUN) return false
 
   if (CLOUD_INGEST_URL && CLOUD_API_KEY) {
+    if (cloudIngestKickedOut) return false
+
     let attempt = 0
     while (attempt <= retries) {
       try {
@@ -800,11 +1092,31 @@ async function publish(row, retries = 2) {
           },
           body: JSON.stringify(row)
         })
+
         if (!response.ok) {
+          let detail = null
+          try {
+            const payload = await response.json()
+            detail = payload?.detail || payload?.error || payload?.message || null
+          } catch {
+            try {
+              detail = (await response.text())?.slice(0, 180) || null
+            } catch {
+              detail = null
+            }
+          }
+
+          if (response.status === 401 || response.status === 403) {
+            cloudIngestKickedOut = true
+            cloudIngestKickoutReason = detail || `http_${response.status}`
+            return false
+          }
+
           throw new Error(`cloud_ingest_failed_${response.status}`)
         }
         return true
       } catch (err) {
+        if (cloudIngestKickedOut) throw err
         if (attempt >= retries) throw err
         await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)))
         attempt += 1
@@ -951,7 +1263,11 @@ async function collectSample() {
     usageStaleMsThreshold: USAGE_STALE_MS,
     usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
     usageStaleGraceMs: USAGE_STALE_GRACE_MS,
-    memPressureSource: memPressure.source
+    memPressureSource: memPressure.source,
+    cloudIngestionStatus: CLOUD_INGEST_URL && CLOUD_API_KEY
+      ? cloudIngestKickedOut ? 'kicked-out' : 'enabled'
+      : 'disabled',
+    cloudIngestionReason: cloudIngestKickoutReason
   }
 
   const usageAlert = deriveUsageAlert(source, { usageAgeMs: usageFreshness.usageAgeMs, idleAfterMs: USAGE_IDLE_AFTER_MS })
@@ -977,6 +1293,8 @@ async function collectSample() {
     openclawAgentId: MONITOR_OPENCLAW ? (usage?.agentId ?? null) : null,
     openclawUsageTs: MONITOR_OPENCLAW ? (usage?.usageTimestampMs ?? null) : null,
     openclawUsageAgeMs: MONITOR_OPENCLAW ? usageFreshness.usageAgeMs : null,
+    localLogPath: LOCAL_LOG_PATH,
+    localLogBytes: null,
     source
   }
 
@@ -990,13 +1308,31 @@ async function collectSample() {
 
 async function tick() {
   const row = await collectSample()
+  const localUsage = appendLocal(row)
+  row.localLogPath = localUsage.path
+  row.localLogBytes = localUsage.bytes
+
   console.log(JSON.stringify(row))
-  appendLocal(row)
+
   const published = await publish(row)
+
+  if (cloudIngestKickedOut && !cloudIngestKickoutNotified) {
+    cloudIngestKickoutNotified = true
+    console.error(
+      `Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart to link a new key.`
+    )
+  }
+
   if (REQUIRE_FIREBASE_WRITES && ONCE && !published) {
     throw new Error('Firebase write was required but not executed. Check Firebase configuration and connectivity.')
   }
+
   if (REQUIRE_CLOUD_WRITES && ONCE && !published) {
+    if (cloudIngestKickedOut) {
+      throw new Error(
+        `Cloud API key was rejected (${cloudIngestKickoutReason || 'unauthorized'}). This device was disconnected. Run idlewatch quickstart with a new API key.`
+      )
+    }
     throw new Error('Cloud write was required but not executed. Check API key and cloud connectivity.')
   }
 }
