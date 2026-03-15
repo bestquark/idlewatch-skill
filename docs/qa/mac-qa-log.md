@@ -3957,3 +3957,29 @@
 ### Notes
 
 - ✅ **Commit status:** parser + fixture + test + QA log update completed.
+
+## QA cycle update — 2026-03-15 3:12 AM America/Toronto
+
+### Prioritized findings
+
+**No new issues found.** All previously reported polish items from this lane have been addressed.
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (all pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text is clean, cloud-first, no Firebase/setup ghosts
+- Fresh-home `--dry-run` ✅ — no Firebase warning noise, banner is compact and correct
+- Local-mode quickstart (non-interactive) ✅ — success message is accurate, no premature "Enrollment complete"
+- Config persistence + reload ✅ — device name, device ID, monitor targets, local log path all round-trip through saved env
+- LaunchAgent docs ✅ — prereqs now say "saved IdleWatch config from quickstart", not Firebase
+- Verify command in LaunchAgent docs ✅ — uses `tail -n 1 | python3 -m json.tool` (copy/paste-safe)
+- npx install path ✅ — README and onboarding docs consistently use `npx idlewatch` as primary
+- `idlewatch-skill` alias documented as legacy, not primary ✅
+- No references to `idlewatch setup` in CLI source ✅
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2 findings from this lane have been resolved.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing for those optional validation gates.
