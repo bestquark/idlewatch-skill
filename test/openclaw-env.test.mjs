@@ -205,6 +205,20 @@ test('keeps plain dry-run output local-only without Firebase warning noise', () 
   assert.doesNotMatch(run.stdout, /firebase=/)
 })
 
+test('help keeps the happy path above advanced env tuning noise', () => {
+  const run = spawnSync(process.execPath, [BIN, '--help'], {
+    env: process.env,
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Quickstart:/)
+  assert.match(run.stdout, /Common env \(optional\):/)
+  assert.match(run.stdout, /Advanced env tuning:/)
+  assert.doesNotMatch(run.stdout, /\nEnvironment:\n/)
+  assert.ok(run.stdout.indexOf('Common env (optional):') < run.stdout.indexOf('Advanced env tuning:'))
+})
+
 test('uses cloud publish label for once mode when cloud ingest config is active', () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-cloud-once-home-'))
   const envDir = path.join(tempHome, '.idlewatch')
@@ -363,6 +377,30 @@ test('quickstart honors IDLEWATCH_ENROLL_DEVICE_NAME in non-interactive mode', (
   assert.match(savedEnv, /IDLEWATCH_DEVICE_NAME=Now Local Box/)
   assert.match(savedEnv, /IDLEWATCH_DEVICE_ID=now-local-box/)
 })
+
+test('quickstart success summarizes setup verification instead of dumping raw telemetry JSON', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-summary-home-'))
+
+  const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+    env: {
+      ...process.env,
+      HOME: tempHome,
+      IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+      IDLEWATCH_ENROLL_MODE: 'local',
+      IDLEWATCH_ENROLL_DEVICE_NAME: 'Metric Box',
+      IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+      IDLEWATCH_OPENCLAW_USAGE: 'off'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Initial sample ready \(mode=local-only metrics=cpu,memory localLog=/)
+  assert.doesNotMatch(run.stdout, /"schemaFamily":"idlewatch\.openclaw\.fleet"/)
+  assert.doesNotMatch(run.stdout, /"usageProbeSweeps":/)
+  assert.doesNotMatch(run.stdout, /^\{.*\}$/m)
+})
+
 
 test('quickstart failure keeps idlewatch --once as the primary retry only for the default saved config path', () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-default-retry-home-'))

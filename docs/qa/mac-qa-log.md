@@ -1,4 +1,18 @@
 
+## QA cycle update — 2026-03-15 4:18 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Quickstart happy-path verification now stays calm and product-shaped:** `bin/idlewatch-agent.js` now marks the setup verification run with `IDLEWATCH_SETUP_VERIFY=1`, and the required post-setup `--once` pass prints a compact summary (`Initial sample ready ...`) instead of dumping the full raw telemetry JSON row into the middle of successful setup.
+- [x] **Default `--help` now keeps the simple story ahead of the tuning wall:** the top help surface now splits env docs into a short `Common env (optional)` block and a separate `Advanced env tuning` section, so the happy path no longer runs straight into hard-cap/probe/staleness knobs.
+- [x] **Regression coverage added for both polish fixes:** `test/openclaw-env.test.mjs` now locks in the calmer quickstart verification output and the more minimal help structure.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**114 pass, 0 fail**), direct `--help` smoke ✅, direct local-only `quickstart --no-tui` smoke ✅.
+
+### Notes
+
+- Scope stayed deliberately tiny and low-risk: output shaping + help-surface simplification only.
+- Telemetry path preserved: the verification run still collects/appends/publishes exactly as before; only the default success presentation changed.
+
 ## QA cycle update — 2026-03-15 4:06 AM America/Toronto
 
 ### Prioritized findings
