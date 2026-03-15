@@ -47,6 +47,9 @@ const row = {
   gpuSource: 'mock',
   gpuConfidence: 'none',
   gpuSampleWindowMs: null,
+  deviceTempC: null,
+  dayTempAvgC: null,
+  dayTempMaxC: null,
   tokensPerMin: null,
   openclawModel: null,
   openclawTotalTokens: null,
@@ -99,7 +102,8 @@ const row = {
       cpuPct: null,
       memUsedPct: null,
       memPressurePct: null,
-      memPressureClass: 'unavailable'
+      memPressureClass: 'unavailable',
+      tempC: null
     },
     usage: {
       model: null,

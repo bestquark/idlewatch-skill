@@ -92,6 +92,9 @@ function validateRow(row) {
   assert.equal(typeof row.gpuSource, 'string', 'gpuSource must be string')
   assert.ok(['high', 'medium', 'low', 'none'].includes(row.gpuConfidence), 'gpuConfidence invalid')
   assertNumberOrNull(row.gpuSampleWindowMs, 'gpuSampleWindowMs')
+  assertNumberOrNull(row.deviceTempC, 'deviceTempC')
+  assertNumberOrNull(row.dayTempAvgC, 'dayTempAvgC')
+  assertNumberOrNull(row.dayTempMaxC, 'dayTempMaxC')
 
   assertNumberOrNull(row.tokensPerMin, 'tokensPerMin')
   assert.ok(row.openclawModel === null || typeof row.openclawModel === 'string', 'openclawModel must be string or null')
@@ -115,6 +118,7 @@ function validateRow(row) {
   assertNumberOrNull(row.fleet.resources.memUsedPct, 'fleet.resources.memUsedPct')
   assertNumberOrNull(row.fleet.resources.memPressurePct, 'fleet.resources.memPressurePct')
   assert.ok(['normal', 'warning', 'critical', 'unavailable'].includes(row.fleet.resources.memPressureClass), 'fleet.resources.memPressureClass invalid')
+  assertNumberOrNull(row.fleet.resources.tempC, 'fleet.resources.tempC')
   assert.equal(typeof row.fleet.usage, 'object', 'fleet.usage must exist')
   assert.ok(row.fleet.usage.model === null || typeof row.fleet.usage.model === 'string', 'fleet.usage.model invalid')
   assertNumberOrNull(row.fleet.usage.totalTokens, 'fleet.usage.totalTokens')

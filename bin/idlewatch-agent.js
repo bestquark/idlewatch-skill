@@ -249,12 +249,20 @@ function buildRollingLoadSummary(logPath, nowMs = Date.now(), windowMs = DAY_WIN
     return Number((valid.reduce((sum, value) => sum + value, 0) / valid.length).toFixed(2))
   }
 
+  const maximum = (values) => {
+    const valid = values.filter((value) => Number.isFinite(value))
+    if (valid.length === 0) return null
+    return Number(Math.max(...valid).toFixed(1))
+  }
+
   return {
     windowMs,
     sampleCount: rows.length,
     cpuAvgPct: average(rows.map((row) => Number(row.cpuPct))),
     memAvgPct: average(rows.map((row) => Number(row.memPct))),
     gpuAvgPct: average(rows.map((row) => Number(row.gpuPct))),
+    tempAvgC: average(rows.map((row) => Number(row.deviceTempC))),
+    tempMaxC: maximum(rows.map((row) => Number(row.deviceTempC))),
     tokensAvgPerMin: average(rows.map((row) => Number(row.tokensPerMin)))
   }
 }
@@ -1488,6 +1496,8 @@ async function collectSample() {
     dayCpuAvgPct: MONITOR_CPU ? (dayLoadSummary?.cpuAvgPct ?? null) : null,
     dayMemAvgPct: MONITOR_MEMORY ? (dayLoadSummary?.memAvgPct ?? null) : null,
     dayGpuAvgPct: MONITOR_GPU ? (dayLoadSummary?.gpuAvgPct ?? null) : null,
+    dayTempAvgC: MONITOR_TEMPERATURE ? (dayLoadSummary?.tempAvgC ?? null) : null,
+    dayTempMaxC: MONITOR_TEMPERATURE ? (dayLoadSummary?.tempMaxC ?? null) : null,
     dayTokensAvgPerMin: MONITOR_TOKEN_USAGE ? (dayLoadSummary?.tokensAvgPerMin ?? null) : null,
     gpuSource: gpu.source,
     gpuConfidence: gpu.confidence,
