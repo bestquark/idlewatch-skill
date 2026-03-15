@@ -1,13 +1,34 @@
 
-## QA cycle update — 2026-03-15 3:15 AM America/Toronto
+## QA cycle update — 2026-03-15 3:20 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — `npm run test:unit` hangs indefinitely on Node v25 due to parallel test concurrency**
+   - **Observed:** `node --test 'test/*.test.mjs'` (the default parallel runner) hangs after ~45s and never completes on Node v25.6.1. The `openclaw-env.test.mjs` file gets cancelled with `Promise resolution is still pending but the event loop has already resolved`. All individual test files pass when run alone or with `--test-concurrency=1`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. `node --test 'test/*.test.mjs'` → hangs, eventually reports 1 cancelled
+     3. `node --test --test-concurrency=1 'test/*.test.mjs'` → 114 pass, 0 fail, completes in ~15s
+   - **Root cause:** `openclaw-env.test.mjs` uses many `spawnSync` calls that spawn full `idlewatch-agent.js --dry-run` processes. Running in parallel with other test files likely exhausts child process resources or triggers a Node v25 test runner scheduling bug.
+   - **Why it matters:** CI and local `npm run test:unit` silently hang or produce flaky cancelled results, making test signal unreliable.
+   - **Acceptance criteria:**
+     - `test:unit` script uses `--test-concurrency=1` (or equivalent) so it completes deterministically on Node v25+.
+     - All 114 tests pass with 0 cancelled.
+
+### Smoke checks this cycle
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (114 pass, 0 fail, 0 cancelled, ~15s)
+- `node --test 'test/*.test.mjs'` ❌ (hangs, 1 cancelled after ~45s kill)
+- `node bin/idlewatch-agent.js --help` ✅ — clean, cloud-first, no legacy noise
+- Fresh-home `--dry-run` ✅ — compact output, no Firebase warnings
+- LaunchAgent install/uninstall scripts ✅ — docs and prereqs are current
+- README install/quickstart section ✅ — `npx idlewatch` is primary, `idlewatch-skill` noted as legacy
 
 ### Status
 
-- ✅ **No new issues found.** All prior polish items from this lane remain resolved.
-- ✅ `npm run test:unit --silent` — all pass, 0 fail.
-- ✅ Fresh-home local-only quickstart (`--no-tui`) — clean, calm, accurate output.
-- ✅ `--help` surface — well-organized with common/advanced split.
-- ✅ Pipeline healthy. No regressions.
+- ⚠️ One new P2 finding (test runner hang).
+- ✅ All prior polish items from this lane remain resolved.
+- ✅ Pipeline healthy otherwise. No regressions in setup/config/publish flows.
 
 ### Notes
 

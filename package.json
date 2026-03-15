@@ -25,7 +25,7 @@
     "quickstart": "node bin/idlewatch-agent.js quickstart",
     "validate:bin": "node scripts/validate-bin.mjs",
     "validate:onboarding": "node scripts/validate-onboarding.mjs",
-    "test:unit": "node --test 'test/*.test.mjs'",
+    "test:unit": "node --test --test-concurrency=1 'test/*.test.mjs'",
     "smoke:help": "node bin/idlewatch-agent.js --help",
     "smoke:dry-run": "node bin/idlewatch-agent.js --dry-run",
     "smoke:once": "IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once",
