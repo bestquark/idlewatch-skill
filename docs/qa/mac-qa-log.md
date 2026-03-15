@@ -1,4 +1,28 @@
 
+## QA cycle update — 2026-03-15 5:35 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P2 (polish plan ticket #2) — Added `idlewatch status` command for at-a-glance device config visibility**
+   - Shows device name, device ID, publish mode, enabled metrics, local log path/size, config file location, and last sample age.
+   - Works with or without saved config — unconfigured devices get a clear `Run idlewatch quickstart` nudge.
+   - Zero-risk additive feature: no existing behavior changed, all 115 tests still pass.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (115 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js status` ✅ — shows config summary with last sample age
+- `HOME=$(mktemp -d) node bin/idlewatch-agent.js status` ✅ — shows "(no saved config)" + quickstart hint
+- `node bin/idlewatch-agent.js --help` ✅ — status listed in usage line and options
+- Fresh-home local-only `quickstart --no-tui` ✅
+- Fresh-home rejected-key `quickstart --no-tui` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No regressions.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 5:21 AM America/Toronto
 
 ### Fixed this cycle
