@@ -10,6 +10,7 @@ import { createRequire } from 'module'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
 import { gpuSampleDarwin } from '../src/gpu.js'
 import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
+import { thermalSampleDarwin } from '../src/thermal.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 import { deriveUsageAlert } from '../src/usage-alert.js'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
@@ -105,18 +106,11 @@ function buildSetupTestEnv(enrolledEnv) {
 const persistedEnv = loadPersistedEnvIntoProcess()
 
 const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state']
-const QUOTA_TARGET_TO_FAMILY = {
-  quota_openai_api: 'openai-api',
-  quota_openai_codex: 'openai-codex',
-  quota_anthropic: 'anthropic',
-  quota_google: 'google',
-  quota_local: 'local'
-}
-const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS, ...Object.keys(QUOTA_TARGET_TO_FAMILY)]
+const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS]
 
 function parseMonitorTargets(raw) {
-  const allowed = new Set(['cpu', 'memory', 'gpu', 'openclaw', ...OPENCLAW_DERIVED_TARGETS])
-  const fallback = ['cpu', 'memory', 'gpu', ...OPENCLAW_DERIVED_TARGETS]
+  const allowed = new Set(['cpu', 'memory', 'gpu', 'temperature', 'openclaw', ...OPENCLAW_DERIVED_TARGETS])
+  const fallback = ['cpu', 'memory', 'gpu', 'temperature', ...OPENCLAW_DERIVED_TARGETS]
 
   if (!raw || typeof raw !== 'string') {
     return new Set(fallback)
@@ -504,15 +498,11 @@ const MONITOR_TARGETS = parseMonitorTargets(process.env.IDLEWATCH_MONITOR_TARGET
 const MONITOR_CPU = MONITOR_TARGETS.has('cpu')
 const MONITOR_MEMORY = MONITOR_TARGETS.has('memory')
 const MONITOR_GPU = MONITOR_TARGETS.has('gpu')
+const MONITOR_TEMPERATURE = MONITOR_TARGETS.has('temperature')
 const MONITOR_AGENT_ACTIVITY = MONITOR_TARGETS.has('agent_activity')
 const MONITOR_TOKEN_USAGE = MONITOR_TARGETS.has('token_usage')
 const MONITOR_RUNTIME_STATE = MONITOR_TARGETS.has('runtime_state')
-const MONITOR_QUOTA_FAMILIES = new Set(
-  [...MONITOR_TARGETS]
-    .map((target) => QUOTA_TARGET_TO_FAMILY[target] || null)
-    .filter(Boolean)
-)
-const MONITOR_OPENCLAW_USAGE = MONITOR_TOKEN_USAGE || MONITOR_RUNTIME_STATE || MONITOR_QUOTA_FAMILIES.size > 0
+const MONITOR_OPENCLAW_USAGE = MONITOR_TOKEN_USAGE || MONITOR_RUNTIME_STATE
 const EFFECTIVE_OPENCLAW_MODE = MONITOR_OPENCLAW_USAGE ? OPENCLAW_USAGE_MODE : 'off'
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
 const CLOUD_INGEST_URL = (process.env.IDLEWATCH_CLOUD_INGEST_URL || '').trim()
@@ -1409,6 +1399,9 @@ async function collectSample() {
     : { pct: null, cls: 'disabled', source: 'disabled' }
 
   const usedMemPct = MONITOR_MEMORY ? memUsedPct() : null
+  const thermals = MONITOR_TEMPERATURE && process.platform === 'darwin'
+    ? thermalSampleDarwin()
+    : { tempC: null, source: 'disabled', thermalLevel: null, thermalState: MONITOR_TEMPERATURE ? 'unavailable' : 'disabled' }
 
   const usageIntegrationStatus = usage
     ? usageFreshness.isStale
@@ -1417,9 +1410,6 @@ async function collectSample() {
         ? 'ok'
         : (usage?.integrationStatus ?? 'ok')
     : (openclawUsageEnabled ? 'unavailable' : 'disabled')
-
-  const quotaFamily = usage?.quotaFamily ?? null
-  const quotaSelected = quotaFamily ? MONITOR_QUOTA_FAMILIES.has(quotaFamily) : false
 
   const source = {
     monitorTargets: [...MONITOR_TARGETS],
@@ -1465,6 +1455,8 @@ async function collectSample() {
     usageStaleGraceMs: USAGE_STALE_GRACE_MS,
     activitySource: activitySummary?.source ?? (MONITOR_AGENT_ACTIVITY ? 'unavailable' : 'disabled'),
     activityWindowMs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.windowMs ?? null) : null,
+    thermalSource: thermals.source,
+    thermalState: thermals.thermalState,
     memPressureSource: memPressure.source,
     cloudIngestionStatus: CLOUD_INGEST_URL && CLOUD_API_KEY
       ? cloudIngestKickedOut ? 'kicked-out' : 'enabled'
@@ -1489,6 +1481,9 @@ async function collectSample() {
     memPressurePct: MONITOR_MEMORY ? memPressure.pct : null,
     memPressureClass: MONITOR_MEMORY ? memPressure.cls : 'disabled',
     gpuPct: MONITOR_GPU ? gpu.pct : null,
+    deviceTempC: MONITOR_TEMPERATURE ? thermals.tempC : null,
+    thermalLevel: MONITOR_TEMPERATURE ? thermals.thermalLevel : null,
+    thermalState: MONITOR_TEMPERATURE ? thermals.thermalState : 'disabled',
     dayWindowMs: dayLoadSummary?.windowMs ?? DAY_WINDOW_MS,
     dayCpuAvgPct: MONITOR_CPU ? (dayLoadSummary?.cpuAvgPct ?? null) : null,
     dayMemAvgPct: MONITOR_MEMORY ? (dayLoadSummary?.memAvgPct ?? null) : null,
@@ -1503,12 +1498,10 @@ async function collectSample() {
     openclawTotalTokens: MONITOR_TOKEN_USAGE ? (usage?.totalTokens ?? null) : null,
     openclawInputTokens: MONITOR_TOKEN_USAGE ? (usage?.inputTokens ?? null) : null,
     openclawOutputTokens: MONITOR_TOKEN_USAGE ? (usage?.outputTokens ?? null) : null,
-    openclawRemainingTokens: quotaSelected ? (usage?.remainingTokens ?? null) : null,
-    openclawPercentUsed: quotaSelected ? (usage?.percentUsed ?? null) : null,
-    openclawContextTokens: quotaSelected ? (usage?.contextTokens ?? null) : null,
-    openclawBudgetKind: quotaSelected ? (usage?.budgetKind ?? null) : null,
-    openclawQuotaFamily: quotaSelected ? quotaFamily : null,
-    openclawQuotaLabel: quotaSelected ? (usage?.quotaLabel ?? null) : null,
+    openclawRemainingTokens: openclawUsageEnabled ? (usage?.remainingTokens ?? null) : null,
+    openclawPercentUsed: openclawUsageEnabled ? (usage?.percentUsed ?? null) : null,
+    openclawContextTokens: openclawUsageEnabled ? (usage?.contextTokens ?? null) : null,
+    openclawBudgetKind: openclawUsageEnabled ? (usage?.budgetKind ?? null) : null,
     openclawSessionId: openclawUsageEnabled ? (usage?.sessionId ?? null) : null,
     openclawAgentId: openclawUsageEnabled ? (usage?.agentId ?? null) : null,
     openclawUsageTs: openclawUsageEnabled ? (usage?.usageTimestampMs ?? null) : null,

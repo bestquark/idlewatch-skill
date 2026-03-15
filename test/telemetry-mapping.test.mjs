@@ -21,6 +21,9 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
     memUsedPct: 63.2,
     memPressurePct: 42,
     memPressureClass: 'normal',
+    deviceTempC: 58.4,
+    thermalLevel: 0,
+    thermalState: 'nominal',
     tokensPerMin: 128.4,
     openclawModel: 'gpt-5.3-codex',
     openclawProvider: 'openai',
@@ -31,8 +34,6 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
     openclawPercentUsed: 26,
     openclawContextTokens: 272000,
     openclawBudgetKind: 'context-window',
-    openclawQuotaFamily: 'openai-codex',
-    openclawQuotaLabel: 'OpenAI Codex',
     openclawSessionId: '90d2a820-6d77-42f0-8db4-12b90f9f7203',
     openclawAgentId: 'main',
     openclawUsageTs: 1771278893678,
@@ -72,7 +73,8 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
   assert.equal(enriched.fleet.usage.percentUsed, legacy.openclawPercentUsed)
   assert.equal(enriched.fleet.usage.contextTokens, legacy.openclawContextTokens)
   assert.equal(enriched.fleet.usage.budgetKind, legacy.openclawBudgetKind)
-  assert.equal(enriched.fleet.usage.quotaFamily, legacy.openclawQuotaFamily)
+  assert.equal(enriched.fleet.resources.tempC, legacy.deviceTempC)
+  assert.equal(enriched.fleet.resources.thermalState, legacy.thermalState)
   assert.equal(enriched.fleet.provenance.collectorVersion, '0.1.0')
 })
 

@@ -140,7 +140,7 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
     let wants = |key: &str, fallback: bool| {
         let has_legacy_openclaw = existing.iter().any(|item| item == "openclaw");
         if has_existing {
-            existing.iter().any(|item| item == key) || (has_legacy_openclaw && key.starts_with("quota_")) || (has_legacy_openclaw && matches!(key, "agent_activity" | "token_usage" | "runtime_state"))
+            existing.iter().any(|item| item == key) || (has_legacy_openclaw && matches!(key, "agent_activity" | "token_usage" | "runtime_state"))
         } else {
             fallback
         }
@@ -172,6 +172,14 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
             selected: wants("gpu", gpu_available),
         },
         MonitorTarget {
+            key: "temperature",
+            group: "Compute",
+            label: "Temperature",
+            description: "cpu temp when available, thermal state otherwise",
+            available: cfg!(target_os = "macos"),
+            selected: wants("temperature", cfg!(target_os = "macos")),
+        },
+        MonitorTarget {
             key: "agent_activity",
             group: "OpenClaw Agents",
             label: "Idle / awake time",
@@ -194,46 +202,6 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
             description: "provider, model, session state",
             available: openclaw_available,
             selected: wants("runtime_state", openclaw_available),
-        },
-        MonitorTarget {
-            key: "quota_openai_api",
-            group: "Token Quota",
-            label: "OpenAI API",
-            description: "context budget for GPT/API runtimes",
-            available: openclaw_available,
-            selected: wants("quota_openai_api", openclaw_available),
-        },
-        MonitorTarget {
-            key: "quota_openai_codex",
-            group: "Token Quota",
-            label: "OpenAI Codex",
-            description: "context budget for Codex runtimes",
-            available: openclaw_available,
-            selected: wants("quota_openai_codex", openclaw_available),
-        },
-        MonitorTarget {
-            key: "quota_anthropic",
-            group: "Token Quota",
-            label: "Anthropic",
-            description: "context budget for Claude runtimes",
-            available: openclaw_available,
-            selected: wants("quota_anthropic", openclaw_available),
-        },
-        MonitorTarget {
-            key: "quota_google",
-            group: "Token Quota",
-            label: "Google",
-            description: "context budget for Gemini runtimes",
-            available: openclaw_available,
-            selected: wants("quota_google", openclaw_available),
-        },
-        MonitorTarget {
-            key: "quota_local",
-            group: "Token Quota",
-            label: "Local models",
-            description: "context budget for local runtimes",
-            available: openclaw_available,
-            selected: wants("quota_local", openclaw_available),
         },
     ]
 }
@@ -734,7 +702,7 @@ fn main() -> Result<()> {
 
     let monitor_openclaw_usage = monitor_targets_csv
         .split(',')
-        .any(|item| matches!(item, "token_usage" | "runtime_state" | "quota_openai_api" | "quota_openai_codex" | "quota_anthropic" | "quota_google" | "quota_local"));
+        .any(|item| matches!(item, "token_usage" | "runtime_state"));
     let device_name = normalize_device_name(&device_name_input, &host);
     let safe_device_id = {
         let candidate = sanitize_device_id(

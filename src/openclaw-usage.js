@@ -91,38 +91,6 @@ function inferProviderFromModel(model) {
   return 'other'
 }
 
-function inferQuotaFamily(provider, model) {
-  const normalizedProvider = normalizeProviderName(provider)
-  const normalizedModel = pickString(model)?.toLowerCase() || ''
-
-  if (normalizedProvider === 'openai') {
-    return normalizedModel.includes('codex') ? 'openai-codex' : 'openai-api'
-  }
-  if (normalizedProvider === 'anthropic') return 'anthropic'
-  if (normalizedProvider === 'google') return 'google'
-  if (normalizedProvider === 'local') return 'local'
-  return 'other'
-}
-
-function quotaLabelFromFamily(family) {
-  switch (family) {
-    case 'openai-api':
-      return 'OpenAI API'
-    case 'openai-codex':
-      return 'OpenAI Codex'
-    case 'anthropic':
-      return 'Anthropic'
-    case 'google':
-      return 'Google'
-    case 'local':
-      return 'Local models'
-    case 'other':
-      return 'Other runtime'
-    default:
-      return null
-  }
-}
-
 function deriveRemainingTokens(totalTokens, contextTokens) {
   if (!Number.isFinite(totalTokens) || !Number.isFinite(contextTokens)) return null
   if (contextTokens < totalTokens) return null
@@ -863,8 +831,6 @@ function parseFromStatusJson(parsed) {
       parsed?.status?.provider_name
     )
   ) ?? inferProviderFromModel(model)
-  const quotaFamily = inferQuotaFamily(provider, model)
-
   return {
     model,
     provider,
@@ -875,8 +841,6 @@ function parseFromStatusJson(parsed) {
     remainingTokens,
     percentUsed,
     contextTokens,
-    quotaFamily,
-    quotaLabel: quotaLabelFromFamily(quotaFamily),
     sessionId: pickString(session.sessionId, session.id, session?.usage?.sessionId, session?.usage?.id, session?.session_id),
     agentId: pickString(session.agentId, session?.usage?.agentId, session?.agent_id),
     usageTimestampMs,
@@ -1097,8 +1061,6 @@ function parseGenericUsage(parsed) {
       parsed?.status?.provider_name
     )
   ) ?? inferProviderFromModel(model)
-  const quotaFamily = inferQuotaFamily(provider, model)
-
   return {
     model,
     provider,
@@ -1109,8 +1071,6 @@ function parseGenericUsage(parsed) {
     remainingTokens,
     percentUsed,
     contextTokens,
-    quotaFamily,
-    quotaLabel: quotaLabelFromFamily(quotaFamily),
     sessionId: pickString(
       parsed?.sessionId,
       parsed?.session_id,

@@ -22,7 +22,10 @@ export function enrichWithOpenClawFleetTelemetry(sample, context = {}) {
         cpuPct: sample.cpuPct ?? null,
         memUsedPct: sample.memUsedPct ?? sample.memPct ?? null,
         memPressurePct: sample.memPressurePct ?? null,
-        memPressureClass: sample.memPressureClass ?? 'unavailable'
+        memPressureClass: sample.memPressureClass ?? 'unavailable',
+        tempC: sample.deviceTempC ?? null,
+        thermalLevel: sample.thermalLevel ?? null,
+        thermalState: sample.thermalState ?? 'unavailable'
       },
       usage: {
         model: sample.openclawModel ?? null,
@@ -34,8 +37,6 @@ export function enrichWithOpenClawFleetTelemetry(sample, context = {}) {
         percentUsed: sample.openclawPercentUsed ?? null,
         contextTokens: sample.openclawContextTokens ?? null,
         budgetKind: sample.openclawBudgetKind ?? null,
-        quotaFamily: sample.openclawQuotaFamily ?? null,
-        quotaLabel: sample.openclawQuotaLabel ?? null,
         tokensPerMin: sample.tokensPerMin ?? null,
         sessionId: sample.openclawSessionId ?? null,
         agentId: sample.openclawAgentId ?? null,

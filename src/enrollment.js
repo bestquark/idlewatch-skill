@@ -43,9 +43,8 @@ function writeSecureFile(filePath, content) {
 }
 
 const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state']
-const QUOTA_TARGETS = ['quota_openai_api', 'quota_openai_codex', 'quota_anthropic', 'quota_google', 'quota_local']
-const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS, ...QUOTA_TARGETS]
-const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'openclaw', ...OPENCLAW_DERIVED_TARGETS]
+const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS]
+const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'temperature', 'openclaw', ...OPENCLAW_DERIVED_TARGETS]
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = path.resolve(MODULE_DIR, '..')
 
@@ -60,6 +59,9 @@ function detectAvailableMonitorTargets() {
   if (process.platform === 'darwin' || commandExists('nvidia-smi', ['--help'])) {
     available.add('gpu')
   }
+  if (process.platform === 'darwin') {
+    available.add('temperature')
+  }
 
   if (commandExists('openclaw', ['--help'])) {
     OPENCLAW_DERIVED_TARGETS.forEach((target) => available.add(target))
@@ -69,7 +71,7 @@ function detectAvailableMonitorTargets() {
 }
 
 function normalizeMonitorTargets(raw, available) {
-  const fallback = ['cpu', 'memory', ...(available.includes('gpu') ? ['gpu'] : []), ...OPENCLAW_DERIVED_TARGETS.filter((target) => available.includes(target))]
+  const fallback = ['cpu', 'memory', ...(available.includes('gpu') ? ['gpu'] : []), ...(available.includes('temperature') ? ['temperature'] : []), ...OPENCLAW_DERIVED_TARGETS.filter((target) => available.includes(target))]
   if (!raw) return fallback
 
   const parsed = raw
@@ -232,8 +234,7 @@ function promptModeText({ isReconfigure = false, currentMode = null } = {}) {
 }
 
 function monitorTargetsNeedOpenClawUsage(monitorTargets) {
-  return monitorTargets.some((item) => OPENCLAW_AGENT_TARGETS.includes(item) && item !== 'agent_activity') ||
-    monitorTargets.some((item) => QUOTA_TARGETS.includes(item))
+  return monitorTargets.some((item) => OPENCLAW_AGENT_TARGETS.includes(item) && item !== 'agent_activity')
 }
 
 export async function runEnrollmentWizard(options = {}) {
