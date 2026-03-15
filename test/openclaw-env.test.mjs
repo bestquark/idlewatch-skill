@@ -742,6 +742,48 @@ test('status command hides cloud link info in local-only mode', () => {
     assert.ok(!run.stdout.includes('Cloud link:'), 'should not show cloud link in local-only')
     assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
     assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
+    assert.ok(run.stdout.includes('idlewatch quickstart'), 'should hint at quickstart when no config')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command shows contextual next-step hints', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-hints-'))
+  try {
+    // With config but no samples: should hint at --once / run
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Hint Box',
+      'IDLEWATCH_DEVICE_ID=hint-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    const noSamples = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(noSamples.status, 0, noSamples.stderr)
+    assert.ok(noSamples.stdout.includes('(none yet)'), 'should show no samples yet')
+    assert.ok(noSamples.stdout.includes('idlewatch --once'), 'should hint at --once for test sample')
+    assert.ok(noSamples.stdout.includes('idlewatch run'), 'should hint at run for continuous monitoring')
+
+    // With config and samples: should hint at configure
+    const logDir = path.join(configDir, 'logs')
+    fs.mkdirSync(logDir, { recursive: true })
+    fs.writeFileSync(path.join(logDir, 'hint-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const withSamples = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(withSamples.status, 0, withSamples.stderr)
+    assert.ok(withSamples.stdout.includes('idlewatch configure'), 'should hint at configure when samples exist')
+    assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

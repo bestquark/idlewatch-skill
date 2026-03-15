@@ -703,23 +703,33 @@ if (statusRequested) {
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)
 
+  let hasSamples = false
   if (LOCAL_LOG_PATH && fs.existsSync(LOCAL_LOG_PATH)) {
     try {
       const stat = fs.statSync(LOCAL_LOG_PATH)
       console.log(`  Log size:     ${formatBytes(stat.size)}`)
       const rows = parseLocalRows(LOCAL_LOG_PATH, 1)
       if (rows.length > 0 && rows[0].ts) {
+        hasSamples = true
         const ageMs = Date.now() - Number(rows[0].ts)
         const ageSec = Math.round(ageMs / 1000)
         const agoText = ageSec < 60 ? `${ageSec}s ago` : ageSec < 3600 ? `${Math.round(ageSec / 60)}m ago` : `${Math.round(ageSec / 3600)}h ago`
         console.log(`  Last sample:  ${agoText}`)
+      } else {
+        console.log('  Last sample:  (none yet)')
       }
     } catch { /* ignore stat errors */ }
+  } else if (hasConfig) {
+    console.log('  Last sample:  (none yet)')
   }
 
+  console.log('')
   if (!hasConfig) {
-    console.log('')
     console.log('  Run idlewatch quickstart to set up this device.')
+  } else if (!hasSamples) {
+    console.log('  Run idlewatch --once to collect a test sample, or idlewatch run for continuous monitoring.')
+  } else {
+    console.log('  Run idlewatch configure to change device name, metrics, or API key.')
   }
   process.exit(0)
 }
