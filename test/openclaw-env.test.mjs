@@ -292,6 +292,70 @@ test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
 })
 
 
+test('quickstart local mode does not leak stale cloud env into required once test', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-local-quickstart-home-'))
+  const idlewatchDir = path.join(tempHome, '.idlewatch')
+  fs.mkdirSync(idlewatchDir, { recursive: true })
+  fs.writeFileSync(path.join(idlewatchDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Old Cloud Box',
+    'IDLEWATCH_DEVICE_ID=old-cloud-box',
+    'IDLEWATCH_CLOUD_API_KEY=iwk_invalidexample1234567890',
+    'IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest',
+    'IDLEWATCH_REQUIRE_CLOUD_WRITES=1',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    'IDLEWATCH_OPENCLAW_USAGE=off'
+  ].join('\n'))
+
+  const run = spawnSync(process.execPath, [BIN, 'quickstart'], {
+    env: {
+      ...process.env,
+      HOME: tempHome,
+      IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+      IDLEWATCH_ENROLL_MODE: 'local'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /✅ Setup complete\. Mode=local/)
+  assert.doesNotMatch(run.stdout + run.stderr, /publish=cloud/)
+  assert.doesNotMatch(run.stdout + run.stderr, /Cloud ingest disabled:/)
+
+  const savedEnv = fs.readFileSync(path.join(idlewatchDir, 'idlewatch.env'), 'utf8')
+  assert.doesNotMatch(savedEnv, /IDLEWATCH_CLOUD_API_KEY=/)
+  assert.doesNotMatch(savedEnv, /IDLEWATCH_CLOUD_INGEST_URL=/)
+})
+
+test('quickstart honors IDLEWATCH_ENROLL_DEVICE_NAME in non-interactive mode', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-enroll-device-name-home-'))
+  const idlewatchDir = path.join(tempHome, '.idlewatch')
+  fs.mkdirSync(idlewatchDir, { recursive: true })
+  fs.writeFileSync(path.join(idlewatchDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Old Cloud Box',
+    'IDLEWATCH_DEVICE_ID=old-cloud-box',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    'IDLEWATCH_OPENCLAW_USAGE=off'
+  ].join('\n'))
+
+  const run = spawnSync(process.execPath, [BIN, 'quickstart'], {
+    env: {
+      ...process.env,
+      HOME: tempHome,
+      IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+      IDLEWATCH_ENROLL_MODE: 'local',
+      IDLEWATCH_ENROLL_DEVICE_NAME: 'Now Local Box'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /device=Now Local Box/)
+
+  const savedEnv = fs.readFileSync(path.join(idlewatchDir, 'idlewatch.env'), 'utf8')
+  assert.match(savedEnv, /IDLEWATCH_DEVICE_NAME=Now Local Box/)
+  assert.match(savedEnv, /IDLEWATCH_DEVICE_ID=now-local-box/)
+})
+
 test('accepts OpenClaw JSON from stderr payload on non-zero-exit command', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-stderr-'))
   const mockBin = path.join(tempDir, 'openclaw-mock.sh')

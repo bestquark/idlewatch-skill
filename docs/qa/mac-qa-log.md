@@ -1,3 +1,19 @@
+## QA cycle update — 2026-03-15 1:58 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Local-only reconfigure no longer leaks stale cloud/Firebase publish config into the required post-setup `--once` check:** `bin/idlewatch-agent.js` now builds that verification run from the freshly written env contract instead of inheriting all prior `IDLEWATCH_*` / `FIREBASE_*` state from the parent process. Switching a previously linked box to local-only now stays boring: no surprise cloud publish attempt, no kicked-out copy, clean success when local collection is healthy.
+- [x] **Non-interactive setup now honors enrollment-scoped overrides consistently:** `src/enrollment.js` now reads `IDLEWATCH_ENROLL_DEVICE_NAME`, `IDLEWATCH_ENROLL_MONITOR_TARGETS`, and `IDLEWATCH_ENROLL_DEVICE_ID` in the quickstart/configure path, so scripted setup can actually control the saved identity and metrics contract without being overridden by previously persisted runtime env.
+- [x] **Device ID derivation now follows the requested new device name unless an explicit enrollment device ID is supplied:** reconfigure flows no longer keep a stale persisted `IDLEWATCH_DEVICE_ID` just because it happened to be loaded earlier.
+- [x] **Coverage/validation added for the exact repros from this polish pass:** `test/openclaw-env.test.mjs` now covers the local-only stale-cloud leak and `IDLEWATCH_ENROLL_DEVICE_NAME` override path; `scripts/validate-onboarding.mjs` was updated to use the enrollment-scoped env names that the product now supports.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**110 pass, 0 fail**), `npm run validate:onboarding --silent` ✅, manual local-only reconfigure repro ✅, manual `IDLEWATCH_ENROLL_DEVICE_NAME='Now Local Box'` repro ✅.
+
+### Notes
+
+- Scope stayed deliberately tiny: setup/reconfigure contract polish only.
+- Telemetry path preserved: no ingest/auth redesign, no packaging rewrite, no cloud/Firebase behavior expansion.
+- The remaining LaunchAgent custom-config-path mismatch below is still open and can be handled as a separate tiny follow-up if we want one more low-risk packaging/startup cleanup pass.
+
 ## QA cycle update — 2026-03-15 1:43 AM America/Toronto
 
 ### Prioritized findings

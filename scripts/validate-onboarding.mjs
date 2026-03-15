@@ -68,9 +68,9 @@ try {
     IDLEWATCH_CLOUD_INGEST_URL: cloudIngestUrl,
     IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: envOut,
     IDLEWATCH_ENROLL_CONFIG_DIR: configDir,
-    IDLEWATCH_DEVICE_NAME: 'Validator Box',
+    IDLEWATCH_ENROLL_DEVICE_NAME: 'Validator Box',
     IDLEWATCH_DEVICE_ID: 'validator-box',
-    IDLEWATCH_MONITOR_TARGETS: 'cpu,memory',
+    IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
     IDLEWATCH_OPENCLAW_USAGE: 'off'
   })
 

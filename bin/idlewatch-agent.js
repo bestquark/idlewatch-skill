@@ -71,6 +71,26 @@ function loadPersistedEnvIntoProcess() {
   }
 }
 
+function buildSetupTestEnv(enrolledEnv) {
+  const nextEnv = { ...process.env }
+
+  for (const key of Object.keys(nextEnv)) {
+    if (
+      key.startsWith('IDLEWATCH_') ||
+      key.startsWith('FIREBASE_') ||
+      key === 'GOOGLE_APPLICATION_CREDENTIALS'
+    ) {
+      delete nextEnv[key]
+    }
+  }
+
+  for (const [key, value] of Object.entries(enrolledEnv || {})) {
+    nextEnv[key] = key.endsWith('_PATH') ? expandSupportedPathVars(value) : value
+  }
+
+  return nextEnv
+}
+
 const persistedEnv = loadPersistedEnvIntoProcess()
 
 function parseMonitorTargets(raw) {
@@ -381,10 +401,7 @@ if (quickstartRequested) {
     const enrolledEnv = parseEnvFileToObject(result.outputEnvFile)
     const onceRun = spawnSync(process.execPath, [process.argv[1], '--once'], {
       stdio: 'inherit',
-      env: {
-        ...process.env,
-        ...enrolledEnv
-      }
+      env: buildSetupTestEnv(enrolledEnv)
     })
 
     if (onceRun.status === 0) {
