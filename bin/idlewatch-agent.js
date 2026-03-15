@@ -682,7 +682,7 @@ function getPublishModeLabel() {
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    'No publish target is configured yet. Running in local-only mode. Run idlewatch quickstart to link cloud ingest, or configure Firebase/emulator mode if you need that path.'
+    'Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest, or configure Firebase/emulator mode if you need that path.'
   )
 }
 
@@ -1423,9 +1423,11 @@ async function tick() {
 
   if (cloudIngestKickedOut && !cloudIngestKickoutNotified) {
     cloudIngestKickoutNotified = true
-    console.error(
-      `Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart to link a new key.`
-    )
+    if (!(REQUIRE_CLOUD_WRITES && ONCE)) {
+      console.error(
+        `Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart to link a new key.`
+      )
+    }
   }
 
   if (REQUIRE_FIREBASE_WRITES && ONCE && !published) {

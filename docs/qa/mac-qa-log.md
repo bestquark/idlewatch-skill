@@ -1,4 +1,18 @@
 
+## QA cycle update — 2026-03-15 3:24 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Local-only quickstart now opens in supported-mode language instead of a warning-shaped complaint:** the required post-setup `--once` run now says `Local-only mode: this run will stay on this Mac until you link a publish target...` instead of `No publish target is configured yet...`, so intentional local mode stops sounding broken.
+- [x] **Rejected first-publish path now explains API-key rejection once:** the `REQUIRE_CLOUD_WRITES` quickstart failure still surfaces the final disconnected-device guidance, but no longer prints the extra earlier `Cloud ingest disabled: API key rejected...` line right before it.
+- [x] **Regression coverage added for both polish fixes:** `test/openclaw-env.test.mjs` now asserts the calmer local-only wording and locks out the duplicate rejection line in the default-path quickstart failure flow.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**112 pass, 0 fail**).
+
+### Notes
+
+- Scope stayed intentionally tiny and low-risk: wording/flow polish only.
+- Telemetry path preserved: successful cloud publish, saved-config reuse, and required first-publish behavior were left intact.
+
 ## QA cycle update — 2026-03-15 3:08 AM America/Toronto
 
 ### Prioritized findings

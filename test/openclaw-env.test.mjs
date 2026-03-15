@@ -404,6 +404,8 @@ test('quickstart failure keeps idlewatch --once as the primary retry only for th
     })
 
     assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Cloud API key was rejected \(invalid_api_key\)\. This device was disconnected\. Run idlewatch quickstart with a new API key\./)
+    assert.doesNotMatch(run.stderr, /Cloud ingest disabled: API key rejected \(invalid_api_key\)\./)
     assert.match(run.stderr, /Retry with: idlewatch --once/)
     assert.match(run.stderr, /Or rerun: idlewatch quickstart/)
     assert.match(run.stderr, /Advanced\/manual fallback: set -a; source ".*idlewatch\.env"; set \+a && idlewatch --once/)
