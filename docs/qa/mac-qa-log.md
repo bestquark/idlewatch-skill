@@ -4159,3 +4159,21 @@
 - ✅ Pipeline healthy. No breakage, no regressions.
 - ✅ All prior P1/P2 findings from this lane have been resolved.
 - ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing for those optional validation gates.
+
+## QA cycle update — 2026-03-15 6:21 AM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (all pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, no legacy references
+- Fresh-home `--dry-run` ✅ — compact banner, no Firebase warning noise, correct local-only output
+- No `idlewatch setup` references in CLI source ✅
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2 findings from this lane remain resolved.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- Working tree clean (only tui/target build artifacts modified, no source changes).
+- No new findings; nothing to commit beyond this log entry.
