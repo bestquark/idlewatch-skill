@@ -18,7 +18,7 @@ import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch-agent\n\nUsage:\n  idlewatch-agent [quickstart|dashboard] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run enrollment wizard and generate secure env config\n  dashboard   Launch local dashboard from local IdleWatch logs\n  --dry-run   Collect and print one telemetry sample, then exit without Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n  IDLEWATCH_CLOUD_INGEST_URL         Optional cloud ingest endpoint (e.g. https://idlewatch.com/api/ingest)\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from dashboard for device linking\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n`)
+  console.log(`idlewatch\n\nUsage:\n  idlewatch [quickstart|configure|dashboard|run] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run setup TUI and save local IdleWatch config\n  configure   Alias for quickstart; reopen setup to change device name, API key, or metrics\n  dashboard   Launch local dashboard from local IdleWatch logs\n  run         Start the background collector using saved local config\n  --dry-run   Collect and print one telemetry sample, then exit without cloud/Firebase writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nEnvironment:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n  IDLEWATCH_CLOUD_INGEST_URL         Optional cloud ingest endpoint (e.g. https://idlewatch.com/api/ingest)\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from dashboard for device linking\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n`)
 }
 
 const require = createRequire(import.meta.url)
@@ -38,6 +38,22 @@ function parseEnvFileToObject(envFilePath) {
   return env
 }
 
+function expandSupportedPathVars(value) {
+  if (typeof value !== 'string' || !value) return value
+
+  const home = process.env.HOME || os.homedir()
+  const tmpdir = process.env.TMPDIR || os.tmpdir()
+
+  return value
+    .replace(/^~(?=$|\/)/, home)
+    .replace(/\$\{HOME\}|\$HOME/g, home)
+    .replace(/\$\{TMPDIR\}|\$TMPDIR/g, tmpdir)
+}
+
+function resolveEnvPath(value) {
+  return path.resolve(expandSupportedPathVars(value))
+}
+
 function loadPersistedEnvIntoProcess() {
   const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
   if (!fs.existsSync(envFile)) return null
@@ -45,7 +61,8 @@ function loadPersistedEnvIntoProcess() {
   try {
     const parsed = parseEnvFileToObject(envFile)
     for (const [key, value] of Object.entries(parsed)) {
-      if (!process.env[key]) process.env[key] = value
+      if (process.env[key]) continue
+      process.env[key] = key.endsWith('_PATH') ? expandSupportedPathVars(value) : value
     }
     return { envFile, parsed }
   } catch (error) {
@@ -88,7 +105,7 @@ function formatBytes(bytes) {
 
 function resolveDashboardLogPath(host) {
   if (process.env.IDLEWATCH_LOCAL_LOG_PATH) {
-    return path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
+    return resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
   }
 
   const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
@@ -96,7 +113,7 @@ function resolveDashboardLogPath(host) {
     try {
       const parsed = parseEnvFileToObject(envFile)
       if (parsed.IDLEWATCH_LOCAL_LOG_PATH) {
-        return path.resolve(parsed.IDLEWATCH_LOCAL_LOG_PATH)
+        return resolveEnvPath(parsed.IDLEWATCH_LOCAL_LOG_PATH)
       }
     } catch {
       // ignore malformed env file and fallback
@@ -356,7 +373,6 @@ if (dashboardRequested) {
 if (quickstartRequested) {
   try {
     const result = await runEnrollmentWizard()
-    console.log(`Enrollment complete. Mode=${result.mode} envFile=${result.outputEnvFile}`)
 
     const enrolledEnv = parseEnvFileToObject(result.outputEnvFile)
     const onceRun = spawnSync(process.execPath, [process.argv[1], '--once'], {
@@ -368,12 +384,15 @@ if (quickstartRequested) {
     })
 
     if (onceRun.status === 0) {
-      console.log('✅ Initial telemetry sample sent successfully.')
+      console.log(`✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
+      console.log('Initial telemetry sample sent successfully.')
       process.exit(0)
     }
 
-    console.log('⚠️ Initial --once sample did not complete successfully.')
-    console.log(`You can retry with: set -a; source "${result.outputEnvFile}"; set +a && idlewatch-agent --once`)
+    console.error(`⚠️ Setup is not finished yet. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
+    console.error('The first required telemetry sample did not publish successfully, so this device may not be linked yet.')
+    console.error(`Retry with: idlewatch --once`)
+    console.error('Or rerun: idlewatch quickstart')
     process.exit(onceRun.status ?? 1)
   } catch (err) {
     console.error(`Enrollment failed: ${err.message}`)
@@ -425,7 +444,7 @@ const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
 const BASE_DIR = path.join(os.homedir(), '.idlewatch')
 
 const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
-  ? path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
+  ? resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
   : path.join(BASE_DIR, 'logs', `${SAFE_HOST}-metrics.ndjson`)
 
 if (!Number.isFinite(INTERVAL_MS) || INTERVAL_MS <= 0) {
@@ -548,7 +567,7 @@ if (process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS && (!Number.isFinite(OPE
 }
 
 const OPENCLAW_LAST_GOOD_CACHE_PATH = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH
-  ? path.resolve(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH)
+  ? resolveEnvPath(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH)
   : path.join(BASE_DIR, 'cache', `${SAFE_HOST}-openclaw-last-good.json`)
 
 let appReady = false
@@ -1390,10 +1409,10 @@ async function gracefulShutdown(signal) {
   if (stopped) return
   stopped = true
   if (inflightTick) {
-    console.log(`idlewatch-agent received ${signal}, waiting for in-flight sample…`)
+    console.log(`idlewatch received ${signal}, waiting for in-flight sample…`)
     try { await inflightTick } catch { /* already logged */ }
   }
-  console.log('idlewatch-agent stopped')
+  console.log('idlewatch stopped')
   process.exit(0)
 }
 
@@ -1403,7 +1422,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 if (DRY_RUN || ONCE) {
   const mode = DRY_RUN ? 'dry-run' : 'once'
   console.log(
-    `idlewatch-agent ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
+    `idlewatch ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
   )
   tick()
     .then(() => process.exit(0))
@@ -1413,7 +1432,7 @@ if (DRY_RUN || ONCE) {
     })
 } else {
   console.log(
-    `idlewatch-agent started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
+    `idlewatch started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
   )
   loop()
 }

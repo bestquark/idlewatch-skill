@@ -3,6 +3,17 @@
   "version": "0.1.2",
   "description": "Host telemetry collector for IdleWatch",
   "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "skill",
+    "tui/src",
+    "tui/Cargo.toml",
+    "tui/Cargo.lock",
+    "README.md",
+    ".env.example"
+  ],
   "bin": {
     "idlewatch": "bin/idlewatch-agent.js",
     "idlewatch-agent": "bin/idlewatch-agent.js",

@@ -1,20 +1,20 @@
-# idlewatch-skill
+# idlewatch
 
 Telemetry collector for IdleWatch.
 
 ## Install / Run
 
 ```bash
-npm install
-npm start
+npm install -g idlewatch
+idlewatch --help
 ```
 
-With npx (after publish):
+Or run it directly with npx:
 
 ```bash
-npx idlewatch-skill --help
-npx idlewatch-skill quickstart
-npx idlewatch-skill --dry-run
+npx idlewatch --help
+npx idlewatch quickstart
+npx idlewatch --dry-run
 ```
 
 `quickstart` runs a first-run setup wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key under `~/.idlewatch/`. On hosts with Rust/Cargo available, quickstart launches a ratatui-powered onboarding flow first; otherwise it falls back to the text wizard.
@@ -54,7 +54,7 @@ Use `gpuSource` + `gpuConfidence` in dashboards to decide whether to trust value
 ### Recommended: guided enrollment (external users)
 
 ```bash
-npx idlewatch-skill quickstart
+npx idlewatch quickstart
 ```
 
 The wizard supports:
@@ -62,12 +62,13 @@ The wizard supports:
 - **Emulator mode**: writes `FIREBASE_PROJECT_ID` + `FIRESTORE_EMULATOR_HOST` only.
 - **Local-only mode**: writes no Firebase credentials.
 
-Then load generated env and run:
+Then run a one-shot publish check:
 
 ```bash
-set -a; source "$HOME/.idlewatch/idlewatch.env"; set +a
-idlewatch-agent --once
+idlewatch --once
 ```
+
+The saved config is auto-loaded from `~/.idlewatch/idlewatch.env`, so you should not need to manually source the env file in normal use.
 
 ### Manual wiring
 
