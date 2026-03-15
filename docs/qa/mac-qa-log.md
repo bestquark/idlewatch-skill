@@ -4461,3 +4461,20 @@
 - ✅ Test count grew from 118 → 120 (new coverage, no removals).
 - ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
 - No new findings; nothing to commit beyond this log entry.
+
+## QA cycle update — 2026-03-15 3:25 PM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (120 pass, 0 fail)
+- Pipeline healthy. No breakage, no regressions.
+- Uncommitted feature changes in `bin/idlewatch-agent.js` (rolling load summary + activity summary from another lane) — left untouched by this implementer cycle.
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ Test count stable at 120.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new actionable polish items found in this cycle. Setup/reconfigure flows, validation messages, saved config handling, startup/install quality of life, and status command are all in good shape.
+- Nothing to commit beyond this log entry.
