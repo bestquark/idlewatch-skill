@@ -1,3 +1,80 @@
+## QA cycle update — 2026-03-15 12:33 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — `validate:onboarding` is now a hard false-negative against the cloud quickstart flow**
+   - **Observed:** `npm run validate:onboarding --silent` fails because the validator still expects legacy Firebase env output (`FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_FILE`) even though `quickstart` now writes cloud-link config (`IDLEWATCH_CLOUD_INGEST_URL`, `IDLEWATCH_CLOUD_API_KEY`, device identity, monitor targets, local paths).
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. `npm run validate:onboarding --silent`
+     3. Observe failure: `Error: env file missing FIREBASE_PROJECT_ID`
+   - **Why it matters:** QA/CI reports onboarding as broken even when the actual supported quickstart path is behaving as designed.
+   - **Acceptance criteria:**
+     - `scripts/validate-onboarding.mjs` validates the current cloud quickstart contract instead of the retired Firebase-first contract.
+     - Validation asserts the generated env file includes current required fields for the selected mode.
+     - `npm run validate:onboarding --silent` passes on the default supported flow.
+
+2. **P1 — quickstart success messaging is misleading when the required first publish/link test fails**
+   - **Observed:** `quickstart` prints `Enrollment complete. Mode=production ...` before running the initial `--once` test publish. When the API key is invalid/rejected, the command later reports the write failure, but the early success banner makes the flow look complete even though the device never linked successfully.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=production \
+        IDLEWATCH_CLOUD_API_KEY=iwk_abcdefghijklmnopqrstuvwxyz123456 \
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE="$tmp/idlewatch.env" \
+        IDLEWATCH_ENROLL_CONFIG_DIR="$tmp/config" \
+        node bin/idlewatch-agent.js quickstart
+        ```
+     3. Observe output order:
+        - `Enrollment complete. Mode=production ...`
+        - `Cloud ingest disabled: API key rejected (invalid_api_key)...`
+        - `⚠️ Initial --once sample did not complete successfully.`
+   - **Why it matters:** first-run setup looks successful even when the required link/publish check fails.
+   - **Acceptance criteria:**
+     - Production quickstart should not emit a final success/completion banner until the first required publish/link test succeeds.
+     - Failure copy should clearly say setup is incomplete / device not linked yet.
+     - Retry guidance should remain visible and point at the generated env file or rerun quickstart.
+
+3. **P2 — persisted env reload does not expand shell-style path variables in saved config**
+   - **Observed:** the persisted env loader reads `~/.idlewatch/idlewatch.env` as raw `KEY=value` strings and injects them into `process.env` without expanding `$HOME`, `$TMPDIR`, or similar shell variables. As a result, path settings such as `IDLEWATCH_LOCAL_LOG_PATH=$TMPDIR/qa-box.ndjson` are treated literally and logs are written to a path containing the literal string `$TMPDIR`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/home/.idlewatch"
+        cat > "$tmp/home/.idlewatch/idlewatch.env" <<'EOF'
+        IDLEWATCH_DEVICE_NAME=QA Box
+        IDLEWATCH_DEVICE_ID=qa-box
+        IDLEWATCH_MONITOR_TARGETS=cpu,memory
+        IDLEWATCH_OPENCLAW_USAGE=off
+        IDLEWATCH_LOCAL_LOG_PATH=$TMPDIR/qa-box.ndjson
+        IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH=$TMPDIR/qa-box-cache.json
+        EOF
+        HOME="$tmp/home" node bin/idlewatch-agent.js --dry-run
+        ```
+     3. Observe `localLog=/Users/luismantilla/.openclaw/workspace/idlewatch-skill/$TMPDIR/qa-box.ndjson` in startup/output instead of an expanded temp path.
+   - **Why it matters:** reloaded config is not shell-equivalent to `source ~/.idlewatch/idlewatch.env`, which is exactly the persistence/reload polish area this lane is supposed to protect.
+   - **Acceptance criteria:**
+     - Either persisted env loading expands a small safe set of path variables (`$HOME`, `$TMPDIR`, `${HOME}`, `${TMPDIR}`), or docs/wizard output explicitly constrain saved paths to absolute resolved values only.
+     - A persisted env file containing shell-style path vars should not produce literal `$TMPDIR`/`$HOME` directories at runtime.
+
+### Commands run this cycle
+
+- `npm run test:unit --silent` ✅ (`105 pass, 0 fail`)
+- `npm run validate:onboarding --silent` ❌ (`env file missing FIREBASE_PROJECT_ID`)
+- `node bin/idlewatch-agent.js quickstart` with non-interactive cloud env + invalid API key (repro above) ❌/expected failure path reviewed for messaging
+- `HOME="$tmp/home" node bin/idlewatch-agent.js --dry-run` with persisted env file containing `$TMPDIR` path vars ✅ repro for literal-path persistence issue
+- `bash scripts/install-macos-launch-agent.sh` / `bash scripts/uninstall-macos-launch-agent.sh` with temp plist/log roots ✅ basic install/uninstall behavior still healthy in the local smoke path
+
+### Notes
+
+- LaunchAgent install/uninstall scripts still create/remove the plist cleanly in a temp-root smoke run.
+- No redesign/auth/packaging recommendations from this cycle — these are all small contract/messaging/persistence fixes.
+
 ## QA cycle update — 2026-02-28 10:45 AM America/Toronto
 
 ### Completed this cycle
