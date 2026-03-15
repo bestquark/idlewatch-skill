@@ -5,6 +5,7 @@ import http from 'node:http'
 import os from 'os'
 import path from 'path'
 import process from 'process'
+import readline from 'node:readline/promises'
 import { spawnSync } from 'node:child_process'
 import { createRequire } from 'module'
 import { parseOpenClawUsage } from '../src/openclaw-usage.js'
@@ -17,10 +18,18 @@ import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/
 import { DAY_WINDOW_MS, loadOpenClawActivitySummary } from '../src/openclaw-activity.js'
 import { runEnrollmentWizard } from '../src/enrollment.js'
 import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
+import {
+  collectCustomMetrics,
+  defaultCustomMetricsFile,
+  loadCustomMetricDefinitions,
+  normalizeCustomMetricDefinition,
+  saveCustomMetricDefinitions,
+  slugifyMetricKey
+} from '../src/custom-telemetry.js'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch\n\nUsage:\n  idlewatch [quickstart|configure|status|dashboard|run] [--no-tui] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run setup and save local IdleWatch config\n  configure   Alias for quickstart; reopen setup to change device name, API key, or metrics\n  status      Show current device config, publish mode, and last sample age\n  dashboard   Launch local dashboard from local IdleWatch logs\n  run         Start the background collector using saved local config\n  --no-tui    Skip the Rust TUI and use plain text setup without installing Cargo\n  --dry-run   Collect and print one telemetry sample, then exit without remote writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nQuickstart:\n  1. Create an API key on idlewatch.com/api\n  2. Run: idlewatch quickstart\n  3. Pick a device name and metrics\n  4. IdleWatch saves your local config and sends a first sample\n\nCommon env (optional):\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from idlewatch.com/api for device linking\n  IDLEWATCH_CLOUD_INGEST_URL         Cloud ingest endpoint (default: https://api.idlewatch.com/api/ingest)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n\nAdvanced env tuning:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n\nAdvanced Firebase / emulator mode:\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch\n\nUsage:\n  idlewatch [quickstart|configure|status|dashboard|run|create] [--no-tui] [--dry-run] [--once] [--help]\n\nOptions:\n  quickstart  Run first-run setup and save local IdleWatch config\n  configure   Alias for quickstart; reopen setup to change device name, API key, or metrics\n  status      Show current device config, publish mode, and last sample age\n  dashboard   Launch local dashboard from local IdleWatch logs\n  run         Start the background collector using saved local config\n  create      Create a simple custom telemetry metric from a shell command\n  --no-tui    Skip the Rust TUI and use plain text setup without installing Cargo\n  --dry-run   Collect and print one telemetry sample, then exit without remote writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nQuickstart:\n  1. Create an API key on idlewatch.com/api\n  2. Run: idlewatch quickstart\n  3. Pick a device name and metrics\n  4. IdleWatch saves your local config and sends a first sample\n\nCustom telemetry:\n  idlewatch create\n  The command should print a number or JSON like {"value": 1234.56}\n\nCommon env (optional):\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from idlewatch.com/api for device linking\n  IDLEWATCH_CLOUD_INGEST_URL         Cloud ingest endpoint (default: https://api.idlewatch.com/api/ingest)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n  IDLEWATCH_CUSTOM_METRICS_FILE      Path to a custom telemetry config JSON file (default: ~/.idlewatch/custom-metrics.json)\n\nAdvanced env tuning:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n\nAdvanced Firebase / emulator mode:\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
 }
 
 const require = createRequire(import.meta.url)
@@ -63,6 +72,64 @@ function defaultPersistedEnvFilePath() {
 function usesDefaultPersistedEnvFile(envFilePath) {
   if (!envFilePath) return false
   return path.resolve(envFilePath) === path.resolve(defaultPersistedEnvFilePath())
+}
+
+function resolveCustomMetricsFilePath() {
+  const configured = String(process.env.IDLEWATCH_CUSTOM_METRICS_FILE || '').trim()
+  return configured ? resolveEnvPath(configured) : defaultCustomMetricsFile()
+}
+
+async function runCustomMetricWizard() {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error('custom_metric_wizard_requires_tty')
+  }
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  const metricsFile = resolveCustomMetricsFilePath()
+  const existing = loadCustomMetricDefinitions(metricsFile)
+
+  try {
+    console.log('\nIdleWatch custom telemetry')
+    console.log(`Config file: ${metricsFile}`)
+    if (existing.length > 0) {
+      console.log(`Existing metrics: ${existing.map((item) => item.label).join(', ')}`)
+    }
+
+    const label = (await rl.question('Name: ')).trim() || 'Custom metric'
+    const keyInput = (await rl.question(`Key [${slugifyMetricKey(label)}]: `)).trim()
+    const kindInput = (await rl.question('Type [number/currency/percent] (default number): ')).trim().toLowerCase()
+    const command = (await rl.question('Command to run each sample: ')).trim()
+
+    if (!command) throw new Error('custom_metric_command_required')
+
+    let currency = ''
+    let suffix = ''
+    const kind = ['currency', 'percent'].includes(kindInput) ? kindInput : 'number'
+    if (kind === 'currency') {
+      currency = ((await rl.question('Currency code [USD]: ')).trim() || 'USD').toUpperCase()
+    } else if (kind === 'number') {
+      suffix = (await rl.question('Optional suffix [empty]: ')).trim()
+    }
+
+    const definition = normalizeCustomMetricDefinition({
+      label,
+      key: keyInput || slugifyMetricKey(label),
+      kind,
+      command,
+      currency,
+      suffix
+    })
+
+    if (!definition) throw new Error('custom_metric_invalid_definition')
+
+    const next = [...existing.filter((item) => item.key !== definition.key), definition]
+    saveCustomMetricDefinitions(next, metricsFile)
+
+    console.log(`\nSaved ${definition.label}.`)
+    console.log(`IdleWatch will track it on the next sample and surface it in the dashboard.`)
+  } finally {
+    rl.close()
+  }
 }
 
 function loadPersistedEnvIntoProcess() {
@@ -422,8 +489,9 @@ const args = new Set(argv)
 const statusRequested = argv[0] === 'status' || argv.includes('--status')
 const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard')
 const runRequested = argv[0] === 'run' || argv.includes('--run')
+const createRequested = argv[0] === 'create' || argv.includes('--create')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
-const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested)
+const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested)
 if (args.has('--help') || args.has('-h')) {
   printHelp()
   process.exit(0)
@@ -433,6 +501,16 @@ if (dashboardRequested) {
   const host = process.env.IDLEWATCH_HOST || os.hostname()
   runLocalDashboard({ host })
   await new Promise(() => {})
+}
+
+if (createRequested) {
+  try {
+    await runCustomMetricWizard()
+    process.exit(0)
+  } catch (error) {
+    console.error(`Custom telemetry setup failed: ${error.message}`)
+    process.exit(1)
+  }
 }
 
 if (quickstartRequested) {
@@ -538,6 +616,8 @@ const OPENCLAW_PROBE_RETRIES = process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES
   ? Number(process.env.IDLEWATCH_OPENCLAW_PROBE_RETRIES)
   : 1
 const BASE_DIR = path.join(os.homedir(), '.idlewatch')
+const CUSTOM_METRICS_FILE = resolveCustomMetricsFilePath()
+const CUSTOM_METRIC_DEFINITIONS = loadCustomMetricDefinitions(CUSTOM_METRICS_FILE)
 
 const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
   ? resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
@@ -1417,6 +1497,7 @@ async function collectSample() {
   const thermals = MONITOR_TEMPERATURE && process.platform === 'darwin'
     ? thermalSampleDarwin()
     : { tempC: null, source: 'disabled', thermalLevel: null, thermalState: MONITOR_TEMPERATURE ? 'unavailable' : 'disabled' }
+  const customMetrics = collectCustomMetrics(CUSTOM_METRIC_DEFINITIONS)
 
   const usageIntegrationStatus = usage
     ? usageFreshness.isStale
@@ -1472,6 +1553,8 @@ async function collectSample() {
     activityWindowMs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.windowMs ?? null) : null,
     thermalSource: thermals.source,
     thermalState: thermals.thermalState,
+    customMetricsFile: CUSTOM_METRIC_DEFINITIONS.length > 0 ? CUSTOM_METRICS_FILE : null,
+    customMetricsCount: customMetrics.length,
     memPressureSource: memPressure.source,
     cloudIngestionStatus: CLOUD_INGEST_URL && CLOUD_API_KEY
       ? cloudIngestKickedOut ? 'kicked-out' : 'enabled'
@@ -1527,6 +1610,7 @@ async function collectSample() {
     activityActiveSeconds: MONITOR_AGENT_ACTIVITY ? (activitySummary?.totalActiveSeconds ?? null) : null,
     activityIdleSeconds: MONITOR_AGENT_ACTIVITY ? (activitySummary?.idleSeconds ?? null) : null,
     activityJobs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.jobs ?? []) : [],
+    customMetrics,
     localLogPath: LOCAL_LOG_PATH,
     localLogBytes: null,
     source
@@ -1546,6 +1630,7 @@ function summarizeSetupVerification(row) {
   if (row.memPct !== null && row.memPct !== undefined) metrics.push('memory')
   if (row.gpuPct !== null && row.gpuPct !== undefined) metrics.push('gpu')
   if (row.tokensPerMin !== null && row.tokensPerMin !== undefined) metrics.push('openclaw')
+  if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.push('custom')
 
   const details = [
     `mode=${getPublishModeLabel()}`,
