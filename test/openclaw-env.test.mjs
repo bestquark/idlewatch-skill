@@ -324,6 +324,8 @@ test('quickstart local mode does not leak stale cloud env into required once tes
   assert.match(run.stdout, /✅ Setup complete\. Mode=local/)
   assert.match(run.stdout, /Initial local telemetry check completed successfully\./)
   assert.doesNotMatch(run.stdout, /Initial telemetry sample sent successfully\./)
+  assert.match(run.stderr, /Local-only mode: this run will stay on this Mac until you link a publish target\. Run idlewatch quickstart any time if you want cloud ingest\./)
+  assert.doesNotMatch(run.stderr, /Firebase\/emulator mode if you need that path/)
   assert.doesNotMatch(run.stdout + run.stderr, /publish=cloud/)
   assert.doesNotMatch(run.stdout + run.stderr, /Cloud ingest disabled:/)
 
@@ -408,7 +410,8 @@ test('quickstart failure keeps idlewatch --once as the primary retry only for th
     assert.doesNotMatch(run.stderr, /Cloud ingest disabled: API key rejected \(invalid_api_key\)\./)
     assert.match(run.stderr, /Retry with: idlewatch --once/)
     assert.match(run.stderr, /Or rerun: idlewatch quickstart/)
-    assert.match(run.stderr, /Advanced\/manual fallback: set -a; source ".*idlewatch\.env"; set \+a && idlewatch --once/)
+    assert.doesNotMatch(run.stderr, /Advanced\/manual fallback:/)
+    assert.doesNotMatch(run.stderr, /set -a; source ".*idlewatch\.env"; set \+a && idlewatch --once/)
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })

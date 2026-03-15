@@ -1,4 +1,20 @@
 
+## QA cycle update — 2026-03-15 3:39 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Local-only quickstart line now stays fully in product language:** `bin/idlewatch-agent.js` still confirms that local mode stays on this Mac until the user links a publish target, but it no longer appends the stray `Firebase/emulator mode` aside in the default local-only status line.
+- [x] **Default-path first-publish failure no longer competes with an advanced shell fallback:** when setup saved to the normal auto-load path (`~/.idlewatch/idlewatch.env`), the failure summary now sticks to the two boring product-level retry steps (`idlewatch --once` / `idlewatch quickstart`) and drops the extra `set -a; source ...` incantation.
+- [x] **Regression coverage updated for both paper cuts:** `test/openclaw-env.test.mjs` now asserts the calmer local-only line and confirms the default-path rejection summary omits the advanced fallback while the custom-path branch still keeps saved-config guidance.
+- [x] **Validation:** focused manual repros ✅
+  - fresh temp-home local-only `./bin/idlewatch-agent.js quickstart --no-tui` now prints `Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest.`
+  - production non-interactive `quickstart --no-tui` against a tiny local rejecting ingest endpoint now ends with only `Retry with: idlewatch --once` and `Or rerun: idlewatch quickstart` for the default saved-config path
+
+### Notes
+
+- Scope stayed intentionally tiny and low-risk: wording and retry-flow simplification only.
+- Telemetry path preserved: successful cloud publish, saved-config auto-load, and custom-env recovery behavior were left intact.
+
 ## QA cycle update — 2026-03-15 3:31 AM America/Toronto
 
 ### Prioritized findings

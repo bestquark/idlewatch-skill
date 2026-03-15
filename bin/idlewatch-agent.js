@@ -428,7 +428,6 @@ if (quickstartRequested) {
     if (usesDefaultPersistedEnvFile(result.outputEnvFile)) {
       console.error('Retry with: idlewatch --once')
       console.error('Or rerun: idlewatch quickstart')
-      console.error(`Advanced/manual fallback: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
     } else {
       console.error('Retry with: idlewatch quickstart')
       console.error(`Use the saved config directly: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
@@ -682,7 +681,7 @@ function getPublishModeLabel() {
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    'Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest, or configure Firebase/emulator mode if you need that path.'
+    'Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest.'
   )
 }
 
