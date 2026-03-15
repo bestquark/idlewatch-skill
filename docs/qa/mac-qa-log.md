@@ -1,4 +1,26 @@
 
+## QA cycle update — 2026-03-15 6:05 AM America/Toronto
+
+### Status
+
+- ✅ Pipeline healthy. No regressions. **118 pass, 0 fail.**
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ No new actionable polish items found.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (118 pass, 0 fail)
+- `node bin/idlewatch-agent.js status` (configured) ✅ — shows cloud link, masked key, sample age, contextual hints
+- `node bin/idlewatch-agent.js status` (no config) ✅ — shows defaults + quickstart hint
+- `node bin/idlewatch-agent.js --help` ✅ — clean, cloud-first, common/advanced env split
+- Fresh-home local-only `quickstart --no-tui` ✅ — calm local-mode language, compact success
+- Reconfigure (change metrics only) ✅ — device name preserved, metrics updated correctly
+
+### Notes
+
+- Setup/reconfigure flows, validation messages, saved config handling, and startup quality of life are all in good shape.
+- No remaining small, low-risk improvements identified in this cycle.
+
 ## QA cycle update — 2026-03-15 5:55 AM America/Toronto
 
 ### Fixed this cycle
