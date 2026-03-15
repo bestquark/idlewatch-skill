@@ -4327,3 +4327,25 @@
 - ✅ Test count stable at 118.
 - ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
 - No new findings; nothing to commit beyond this log entry.
+
+## QA cycle update — 2026-03-15 11:20 AM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (118 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, no legacy references
+- Fresh-home `--dry-run` ✅ — compact banner, no Firebase warning noise, correct local-only output
+- No `idlewatch setup` references in CLI source ✅
+- Config persistence + reload ✅ — device name, device ID, monitor targets, local log path all round-trip
+- `$TMPDIR` expansion in persisted env ✅ — saved path vars expand correctly at reload time
+- LaunchAgent docs ✅ — verify command uses `tail -n 1 | python3 -m json.tool`
+- README/onboarding docs ✅ — consistent cloud-first install story
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2 findings from this lane remain resolved.
+- ✅ Test count stable at 118.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing to commit beyond this log entry.
