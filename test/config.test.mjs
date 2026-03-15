@@ -117,7 +117,7 @@ describe('buildConfig', () => {
     process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH = '${HOME}/.idlewatch/cache.json'
     const buildConfig = (await import(`../src/config.js?t=${Date.now()}-11`)).buildConfig
     const cfg = buildConfig()
-    assert.equal(cfg.LOCAL_LOG_PATH, '/tmpdir-placeholder/idlewatch-log.ndjson'.replace('/tmpdir-placeholder', process.env.TMPDIR || '/var/folders/unknown'))
-    assert.equal(cfg.OPENCLAW_LAST_GOOD_CACHE_PATH, `${process.env.HOME}/.idlewatch/cache.json`)
+    assert.equal(cfg.LOCAL_LOG_PATH, path.resolve(process.env.TMPDIR || os.tmpdir(), 'idlewatch-log.ndjson'))
+    assert.equal(cfg.OPENCLAW_LAST_GOOD_CACHE_PATH, path.resolve(process.env.HOME || os.homedir(), '.idlewatch/cache.json'))
   })
 })

@@ -21,6 +21,22 @@ const isNonNegFinite = (v) => Number.isFinite(v) && v >= 0
 const isNonNegInt = (v) => Number.isInteger(v) && v >= 0
 const isBool01 = (v) => v === 0 || v === 1
 
+function expandSupportedPathVars(value) {
+  if (typeof value !== 'string' || !value) return value
+
+  const home = process.env.HOME || os.homedir()
+  const tmpdir = process.env.TMPDIR || os.tmpdir()
+
+  return value
+    .replace(/^~(?=$|\/)/, home)
+    .replace(/\$\{HOME\}|\$HOME/g, home)
+    .replace(/\$\{TMPDIR\}|\$TMPDIR/g, tmpdir)
+}
+
+function resolveEnvPath(value) {
+  return path.resolve(expandSupportedPathVars(value))
+}
+
 /**
  * Build the full IdleWatch configuration from environment variables.
  * Throws on invalid values.
@@ -63,11 +79,11 @@ export function buildConfig() {
   const BASE_DIR = path.join(os.homedir(), '.idlewatch')
 
   const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
-    ? path.resolve(process.env.IDLEWATCH_LOCAL_LOG_PATH)
+    ? resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
     : path.join(BASE_DIR, 'logs', `${SAFE_HOST}-metrics.ndjson`)
 
   const OPENCLAW_LAST_GOOD_CACHE_PATH = process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH
-    ? path.resolve(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH)
+    ? resolveEnvPath(process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH)
     : path.join(BASE_DIR, 'cache', `${SAFE_HOST}-openclaw-last-good.json`)
 
   return Object.freeze({
