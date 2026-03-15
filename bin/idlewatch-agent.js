@@ -713,7 +713,7 @@ if (statusRequested) {
         hasSamples = true
         const ageMs = Date.now() - Number(rows[0].ts)
         const ageSec = Math.round(ageMs / 1000)
-        const agoText = ageSec < 60 ? `${ageSec}s ago` : ageSec < 3600 ? `${Math.round(ageSec / 60)}m ago` : `${Math.round(ageSec / 3600)}h ago`
+        const agoText = ageSec < 60 ? `${ageSec}s ago` : ageSec < 3600 ? `${Math.round(ageSec / 60)}m ago` : ageSec < 86400 ? `${Math.round(ageSec / 3600)}h ago` : `${Math.round(ageSec / 86400)}d ago`
         console.log(`  Last sample:  ${agoText}`)
       } else {
         console.log('  Last sample:  (none yet)')
