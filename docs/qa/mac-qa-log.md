@@ -1,3 +1,17 @@
+## QA cycle update — 2026-03-15 2:47 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **LaunchAgent install script now blocks the footgun behind the top remaining P1:** `scripts/install-macos-launch-agent.sh` now refuses custom app-path or custom plist-root installs that still reuse the default `com.idlewatch.agent` label. This keeps temp-root QA and side-by-side app testing from silently replacing a live loaded agent unless the caller explicitly chooses a different label.
+- [x] **LaunchAgent docs now teach the safe side-by-side pattern:** `docs/packaging/macos-launch-agent.md` now says the label is the real `launchd` identity and shows custom app-path examples with a distinct QA label (`com.idlewatch.agent.qa`).
+- [x] **Validation:** `bash -n scripts/install-macos-launch-agent.sh` ✅, `bash -n scripts/uninstall-macos-launch-agent.sh` ✅, and a temp-root repro with the default label now exits early with the new refusal message while the same setup with `IDLEWATCH_LAUNCH_AGENT_LABEL=com.idlewatch.agent.qa` gets past the new safety guard.
+
+### Notes
+
+- Scope stayed deliberately small and low-risk: startup/install safety + wording only.
+- Default user install flow is unchanged.
+- Telemetry path preserved.
+
 ## QA cycle update — 2026-03-15 2:10 AM America/Toronto
 
 ### Prioritized findings

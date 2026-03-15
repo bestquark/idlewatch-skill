@@ -14,6 +14,17 @@ fi
 
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
 CONFIG_ENV_PATH="${IDLEWATCH_CONFIG_ENV_PATH:-$HOME/.idlewatch/idlewatch.env}"
+DEFAULT_APP_PATH="/Applications/IdleWatch.app"
+DEFAULT_PLIST_ROOT="$HOME/Library/LaunchAgents"
+DEFAULT_PLIST_LABEL="com.idlewatch.agent"
+
+if [[ "$PLIST_LABEL" == "$DEFAULT_PLIST_LABEL" ]] && \
+   [[ "$PLIST_ROOT" != "$DEFAULT_PLIST_ROOT" || "$APP_PATH" != "$DEFAULT_APP_PATH" ]]; then
+  echo "Refusing to reuse the default LaunchAgent label ($DEFAULT_PLIST_LABEL) with a custom app path or plist root." >&2
+  echo "launchd uses the label as the real identity, so this could replace your already-loaded IdleWatch agent." >&2
+  echo "Use IDLEWATCH_LAUNCH_AGENT_LABEL to pick a different label for side-by-side QA/dev installs." >&2
+  exit 1
+fi
 
 if [[ ! -d "$PLIST_ROOT" ]]; then
   mkdir -p "$PLIST_ROOT"

@@ -38,18 +38,23 @@ All settings are optional environment variables set **before** running the insta
 
 ### Custom app path
 
-For a packaged app outside `/Applications`:
+For a packaged app outside `/Applications`, pick a different label so you do not replace the normal login item by accident:
 
 ```bash
 IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" \
+IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent.qa" \
   "$HOME/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh"
 ```
 
 For a source checkout / maintainer workflow:
 
 ```bash
-IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" npm run install:macos-launch-agent
+IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" \
+IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent.qa" \
+  npm run install:macos-launch-agent
 ```
+
+IdleWatch now refuses custom app-path or custom plist-root installs that still reuse the default label `com.idlewatch.agent`, because `launchd` keys the loaded job by label rather than plist directory.
 
 ## Uninstall
 
