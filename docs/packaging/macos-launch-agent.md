@@ -58,8 +58,8 @@ tail -f ~/Library/Logs/IdleWatch/idlewatch.err.log
 # Check if running
 launchctl print gui/$(id -u)/com.idlewatch.agent
 
-# Quick health check
-/Applications/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --json | python3 -m json.tool
+# Quick health check (extract the telemetry JSON row)
+/Applications/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run | tail -n 1 | python3 -m json.tool
 ```
 
 ## Troubleshooting

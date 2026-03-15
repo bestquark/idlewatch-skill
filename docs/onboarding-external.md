@@ -9,9 +9,10 @@ npx idlewatch-skill quickstart
 ```
 
 Wizard output:
-- Generates an env file (`idlewatch.env`) under user config directory.
-- In production mode, copies the provided service-account key to `credentials/` with mode `0600`.
-- Emits next-step command to load env and run a one-shot validation.
+- Prompts for a device name, API key, and which metrics to collect.
+- Generates an env file (`idlewatch.env`) under the user config directory.
+- Saves local config so later runs auto-load without manually sourcing the env file.
+- Sends a first sample so the device can link right away.
 
 ### 2) Signed DMG install (managed rollout)
 
@@ -21,7 +22,7 @@ Wizard output:
    ```
 2. Distribute `dist/IdleWatch-<version>-signed.dmg`.
 3. User drags app into Applications and launches.
-4. On first run, user executes quickstart from packaged app terminal context to enroll credentials.
+4. On first run, user executes quickstart from packaged app terminal context to link the device with an API key.
 
 ### Optional: background startup on macOS
 

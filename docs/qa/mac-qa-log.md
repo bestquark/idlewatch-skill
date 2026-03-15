@@ -61,6 +61,20 @@
 - Core quickstart/onboarding path still looks healthy; this cycle is firmly in polish territory, not broken-pipeline territory.
 - Highest-value remaining cleanup is product-language consistency: the real flow is now pleasantly simple, but parts of the copy still sound like a Firebase admin console from a previous life.
 
+## QA cycle update — 2026-03-15 1:00 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Quickstart/help copy moved back to the actual happy path:** CLI help, README, and external onboarding docs now lead with API key → quickstart → pick metrics → first sample, instead of sounding Firebase-first.
+- [x] **Broken recovery hint removed:** runtime fallback copy now points users at the real command (`idlewatch quickstart`) instead of the non-existent `idlewatch setup`.
+- [x] **LaunchAgent verify command is now copy/paste-safe:** docs now extract the final telemetry JSON row with `tail -n 1` before piping to `python3 -m json.tool`.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**106 pass, 0 fail**), `npm run validate:onboarding --silent` ✅, and the `--dry-run` fallback warning now references `idlewatch quickstart`.
+
+### Notes
+
+- ✅ Telemetry path preserved; this was copy/flow polish only.
+- ✅ Scope stayed intentionally small: no auth redesigns, no packaging rewrites, no CLI surface expansion.
+
 ## QA cycle update — 2026-03-15 12:33 AM America/Toronto
 
 ### Prioritized findings

@@ -17,7 +17,7 @@ npx idlewatch quickstart
 npx idlewatch --dry-run
 ```
 
-`quickstart` runs a first-run setup wizard that writes a local env file and (for production mode) stores a locked-down copy of the service-account key under `~/.idlewatch/`. On hosts with Rust/Cargo available, quickstart launches a ratatui-powered onboarding flow first; otherwise it falls back to the text wizard.
+`quickstart` is the happy path: create an API key on idlewatch.com/api, run the wizard, pick a device name + metrics, and IdleWatch saves local config before sending a first sample. On hosts with Rust/Cargo available, quickstart launches a ratatui-powered onboarding flow first; otherwise it falls back to the text wizard.
 
 ## CLI options
 
@@ -49,26 +49,30 @@ Use `gpuSource` + `gpuConfidence` in dashboards to decide whether to trust value
 - `low`: constrained probe path
 - `none`: no usable sample for that sample window
 
-## Firebase wiring
+## Quickstart
 
-### Recommended: guided enrollment (external users)
+### Recommended: guided enrollment
 
 ```bash
 npx idlewatch quickstart
 ```
 
-The wizard supports:
-- **Production mode**: prompts for project id + service-account JSON file path, validates it, copies credentials to a local secure path (0600), and writes `FIREBASE_SERVICE_ACCOUNT_FILE=...`.
-- **Emulator mode**: writes `FIREBASE_PROJECT_ID` + `FIRESTORE_EMULATOR_HOST` only.
-- **Local-only mode**: writes no Firebase credentials.
+The wizard keeps setup small:
+- asks for a **device name**
+- asks for your **API key** from `idlewatch.com/api`
+- lets you choose which **metrics** to collect
+- saves local config to `~/.idlewatch/idlewatch.env`
+- sends a first sample so the device can link right away
 
-Then run a one-shot publish check:
+The saved config is auto-loaded on later runs, so you should not need to manually source the env file in normal use.
+
+Then run a one-shot publish check any time with:
 
 ```bash
 idlewatch --once
 ```
 
-The saved config is auto-loaded from `~/.idlewatch/idlewatch.env`, so you should not need to manually source the env file in normal use.
+## Advanced Firebase wiring
 
 ### Manual wiring
 
