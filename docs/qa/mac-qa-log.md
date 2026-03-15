@@ -1,4 +1,31 @@
 
+## QA cycle update — 2026-03-15 11:25 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P3 (polish plan ticket #6) — Reconfigure-aware enrollment wizard**
+   - When existing saved config is found at `~/.idlewatch/idlewatch.env`, the text wizard now:
+     - Shows "IdleWatch Reconfigure" instead of "IdleWatch Setup Wizard"
+     - Defaults mode prompt to current mode (local users default to 2, cloud to 1)
+     - Shows current device name and mode before prompts
+     - Reuses saved cloud API key with a "Keep this key? [Y/n]" prompt instead of asking for re-entry
+     - Defaults device name to the saved name instead of machine hostname
+   - Non-interactive flows also benefit: `IDLEWATCH_ENROLL_DEVICE_NAME` picks up existing saved name as fallback
+   - Reduces friction for users who just want to change metrics or toggle mode
+
+### Smoke checks
+
+- `npm run test:unit --silent` ✅ (118 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- Non-interactive reconfigure (cloud → local, metrics change) ✅ — device name preserved
+- Non-interactive reconfigure (local → local, metrics only) ✅ — device name preserved
+- Fresh-home quickstart ✅ — no regression in first-run path
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 11:15 AM America/Toronto
 
 ### Smoke checks this cycle
