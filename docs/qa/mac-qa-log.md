@@ -1,3 +1,44 @@
+## QA cycle update — 2026-03-15 2:10 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — LaunchAgent install/uninstall scripts are not alternate-root safe: they operate on the live `launchd` job by label even when QA/dev runs point at a temp plist root**
+   - **Observed:** the packaging/startup scripts support alternate paths like `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT` and `IDLEWATCH_APP_PATH`, which makes them look safe for temp-root QA or side-by-side app testing. But the actual load/unload logic targets only `gui/<uid>/com.idlewatch.agent`. In practice, a temp-root install still calls `launchctl bootout` on the already-loaded live agent if it shares the default label, then replaces it with the temp plist. That is a nasty little footgun for QA and for users/devs testing a custom app path.
+   - **Exact repro:**
+     1. Ensure the normal LaunchAgent is already loaded under the default label `com.idlewatch.agent`.
+     2. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     3. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/app/IdleWatch.app/Contents/MacOS"
+        printf '#!/bin/sh\nexit 0\n' > "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        chmod +x "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        IDLEWATCH_APP_PATH="$tmp/app/IdleWatch.app" \
+        IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$tmp/LaunchAgents" \
+        IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$tmp/Logs" \
+        ./scripts/install-macos-launch-agent.sh
+        ```
+     4. Observe the installer says:
+        - `LaunchAgent already loaded. Replacing configuration for gui/<uid>/com.idlewatch.agent.`
+     5. Inspect the generated temp plist and confirm it points at the temp app path, meaning the live GUI job was repointed even though the caller only changed the plist root/app path for a temp run.
+   - **Why it matters:** this breaks the “boring, low-friction” startup story. Temp-root QA, custom-app-path testing, or side-by-side installs should not silently kick out the user’s real background agent just because the label matches.
+   - **Acceptance criteria:**
+     - Alternate-root / custom-app-path install flows should not modify an already-loaded live agent unless the caller explicitly intends to replace it.
+     - At minimum, the scripts/docs should plainly warn that the label is the real identity and that reusing `com.idlewatch.agent` will replace the currently loaded job regardless of plist root.
+     - Better behavior: require an explicit custom `IDLEWATCH_LAUNCH_AGENT_LABEL` for temp-root QA, or refuse to replace an existing loaded job when the plist path/app path differ from the active installation.
+
+### Commands run this cycle
+
+- `node ./bin/idlewatch-agent.js --help` ✅ reviewed current CLI/help surface
+- `HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --run` ✅ confirmed hidden `--run` path still works for LaunchAgent usage
+- temp-root `./scripts/install-macos-launch-agent.sh` with default label + custom app/plist/log roots ✅ reproduced live-label replacement behavior
+- inspected generated temp plist ✅ confirmed it pointed at the temp app while using the live default label
+
+### Notes
+
+- Core quickstart/persistence path still looks healthy; this is startup/install polish, not a broken telemetry pipeline.
+- Biggest issue from this pass: the LaunchAgent scripts currently *look* safe for temp-root QA, but the label-based `launchctl` behavior means they can still stomp the real loaded agent.
+
 ## QA cycle update — 2026-03-15 2:35 AM America/Toronto
 
 ### Completed this cycle
