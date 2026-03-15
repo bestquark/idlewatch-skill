@@ -1,4 +1,28 @@
 
+## QA cycle update — 2026-03-15 5:21 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P3 — README reliability section still led with "Firestore write failures" in the first screenful**
+   - Changed to "publish failures (cloud ingest and Firebase paths)" so the product sounds cloud-first where users scan first.
+
+2. **P3 — External onboarding credential strategy was entirely Firebase-focused**
+   - Rewrote to lead with API key guidance (the actual happy path), with Firebase demoted to an advanced note.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (115 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- Fresh-home local-only `quickstart --no-tui` ✅
+- Fresh-home rejected-key `quickstart --no-tui` ✅ — single rejection message, clean retry guidance
+- `node bin/idlewatch-agent.js --help` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No regressions.
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 5:04 AM America/Toronto
 
 ### Fixed this cycle
