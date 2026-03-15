@@ -638,6 +638,12 @@ const hasAnyFirebaseConfig = Boolean(PROJECT_ID || CREDS_FILE || CREDS_JSON || C
 const hasCloudConfig = Boolean(CLOUD_INGEST_URL && CLOUD_API_KEY)
 const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !hasAnyFirebaseConfig
 
+function getPublishModeLabel() {
+  if (hasCloudConfig) return 'cloud'
+  if (appReady) return 'firebase'
+  return 'local-only'
+}
+
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
     'No publish target is configured yet. Running in local-only mode. Run idlewatch quickstart to link cloud ingest, or configure Firebase/emulator mode if you need that path.'
@@ -1436,7 +1442,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 if (DRY_RUN || ONCE) {
   const mode = DRY_RUN ? 'dry-run' : 'once'
   console.log(
-    `idlewatch ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
+    `idlewatch ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} publish=${getPublishModeLabel()} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
   )
   tick()
     .then(() => process.exit(0))
@@ -1446,7 +1452,7 @@ if (DRY_RUN || ONCE) {
     })
 } else {
   console.log(
-    `idlewatch started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
+    `idlewatch started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} publish=${getPublishModeLabel()} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
   )
   loop()
 }

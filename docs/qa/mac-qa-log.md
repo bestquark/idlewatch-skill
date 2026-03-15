@@ -1,3 +1,17 @@
+## QA cycle update — 2026-03-15 1:16 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Startup status line now reflects the actual publish path:** `bin/idlewatch-agent.js` prints `publish=cloud|firebase|local-only` instead of the misleading legacy `firebase=true|false`, so `--once` / `--dry-run` output no longer contradicts the active cloud-linking flow.
+- [x] **Top-level CLI copy is now publish-path neutral:** `README.md` now describes `--dry-run` and `--once` in current product language instead of Firebase-first wording.
+- [x] **Regression coverage added for setup/retest clarity:** `test/openclaw-env.test.mjs` now checks both the new `publish=` labels and the cloud-ingest `--once` path with saved config.
+- [x] **Validation:** `npm run test:unit --silent` ✅.
+
+### Notes
+
+- ✅ Scope stayed intentionally tiny: wording/status polish only, no auth/ingest redesigns and no packaging changes.
+- ✅ Telemetry path preserved: cloud-ingest rejection handling and saved-config loading behavior were left intact.
+
 ## QA cycle update — 2026-03-15 1:12 AM America/Toronto
 
 ### Prioritized findings

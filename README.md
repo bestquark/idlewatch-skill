@@ -23,8 +23,8 @@ npx idlewatch --dry-run
 
 - `quickstart`: run first-run enrollment wizard
 - `--help`: show usage
-- `--dry-run`: collect one sample and exit (no Firebase write)
-- `--once`: collect one sample, publish to Firebase when configured, then exit
+- `--dry-run`: collect one sample and exit without remote writes
+- `--once`: collect one sample, publish it using the active configured path, then exit
 
 ## Reliability improvements
 

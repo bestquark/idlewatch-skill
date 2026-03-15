@@ -127,18 +127,21 @@ test('accepts Firestore emulator mode without service account credentials', () =
   const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
     env: {
       ...process.env,
+      HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-firebase-home-')),
       IDLEWATCH_OPENCLAW_USAGE: 'off',
       FIREBASE_PROJECT_ID: 'idlewatch-dev',
       FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
       FIREBASE_SERVICE_ACCOUNT_JSON: '',
-      FIREBASE_SERVICE_ACCOUNT_B64: ''
+      FIREBASE_SERVICE_ACCOUNT_B64: '',
+      IDLEWATCH_CLOUD_INGEST_URL: '',
+      IDLEWATCH_CLOUD_API_KEY: ''
     },
     encoding: 'utf8'
   })
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /idlewatch dry-run/)
-  assert.match(run.stdout, /firebase=true/)
+  assert.match(run.stdout, /publish=firebase/)
 })
 
 test('rejects emulator mode when FIREBASE_PROJECT_ID is missing', () => {
@@ -194,25 +197,60 @@ test('keeps plain dry-run output local-only without Firebase warning noise', () 
   assert.doesNotMatch(run.stderr, /Firebase is not configured/)
   assert.doesNotMatch(run.stderr, /No publish target is configured yet/)
   assert.match(run.stdout, /idlewatch dry-run/)
+  assert.match(run.stdout, /publish=local-only/)
+  assert.doesNotMatch(run.stdout, /firebase=/)
 })
 
-test('accepts required Firebase writes config in emulator mode (dry-run)', () => {
-  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+test('uses cloud publish label for once mode when cloud ingest config is active', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-cloud-once-home-'))
+  const envDir = path.join(tempHome, '.idlewatch')
+  fs.mkdirSync(envDir, { recursive: true })
+  fs.writeFileSync(path.join(envDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=QA Box',
+    'IDLEWATCH_DEVICE_ID=qa-box',
+    'IDLEWATCH_CLOUD_API_KEY=iwk_invalidexample1234567890',
+    'IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    'IDLEWATCH_OPENCLAW_USAGE=off'
+  ].join('\n'))
+
+  const run = spawnSync(process.execPath, [BIN, '--once'], {
     env: {
       ...process.env,
-      IDLEWATCH_OPENCLAW_USAGE: 'off',
-      IDLEWATCH_REQUIRE_FIREBASE_WRITES: '1',
-      FIREBASE_PROJECT_ID: 'idlewatch-dev',
-      FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+      HOME: tempHome,
+      FIREBASE_PROJECT_ID: '',
+      FIRESTORE_EMULATOR_HOST: '',
       FIREBASE_SERVICE_ACCOUNT_JSON: '',
       FIREBASE_SERVICE_ACCOUNT_B64: ''
     },
     encoding: 'utf8'
   })
 
+  assert.match(run.stdout, /idlewatch once/)
+  assert.match(run.stdout, /publish=cloud/)
+  assert.doesNotMatch(run.stdout, /firebase=/)
+})
+
+test('accepts required Firebase writes config in emulator mode (dry-run)', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-firebase-required-home-')),
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_REQUIRE_FIREBASE_WRITES: '1',
+      FIREBASE_PROJECT_ID: 'idlewatch-dev',
+      FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+      FIREBASE_SERVICE_ACCOUNT_JSON: '',
+      FIREBASE_SERVICE_ACCOUNT_B64: '',
+      IDLEWATCH_CLOUD_INGEST_URL: '',
+      IDLEWATCH_CLOUD_API_KEY: ''
+    },
+    encoding: 'utf8'
+  })
+
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /idlewatch dry-run/)
-  assert.match(run.stdout, /firebase=true/)
+  assert.match(run.stdout, /publish=firebase/)
 })
 
 test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
@@ -232,19 +270,22 @@ test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
     const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
       env: {
         ...process.env,
+        HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-creds-home-')),
         IDLEWATCH_OPENCLAW_USAGE: 'off',
         FIREBASE_PROJECT_ID: 'idlewatch-test',
         FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
         FIREBASE_SERVICE_ACCOUNT_FILE: credsPath,
         FIREBASE_SERVICE_ACCOUNT_JSON: '',
-        FIREBASE_SERVICE_ACCOUNT_B64: ''
+        FIREBASE_SERVICE_ACCOUNT_B64: '',
+        IDLEWATCH_CLOUD_INGEST_URL: '',
+        IDLEWATCH_CLOUD_API_KEY: ''
       },
       encoding: 'utf8'
     })
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /idlewatch dry-run/)
-    assert.match(run.stdout, /firebase=true/)
+    assert.match(run.stdout, /publish=firebase/)
   } finally {
     fs.rmSync(tmpRoot, { recursive: true, force: true })
   }
