@@ -1,3 +1,61 @@
+## QA cycle update — 2026-03-15 1:04 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — `npx` install/run story is still split between `idlewatch` and `idlewatch-skill`, which makes the happy path feel ambiguous**
+   - **Observed:** user-facing docs currently advertise two different `npx` entrypoints for the same setup flow. `README.md` leads with `npx idlewatch ...`, while `docs/onboarding-external.md` says `npx idlewatch-skill quickstart`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Compare `package.json` (`name: "idlewatch"`) with:
+        - `README.md` install section (`npx idlewatch --help`, `npx idlewatch quickstart`)
+        - `docs/onboarding-external.md` section `1) npx quickstart (fastest)` (`npx idlewatch-skill quickstart`)
+   - **Why it matters:** first-run setup should feel boringly obvious. Two different package/command names add unnecessary uncertainty right at the install moment.
+   - **Acceptance criteria:**
+     - Docs present one crisp default `npx` path for end users.
+     - If compatibility aliases remain supported, they are documented as secondary/legacy rather than mixed into the primary quickstart.
+     - Package name / docs / command examples read like one product, not two overlapping ones.
+
+2. **P2 — Default `--dry-run` / local-only output still opens with a Firebase configuration warning, which feels noisy and off-story**
+   - **Observed:** a clean local dry-run on an unconfigured machine prints a Firebase-first warning before any actual sample output, even though the current product story is API-key quickstart or local-only use.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run
+        ```
+     3. Observe the first line:
+        `Firebase is not configured. Running without Firebase writes...`
+   - **Why it matters:** this is technically harmless, but it makes the tool feel more complicated than it is. A user doing a dry-run or local smoke test should not get an old-stack warning splashed at them unless they explicitly asked for Firebase-required behavior.
+   - **Acceptance criteria:**
+     - Plain `--dry-run` and local-only flows do not foreground Firebase warnings by default.
+     - Firebase guidance appears only when the user explicitly selects Firebase mode / requires Firebase writes / has partial Firebase config.
+     - First-run console output stays aligned with the simpler cloud-key/local-only story.
+
+3. **P2 — LaunchAgent docs still describe quickstart as Firebase-related, which clashes with the actual API-key setup flow**
+   - **Observed:** `docs/packaging/macos-launch-agent.md` says `Optional: Firebase credentials configured via quickstart`, even though quickstart now asks for device name, API key, and metrics — not Firebase credentials.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Open `docs/packaging/macos-launch-agent.md`
+     3. In `Prerequisites`, observe: `Optional: Firebase credentials configured via quickstart`
+     4. Compare with real quickstart behavior in `README.md` / `bin/idlewatch-agent.js --help`
+   - **Why it matters:** background install docs should feel calm and trustworthy. This line makes the product sound more technical and legacy-shaped than the real setup experience.
+   - **Acceptance criteria:**
+     - LaunchAgent docs describe prerequisites in current product language (installed app + saved IdleWatch config/API-key quickstart if needed).
+     - No docs imply quickstart configures Firebase unless that is actually what the user is doing.
+     - Background-run docs reinforce the simple saved-config story instead of leaking implementation history.
+
+### Commands run this cycle
+
+- `node ./bin/idlewatch-agent.js --help` ✅
+- `HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run` ✅ repro for Firebase-first warning noise in local dry-run
+- `./scripts/install-macos-launch-agent.sh` / `./scripts/uninstall-macos-launch-agent.sh` with temp app/plist/log roots ✅ basic install/uninstall smoke still healthy
+- `npm run validate:onboarding --silent` ✅
+
+### Notes
+
+- Core setup/persistence path still looks healthy; this is polish, not breakage.
+- Biggest remaining taste issue is consistency: the product got simpler, but a few messages/docs still sound like the older Firebase-heavy version.
+
 ## QA cycle update — 2026-03-15 12:46 AM America/Toronto
 
 ### Prioritized findings
