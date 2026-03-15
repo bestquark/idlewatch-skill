@@ -174,6 +174,28 @@ test('rejects required Firebase writes when Firebase is not configured', () => {
   assert.match(run.stderr, /IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 requires Firebase to be configured/)
 })
 
+test('keeps plain dry-run output local-only without Firebase warning noise', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-dry-run-home-')),
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      FIREBASE_PROJECT_ID: '',
+      FIRESTORE_EMULATOR_HOST: '',
+      FIREBASE_SERVICE_ACCOUNT_JSON: '',
+      FIREBASE_SERVICE_ACCOUNT_B64: '',
+      IDLEWATCH_CLOUD_INGEST_URL: '',
+      IDLEWATCH_CLOUD_API_KEY: ''
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.doesNotMatch(run.stderr, /Firebase is not configured/)
+  assert.doesNotMatch(run.stderr, /No publish target is configured yet/)
+  assert.match(run.stdout, /idlewatch dry-run/)
+})
+
 test('accepts required Firebase writes config in emulator mode (dry-run)', () => {
   const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
     env: {

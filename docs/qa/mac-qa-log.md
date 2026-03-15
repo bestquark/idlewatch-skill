@@ -1,3 +1,17 @@
+## QA cycle update — 2026-03-15 1:12 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Unified the primary `npx` story around `idlewatch`:** `README.md` and `docs/onboarding-external.md` now present `npx idlewatch quickstart` as the default path, while keeping `idlewatch-skill` documented only as a compatibility alias.
+- [x] **Removed Firebase-first warning noise from plain local dry-runs:** `bin/idlewatch-agent.js` now keeps unconfigured `--dry-run` / local-only output quiet instead of foregrounding Firebase setup when nothing is broken. A new regression test locks this in.
+- [x] **LaunchAgent docs now describe the current setup story:** `docs/packaging/macos-launch-agent.md` now points users at saved config from `idlewatch quickstart` instead of implying quickstart is about Firebase credentials.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**107 pass, 0 fail**), and a fresh temp-home `--dry-run` smoke check now emits no warning stderr in the local-only path.
+
+### Notes
+
+- ✅ **Telemetry path preserved:** this was wording/output polish only; no auth/ingest behavior was redesigned.
+- ✅ **Scope stayed intentionally small:** focused on first-run/reconfigure clarity and calmer local behavior, not new options.
+
 ## QA cycle update — 2026-03-15 1:04 AM America/Toronto
 
 ### Prioritized findings

@@ -5,8 +5,10 @@
 ### 1) npx quickstart (fastest)
 
 ```bash
-npx idlewatch-skill quickstart
+npx idlewatch quickstart
 ```
+
+`idlewatch` is the default package/command name. `idlewatch-skill` remains available as a compatibility alias, but it should not be the main path shown to new users.
 
 Wizard output:
 - Prompts for a device name, API key, and which metrics to collect.

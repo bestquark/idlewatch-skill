@@ -624,9 +624,13 @@ if (firebaseConfigError) {
   process.exit(1)
 }
 
-if (!appReady && !(CLOUD_INGEST_URL && CLOUD_API_KEY)) {
+const hasAnyFirebaseConfig = Boolean(PROJECT_ID || CREDS_FILE || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HOST)
+const hasCloudConfig = Boolean(CLOUD_INGEST_URL && CLOUD_API_KEY)
+const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !hasAnyFirebaseConfig
+
+if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    'Firebase is not configured. Running without Firebase writes. Set FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT_FILE (preferred, or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64), use FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST for emulator writes, or run idlewatch quickstart to link cloud ingest.'
+    'No publish target is configured yet. Running in local-only mode. Run idlewatch quickstart to link cloud ingest, or configure Firebase/emulator mode if you need that path.'
   )
 }
 

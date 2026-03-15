@@ -57,6 +57,8 @@ Use `gpuSource` + `gpuConfidence` in dashboards to decide whether to trust value
 npx idlewatch quickstart
 ```
 
+`idlewatch` is the primary package/command name. `idlewatch-skill` still works as a compatibility alias, but treat it as legacy in user-facing docs.
+
 The wizard keeps setup small:
 - asks for a **device name**
 - asks for your **API key** from `idlewatch.com/api`

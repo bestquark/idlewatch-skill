@@ -6,7 +6,7 @@ Run IdleWatch as a background service that starts automatically at login.
 
 - IdleWatch.app installed (typically `/Applications/IdleWatch.app`)
 - macOS 12+ (Monterey or later)
-- Optional: Firebase credentials configured via `quickstart`
+- Optional: saved IdleWatch config from `idlewatch quickstart` if you want the agent to publish to IdleWatch Cloud right away
 
 ## Install
 
