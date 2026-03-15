@@ -210,6 +210,8 @@ export async function runEnrollmentWizard(options = {}) {
     mode,
     configDir,
     outputEnvFile,
-    monitorTargets
+    monitorTargets,
+    deviceName,
+    deviceId: safeDeviceId
   }
 }
