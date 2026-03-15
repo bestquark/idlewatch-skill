@@ -1,3 +1,66 @@
+## QA cycle update — 2026-03-15 12:46 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — Firebase-first copy is still scattered through the installer/CLI/docs after the cloud quickstart pivot**
+   - **Observed:** the actual quickstart flow is cloud/API-key-first, but multiple user-facing surfaces still describe service-account/Firebase-first setup. This makes the install path feel inconsistent and more technical than the product now is.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Read:
+        - `README.md` lines near the install/quickstart section (`quickstart` still says it stores a service-account key and the guided enrollment section still describes project-id + service-account setup)
+        - `docs/onboarding-external.md` (`npx idlewatch-skill quickstart` section still says production mode copies a service-account key)
+        - `bin/idlewatch-agent.js` help/environment text (still foregrounds Firebase env vars above the cloud-first story)
+     3. Compare that copy against the real wizard/output, which only asks for device name, API key, and metrics.
+   - **Why it matters:** the first-run path now works, but the surrounding copy still reads like an older product. It adds avoidable cognitive load right where setup should feel lightweight.
+   - **Acceptance criteria:**
+     - Quickstart/help/docs describe the supported happy path as: get API key → run quickstart → pick metrics → first sample links device.
+     - Firebase/service-account details move to clearly secondary/advanced docs if still supported.
+     - npm/npx examples use one crisp install story and do not imply the old credential model is required.
+
+2. **P2 — CLI fallback error text points users at a non-existent `idlewatch setup` command**
+   - **Observed:** when Firebase is not configured, the runtime warning ends with `or configure cloud ingest via idlewatch setup.` but `setup` is not a documented or advertised command. The actual command is `idlewatch quickstart` (or `configure`, which aliases quickstart).
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run --json
+        ```
+     3. Observe stderr includes: `...or configure cloud ingest via idlewatch setup.`
+     4. Compare with `bin/idlewatch-agent.js` help text, which only exposes `quickstart|configure|dashboard|run`.
+   - **Why it matters:** tiny paper cut, but it sends users toward a command that does not exist in the visible CLI surface.
+   - **Acceptance criteria:**
+     - All recovery/error copy references a real command (`idlewatch quickstart` or `idlewatch configure`).
+     - No user-facing installer/setup messaging mentions `idlewatch setup` unless that command actually exists.
+
+3. **P2 — LaunchAgent verify docs suggest a `--json` flow that does not exist and fails exactly as written**
+   - **Observed:** `docs/packaging/macos-launch-agent.md` tells users to run `/Applications/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --json | python3 -m json.tool`, but the CLI does not support a JSON-only mode. It prints a human banner line before the JSON row, so the doc example fails with a parse error.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off \
+        node ./bin/idlewatch-agent.js --dry-run --json | python3 -m json.tool
+        ```
+     3. Observe failure: `Expecting value: line 1 column 1 (char 0)`
+   - **Why it matters:** this is exactly the sort of “copy/paste the verify command” moment where friction feels worse than the underlying bug.
+   - **Acceptance criteria:**
+     - LaunchAgent docs use a verify command that succeeds as written.
+     - Either add a real machine-readable `--json` mode, or document a shell filter that extracts the JSON row from current output.
+     - Verification guidance should stay low-friction and copy/paste-safe for non-technical users.
+
+### Commands run this cycle
+
+- `npm run test:unit --silent` ✅ (`106 pass, 0 fail`)
+- `npm run validate:onboarding --silent` ✅
+- `node ./bin/idlewatch-agent.js quickstart` with invalid cloud API key in non-interactive mode ✅ repro for current failure wording
+- `HOME="$tmp/home" node ./bin/idlewatch-agent.js --dry-run` with persisted `~` / `${HOME}` paths ✅ confirmed path expansion works now
+- `HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run --json` ✅ repro for bad `idlewatch setup` copy + pseudo-JSON verify mismatch
+
+### Notes
+
+- Core quickstart/onboarding path still looks healthy; this cycle is firmly in polish territory, not broken-pipeline territory.
+- Highest-value remaining cleanup is product-language consistency: the real flow is now pleasantly simple, but parts of the copy still sound like a Firebase admin console from a previous life.
+
 ## QA cycle update — 2026-03-15 12:33 AM America/Toronto
 
 ### Prioritized findings
