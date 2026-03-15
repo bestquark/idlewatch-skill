@@ -318,6 +318,8 @@ test('quickstart local mode does not leak stale cloud env into required once tes
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /✅ Setup complete\. Mode=local/)
+  assert.match(run.stdout, /Initial local telemetry check completed successfully\./)
+  assert.doesNotMatch(run.stdout, /Initial telemetry sample sent successfully\./)
   assert.doesNotMatch(run.stdout + run.stderr, /publish=cloud/)
   assert.doesNotMatch(run.stdout + run.stderr, /Cloud ingest disabled:/)
 

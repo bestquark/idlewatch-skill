@@ -406,7 +406,11 @@ if (quickstartRequested) {
 
     if (onceRun.status === 0) {
       console.log(`✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
-      console.log('Initial telemetry sample sent successfully.')
+      if (result.mode === 'local') {
+        console.log('Initial local telemetry check completed successfully.')
+      } else {
+        console.log('Initial telemetry sample sent successfully.')
+      }
       process.exit(0)
     }
 

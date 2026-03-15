@@ -81,7 +81,12 @@ echo "Plist: $PLIST_PATH"
 echo "Logs: $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
 if [[ -f "$CONFIG_ENV_PATH" ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
-  echo "Background runs will auto-load it."
+  if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then
+    echo "Background runs will auto-load it."
+  else
+    echo "Background runs auto-load only the default path: $HOME/.idlewatch/idlewatch.env"
+    echo "Move or copy this config there if you want login startup to reuse it automatically."
+  fi
 else
   echo "No saved IdleWatch config found yet at: $CONFIG_ENV_PATH"
   echo "Run 'idlewatch quickstart' once if you want this agent to link and publish right away."

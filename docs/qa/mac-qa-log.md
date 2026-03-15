@@ -1,3 +1,17 @@
+## QA cycle update — 2026-03-15 2:18 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Local-only quickstart success copy now matches what actually happened:** `bin/idlewatch-agent.js` no longer reuses the cloud-shaped `Initial telemetry sample sent successfully.` tail for local-only setup. Successful local mode now ends with `Initial local telemetry check completed successfully.` so the product stops implying that a remote link/publish happened when it did not.
+- [x] **LaunchAgent install output now tells the truth for custom config paths:** `scripts/install-macos-launch-agent.sh` still confirms when a saved config exists, but it only promises automatic reuse for the real default path (`~/.idlewatch/idlewatch.env`). For custom `IDLEWATCH_CONFIG_ENV_PATH` values it now gives the calm, accurate next step instead of falsely claiming background runs will auto-load that file.
+- [x] **Coverage/validation updated for the local-only wording fix:** `test/openclaw-env.test.mjs` now asserts the local quickstart success branch uses the local-check wording and does not reuse the cloud-success sentence.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**110 pass, 0 fail**), fresh non-interactive local-only `quickstart` repro ✅ shows `Initial local telemetry check completed successfully.`, and custom-path LaunchAgent install repro ✅ now states that auto-load only applies to the default saved-config path.
+
+### Notes
+
+- Scope stayed tiny on purpose: wording/contract polish only, no ingest/auth redesigns and no packaging/startup architecture changes.
+- Telemetry path preserved: managed-cloud success copy still says the initial telemetry sample was sent successfully when that path actually succeeds.
+
 ## QA cycle update — 2026-03-15 2:07 AM America/Toronto
 
 ### Prioritized findings
