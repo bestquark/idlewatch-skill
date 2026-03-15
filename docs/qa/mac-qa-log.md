@@ -1,4 +1,27 @@
 
+## QA cycle update — 2026-03-15 5:45 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P2 (polish plan ticket #2) — `idlewatch status` now shows cloud link state and masked API key**
+   - When cloud config is present, status displays the ingest URL and a masked API key (first 8 + last 4 chars).
+   - In local-only mode, cloud link info is hidden — no misleading cloud references.
+   - Addresses the "linked/unlinked state" visibility item from the polish plan.
+   - Two regression tests added: cloud-configured status and local-only status.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (117 pass, 0 fail)
+- `node bin/idlewatch-agent.js status` ✅ — shows cloud link URL + masked key
+- `HOME=$(mktemp -d) node bin/idlewatch-agent.js status` ✅ — no cloud link info, shows local-only + quickstart hint
+- Fresh-home local-only `quickstart --no-tui` ✅
+- `node bin/idlewatch-agent.js --help` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No regressions.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 5:35 AM America/Toronto
 
 ### Fixed this cycle
