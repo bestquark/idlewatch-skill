@@ -1,3 +1,47 @@
+
+## QA cycle update — 2026-03-15 2:20 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — LaunchAgent install script still recommends `idlewatch quickstart` even in the packaged-app path, which is unclear for DMG-only users without a global CLI on PATH**
+   - **Observed:** the packaged LaunchAgent flow is now nicely app-first, but the install script's no-config hint still says `Run 'idlewatch quickstart' once...`. That suggestion assumes the user also has the npm CLI on PATH. A normal DMG-installed app user may only have `/Applications/IdleWatch.app`, not a shell command named `idlewatch`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/app/IdleWatch.app/Contents/MacOS" "$tmp/LaunchAgents" "$tmp/Logs"
+        printf '#!/bin/sh\nexit 0\n' > "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        chmod +x "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        HOME="$tmp/home" \
+        IDLEWATCH_APP_PATH="$tmp/app/IdleWatch.app" \
+        IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent.qa" \
+        IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$tmp/LaunchAgents" \
+        IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$tmp/Logs" \
+        PATH="/bin:/usr/bin" \
+        ./scripts/install-macos-launch-agent.sh
+        ```
+     3. Observe the success tail says:
+        - `No saved IdleWatch config found yet at: .../.idlewatch/idlewatch.env`
+        - `Run 'idlewatch quickstart' once if you want this agent to link and publish right away.`
+     4. In the same constrained PATH, confirm there is no `idlewatch` command available to run.
+   - **Why it matters:** this is a tiny copy issue, but it lands in exactly the “make startup feel boring and native” moment. The app-first install flow should not suddenly assume npm/global CLI context. That makes the packaged story feel leaky and more technical than it needs to be.
+   - **Acceptance criteria:**
+     - When the install script is being used from a packaged-app path, the no-config next step should suggest an app-owned command path that actually exists for that user (for example the packaged binary path), not just `idlewatch quickstart`.
+     - If the product wants to keep the shorter `idlewatch quickstart` wording, it should only appear when the command is actually available on PATH or be framed as an alternate if installed.
+     - LaunchAgent install output should keep one coherent mental model for packaged users: app install, optional login startup, then one believable way to finish setup.
+
+### Commands run this cycle
+
+- `node ./bin/idlewatch-agent.js --help` ✅ rechecked current top-level CLI/help surface
+- temp-root `./scripts/install-macos-launch-agent.sh` with packaged-style app path + constrained `PATH=/bin:/usr/bin` ✅ reproduced the packaged-flow hint that still says `idlewatch quickstart`
+- temp-root `./scripts/uninstall-macos-launch-agent.sh` with the QA label ✅ cleaned up the temporary LaunchAgent after repro
+
+### Notes
+
+- Core installer/setup pipeline still looks healthy; this is small path-clarity polish, not breakage.
+- Highest-value taste issue from this pass: the packaged-app story is mostly clean now, but this one leftover line still sounds like a source/npm workflow leaked into the end-user path.
+
 ## QA cycle update — 2026-03-15 2:47 AM America/Toronto
 
 ### Completed this cycle
