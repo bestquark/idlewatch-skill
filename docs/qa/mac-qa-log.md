@@ -1,4 +1,85 @@
 
+## QA cycle update — 2026-03-15 3:08 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — Rejected first-publish path still emits two back-to-back API-key rejection messages that say almost the same thing**
+   - **Observed:** the overall failure state is now correct and calm, but the rejection branch still prints two consecutive error lines before the final setup-incomplete summary:
+     - `Cloud ingest disabled: API key rejected (invalid_api_key). Run idlewatch quickstart to link a new key.`
+     - `Cloud API key was rejected (invalid_api_key). This device was disconnected. Run idlewatch quickstart with a new API key.`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        port=47911
+        cat > "$tmp/reject-server.mjs" <<'EOF'
+        import http from 'node:http'
+        const port = Number(process.argv[2])
+        const server = http.createServer((req, res) => {
+          req.resume()
+          req.on('end', () => {
+            res.writeHead(401, { 'content-type': 'application/json' })
+            res.end(JSON.stringify({ error: 'invalid_api_key' }))
+          })
+        })
+        server.listen(port, '127.0.0.1')
+        EOF
+        node "$tmp/reject-server.mjs" "$port" >/tmp/idlewatch-reject-server.log 2>&1 &
+        server_pid=$!
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=production \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Reject Box' \
+        IDLEWATCH_CLOUD_API_KEY='iwk_abcdefghijklmnopqrstuvwxyz123456' \
+        IDLEWATCH_CLOUD_INGEST_URL="http://127.0.0.1:${port}/api/ingest" \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart --no-tui
+        kill "$server_pid" >/dev/null 2>&1 || true
+        ```
+     3. Observe both rejection lines appear before the final `⚠️ Setup is not finished yet...` block.
+   - **Why it matters:** this lands in the highest-friction moment of setup. The product already has a good final summary block; repeating the same rejection story twice makes the failure feel noisier and more technical than it needs to.
+   - **Acceptance criteria:**
+     - API-key rejection during the required first publish is explained once in the main user-facing flow.
+     - The final setup-incomplete summary stays visible and remains the primary recovery guidance.
+     - Users should not see two near-duplicate rejection lines unless they carry clearly different information.
+
+2. **P3 — Intentional local-only quickstart still opens with a warning-shaped “no publish target” line even though nothing is actually wrong**
+   - **Observed:** local-only quickstart now ends with the correct success copy, but the required `--once` verification run still prints a warning-style preamble first:
+     - `No publish target is configured yet. Running in local-only mode. Run idlewatch quickstart to link cloud ingest, or configure Firebase/emulator mode if you need that path.`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Polish Box' \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart --no-tui
+        ```
+     3. Observe the command succeeds cleanly, but the very first line is the warning-style `No publish target is configured yet...` message.
+   - **Why it matters:** when a user explicitly chooses local mode, this reads more like a misconfiguration warning than confirmation of the mode they selected. The setup finish is already clean; this one extra line adds avoidable tension and legacy/Firebase-ish noise to an otherwise boring success path.
+   - **Acceptance criteria:**
+     - Local-only quickstart should describe the required verification run in neutral or affirmative local-mode language rather than a warning-shaped complaint.
+     - If a hint about cloud linking remains, it should be secondary and should not make intentional local mode sound broken.
+     - First-run local mode should feel like a supported choice, not an accidental fallback.
+
+### Commands run this cycle
+
+- `./bin/idlewatch-agent.js --help | sed -n '1,32p'` ✅ rechecked top-level help surface after the earlier `--no-tui` fix
+- fresh temp-home local-only `./bin/idlewatch-agent.js quickstart --no-tui` ✅ confirmed clean completion, plus reproduced the still-warning-shaped `No publish target is configured yet...` preamble
+- temp-root packaged-style `./scripts/install-macos-launch-agent.sh` + `./scripts/uninstall-macos-launch-agent.sh` with constrained `PATH=/bin:/usr/bin` ✅ rechecked packaged install/uninstall messaging and plist behavior
+- production non-interactive `quickstart --no-tui` against a tiny local rejecting ingest endpoint ✅ reproduced the duplicate API-key rejection lines before the final retry summary
+
+### Notes
+
+- Core setup/install pipeline still looks healthy.
+- Best remaining taste issue from this pass: the product is close to pleasantly boring, but the unhappy-path rejection copy still repeats itself and the happy local-only path still starts with a warning-shaped sentence.
+
 ## QA cycle update — 2026-03-15 3:00 AM America/Toronto
 
 ### Completed this cycle
