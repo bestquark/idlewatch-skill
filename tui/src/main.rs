@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use crossterm::{
-    event::{self, Event, KeyCode},
+    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -232,7 +232,7 @@ fn render_mode_menu(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, selec
             );
         f.render_widget(path, chunks[2]);
 
-        let help = Paragraph::new("↑/↓ move • Enter select • q quit")
+        let help = Paragraph::new("↑/↓ move • Enter select • Ctrl+C quit")
             .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
@@ -356,7 +356,7 @@ fn render_device_name_prompt(
         );
         f.render_widget(warning_widget, chunks[2]);
 
-        let help = Paragraph::new("Type name • Backspace edit • Enter continue • q quit")
+        let help = Paragraph::new("Type name • Backspace edit • Enter continue • Ctrl+C quit")
             .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
@@ -421,7 +421,7 @@ fn render_api_key_prompt(
         );
         f.render_widget(warning_widget, chunks[2]);
 
-        let help = Paragraph::new("Paste key • Backspace edit • Enter continue • q quit")
+        let help = Paragraph::new("Paste key • Backspace edit • Enter continue • Ctrl+C quit")
             .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
         f.render_widget(help, chunks[3]);
     })?;
@@ -466,6 +466,11 @@ fn sanitize_device_id(raw: &str, fallback: &str) -> String {
     out.trim_matches('-').to_string()
 }
 
+fn is_quit_key(key: &KeyEvent) -> bool {
+    matches!(key.code, KeyCode::Esc | KeyCode::Char('q'))
+        || (matches!(key.code, KeyCode::Char('c')) && key.modifiers.contains(KeyModifiers::CONTROL))
+}
+
 fn main() -> Result<()> {
     let config_dir = default_config_dir();
     let env_file = std::env::var("IDLEWATCH_ENROLL_OUTPUT_ENV_FILE")
@@ -489,7 +494,7 @@ fn main() -> Result<()> {
                     KeyCode::Up => selected_mode = selected_mode.saturating_sub(1),
                     KeyCode::Down => selected_mode = (selected_mode + 1).min(1),
                     KeyCode::Enter => break,
-                    KeyCode::Char('q') | KeyCode::Esc => {
+                    _ if is_quit_key(&key) => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
                         return Err(anyhow!("setup_cancelled"));
@@ -528,7 +533,7 @@ fn main() -> Result<()> {
                         }
                         break;
                     }
-                    KeyCode::Char('q') | KeyCode::Esc => {
+                    _ if is_quit_key(&key) => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
                         return Err(anyhow!("setup_cancelled"));
@@ -570,7 +575,7 @@ fn main() -> Result<()> {
                         device_name_input.pop();
                         device_name_error = None;
                     }
-                    KeyCode::Char('q') | KeyCode::Esc => {
+                    _ if is_quit_key(&key) => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
                         return Err(anyhow!("setup_cancelled"));
@@ -617,7 +622,7 @@ fn main() -> Result<()> {
                             cloud_api_key_input.pop();
                             cloud_api_key_error = None;
                         }
-                        KeyCode::Char('q') | KeyCode::Esc => {
+                        _ if is_quit_key(&key) => {
                             disable_raw_mode()?;
                             execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
                             return Err(anyhow!("setup_cancelled"));
