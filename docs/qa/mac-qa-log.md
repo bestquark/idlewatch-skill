@@ -1,4 +1,28 @@
 
+## QA cycle update — 2026-03-15 5:04 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P1 — `test/openclaw-env.test.mjs` hangs indefinitely when running full suite**
+   - **Root cause:** test `'uses cloud publish label for once mode when cloud ingest config is active'` runs `--once` against `https://idlewatch.com/api/ingest` with an invalid API key and no `spawnSync` timeout. The child process blocks on the real network request indefinitely, preventing the Node.js test runner from exiting.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. `node --test 'test/openclaw-env.test.mjs'`
+     3. Observe: hangs ~69s, then cancelled with "Promise resolution is still pending but the event loop has already resolved"
+   - **Fix:** Changed the test's saved config to use `http://127.0.0.1:1/api/ingest` (fast connection-refused) instead of a real remote URL. Added `timeout: 15000` as safety net.
+   - **Result:** Test passes in ~1s instead of hanging. Full suite: **115 pass, 0 fail, ~24s**.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (115 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No other regressions.
+- ✅ All prior P1/P2 findings from this lane remain resolved.
+
 ## QA cycle update — 2026-03-15 3:20 AM America/Toronto
 
 ### Prioritized findings

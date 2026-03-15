@@ -227,7 +227,7 @@ test('uses cloud publish label for once mode when cloud ingest config is active'
     'IDLEWATCH_DEVICE_NAME=QA Box',
     'IDLEWATCH_DEVICE_ID=qa-box',
     'IDLEWATCH_CLOUD_API_KEY=iwk_invalidexample1234567890',
-    'IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest',
+    'IDLEWATCH_CLOUD_INGEST_URL=http://127.0.0.1:1/api/ingest',
     'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
     'IDLEWATCH_OPENCLAW_USAGE=off'
   ].join('\n'))
@@ -241,7 +241,8 @@ test('uses cloud publish label for once mode when cloud ingest config is active'
       FIREBASE_SERVICE_ACCOUNT_JSON: '',
       FIREBASE_SERVICE_ACCOUNT_B64: ''
     },
-    encoding: 'utf8'
+    encoding: 'utf8',
+    timeout: 15000
   })
 
   assert.match(run.stdout, /idlewatch once/)
