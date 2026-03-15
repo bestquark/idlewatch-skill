@@ -28,15 +28,22 @@ Wizard output:
 
 ### Optional: background startup on macOS
 
-Users can register the packaged app for background startup with LaunchAgent:
+For a normal packaged-app install, register IdleWatch for background startup with the script bundled inside the app:
 
 ```bash
-npm run install:macos-launch-agent
+/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh
 ```
 
 To remove the LaunchAgent later:
 
 ```bash
+/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh
+```
+
+If you're working from a source checkout instead of the installed app, the maintainer/dev wrappers still exist:
+
+```bash
+npm run install:macos-launch-agent
 npm run uninstall:macos-launch-agent
 ```
 

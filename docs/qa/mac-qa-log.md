@@ -1,3 +1,17 @@
+## QA cycle update — 2026-03-15 1:29 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Quickstart failure recovery now leads with product-level retry steps:** `bin/idlewatch-agent.js` now tells users to retry with `idlewatch --once` or rerun `idlewatch quickstart`, while keeping the `set -a; source ...` flow only as an advanced/manual fallback.
+- [x] **Packaged LaunchAgent docs now read like a packaged-app flow:** `docs/onboarding-external.md`, `docs/packaging/macos-launch-agent.md`, and `docs/packaging/macos-dmg.md` now put the bundled app script path first for install/uninstall, with `npm run ...` clearly demoted to source-checkout / maintainer usage.
+- [x] **TUI startup hint no longer leaks a repo-local npm command:** `tui/src/main.rs` now points macOS users at the bundled packaged-app LaunchAgent install script instead of `npm run install:macos-launch-agent`.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**108 pass, 0 fail**) and `npm run validate:onboarding --silent` ✅.
+
+### Notes
+
+- ✅ Scope stayed intentionally tiny: retry-copy polish + packaged startup wording only.
+- ✅ Telemetry path preserved: no auth/ingest/package redesigns, and onboarding validation still passes.
+
 ## QA cycle update — 2026-03-15 1:21 AM America/Toronto
 
 ### Prioritized findings

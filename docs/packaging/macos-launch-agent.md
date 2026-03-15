@@ -36,6 +36,14 @@ IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" npm run install:macos-laun
 
 ## Uninstall
 
+For a normal packaged-app install:
+
+```bash
+/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh
+```
+
+For a source checkout / maintainer workflow:
+
 ```bash
 npm run uninstall:macos-launch-agent
 ```
@@ -68,3 +76,4 @@ launchctl print gui/$(id -u)/com.idlewatch.agent
 - **Permission denied:** Ensure the binary is executable: `chmod +x /Applications/IdleWatch.app/Contents/MacOS/IdleWatch`
 - **Stale telemetry:** If `openclawUsageAgeMs` stays high, OpenClaw may be idle — this is expected behavior (see `docs/telemetry/idle-stale-policy.md`).
 - **Reinstall after update:** After installing a new IdleWatch.app, re-run the install script to reload the agent.
+w IdleWatch.app, re-run the install script to reload the agent.

@@ -701,6 +701,6 @@ fn main() -> Result<()> {
     println!("Saved device name: {}", device_name);
     println!("You can rerun this TUI anytime to update device name, API key, or metrics.");
     println!("Next step: idlewatch-agent --once");
-    println!("For background startup on macOS: npm run install:macos-launch-agent");
+    println!("For background startup on macOS: /Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh");
     Ok(())
 }

@@ -395,8 +395,9 @@ if (quickstartRequested) {
 
     console.error(`⚠️ Setup is not finished yet. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
     console.error('The first required telemetry sample did not publish successfully, so this device may not be linked yet.')
-    console.error(`Retry with: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
+    console.error('Retry with: idlewatch --once')
     console.error('Or rerun: idlewatch quickstart')
+    console.error(`Advanced/manual fallback: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
     process.exit(onceRun.status ?? 1)
   } catch (err) {
     if (String(err?.message || '') === 'setup_cancelled') {

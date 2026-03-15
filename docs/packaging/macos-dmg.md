@@ -127,15 +127,19 @@ Optional environment variables:
   - Runs `scripts/validate-packaged-metadata.sh` and validates bundle metadata + platform consistency
 - `npm run package:release`
   - Runs `package:trusted` and checksum validation in one command (safe for production-ready artifact preparation)
+- `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh`
+  - Packaged-app path for enabling background startup on a normal installed app
+- `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh`
+  - Packaged-app path for removing the background startup agent later
 - `scripts/install-macos-launch-agent.sh`
   - Writes `~/Library/LaunchAgents/<label>.plist`
   - Loads `LaunchAgent` under current user sandbox, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s), background mode, stdout/stderr logs
 - `scripts/uninstall-macos-launch-agent.sh`
   - Unloads and removes `~/Library/LaunchAgents/<label>.plist`
 - `npm run install:macos-launch-agent`
-  - Wrapper for `scripts/install-macos-launch-agent.sh`
+  - Source-checkout / maintainer wrapper for `scripts/install-macos-launch-agent.sh`
 - `npm run uninstall:macos-launch-agent`
-  - Wrapper for `scripts/uninstall-macos-launch-agent.sh`
+  - Source-checkout / maintainer wrapper for `scripts/uninstall-macos-launch-agent.sh`
 - `scripts/validate-trusted-prereqs.sh`
   - Validates local signing identity + notary keychain profile before trusted packaging
 - `npm run package:trusted`
