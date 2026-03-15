@@ -1,4 +1,40 @@
 
+## QA cycle update — 2026-03-15 3:35 PM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (120 pass, 0 fail)
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, common/advanced env split
+- `node bin/idlewatch-agent.js status` ✅ — shows device, cloud link, masked key, metrics, log size, sample age, contextual hint
+- Fresh-home local-only `quickstart --no-tui` ✅ — calm local-mode language, compact success, no Firebase noise
+- No `idlewatch setup` references in CLI source ✅
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ Test count stable at 120.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing actionable remains in this implementer lane's scope.
+
+## QA cycle update — 2026-03-15 3:30 PM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (120 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, no legacy references
+- Fresh-home `--dry-run` output reviewed ✅ — compact banner, correct local-only output
+- No `idlewatch setup` references in CLI source ✅
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ Test count stable at 120.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing to commit beyond this log entry.
+
 ## QA cycle update — 2026-03-15 3:13 PM America/Toronto
 
 ### Fixed this cycle
