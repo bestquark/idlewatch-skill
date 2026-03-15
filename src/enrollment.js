@@ -5,6 +5,7 @@ import readline from 'node:readline/promises'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import { resolveTemperatureProbe } from './thermal.js'
 
 function defaultConfigDir() {
   return path.join(os.homedir(), '.idlewatch')
@@ -237,6 +238,59 @@ function monitorTargetsNeedOpenClawUsage(monitorTargets) {
   return monitorTargets.some((item) => OPENCLAW_AGENT_TARGETS.includes(item) && item !== 'agent_activity')
 }
 
+function ensureTemperatureTelemetryHelper(monitorTargets, { nonInteractive = false } = {}) {
+  if (process.platform !== 'darwin' || !monitorTargets.includes('temperature')) {
+    return { status: 'not-required', helper: null }
+  }
+
+  const existing = resolveTemperatureProbe()
+  if (existing) {
+    return { status: 'available', helper: existing.source }
+  }
+
+  console.log('\nTemperature telemetry selected. Installing a macOS temperature helper for direct Celsius readings…')
+
+  const installRuns = []
+  const runInstall = (label, command, args) => {
+    const run = spawnSync(command, args, {
+      encoding: 'utf8',
+      stdio: nonInteractive ? 'pipe' : 'inherit'
+    })
+    installRuns.push({
+      label,
+      command,
+      args,
+      status: run.status,
+      stderr: String(run.stderr || '').trim()
+    })
+    return run.status === 0
+  }
+
+  if (commandExists('brew', ['--version'])) {
+    runInstall('brew', 'brew', ['install', 'osx-cpu-temp'])
+    const brewProbe = resolveTemperatureProbe()
+    if (brewProbe) {
+      return { status: 'installed', helper: brewProbe.source, installer: 'brew' }
+    }
+  }
+
+  if (commandExists('gem', ['--version'])) {
+    runInstall('gem', 'gem', ['install', 'iStats', '--user-install', '--no-document'])
+    const gemProbe = resolveTemperatureProbe()
+    if (gemProbe) {
+      return { status: 'installed', helper: gemProbe.source, installer: 'gem' }
+    }
+  }
+
+  const lastFailure = installRuns.findLast((attempt) => attempt.status !== 0)
+  const detail = lastFailure?.stderr || installRuns.map((attempt) => `${attempt.label}:${attempt.status}`).join(', ') || 'no_supported_installer'
+  return {
+    status: 'failed',
+    helper: null,
+    reason: detail
+  }
+}
+
 export async function runEnrollmentWizard(options = {}) {
   const nonInteractive = options.nonInteractive || process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE === '1'
   const noTui = options.noTui || process.env.IDLEWATCH_NO_TUI === '1'
@@ -266,15 +320,24 @@ export async function runEnrollmentWizard(options = {}) {
     const tuiResult = tryRustTui({ configDir, outputEnvFile })
     const tuiEnrollment = parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName: deviceName })
     if (tuiResult.ok) {
-      return tuiEnrollment || {
+      const enrollment = tuiEnrollment || {
         mode: 'tui',
         configDir,
         outputEnvFile
       }
+      const temperatureHelper = ensureTemperatureTelemetryHelper(enrollment.monitorTargets || monitorTargets, { nonInteractive })
+      return {
+        ...enrollment,
+        temperatureHelper
+      }
     }
 
     if (tuiEnrollment) {
-      return tuiEnrollment
+      const temperatureHelper = ensureTemperatureTelemetryHelper(tuiEnrollment.monitorTargets || monitorTargets, { nonInteractive })
+      return {
+        ...tuiEnrollment,
+        temperatureHelper
+      }
     }
 
     if (tuiResult.reason === 'bundled-binary-missing-and-cargo-missing') {
@@ -381,11 +444,14 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (rl) rl.close()
 
+  const temperatureHelper = ensureTemperatureTelemetryHelper(monitorTargets, { nonInteractive })
+
   return {
     mode,
     configDir,
     outputEnvFile,
     monitorTargets,
+    temperatureHelper,
     deviceName,
     deviceId: safeDeviceId
   }

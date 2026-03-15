@@ -451,6 +451,13 @@ if (quickstartRequested) {
 
     if (onceRun.status === 0) {
       console.log(`✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
+      if (result.temperatureHelper?.status === 'installed') {
+        console.log(`Temperature helper installed automatically via ${result.temperatureHelper.installer}.`)
+      } else if (result.temperatureHelper?.status === 'available') {
+        console.log(`Temperature helper detected: ${result.temperatureHelper.helper}.`)
+      } else if (result.temperatureHelper?.status === 'failed') {
+        console.log(`Temperature helper auto-install did not complete. Falling back to thermal state only for now (${result.temperatureHelper.reason}).`)
+      }
       if (result.mode === 'local') {
         console.log('Initial local telemetry check completed successfully.')
       } else {

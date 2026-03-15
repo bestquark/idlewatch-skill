@@ -21,6 +21,7 @@ test('thermal sampler prefers explicit temp probe and falls back to pmset state'
   const calls = []
   const sample = thermalSampleDarwin((cmd) => {
     calls.push(cmd)
+    if (cmd === 'command -v istats') return '/usr/local/bin/istats\n'
     if (cmd === 'istats cpu temp') return 'CPU temp: 53.1°C'
     if (cmd === 'pmset -g therm') return 'Note: No thermal warning level has been recorded'
     throw new Error(`unexpected command: ${cmd}`)
@@ -32,5 +33,35 @@ test('thermal sampler prefers explicit temp probe and falls back to pmset state'
     thermalLevel: 0,
     thermalState: 'nominal'
   })
-  assert.deepEqual(calls, ['istats cpu temp', 'pmset -g therm'])
+  assert.deepEqual(calls, ['command -v istats', 'istats cpu temp', 'pmset -g therm'])
+})
+
+test('resolves a user gem istats install when it is not on PATH', () => {
+  const probe = __thermalTestUtils.resolveTemperatureProbe(
+    (cmd) => {
+      if (cmd === 'command -v istats') throw new Error('missing')
+      if (cmd === 'command -v osx-cpu-temp') throw new Error('missing')
+      throw new Error(`unexpected command: ${cmd}`)
+    },
+    {
+      homeDir: '/Users/tester',
+      fsModule: {
+        readdirSync(dir) {
+          assert.equal(dir, '/Users/tester/.gem/ruby')
+          return [
+            { isDirectory: () => true, name: '3.4.0' }
+          ]
+        },
+        existsSync(filePath) {
+          return filePath === '/Users/tester/.gem/ruby/3.4.0/bin/istats'
+        }
+      }
+    }
+  )
+
+  assert.deepEqual(probe, {
+    cmd: '\'/Users/tester/.gem/ruby/3.4.0/bin/istats\' cpu temp',
+    source: 'istats',
+    path: '/Users/tester/.gem/ruby/3.4.0/bin/istats'
+  })
 })
