@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline/promises'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
 function defaultConfigDir() {
@@ -24,6 +25,8 @@ function writeSecureFile(filePath, content) {
 }
 
 const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'openclaw']
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url))
+const PACKAGE_ROOT = path.resolve(MODULE_DIR, '..')
 
 function commandExists(bin, args = ['--version']) {
   const result = spawnSync(bin, args, { stdio: 'ignore' })
@@ -93,13 +96,13 @@ function sanitizeDeviceId(raw, fallback = os.hostname()) {
 
 function tryRustTui({ configDir, outputEnvFile }) {
   const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
-  if (disabled) return false
+  if (disabled) return { ok: false, reason: 'disabled' }
 
   const cargoProbe = spawnSync('cargo', ['--version'], { stdio: 'ignore' })
-  if (cargoProbe.status !== 0) return false
+  if (cargoProbe.status !== 0) return { ok: false, reason: 'cargo-missing' }
 
-  const manifestPath = path.resolve(process.cwd(), 'tui', 'Cargo.toml')
-  if (!fs.existsSync(manifestPath)) return false
+  const manifestPath = path.join(PACKAGE_ROOT, 'tui', 'Cargo.toml')
+  if (!fs.existsSync(manifestPath)) return { ok: false, reason: 'manifest-missing', manifestPath }
 
   const run = spawnSync('cargo', ['run', '--quiet', '--manifest-path', manifestPath], {
     stdio: 'inherit',
@@ -111,10 +114,10 @@ function tryRustTui({ configDir, outputEnvFile }) {
   })
 
   if (run.status === 0) {
-    return true
+    return { ok: true, manifestPath }
   }
 
-  return false
+  return { ok: false, reason: `cargo-run-failed:${run.status ?? 'unknown'}`, manifestPath }
 }
 
 function promptModeText() {
@@ -137,11 +140,18 @@ export async function runEnrollmentWizard(options = {}) {
     availableMonitorTargets
   )
 
-  if (!nonInteractive && tryRustTui({ configDir, outputEnvFile })) {
-    return {
-      mode: 'tui',
-      configDir,
-      outputEnvFile
+  if (!nonInteractive) {
+    const tuiResult = tryRustTui({ configDir, outputEnvFile })
+    if (tuiResult.ok) {
+      return {
+        mode: 'tui',
+        configDir,
+        outputEnvFile
+      }
+    }
+
+    if (!['disabled', 'cargo-missing'].includes(tuiResult.reason || '')) {
+      console.warn(`IdleWatch TUI unavailable (${tuiResult.reason || 'unknown'}). Falling back to text setup.`)
     }
   }
 
