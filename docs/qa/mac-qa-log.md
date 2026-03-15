@@ -1,4 +1,38 @@
 
+## QA cycle update — 2026-03-15 2:50 AM America/Toronto
+
+### Prioritized findings
+
+1. **P3 — Top-level CLI usage line still hides the supported `--no-tui` escape hatch, which makes the simplest fallback path less copy/pasteable than it should be**
+   - **Observed:** the help screen is otherwise clean, and it does document `--no-tui` in the options list, but the very first `Usage:` line only shows `[--dry-run] [--once] [--help]`. A user skimming the first line for valid syntax would not see that `idlewatch quickstart --no-tui` is an official path, even though that is the main “keep it simple, skip Cargo/TUI weirdness” fallback.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        ./bin/idlewatch-agent.js --help
+        ```
+     3. Observe the top usage line prints:
+        - `idlewatch [quickstart|configure|dashboard|run] [--dry-run] [--once] [--help]`
+     4. Then compare with the options block just below it, which separately documents:
+        - `--no-tui    Skip the Rust TUI and use plain text setup without installing Cargo`
+   - **Why it matters:** this is tiny, but it lands in exactly the “just give me the boring command that works” moment. If `--no-tui` is part of the supported happy-path fallback, the first syntax line should not make it look hidden or second-class.
+   - **Acceptance criteria:**
+     - The top `Usage:` line includes `--no-tui` anywhere users would naturally scan for supported flags.
+     - Help text keeps the calm product story: TUI when available, plain text fallback when wanted.
+     - A user reading only the first screenful should understand that `idlewatch quickstart --no-tui` is a real supported command.
+
+### Commands run this cycle
+
+- `./bin/idlewatch-agent.js --help` ✅ confirmed current top-level help surface
+- local-only non-interactive `quickstart` with saved-config metric-only reconfigure ✅ confirmed metric toggle persistence stays boring (`cpu,memory` → `cpu`)
+- local-only non-interactive `quickstart` with renamed device ✅ confirmed device identity + derived device-id persistence still behave correctly (`metric-box` → `metric-box-renamed`)
+- `grep -RInE "..." README.md docs bin scripts src tui` ✅ spot-checked install/help/docs wording for leftover path/story mismatches
+
+### Notes
+
+- Core installer/setup pipeline still looks healthy.
+- Best small follow-up from this pass: make the help header as honest as the options list so the plain-text fallback is discoverable without extra reading.
+
 ## QA cycle update — 2026-03-15 2:31 AM America/Toronto
 
 ### Completed this cycle
