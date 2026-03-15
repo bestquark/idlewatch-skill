@@ -1,5 +1,79 @@
 ## QA cycle update — 2026-03-15 1:12 AM America/Toronto
 
+### Prioritized findings
+
+1. **P1 — LaunchAgent docs currently tell packaged-app users to run repo-local `npm run` commands, which is not a believable end-user install path**
+   - **Observed:** both external onboarding and the dedicated LaunchAgent doc present `npm run install:macos-launch-agent` / `npm run uninstall:macos-launch-agent` as the user-facing path, even in the signed-DMG / packaged-app story.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Open `docs/onboarding-external.md` and `docs/packaging/macos-launch-agent.md`
+     3. Observe the packaged-user guidance:
+        - `docs/onboarding-external.md` lines near `Optional: background startup on macOS`
+        - `docs/packaging/macos-launch-agent.md` install/uninstall examples
+     4. Compare that with the actual end-user context: a DMG-installed app user has `/Applications/IdleWatch.app`, but not the repo checkout or package scripts.
+   - **Why it matters:** this is the exact sort of setup friction that makes a “simple background install” feel weirdly technical. A packaged-app user should not have to infer “actually go clone the repo or open a source tree” to enable startup.
+   - **Acceptance criteria:**
+     - LaunchAgent docs present a real packaged-user command path (for example a direct script/app-based path) instead of repo-local `npm run` snippets.
+     - If `npm run ...` remains documented, it is clearly labeled as a maintainer/dev workflow, not the primary end-user path.
+     - The background-startup story reads like one product, not a mix of packaged app plus source checkout assumptions.
+
+2. **P2 — Startup / `--once` status lines still say `firebase=false` even when cloud ingest is the active configured path**
+   - **Observed:** the first human-readable status line in `--once` still prints `firebase=false` even when cloud ingest is enabled and attempted via `IDLEWATCH_CLOUD_API_KEY` + `IDLEWATCH_CLOUD_INGEST_URL`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/home/.idlewatch"
+        cat > "$tmp/home/.idlewatch/idlewatch.env" <<'EOF'
+        IDLEWATCH_DEVICE_NAME=QA Box
+        IDLEWATCH_DEVICE_ID=qa-box
+        IDLEWATCH_CLOUD_API_KEY=iwk_invalidexample1234567890
+        IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest
+        IDLEWATCH_MONITOR_TARGETS=cpu,memory
+        IDLEWATCH_OPENCLAW_USAGE=off
+        EOF
+        HOME="$tmp/home" node ./bin/idlewatch-agent.js --once
+        ```
+     3. Observe the first line starts with:
+        `idlewatch once ... firebase=false ...`
+     4. Then compare with the emitted sample / error text, which shows cloud ingest is the active path:
+        - JSON row includes `source.cloudIngestionStatus":"enabled"`
+        - stderr ends with `Cloud ingest disabled: API key rejected (invalid_api_key)...`
+   - **Why it matters:** the first-run / re-test flow should feel calm and legible. Printing `firebase=false` during the cloud-linking path is both misleading and noisy; it makes users second-guess whether their saved config even loaded.
+   - **Acceptance criteria:**
+     - Human-readable startup lines describe the active publish mode in current product language (`cloud`, `local-only`, or similar), not `firebase=` when cloud ingest is in use.
+     - The status line should not contradict later ingest output.
+     - First visible status output should help confirm the user’s setup state, not leak implementation history.
+
+3. **P2 — Top-level CLI/docs copy still describes `--once` and local-only mode in Firebase-first language**
+   - **Observed:** several primary surfaces still explain `--once` as “publish to Firebase when configured” and `--dry-run` as “no Firebase write,” even though the current product story is API-key cloud ingest first, with Firebase/emulator now clearly advanced/compat mode.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Check:
+        - `README.md` install / CLI options section (`--dry-run`: `no Firebase write`, `--once`: `publish to Firebase when configured`)
+        - `bin/idlewatch-agent.js --help`
+     3. Compare that wording with the quickstart copy immediately above it (`Create an API key on idlewatch.com/api`, `IdleWatch saves your local config and sends a first sample`).
+   - **Why it matters:** the product got nicely simpler, but the top-level commands still sound like a legacy Firebase tool. That creates low-grade confusion right in the most visible help surface.
+   - **Acceptance criteria:**
+     - Primary `README` and `--help` copy describe `--once` / `--dry-run` in cloud-first or neutral language.
+     - Firebase wording is kept under clearly advanced/compat sections rather than mixed into the first screenful.
+     - A new user reading only the top-level install/help text should understand the happy path without mentally translating legacy terms.
+
+### Commands run this cycle
+
+- `node ./bin/idlewatch-agent.js --help` ✅
+- `HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run` ✅
+- `HOME="$tmp/home" node ./bin/idlewatch-agent.js --once` with saved cloud ingest env ✅ repro for misleading `firebase=false` startup line during cloud path
+- reviewed `README.md`, `docs/onboarding-external.md`, and `docs/packaging/macos-launch-agent.md` for first-run / background-install wording
+
+### Notes
+
+- Core setup/persistence path still appears healthy; this cycle stayed in polish territory.
+- Highest-value taste issue is setup-story coherence: a few surfaces still leak old Firebase/dev-centric language into what should feel like a very boring API-key onboarding flow.
+
+## QA cycle update — 2026-03-15 1:12 AM America/Toronto
+
 ### Completed this cycle
 
 - [x] **Unified the primary `npx` story around `idlewatch`:** `README.md` and `docs/onboarding-external.md` now present `npx idlewatch quickstart` as the default path, while keeping `idlewatch-skill` documented only as a compatibility alias.
