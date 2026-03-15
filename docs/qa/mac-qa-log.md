@@ -1,3 +1,18 @@
+## QA cycle update — 2026-03-15 1:35 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **LaunchAgent docs now lead with the believable packaged-app path:** `docs/packaging/macos-launch-agent.md` now presents the bundled `/Applications/IdleWatch.app/.../install-macos-launch-agent.sh` flow first, keeps `npm run install:macos-launch-agent` clearly secondary for source checkouts, and mirrors the same packaged-first story for custom app paths.
+- [x] **Background-startup docs now reinforce saved-config auto-load instead of repo vibes:** the LaunchAgent doc now explicitly says the agent will reuse `~/.idlewatch/idlewatch.env` from `idlewatch quickstart`, keeping setup/reconfigure mental overhead low.
+- [x] **LaunchAgent install script gained tiny first-run quality-of-life hints:** `scripts/install-macos-launch-agent.sh` now prints log locations and tells the user whether saved IdleWatch config was found, plus the calm next step if not (`idlewatch quickstart`).
+- [x] **Minor doc cleanup:** removed duplicated/corrupted trailing text in `docs/packaging/macos-launch-agent.md` and clarified `docs/packaging/macos-dmg.md` so packaged users prefer the bundled install/uninstall scripts over repo-local npm wrappers.
+- [x] **Validation:** `bash -n scripts/install-macos-launch-agent.sh` ✅, `bash -n scripts/uninstall-macos-launch-agent.sh` ✅, `npm run test:unit --silent` ✅ (**108 pass, 0 fail**).
+
+### Notes
+
+- ✅ Scope stayed intentionally tiny and low-risk: packaging/startup docs + install-script output polish only.
+- ✅ Telemetry path preserved: no auth/ingest redesigns, no packaging rewrites, no collector behavior changes.
+
 ## QA cycle update — 2026-03-15 1:29 AM America/Toronto
 
 ### Completed this cycle

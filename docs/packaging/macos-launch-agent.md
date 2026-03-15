@@ -10,11 +10,19 @@ Run IdleWatch as a background service that starts automatically at login.
 
 ## Install
 
+For a normal packaged-app install:
+
+```bash
+/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh
+```
+
+For a source checkout / maintainer workflow:
+
 ```bash
 npm run install:macos-launch-agent
 ```
 
-This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist` and loads it immediately.
+This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist` and loads it immediately. If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart`, the background agent reuses it automatically.
 
 ### Configuration
 
@@ -29,6 +37,15 @@ All settings are optional environment variables set **before** running the insta
 | `IDLEWATCH_INTERVAL_MS` | `10000` | Collection interval (min 60s for StartInterval) |
 
 ### Custom app path
+
+For a packaged app outside `/Applications`:
+
+```bash
+IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" \
+  "$HOME/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh"
+```
+
+For a source checkout / maintainer workflow:
 
 ```bash
 IDLEWATCH_APP_PATH="$HOME/Applications/IdleWatch.app" npm run install:macos-launch-agent
@@ -76,4 +93,3 @@ launchctl print gui/$(id -u)/com.idlewatch.agent
 - **Permission denied:** Ensure the binary is executable: `chmod +x /Applications/IdleWatch.app/Contents/MacOS/IdleWatch`
 - **Stale telemetry:** If `openclawUsageAgeMs` stays high, OpenClaw may be idle — this is expected behavior (see `docs/telemetry/idle-stale-policy.md`).
 - **Reinstall after update:** After installing a new IdleWatch.app, re-run the install script to reload the agent.
-w IdleWatch.app, re-run the install script to reload the agent.

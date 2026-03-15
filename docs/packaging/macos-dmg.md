@@ -138,8 +138,10 @@ Optional environment variables:
   - Unloads and removes `~/Library/LaunchAgents/<label>.plist`
 - `npm run install:macos-launch-agent`
   - Source-checkout / maintainer wrapper for `scripts/install-macos-launch-agent.sh`
+  - Packaged-app users should prefer `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh`
 - `npm run uninstall:macos-launch-agent`
   - Source-checkout / maintainer wrapper for `scripts/uninstall-macos-launch-agent.sh`
+  - Packaged-app users should prefer `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh`
 - `scripts/validate-trusted-prereqs.sh`
   - Validates local signing identity + notary keychain profile before trusted packaging
 - `npm run package:trusted`

@@ -13,6 +13,7 @@ if [[ $START_INTERVAL_SEC -lt 60 ]]; then
 fi
 
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
+CONFIG_ENV_PATH="${IDLEWATCH_CONFIG_ENV_PATH:-$HOME/.idlewatch/idlewatch.env}"
 
 if [[ ! -d "$PLIST_ROOT" ]]; then
   mkdir -p "$PLIST_ROOT"
@@ -77,3 +78,11 @@ launchctl bootstrap "gui/$USER_GUID" "$PLIST_PATH"
 launchctl enable "$PLIST_ID"
 echo "Installed LaunchAgent: $PLIST_ID"
 echo "Plist: $PLIST_PATH"
+echo "Logs: $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
+if [[ -f "$CONFIG_ENV_PATH" ]]; then
+  echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
+  echo "Background runs will auto-load it."
+else
+  echo "No saved IdleWatch config found yet at: $CONFIG_ENV_PATH"
+  echo "Run 'idlewatch quickstart' once if you want this agent to link and publish right away."
+fi
