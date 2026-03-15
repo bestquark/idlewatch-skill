@@ -218,8 +218,12 @@ function tryRustTui({ configDir, outputEnvFile }) {
   return { ok: false, reason: `cargo-run-failed:${run.status ?? 'unknown'}`, manifestPath }
 }
 
-function promptModeText() {
-  return `\n╭───────────────────────────────────────────────╮\n│              IdleWatch Setup Wizard           │\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Link this device with an API key from idlewatch.com/api\n  2) Local-only (no cloud writes)\n`
+function promptModeText({ isReconfigure = false, currentMode = null } = {}) {
+  const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup Wizard'
+  const pad = Math.max(0, Math.floor((47 - title.length) / 2))
+  const titleLine = ' '.repeat(pad) + title
+  const defaultHint = currentMode === 'local' ? ' (default 2)' : ' (default 1)'
+  return `\n╭───────────────────────────────────────────────╮\n│${titleLine.padEnd(47)}│\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Link this device with an API key from idlewatch.com/api\n  2) Local-only (no cloud writes)\n`
 }
 
 export async function runEnrollmentWizard(options = {}) {
@@ -228,11 +232,17 @@ export async function runEnrollmentWizard(options = {}) {
   const configDir = path.resolve(options.configDir || process.env.IDLEWATCH_ENROLL_CONFIG_DIR || defaultConfigDir())
   const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
 
+  // Load existing saved config for reconfigure defaults
+  let existingConfig = null
+  if (fs.existsSync(outputEnvFile)) {
+    existingConfig = parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName: machineName() })
+  }
+
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
   let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
   let deviceName = normalizeDeviceName(
-    options.deviceName || process.env.IDLEWATCH_ENROLL_DEVICE_NAME || process.env.IDLEWATCH_DEVICE_NAME || machineName()
+    options.deviceName || process.env.IDLEWATCH_ENROLL_DEVICE_NAME || process.env.IDLEWATCH_DEVICE_NAME || (existingConfig?.deviceName) || machineName()
   )
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
@@ -266,10 +276,16 @@ export async function runEnrollmentWizard(options = {}) {
   let rl = null
   if (!nonInteractive) {
     rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    console.log(promptModeText())
+    const isReconfigure = !!existingConfig
+    const currentMode = existingConfig?.mode || null
+    const modeDefault = currentMode === 'local' ? '2' : '1'
+    console.log(promptModeText({ isReconfigure, currentMode }))
     console.log(`Storage path: ${configDir}`)
     console.log(`Environment file: ${outputEnvFile}`)
-    const modeInput = (await rl.question('\nMode [1/2] (default 1): ')).trim() || '1'
+    if (isReconfigure) {
+      console.log(`Current device: ${existingConfig.deviceName} (${currentMode === 'production' ? 'cloud' : 'local-only'})`)
+    }
+    const modeInput = (await rl.question(`\nMode [1/2] (default ${modeDefault}): `)).trim() || modeDefault
     mode = modeInput === '2' ? 'local' : 'production'
     const deviceNameInput = (await rl.question(`Device name [${deviceName}]: `)).trim()
     deviceName = normalizeDeviceName(deviceNameInput || deviceName)
@@ -281,9 +297,36 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if ((mode === 'production') && !cloudApiKey) {
-    if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
-    console.log('\nPaste the API key from idlewatch.com/api.')
-    cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+    // Try to reuse existing saved API key when reconfiguring
+    if (existingConfig?.mode === 'production' && fs.existsSync(outputEnvFile)) {
+      try {
+        const raw = fs.readFileSync(outputEnvFile, 'utf8')
+        for (const line of raw.split(/\r?\n/)) {
+          const trimmed = line.trim()
+          if (trimmed.startsWith('IDLEWATCH_CLOUD_API_KEY=')) {
+            const savedKey = normalizeCloudApiKey(trimmed.slice('IDLEWATCH_CLOUD_API_KEY='.length))
+            if (looksLikeCloudApiKey(savedKey)) {
+              cloudApiKey = savedKey
+              break
+            }
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (!cloudApiKey) {
+      if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
+      console.log('\nPaste the API key from idlewatch.com/api.')
+      cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+    } else if (rl) {
+      const masked = cloudApiKey.slice(0, 8) + '…' + cloudApiKey.slice(-4)
+      console.log(`\nUsing saved API key: ${masked}`)
+      const changeKey = (await rl.question('Keep this key? [Y/n]: ')).trim().toLowerCase()
+      if (changeKey === 'n' || changeKey === 'no') {
+        console.log('Paste the new API key from idlewatch.com/api.')
+        cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+      }
+    }
   }
 
   if (!nonInteractive && rl) {
