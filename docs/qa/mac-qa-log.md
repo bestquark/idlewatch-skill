@@ -1,4 +1,66 @@
 
+## QA cycle update — 2026-03-15 4:06 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — Happy-path quickstart still dumps the full raw telemetry JSON row into the setup flow, which makes first-run success feel much more technical than the product needs to**
+   - **Observed:** the setup itself now reads calmly, but the required verification run still prints the entire telemetry payload between the `idlewatch once ...` status line and the final `✅ Setup complete...` summary. On a normal successful setup, that means a new user gets hit with a giant raw JSON blob full of fields like `schemaCompat`, `usageProbeSweeps`, `usageNearStaleMsThreshold`, and `fleet.provenance` right in the middle of the supposedly boring happy path.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Metric Box' \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart --no-tui
+        ```
+     3. Observe the flow is otherwise healthy, but the success path includes a full raw telemetry row like:
+        - `{"host":"Leptons-Mini", ... "schemaFamily":"idlewatch.openclaw.fleet", ... "fleet":{"host":"Leptons-Mini", ...}}`
+     4. Then only after that wall of JSON does the command land on:
+        - `✅ Setup complete. Mode=local device=Metric Box envFile=...`
+        - `Initial local telemetry check completed successfully.`
+   - **Why it matters:** this is probably fine for debugging, but as end-user setup UX it is visually noisy and a little intimidating. The user already got the important answer — setup worked. Dumping the whole row makes the product feel like a developer tool at exactly the moment it should feel polished.
+   - **Acceptance criteria:**
+     - Default `quickstart` success should summarize the verification sample in product language, not dump the raw telemetry JSON row.
+     - If raw sample output is still useful, keep it behind an explicit debug/verbose path rather than the default first-run flow.
+     - The final success screen should foreground the useful boring facts: device name, mode/link status, enabled metrics, and whether the first sample succeeded.
+
+2. **P3 — `idlewatch --help` still throws a dense wall of advanced env knobs directly under the happy-path setup story, which makes the primary install surface feel more operator-heavy than it needs to**
+   - **Observed:** the first screenful is better than before, but `--help` still flows immediately from the simple four-step quickstart into a long block of low-level env variables like `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP`, `IDLEWATCH_USAGE_REFRESH_REPROBES`, and `IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS`. None of that is wrong, but it is a lot of implementation detail on the most visible user-facing help surface.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        ./bin/idlewatch-agent.js --help | sed -n '1,80p'
+        ```
+     3. Observe that after the clean `Quickstart:` block, the same default help screen immediately continues into a long advanced env dump beginning with:
+        - `IDLEWATCH_HOST`
+        - `IDLEWATCH_INTERVAL_MS`
+        - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS`
+        - `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP`
+        - `IDLEWATCH_USAGE_REFRESH_REPROBES`
+   - **Why it matters:** this is a small taste issue, but it affects the first impression. A user opening `--help` to find the happy path does not need the collector's whole tuning surface in the same breath. It makes the product feel more fiddly and more technical than the setup actually is.
+   - **Acceptance criteria:**
+     - Default `--help` should keep the happy path prominent and compact.
+     - Advanced env tuning should move lower, collapse behind a separate advanced section/file, or otherwise stop competing with the primary setup story in the first screenful.
+     - A new user reading only the default help output should come away with the product command path, not the feeling that they need to tune probe buffers and staleness thresholds before getting started.
+
+### Commands run this cycle
+
+- `./bin/idlewatch-agent.js --help | sed -n '1,80p'` ✅ rechecked current primary help surface; syntax/story is cleaner now, but the first-page env dump is still quite operator-heavy
+- fresh temp-home local-only `./bin/idlewatch-agent.js quickstart --no-tui` ✅ confirmed the happy-path copy improvements still hold, and reproduced the remaining raw telemetry JSON dump in the middle of successful setup
+- local-only non-interactive reconfigure (`cpu,memory` → `cpu`) ✅ rechecked metric-toggle persistence; no new persistence regression observed
+- temp-root packaged-style `./scripts/install-macos-launch-agent.sh` with constrained `PATH=/bin:/usr/bin` ✅ rechecked packaged install messaging; no new LaunchAgent regressions observed
+
+### Notes
+
+- Core installer/setup pipeline still looks healthy.
+- Best remaining polish issue from this pass: the product mostly reads calmly now, but the default quickstart success screen still leaks raw telemetry internals instead of landing on a neat boring confirmation.
+
 ## QA cycle update — 2026-03-15 3:39 AM America/Toronto
 
 ### Completed this cycle
