@@ -94,12 +94,49 @@ function sanitizeDeviceId(raw, fallback = os.hostname()) {
   return sanitized || normalizeDeviceName(fallback).replace(/[^a-zA-Z0-9_.-]/g, '_')
 }
 
-function tryRustTui({ configDir, outputEnvFile }) {
+function cargoAvailable() {
+  const cargoProbe = spawnSync('cargo', ['--version'], { stdio: 'ignore' })
+  return cargoProbe.status === 0
+}
+
+function installRustToolchain() {
+  if (cargoAvailable()) return { ok: true, installed: false }
+  if (process.env.IDLEWATCH_DISABLE_RUST_INSTALL === '1') return { ok: false, reason: 'install-disabled' }
+  if (!process.stdin.isTTY || !process.stdout.isTTY) return { ok: false, reason: 'non-tty' }
+  if (!['darwin', 'linux'].includes(process.platform)) return { ok: false, reason: `unsupported-platform:${process.platform}` }
+
+  console.log('IdleWatch TUI needs Rust/Cargo. Installing rustup + Cargo now...')
+  const install = spawnSync('sh', ['-c', 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'], {
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      CARGO_HOME: process.env.CARGO_HOME || path.join(os.homedir(), '.cargo'),
+      RUSTUP_HOME: process.env.RUSTUP_HOME || path.join(os.homedir(), '.rustup')
+    }
+  })
+
+  if (install.status !== 0) return { ok: false, reason: `rustup-install-failed:${install.status ?? 'unknown'}` }
+
+  const cargoBinDir = path.join(process.env.CARGO_HOME || path.join(os.homedir(), '.cargo'), 'bin')
+  if (!process.env.PATH?.split(path.delimiter).includes(cargoBinDir)) {
+    process.env.PATH = `${cargoBinDir}${path.delimiter}${process.env.PATH || ''}`
+  }
+
+  return cargoAvailable() ? { ok: true, installed: true } : { ok: false, reason: 'cargo-still-missing' }
+}
+
+function tryRustTui({ configDir, outputEnvFile, autoInstallRust = true }) {
   const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
   if (disabled) return { ok: false, reason: 'disabled' }
 
-  const cargoProbe = spawnSync('cargo', ['--version'], { stdio: 'ignore' })
-  if (cargoProbe.status !== 0) return { ok: false, reason: 'cargo-missing' }
+  if (!cargoAvailable()) {
+    if (autoInstallRust) {
+      const installResult = installRustToolchain()
+      if (!installResult.ok) return { ok: false, reason: installResult.reason || 'cargo-missing' }
+    } else {
+      return { ok: false, reason: 'cargo-missing' }
+    }
+  }
 
   const manifestPath = path.join(PACKAGE_ROOT, 'tui', 'Cargo.toml')
   if (!fs.existsSync(manifestPath)) return { ok: false, reason: 'manifest-missing', manifestPath }
@@ -126,6 +163,7 @@ function promptModeText() {
 
 export async function runEnrollmentWizard(options = {}) {
   const nonInteractive = options.nonInteractive || process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE === '1'
+  const noTui = options.noTui || process.env.IDLEWATCH_NO_TUI === '1'
   const configDir = path.resolve(options.configDir || process.env.IDLEWATCH_ENROLL_CONFIG_DIR || defaultConfigDir())
   const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
 
@@ -140,8 +178,8 @@ export async function runEnrollmentWizard(options = {}) {
     availableMonitorTargets
   )
 
-  if (!nonInteractive) {
-    const tuiResult = tryRustTui({ configDir, outputEnvFile })
+  if (!nonInteractive && !noTui) {
+    const tuiResult = tryRustTui({ configDir, outputEnvFile, autoInstallRust: true })
     if (tuiResult.ok) {
       return {
         mode: 'tui',
