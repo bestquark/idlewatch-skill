@@ -4177,3 +4177,44 @@
 - ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
 - Working tree clean (only tui/target build artifacts modified, no source changes).
 - No new findings; nothing to commit beyond this log entry.
+
+## QA cycle update — 2026-03-15 10:40 AM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (118 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, no legacy references
+- Fresh-home `--dry-run` ✅ — compact banner, no Firebase warning noise, correct local-only output
+- No `idlewatch setup` references in CLI source ✅
+- Config persistence + reload ✅ — device name, device ID, monitor targets, local log path all round-trip
+- LaunchAgent docs ✅ — verify command uses `tail -n 1 | python3 -m json.tool`
+- README/onboarding docs ✅ — consistent cloud-first install story
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2 findings from this lane remain resolved.
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing to commit beyond this log entry.
+
+## QA cycle update — 2026-03-15 10:34 AM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (118 pass, 0 fail)
+- `npm run validate:onboarding --silent` ✅
+- `node bin/idlewatch-agent.js --help` ✅ — help text clean, cloud-first, no legacy references
+- `node bin/idlewatch-agent.js status` (fresh home) ✅ — compact, shows "no saved config" and nudges to quickstart
+- Fresh-home `--dry-run` ✅ — compact banner, no Firebase warning noise, correct local-only output
+- No `idlewatch setup` references in CLI source ✅
+- LaunchAgent docs ✅ — prereqs say "saved IdleWatch config from quickstart", verify command uses `tail -n 1 | python3 -m json.tool`
+- README/onboarding docs ✅ — consistent cloud-first install story
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ All prior P1/P2 findings from this lane remain resolved.
+- ✅ Test count grew from 106 → 118 (new coverage, no removals).
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing to commit beyond this log entry.
