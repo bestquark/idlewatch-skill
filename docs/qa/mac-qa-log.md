@@ -1,4 +1,85 @@
 
+## QA cycle update — 2026-03-15 3:31 AM America/Toronto
+
+### Prioritized findings
+
+1. **P3 — Intentional local-only quickstart still ends its first status line with a Firebase/emulator aside, which adds technical noise to an otherwise clean supported path**
+   - **Observed:** the wording fix landed, so local-only no longer sounds broken, but the first line of the required verification run still says:
+     - `Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest, or configure Firebase/emulator mode if you need that path.`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Polish Box' \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart --no-tui
+        ```
+     3. Observe the first line now starts correctly with `Local-only mode...`, but still ends with the extra `configure Firebase/emulator mode if you need that path` clause.
+   - **Why it matters:** this is tiny, but it lands in the calmest happy-path moment. For a user who explicitly chose local mode, the Firebase/emulator aside is implementation-history leakage and makes the console feel more technical than the product needs to.
+   - **Acceptance criteria:**
+     - Local-only mode copy stays affirmative/supported.
+     - The first local-only status line does not mention Firebase unless the user explicitly chose that mode.
+     - If a cloud-link hint remains, it should stay in current product language (`idlewatch quickstart` / cloud ingest) and keep the line short.
+
+2. **P3 — Default-path rejected-key quickstart still ends with an advanced shell fallback line even after already giving the two simple product-level retry steps**
+   - **Observed:** the duplicate rejection copy is fixed, but the default saved-config failure tail still includes:
+     - `Retry with: idlewatch --once`
+     - `Or rerun: idlewatch quickstart`
+     - `Advanced/manual fallback: set -a; source ".../idlewatch.env"; set +a && idlewatch --once`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        port=47921
+        cat > "$tmp/reject-server.mjs" <<'EOF'
+        import http from 'node:http'
+        const port = Number(process.argv[2])
+        const server = http.createServer((req, res) => {
+          req.resume()
+          req.on('end', () => {
+            res.writeHead(401, { 'content-type': 'application/json' })
+            res.end(JSON.stringify({ error: 'invalid_api_key' }))
+          })
+        })
+        server.listen(port, '127.0.0.1')
+        EOF
+        node "$tmp/reject-server.mjs" "$port" >/tmp/idlewatch-reject-server.log 2>&1 &
+        server_pid=$!
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=production \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Reject Box' \
+        IDLEWATCH_CLOUD_API_KEY='iwk_abcdefghijklmnopqrstuvwxyz123456' \
+        IDLEWATCH_CLOUD_INGEST_URL="http://127.0.0.1:${port}/api/ingest" \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart --no-tui
+        kill "$server_pid" >/dev/null 2>&1 || true
+        ```
+     3. Observe the rejection flow is otherwise clean, but still ends with the advanced `set -a; source ...` fallback line even though the config is at the default auto-load path.
+   - **Why it matters:** the product now already gives the two right boring answers first. Keeping the shell incantation in the same failure block adds a little unnecessary intimidation right at the stressful moment, especially when the default-path user probably never needs it.
+   - **Acceptance criteria:**
+     - For the default saved-config path (`~/.idlewatch/idlewatch.env`), the failure summary should lead with only the product-level retry steps unless the user explicitly asks for more manual recovery detail.
+     - If the advanced shell fallback remains, it should either be omitted for the default-path case or clearly hidden/de-emphasized so it does not compete with the main recovery path.
+     - Custom env-path setups can keep more explicit manual recovery guidance where it is genuinely needed.
+
+### Commands run this cycle
+
+- fresh temp-home local-only `./bin/idlewatch-agent.js quickstart --no-tui` ✅ confirmed the calmer local-only preamble is fixed, but still reproduced the Firebase/emulator aside on the first line
+- production non-interactive `quickstart --no-tui` against a tiny local rejecting ingest endpoint ✅ confirmed the duplicate rejection copy is gone, but the default-path failure tail still includes the advanced `set -a; source ...` fallback line
+- temp-root packaged-style `./scripts/install-macos-launch-agent.sh` + `./scripts/uninstall-macos-launch-agent.sh` with constrained `PATH=/bin:/usr/bin` ✅ rechecked packaged install/uninstall messaging and plist behavior; no new regressions observed
+
+### Notes
+
+- Core setup/install pipeline still looks healthy.
+- Remaining issues are product-taste paper cuts, not broken behavior: the setup flow is now mostly pleasantly boring, but these two lines still feel a little more technical than they need to.
+
 ## QA cycle update — 2026-03-15 3:24 AM America/Toronto
 
 ### Completed this cycle
