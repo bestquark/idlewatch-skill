@@ -1,4 +1,17 @@
 
+## QA cycle update — 2026-03-15 2:31 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Packaged LaunchAgent install output now keeps the packaged mental model all the way through first-run setup:** `scripts/install-macos-launch-agent.sh` no longer tells DMG/app users to run bare `idlewatch quickstart` when no saved config exists. It now leads with the app-owned command path (`".../Contents/MacOS/IdleWatch" quickstart`) and only mentions `idlewatch quickstart` as an alternate when that CLI is actually available on PATH.
+- [x] **LaunchAgent docs now match the calmer packaged behavior:** `docs/packaging/macos-launch-agent.md` now explicitly notes that the install script points packaged users at the app-owned quickstart path instead of assuming a global CLI install.
+- [x] **Validation:** `bash -n scripts/install-macos-launch-agent.sh` ✅, `bash -n scripts/uninstall-macos-launch-agent.sh` ✅, and a temp-root packaged-app repro with constrained `PATH=/bin:/usr/bin` ✅ now prints the packaged binary quickstart hint instead of bare `idlewatch quickstart`.
+
+### Notes
+
+- Scope stayed tiny and low-risk: install-output wording + matching docs only.
+- Telemetry path preserved.
+
 ## QA cycle update — 2026-03-15 2:20 AM America/Toronto
 
 ### Prioritized findings

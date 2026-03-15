@@ -100,5 +100,9 @@ if [[ -f "$CONFIG_ENV_PATH" ]]; then
   fi
 else
   echo "No saved IdleWatch config found yet at: $CONFIG_ENV_PATH"
-  echo "Run 'idlewatch quickstart' once if you want this agent to link and publish right away."
+  echo "Finish setup once before relying on login startup:"
+  echo "  \"$BIN_PATH\" quickstart"
+  if command -v idlewatch >/dev/null 2>&1; then
+    echo "If you already installed the CLI on PATH, 'idlewatch quickstart' works too."
+  fi
 fi
