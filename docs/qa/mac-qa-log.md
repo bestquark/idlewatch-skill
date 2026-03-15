@@ -1,3 +1,67 @@
+## QA cycle update — 2026-03-15 2:26 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — Quickstart failure recovery still tells users to retry with plain `idlewatch --once` even when setup saved config to a custom env path that will not auto-load**
+   - **Observed:** the failure state is much calmer now, but the main retry line still says `Retry with: idlewatch --once` unconditionally. That is only true when setup wrote to the default auto-load path (`~/.idlewatch/idlewatch.env`). If quickstart used a custom `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE`, the suggested retry command silently ignores the just-written config and falls back to local-only/default state.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Start a tiny local endpoint that always rejects the API key:
+        ```bash
+        tmp=$(mktemp -d)
+        port=47891
+        cat > "$tmp/reject-server.mjs" <<'EOF'
+        import http from 'node:http'
+        const port = Number(process.argv[2])
+        const server = http.createServer((req, res) => {
+          req.resume()
+          req.on('end', () => {
+            res.writeHead(401, { 'content-type': 'application/json' })
+            res.end(JSON.stringify({ error: 'invalid_api_key' }))
+          })
+        })
+        server.listen(port, '127.0.0.1')
+        EOF
+        node "$tmp/reject-server.mjs" "$port" >/tmp/idlewatch-reject-server.log 2>&1 &
+        server_pid=$!
+        ```
+     3. Run quickstart with a **custom** output env path:
+        ```bash
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=production \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Retry Box' \
+        IDLEWATCH_CLOUD_API_KEY='iwk_abcdefghijklmnopqrstuvwxyz123456' \
+        IDLEWATCH_CLOUD_INGEST_URL="http://127.0.0.1:${port}/api/ingest" \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE="$tmp/custom.env" \
+        IDLEWATCH_ENROLL_CONFIG_DIR="$tmp/config" \
+        IDLEWATCH_OPENCLAW_USAGE=off \
+        ./bin/idlewatch-agent.js quickstart
+        ```
+     4. Observe the failure tail says:
+        - `⚠️ Setup is not finished yet... envFile=/.../custom.env`
+        - `Retry with: idlewatch --once`
+        - `Advanced/manual fallback: set -a; source "/.../custom.env"; set +a && idlewatch --once`
+     5. Then verify the main retry hint is misleading by running plain `idlewatch --once` without sourcing the custom file; the app falls back to default/local-only behavior instead of reusing `/.../custom.env`.
+   - **Why it matters:** this is a small wording issue, but it lands exactly in the stressful moment after a failed first publish. The primary recovery command should be the one that actually works for the just-created setup state, not a nice-looking shortcut that only works for the default-path subset.
+   - **Acceptance criteria:**
+     - When `result.outputEnvFile` is the default saved-config path, the main retry hint can stay `idlewatch --once`.
+     - When quickstart wrote to a custom env path, the primary retry hint should either source that file explicitly or tell the user to rerun quickstart; it should not imply plain `idlewatch --once` will reuse the custom file.
+     - Recovery copy should keep the low-friction tone but remain contract-true for both default-path and custom-path setups.
+
+### Commands run this cycle
+
+- `./bin/idlewatch-agent.js --help` ✅ reviewed current top-level CLI surface
+- local-only non-interactive `quickstart` with fresh temp HOME ✅ confirmed clean success wording remains accurate (`Initial local telemetry check completed successfully.`)
+- temp-root `./scripts/install-macos-launch-agent.sh` with custom `IDLEWATCH_CONFIG_ENV_PATH` ✅ confirmed the script now truthfully limits auto-load claims to the default path
+- production non-interactive `quickstart` against a tiny rejecting local ingest endpoint + custom `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE` ✅ reproduced misleading unconditional `Retry with: idlewatch --once` guidance
+- plain `./bin/idlewatch-agent.js --once` with no default saved config and an unsourced custom env file ✅ confirmed it falls back to local-only/default state rather than reusing the custom setup file
+
+### Notes
+
+- Core pipeline still looks healthy; this cycle stayed in polish territory.
+- Highest-value taste issue from this pass: recovery copy is calmer now, but it still needs to stay true to the actual saved-config persistence contract.
+
 ## QA cycle update — 2026-03-15 2:18 AM America/Toronto
 
 ### Completed this cycle
