@@ -1,8 +1,21 @@
+## QA cycle update — 2026-03-15 2:35 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Quickstart failure retry copy is now path-aware for custom env files:** `bin/idlewatch-agent.js` no longer unconditionally suggests `Retry with: idlewatch --once` when the setup saved config to a custom path (via `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE`). Default-path setups keep the existing `idlewatch --once` as the primary hint; custom-path setups now tell the user to rerun quickstart or source the saved config directly.
+- [x] **Regression tests added:** two new tests lock the default-path vs custom-path retry copy behavior, including an end-to-end rejection server to reproduce the exact failure flow.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**112 pass, 0 fail**).
+
+### Notes
+
+- Scope stayed tiny: retry-copy path awareness only, no ingest/auth redesigns.
+- Telemetry path preserved.
+
 ## QA cycle update — 2026-03-15 2:26 AM America/Toronto
 
 ### Prioritized findings
 
-1. **P2 — Quickstart failure recovery still tells users to retry with plain `idlewatch --once` even when setup saved config to a custom env path that will not auto-load**
+1. **[FIXED] ~~P2 — Quickstart failure recovery still tells users to retry with plain `idlewatch --once` even when setup saved config to a custom env path that will not auto-load~~**
    - **Observed:** the failure state is much calmer now, but the main retry line still says `Retry with: idlewatch --once` unconditionally. That is only true when setup wrote to the default auto-load path (`~/.idlewatch/idlewatch.env`). If quickstart used a custom `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE`, the suggested retry command silently ignores the just-written config and falls back to local-only/default state.
    - **Exact repro:**
      1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
