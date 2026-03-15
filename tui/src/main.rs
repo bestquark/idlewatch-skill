@@ -70,6 +70,34 @@ fn command_exists(cmd: &str, args: &[&str]) -> bool {
         .unwrap_or(false)
 }
 
+fn machine_name() -> String {
+    if cfg!(target_os = "macos") {
+        if let Ok(output) = Command::new("scutil").args(["--get", "ComputerName"]).output() {
+            if output.status.success() {
+                let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if !name.is_empty() {
+                    return name;
+                }
+            }
+        }
+    }
+
+    if let Ok(output) = Command::new("hostname").output() {
+        if output.status.success() {
+            let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !name.is_empty() {
+                return name;
+            }
+        }
+    }
+
+    std::env::var("HOSTNAME")
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "IdleWatch Device".to_string())
+}
+
 fn parse_env_file(path: &Path) -> ExistingConfig {
     let mut config = ExistingConfig::default();
     let Ok(raw) = fs::read_to_string(path) else {
@@ -443,7 +471,7 @@ fn main() -> Result<()> {
     let env_file = std::env::var("IDLEWATCH_ENROLL_OUTPUT_ENV_FILE")
         .map(PathBuf::from)
         .unwrap_or_else(|_| config_dir.join("idlewatch.env"));
-    let host = sanitize_host(&std::env::var("HOSTNAME").unwrap_or_else(|_| "host".to_string()));
+    let host = sanitize_host(&machine_name());
     let existing = parse_env_file(&env_file);
 
     enable_raw_mode()?;
@@ -464,7 +492,7 @@ fn main() -> Result<()> {
                     KeyCode::Char('q') | KeyCode::Esc => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-                        return Ok(());
+                        return Err(anyhow!("setup_cancelled"));
                     }
                     _ => {}
                 }
@@ -503,7 +531,7 @@ fn main() -> Result<()> {
                     KeyCode::Char('q') | KeyCode::Esc => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-                        return Ok(());
+                        return Err(anyhow!("setup_cancelled"));
                     }
                     _ => {}
                 }
@@ -545,7 +573,7 @@ fn main() -> Result<()> {
                     KeyCode::Char('q') | KeyCode::Esc => {
                         disable_raw_mode()?;
                         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-                        return Ok(());
+                        return Err(anyhow!("setup_cancelled"));
                     }
                     KeyCode::Char(c) => {
                         device_name_input.push(c);
@@ -592,7 +620,7 @@ fn main() -> Result<()> {
                         KeyCode::Char('q') | KeyCode::Esc => {
                             disable_raw_mode()?;
                             execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-                            return Ok(());
+                            return Err(anyhow!("setup_cancelled"));
                         }
                         KeyCode::Char(c) => {
                             cloud_api_key_input.push(c);

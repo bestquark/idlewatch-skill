@@ -374,6 +374,10 @@ if (quickstartRequested) {
   try {
     const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
 
+    if (!result?.outputEnvFile || !fs.existsSync(result.outputEnvFile)) {
+      throw new Error(`setup_did_not_write_env_file:${result?.outputEnvFile || 'unknown'}`)
+    }
+
     const enrolledEnv = parseEnvFileToObject(result.outputEnvFile)
     const onceRun = spawnSync(process.execPath, [process.argv[1], '--once'], {
       stdio: 'inherit',
@@ -395,7 +399,13 @@ if (quickstartRequested) {
     console.error('Or rerun: idlewatch quickstart')
     process.exit(onceRun.status ?? 1)
   } catch (err) {
-    console.error(`Enrollment failed: ${err.message}`)
+    if (String(err?.message || '') === 'setup_cancelled') {
+      console.error('Enrollment cancelled before saving config.')
+    } else if (String(err?.message || '').startsWith('setup_did_not_write_env_file:')) {
+      console.error(`Enrollment failed: setup did not save idlewatch.env (${String(err.message).split(':').slice(1).join(':')}).`)
+    } else {
+      console.error(`Enrollment failed: ${err.message}`)
+    }
     process.exit(1)
   }
 }

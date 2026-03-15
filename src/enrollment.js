@@ -10,6 +10,24 @@ function defaultConfigDir() {
   return path.join(os.homedir(), '.idlewatch')
 }
 
+function machineName() {
+  if (process.platform === 'darwin') {
+    const macName = spawnSync('scutil', ['--get', 'ComputerName'], { encoding: 'utf8' })
+    if (macName.status === 0) {
+      const value = String(macName.stdout || '').trim()
+      if (value) return value
+    }
+  }
+
+  const hostName = String(os.hostname() || '').trim()
+  if (hostName) return hostName
+
+  const envHost = String(process.env.HOSTNAME || '').trim()
+  if (envHost) return envHost
+
+  return 'IdleWatch Device'
+}
+
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
@@ -80,12 +98,12 @@ function looksLikeCloudApiKey(value) {
   return /^iwk_[A-Za-z0-9_-]{20,}$/.test(String(value || '').trim())
 }
 
-function normalizeDeviceName(raw, fallback = os.hostname()) {
+function normalizeDeviceName(raw, fallback = machineName()) {
   const value = String(raw || '').trim().replace(/\s+/g, ' ')
   return value || fallback
 }
 
-function sanitizeDeviceId(raw, fallback = os.hostname()) {
+function sanitizeDeviceId(raw, fallback = machineName()) {
   const base = normalizeDeviceName(raw, fallback).toLowerCase()
   const sanitized = base
     .replace(/[^a-z0-9._-]+/g, '-')
@@ -174,7 +192,7 @@ export async function runEnrollmentWizard(options = {}) {
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
   let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
-  let deviceName = normalizeDeviceName(options.deviceName || process.env.IDLEWATCH_DEVICE_NAME || os.hostname())
+  let deviceName = normalizeDeviceName(options.deviceName || process.env.IDLEWATCH_DEVICE_NAME || machineName())
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
   let monitorTargets = normalizeMonitorTargets(
@@ -229,7 +247,7 @@ export async function runEnrollmentWizard(options = {}) {
     monitorTargets = normalizeMonitorTargets(monitorInput || suggested, availableMonitorTargets)
   }
 
-  const safeDeviceId = sanitizeDeviceId(options.deviceId || process.env.IDLEWATCH_DEVICE_ID || deviceName, os.hostname())
+  const safeDeviceId = sanitizeDeviceId(options.deviceId || process.env.IDLEWATCH_DEVICE_ID || deviceName, machineName())
   const localLogPath = path.join(configDir, 'logs', `${safeDeviceId}-metrics.ndjson`)
   const localCachePath = path.join(configDir, 'cache', `${safeDeviceId}-openclaw-last-good.json`)
 
