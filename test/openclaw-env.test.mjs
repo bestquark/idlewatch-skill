@@ -22,7 +22,7 @@ test('accepts explicit IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS in dry-run', () =
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
 })
 
 test('rejects invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS', () => {
@@ -50,7 +50,7 @@ test('accepts explicit IDLEWATCH_OPENCLAW_PROBE_RETRIES in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
 })
 
 test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
@@ -78,7 +78,7 @@ test('accepts explicit IDLEWATCH_USAGE_REFRESH_REPROBES in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
 })
 
 test('rejects invalid IDLEWATCH_USAGE_REFRESH_REPROBES', () => {
@@ -106,7 +106,7 @@ test('accepts explicit IDLEWATCH_USAGE_REFRESH_DELAY_MS in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
 })
 
 test('rejects invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS', () => {
@@ -137,7 +137,7 @@ test('accepts Firestore emulator mode without service account credentials', () =
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
   assert.match(run.stdout, /firebase=true/)
 })
 
@@ -189,7 +189,7 @@ test('accepts required Firebase writes config in emulator mode (dry-run)', () =>
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch-agent dry-run/)
+  assert.match(run.stdout, /idlewatch dry-run/)
   assert.match(run.stdout, /firebase=true/)
 })
 
@@ -221,7 +221,7 @@ test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /idlewatch-agent dry-run/)
+    assert.match(run.stdout, /idlewatch dry-run/)
     assert.match(run.stdout, /firebase=true/)
   } finally {
     fs.rmSync(tmpRoot, { recursive: true, force: true })

@@ -2856,6 +2856,20 @@
 
 - ✅ **Commit status:** parser/docs/scripting updates completed and ready for push.
 
+## QA cycle update — 2026-03-15 00:37 America/Toronto
+
+### Completed this cycle
+
+- [x] **Onboarding validator aligned with current cloud quickstart contract:** `scripts/validate-onboarding.mjs` now validates the actual generated env keys (`IDLEWATCH_CLOUD_*`, saved device/log/cache paths) and confirms the first telemetry sample is posted during quickstart.
+- [x] **Setup/reconfigure UX polish:** quickstart no longer prints a premature “Enrollment complete” banner before the required `--once` publish succeeds. Success now ends with a compact setup summary; failure now clearly says setup is not finished yet, that the device may not be linked, and how to retry or rerun quickstart.
+- [x] **Saved config path handling:** persisted `idlewatch.env` path values now expand supported shell-style path vars (`~`, `$HOME`, `${HOME}`, `$TMPDIR`, `${TMPDIR}`) for local log and last-good cache paths, reducing friction when reusing saved config across shells / launch contexts.
+- [x] **Validation:** `npm run test:unit --silent` ✅ (**106 pass, 0 fail**) and `npm run validate:onboarding --silent` ✅.
+
+### Notes
+
+- ✅ **Telemetry path preserved:** cloud ingest happy-path onboarding validation remained intact; no auth/ingest redesigns were introduced.
+- ✅ **Commit status:** small installer/CLI polish changes ready for commit/push.
+
 ## QA cycle update — 2026-02-24 06:35 America/Toronto
 
 ### Completed this cycle
