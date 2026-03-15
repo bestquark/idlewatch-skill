@@ -1,5 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
+import os from 'node:os'
+import path from 'node:path'
 
 // Snapshot and restore env around each test
 let savedEnv
@@ -108,5 +110,14 @@ describe('buildConfig', () => {
     const cfg = buildConfig()
     assert.equal(cfg.FIREBASE.PROJECT_ID, 'test-project')
     assert.equal(cfg.FIREBASE.CREDS_FILE, '/tmp/sa.json')
+  })
+
+  it('resolves supported shell-style path vars in path settings', async () => {
+    process.env.IDLEWATCH_LOCAL_LOG_PATH = '$TMPDIR/idlewatch-log.ndjson'
+    process.env.IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH = '${HOME}/.idlewatch/cache.json'
+    const buildConfig = (await import(`../src/config.js?t=${Date.now()}-11`)).buildConfig
+    const cfg = buildConfig()
+    assert.equal(cfg.LOCAL_LOG_PATH, '/tmpdir-placeholder/idlewatch-log.ndjson'.replace('/tmpdir-placeholder', process.env.TMPDIR || '/var/folders/unknown'))
+    assert.equal(cfg.OPENCLAW_LAST_GOOD_CACHE_PATH, `${process.env.HOME}/.idlewatch/cache.json`)
   })
 })
