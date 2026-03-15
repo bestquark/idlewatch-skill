@@ -1,3 +1,64 @@
+## QA cycle update — 2026-03-15 1:21 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — LaunchAgent onboarding still tells packaged-app users to run repo-local `npm run` commands**
+   - **Observed:** the external onboarding doc and the dedicated LaunchAgent doc still present `npm run install:macos-launch-agent` / `npm run uninstall:macos-launch-agent` as the primary user path, even though the surrounding story is “install the app from DMG into `/Applications` and use it like a normal app.”
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Read `docs/onboarding-external.md`
+     3. In `Optional: background startup on macOS`, note the end-user command examples:
+        - `npm run install:macos-launch-agent`
+        - `npm run uninstall:macos-launch-agent`
+     4. Read `docs/packaging/macos-launch-agent.md`
+     5. In `Install` / `Uninstall`, note the same repo-local `npm run ...` examples, even though prerequisites describe a DMG-installed `/Applications/IdleWatch.app` flow.
+   - **Why it matters:** this breaks the “boring, simple setup” feel right at the moment where background startup should feel most native. A packaged-app user should not have to infer a hidden source checkout or npm context just to enable login startup.
+   - **Acceptance criteria:**
+     - LaunchAgent docs present a believable packaged-user path first (for example a direct script/app-facing command or another app-installed entrypoint), not repo-local `npm run` snippets.
+     - If `npm run ...` remains documented, it is clearly labeled as a maintainer/dev path.
+     - The background-startup story reads like one product flow, not a mashup of DMG install plus source-tree commands.
+
+2. **P2 — Quickstart failure recovery still falls back to a shell-heavy `set -a; source ...` retry command**
+   - **Observed:** when the required first publish fails, the setup flow now correctly says setup is incomplete, but the main retry instruction is still a fairly technical shell incantation:
+     `Retry with: set -a; source ".../idlewatch.env"; set +a && idlewatch --once`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=production \
+        IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+        IDLEWATCH_CLOUD_API_KEY='iwk_abcdefghijklmnopqrstuvwxyz123456' \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE="$tmp/idlewatch.env" \
+        IDLEWATCH_ENROLL_CONFIG_DIR="$tmp/config" \
+        node ./bin/idlewatch-agent.js quickstart
+        ```
+     3. Observe the failure tail after the rejected key:
+        - `⚠️ Setup is not finished yet...`
+        - `Retry with: set -a; source ".../idlewatch.env"; set +a && idlewatch --once`
+        - `Or rerun: idlewatch quickstart`
+   - **Why it matters:** this is technically correct, but it feels like setup just spilled dev-shell internals into the main user flow. For end users, `idlewatch quickstart` / `idlewatch --once` should feel like the product; `set -a; source ...` should not be the headline recovery path.
+   - **Acceptance criteria:**
+     - Failure recovery copy leads with a simple product-level next step (`idlewatch quickstart` or a saved-config-aware `idlewatch --once` path) instead of a shell-specific env-loading command.
+     - Any shell-specific fallback stays secondary and clearly marked as advanced/manual.
+     - Retry guidance should feel calm and copy/paste-safe for a normal terminal user, not like they are debugging env propagation.
+
+### Commands run this cycle
+
+- `node ./bin/idlewatch-agent.js --help` ✅
+- `HOME="$(mktemp -d)" IDLEWATCH_OPENCLAW_USAGE=off node ./bin/idlewatch-agent.js --dry-run` ✅
+- `HOME="$tmp/home" node ./bin/idlewatch-agent.js --once` with saved cloud ingest env + invalid key ✅
+- non-interactive `node ./bin/idlewatch-agent.js quickstart` with invalid cloud API key ✅ repro for current failed-first-publish recovery wording
+- `./scripts/install-macos-launch-agent.sh` / `./scripts/uninstall-macos-launch-agent.sh` with temp app/plist/log roots ✅ basic install/uninstall script behavior still healthy
+- reviewed `docs/onboarding-external.md` and `docs/packaging/macos-launch-agent.md` for packaged-user startup wording
+
+### Notes
+
+- Core setup/persistence path still looks healthy; this cycle stayed in polish territory.
+- Biggest remaining taste issue is setup-story coherence: the product behavior is getting pleasantly boring, but a couple of recovery/install surfaces still sound more like maintainer instructions than end-user UX.
+
 ## QA cycle update — 2026-03-15 1:16 AM America/Toronto
 
 ### Completed this cycle
