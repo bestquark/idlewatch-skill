@@ -1,4 +1,24 @@
 
+## QA cycle update — 2026-03-15 3:13 PM America/Toronto
+
+### Fixed this cycle
+
+1. **P4 (polish) — `idlewatch status` now shows day-scale sample ages cleanly**
+   - Previously, samples older than 24h showed `72h ago`, `168h ago`, etc.
+   - Now shows `3d ago`, `7d ago` for day-scale ages — more human-readable at a glance.
+   - Zero-risk: only affects the status display formatting, no behavior change.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (118 pass, 0 fail)
+- `node bin/idlewatch-agent.js status` ✅ — shows `31s ago` for recent sample
+- `node bin/idlewatch-agent.js --help` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No breakage, no regressions.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 3:10 PM America/Toronto
 
 ### Smoke checks this cycle
