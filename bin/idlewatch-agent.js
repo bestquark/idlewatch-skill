@@ -695,6 +695,10 @@ if (statusRequested) {
   console.log(`  Device:       ${DEVICE_NAME}`)
   console.log(`  Device ID:    ${DEVICE_ID}`)
   console.log(`  Publish mode: ${publishMode}`)
+  if (hasCloudConfig) {
+    console.log(`  Cloud link:   ${CLOUD_INGEST_URL}`)
+    console.log(`  API key:      ${CLOUD_API_KEY.slice(0, 8)}..${CLOUD_API_KEY.slice(-4)}`)
+  }
   console.log(`  Metrics:      ${[...MONITOR_TARGETS].join(', ')}`)
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)

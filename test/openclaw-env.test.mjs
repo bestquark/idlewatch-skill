@@ -697,3 +697,52 @@ JSON
   }
 })
 
+
+test('status command shows cloud link info when cloud config is present', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-cloud-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Status Test Box',
+      'IDLEWATCH_DEVICE_ID=status-test-box',
+      'IDLEWATCH_CLOUD_API_KEY=iwk_abcdefghijklmnopqrstuvwxyz123456',
+      'IDLEWATCH_CLOUD_INGEST_URL=https://api.idlewatch.com/api/ingest',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Cloud link:'), 'should show cloud link URL')
+    assert.ok(run.stdout.includes('API key:'), 'should show masked API key')
+    assert.ok(run.stdout.includes('iwk_abcd'), 'should show key prefix')
+    assert.ok(run.stdout.includes('3456'), 'should show key suffix')
+    assert.ok(!run.stdout.includes('iwk_abcdefghijklmnopqrstuvwxyz123456'), 'should not show full key')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command hides cloud link info in local-only mode', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-local-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(!run.stdout.includes('Cloud link:'), 'should not show cloud link in local-only')
+    assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
+    assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
