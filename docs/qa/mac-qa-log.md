@@ -1,3 +1,106 @@
+## QA cycle update — 2026-03-15 1:43 AM America/Toronto
+
+### Prioritized findings
+
+1. **P1 — Switching an already-linked device to local-only still runs the immediate post-setup `--once` test in cloud mode**
+   - **Observed:** if `~/.idlewatch/idlewatch.env` already contains cloud-link variables, running `quickstart` in local-only mode writes a local-only env file correctly, but the required post-setup `--once` test still inherits the old cloud vars from the parent process and tries cloud ingest anyway.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/home/.idlewatch"
+        cat > "$tmp/home/.idlewatch/idlewatch.env" <<'EOF'
+        IDLEWATCH_DEVICE_NAME=Old Cloud Box
+        IDLEWATCH_DEVICE_ID=old-cloud-box
+        IDLEWATCH_CLOUD_API_KEY=iwk_invalidexample1234567890
+        IDLEWATCH_CLOUD_INGEST_URL=https://idlewatch.com/api/ingest
+        IDLEWATCH_REQUIRE_CLOUD_WRITES=1
+        IDLEWATCH_MONITOR_TARGETS=cpu,memory
+        IDLEWATCH_OPENCLAW_USAGE=off
+        EOF
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        node ./bin/idlewatch-agent.js quickstart
+        ```
+     3. Observe output still starts the required test with cloud behavior:
+        - `idlewatch once ... publish=cloud ...`
+        - `Cloud ingest disabled: API key rejected (invalid_api_key)...`
+        - final setup state becomes `⚠️ Setup is not finished yet. Mode=local ...`
+     4. Inspect the rewritten env file and confirm it is in fact local-only (no cloud vars remain).
+   - **Why it matters:** local-only should feel boring and deterministic. If a user explicitly switches off cloud writes, the product should not immediately perform a cloud publish attempt and then imply setup is incomplete.
+   - **Acceptance criteria:**
+     - The post-quickstart `--once` run uses only the newly written env contract, not leftover cloud/Firebase vars from the parent process.
+     - A successful switch to local-only mode does not emit cloud-ingest failure copy.
+     - Local-only quickstart ends in a clean success state when local collection itself is healthy.
+
+2. **P1 — Non-interactive quickstart ignores `IDLEWATCH_ENROLL_DEVICE_NAME`, so scripted setup cannot reliably set device identity**
+   - **Observed:** non-interactive enrollment reads `IDLEWATCH_ENROLL_MODE`, `...CONFIG_DIR`, and `...OUTPUT_ENV_FILE`, but it does **not** honor `IDLEWATCH_ENROLL_DEVICE_NAME`; the wizard falls back to the previously loaded/persisted `IDLEWATCH_DEVICE_NAME` instead.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/home/.idlewatch"
+        cat > "$tmp/home/.idlewatch/idlewatch.env" <<'EOF'
+        IDLEWATCH_DEVICE_NAME=Old Cloud Box
+        IDLEWATCH_DEVICE_ID=old-cloud-box
+        IDLEWATCH_MONITOR_TARGETS=cpu,memory
+        IDLEWATCH_OPENCLAW_USAGE=off
+        EOF
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Now Local Box' \
+        node ./bin/idlewatch-agent.js quickstart
+        ```
+     3. Observe setup output still reports `device=Old Cloud Box`.
+     4. Inspect `"$tmp/home/.idlewatch/idlewatch.env"` and confirm it still contains `IDLEWATCH_DEVICE_NAME=Old Cloud Box`.
+   - **Why it matters:** this is a nasty little automation lie. The env prefix suggests the value is supported, and device identity persistence is one of the core polish areas for this lane.
+   - **Acceptance criteria:**
+     - Non-interactive quickstart consistently honors `IDLEWATCH_ENROLL_DEVICE_NAME` for both first-run setup and reconfigure flows.
+     - The saved env file and success/failure copy reflect the requested device name.
+     - Device ID derivation follows the updated name unless an explicit device ID override is provided.
+
+3. **P2 — LaunchAgent install output claims custom `IDLEWATCH_CONFIG_ENV_PATH` will auto-load, but the plist never passes that path through**
+   - **Observed:** `scripts/install-macos-launch-agent.sh` lets you point `IDLEWATCH_CONFIG_ENV_PATH` at a custom env file and then prints `Background runs will auto-load it.` However the generated plist only launches `IdleWatch --run`; it does not inject `IDLEWATCH_CONFIG_ENV_PATH` (or any equivalent env var), and the app itself only auto-loads `~/.idlewatch/idlewatch.env`.
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        mkdir -p "$tmp/app/IdleWatch.app/Contents/MacOS" "$tmp/config"
+        printf '#!/bin/sh\nexit 0\n' > "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        chmod +x "$tmp/app/IdleWatch.app/Contents/MacOS/IdleWatch"
+        printf 'IDLEWATCH_DEVICE_NAME=Custom Path Box\n' > "$tmp/config/custom.env"
+        IDLEWATCH_APP_PATH="$tmp/app/IdleWatch.app" \
+        IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$tmp/LaunchAgents" \
+        IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$tmp/Logs" \
+        IDLEWATCH_CONFIG_ENV_PATH="$tmp/config/custom.env" \
+        ./scripts/install-macos-launch-agent.sh
+        ```
+     3. Observe install output says:
+        - `Saved IdleWatch config found: .../custom.env`
+        - `Background runs will auto-load it.`
+     4. Inspect the generated plist and confirm it contains only `ProgramArguments = [IdleWatch, --run]` with no env injection for that custom path.
+   - **Why it matters:** this creates a false sense of correctness around background startup. Users who keep config somewhere custom will think LaunchAgent is wired up when it is not.
+   - **Acceptance criteria:**
+     - Either LaunchAgent actually passes the custom config path through to the app, or the script stops claiming that custom-path config will auto-load.
+     - Install output should describe the true contract plainly: default auto-load path vs. custom-path behavior.
+     - Background startup docs and script output should agree on one real persistence story.
+
+### Commands run this cycle
+
+- local-only reconfigure repro with pre-existing cloud-linked `~/.idlewatch/idlewatch.env` ✅ reproduced leaked cloud publish on the immediate post-setup `--once` run
+- non-interactive quickstart repro with `IDLEWATCH_ENROLL_DEVICE_NAME='Now Local Box'` ✅ reproduced ignored scripted device-name override
+- temp-root `./scripts/install-macos-launch-agent.sh` with `IDLEWATCH_CONFIG_ENV_PATH` set to a custom env file ✅ reproduced install-message/plist mismatch
+
+### Notes
+
+- Core pipeline still looks alive; these are polish-contract bugs, not architecture issues.
+- Highest-value taste issue from this cycle: the setup story is close to pleasantly boring, but state transitions still get weird when users reconfigure from one mode into another.
+
 ## QA cycle update — 2026-03-15 1:35 AM America/Toronto
 
 ### Completed this cycle
