@@ -1,9 +1,21 @@
 
+## QA cycle update — 2026-03-15 3:00 AM America/Toronto
+
+### Completed this cycle
+
+- [x] **Top-level CLI help now surfaces the plain-text fallback in the first syntax line:** `bin/idlewatch-agent.js` now includes `--no-tui` directly in the top `Usage:` line, so `idlewatch quickstart --no-tui` reads like an officially supported boring path instead of a hidden escape hatch lower in the options list.
+- [x] **Validation:** `./bin/idlewatch-agent.js --help | sed -n '1,16p'` ✅ shows `idlewatch [quickstart|configure|dashboard|run] [--no-tui] [--dry-run] [--once] [--help]` in the first screenful.
+
+### Notes
+
+- Scope stayed intentionally tiny and low-risk: help-surface clarity only.
+- Telemetry path preserved.
+
 ## QA cycle update — 2026-03-15 2:50 AM America/Toronto
 
 ### Prioritized findings
 
-1. **P3 — Top-level CLI usage line still hides the supported `--no-tui` escape hatch, which makes the simplest fallback path less copy/pasteable than it should be**
+1. **[FIXED] ~~P3 — Top-level CLI usage line still hides the supported `--no-tui` escape hatch, which makes the simplest fallback path less copy/pasteable than it should be~~**
    - **Observed:** the help screen is otherwise clean, and it does document `--no-tui` in the options list, but the very first `Usage:` line only shows `[--dry-run] [--once] [--help]`. A user skimming the first line for valid syntax would not see that `idlewatch quickstart --no-tui` is an official path, even though that is the main “keep it simple, skip Cargo/TUI weirdness” fallback.
    - **Exact repro:**
      1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
