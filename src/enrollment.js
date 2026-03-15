@@ -42,7 +42,10 @@ function writeSecureFile(filePath, content) {
   }
 }
 
-const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'openclaw']
+const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state']
+const QUOTA_TARGETS = ['quota_openai_api', 'quota_openai_codex', 'quota_anthropic', 'quota_google', 'quota_local']
+const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS, ...QUOTA_TARGETS]
+const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'openclaw', ...OPENCLAW_DERIVED_TARGETS]
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = path.resolve(MODULE_DIR, '..')
 
@@ -59,21 +62,23 @@ function detectAvailableMonitorTargets() {
   }
 
   if (commandExists('openclaw', ['--help'])) {
-    available.add('openclaw')
+    OPENCLAW_DERIVED_TARGETS.forEach((target) => available.add(target))
   }
 
   return [...available]
 }
 
 function normalizeMonitorTargets(raw, available) {
-  const fallback = ['cpu', 'memory', ...(available.includes('openclaw') ? ['openclaw'] : []), ...(available.includes('gpu') ? ['gpu'] : [])]
+  const fallback = ['cpu', 'memory', ...(available.includes('gpu') ? ['gpu'] : []), ...OPENCLAW_DERIVED_TARGETS.filter((target) => available.includes(target))]
   if (!raw) return fallback
 
   const parsed = raw
     .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean)
-    .filter((item) => MONITOR_TARGET_CHOICES.includes(item) && available.includes(item))
+    .filter((item) => MONITOR_TARGET_CHOICES.includes(item))
+    .flatMap((item) => (item === 'openclaw' ? OPENCLAW_DERIVED_TARGETS : [item]))
+    .filter((item) => available.includes(item))
 
   if (parsed.length === 0) return fallback
   return [...new Set(parsed)]
@@ -226,6 +231,11 @@ function promptModeText({ isReconfigure = false, currentMode = null } = {}) {
   return `\n╭───────────────────────────────────────────────╮\n│${titleLine.padEnd(47)}│\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Link this device with an API key from idlewatch.com/api\n  2) Local-only (no cloud writes)\n`
 }
 
+function monitorTargetsNeedOpenClawUsage(monitorTargets) {
+  return monitorTargets.some((item) => OPENCLAW_AGENT_TARGETS.includes(item) && item !== 'agent_activity') ||
+    monitorTargets.some((item) => QUOTA_TARGETS.includes(item))
+}
+
 export async function runEnrollmentWizard(options = {}) {
   const nonInteractive = options.nonInteractive || process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE === '1'
   const noTui = options.noTui || process.env.IDLEWATCH_NO_TUI === '1'
@@ -348,7 +358,7 @@ export async function runEnrollmentWizard(options = {}) {
     `IDLEWATCH_DEVICE_NAME=${deviceName}`,
     `IDLEWATCH_DEVICE_ID=${safeDeviceId}`,
     `IDLEWATCH_MONITOR_TARGETS=${monitorTargets.join(',')}`,
-    `IDLEWATCH_OPENCLAW_USAGE=${monitorTargets.includes('openclaw') ? 'auto' : 'off'}`,
+    `IDLEWATCH_OPENCLAW_USAGE=${monitorTargetsNeedOpenClawUsage(monitorTargets) ? 'auto' : 'off'}`,
     `IDLEWATCH_LOCAL_LOG_PATH=${localLogPath}`,
     `IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH=${localCachePath}`
   ]

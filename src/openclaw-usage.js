@@ -91,6 +91,38 @@ function inferProviderFromModel(model) {
   return 'other'
 }
 
+function inferQuotaFamily(provider, model) {
+  const normalizedProvider = normalizeProviderName(provider)
+  const normalizedModel = pickString(model)?.toLowerCase() || ''
+
+  if (normalizedProvider === 'openai') {
+    return normalizedModel.includes('codex') ? 'openai-codex' : 'openai-api'
+  }
+  if (normalizedProvider === 'anthropic') return 'anthropic'
+  if (normalizedProvider === 'google') return 'google'
+  if (normalizedProvider === 'local') return 'local'
+  return 'other'
+}
+
+function quotaLabelFromFamily(family) {
+  switch (family) {
+    case 'openai-api':
+      return 'OpenAI API'
+    case 'openai-codex':
+      return 'OpenAI Codex'
+    case 'anthropic':
+      return 'Anthropic'
+    case 'google':
+      return 'Google'
+    case 'local':
+      return 'Local models'
+    case 'other':
+      return 'Other runtime'
+    default:
+      return null
+  }
+}
+
 function deriveRemainingTokens(totalTokens, contextTokens) {
   if (!Number.isFinite(totalTokens) || !Number.isFinite(contextTokens)) return null
   if (contextTokens < totalTokens) return null
@@ -164,6 +196,52 @@ function deriveTokensPerMinute(session) {
   const minutes = ageMs / 60000
   if (!Number.isFinite(minutes) || minutes <= 0) return null
   return Number((totalTokens / minutes).toFixed(2))
+}
+
+function pickTokenBreakdown(record, totals = {}) {
+  const inputTokens = pickNumber(
+    record?.inputTokens,
+    record?.input_tokens,
+    record?.promptTokens,
+    record?.prompt_tokens,
+    record?.tokens?.input,
+    record?.tokens?.prompt,
+    record?.tokenUsage?.input,
+    record?.token_usage?.input,
+    record?.usage?.inputTokens,
+    record?.usage?.input_tokens,
+    record?.usage?.tokens?.input,
+    record?.usage?.tokens?.prompt,
+    totals?.inputTokens,
+    totals?.input_tokens,
+    totals?.promptTokens,
+    totals?.prompt_tokens,
+    totals?.tokens?.input,
+    totals?.tokens?.prompt
+  )
+
+  const outputTokens = pickNumber(
+    record?.outputTokens,
+    record?.output_tokens,
+    record?.completionTokens,
+    record?.completion_tokens,
+    record?.tokens?.output,
+    record?.tokens?.completion,
+    record?.tokenUsage?.output,
+    record?.token_usage?.output,
+    record?.usage?.outputTokens,
+    record?.usage?.output_tokens,
+    record?.usage?.tokens?.output,
+    record?.usage?.tokens?.completion,
+    totals?.outputTokens,
+    totals?.output_tokens,
+    totals?.completionTokens,
+    totals?.completion_tokens,
+    totals?.tokens?.output,
+    totals?.tokens?.completion
+  )
+
+  return { inputTokens, outputTokens }
 }
 
 function pickNewestSession(sessions = []) {
@@ -664,6 +742,7 @@ function parseFromStatusJson(parsed) {
     session?.usage?.tokenCount,
     session?.usage?.token_count
   )
+  const { inputTokens, outputTokens } = pickTokenBreakdown(session, session?.usage)
   const tokensPerMin = pickNumber(
     session.tokensPerMinute,
     session.tokens_per_minute,
@@ -768,30 +847,36 @@ function parseFromStatusJson(parsed) {
     (Number.isFinite(sessionAgeMs) && sessionAgeMs >= 0 ? Date.now() - sessionAgeMs : pickTimestamp(parsed?.ts, parsed?.time, parsed?.updatedAt, parsed?.updated_at, parsed?.updatedAtMs, parsed?.timestamp))
 
   const hasStrongUsage = model !== null || totalTokens !== null || tokensPerMin !== null
+  const provider = normalizeProviderName(
+    pickString(
+      session.provider,
+      session.providerName,
+      session.provider_name,
+      session?.usage?.provider,
+      session?.usage?.providerName,
+      session?.usage?.provider_name,
+      parsed?.provider,
+      parsed?.providerName,
+      parsed?.provider_name,
+      parsed?.status?.provider,
+      parsed?.status?.providerName,
+      parsed?.status?.provider_name
+    )
+  ) ?? inferProviderFromModel(model)
+  const quotaFamily = inferQuotaFamily(provider, model)
 
   return {
     model,
-    provider: normalizeProviderName(
-      pickString(
-        session.provider,
-        session.providerName,
-        session.provider_name,
-        session?.usage?.provider,
-        session?.usage?.providerName,
-        session?.usage?.provider_name,
-        parsed?.provider,
-        parsed?.providerName,
-        parsed?.provider_name,
-        parsed?.status?.provider,
-        parsed?.status?.providerName,
-        parsed?.status?.provider_name
-      )
-    ) ?? inferProviderFromModel(model),
+    provider,
     totalTokens,
+    inputTokens,
+    outputTokens,
     tokensPerMin,
     remainingTokens,
     percentUsed,
     contextTokens,
+    quotaFamily,
+    quotaLabel: quotaLabelFromFamily(quotaFamily),
     sessionId: pickString(session.sessionId, session.id, session?.usage?.sessionId, session?.usage?.id, session?.session_id),
     agentId: pickString(session.agentId, session?.usage?.agentId, session?.agent_id),
     usageTimestampMs,
@@ -937,6 +1022,7 @@ function parseGenericUsage(parsed) {
     parsed?.totals?.tokenCount,
     parsed?.totals?.total_tokens
   )
+  const { inputTokens, outputTokens } = pickTokenBreakdown(usageRecord, usageTotals)
   const tokensPerMin = pickNumber(
     usageRecord?.tokensPerMinute,
     usageRecord?.tokens_per_minute,
@@ -992,33 +1078,39 @@ function parseGenericUsage(parsed) {
   )
 
   if (model === null && totalTokens === null && tokensPerMin === null) return null
+  const provider = normalizeProviderName(
+    pickString(
+      usageRecord?.provider,
+      usageRecord?.providerName,
+      usageRecord?.provider_name,
+      usageRecord?.usage?.provider,
+      usageRecord?.usage?.providerName,
+      usageRecord?.usage?.provider_name,
+      usageTotals?.provider,
+      usageTotals?.providerName,
+      usageTotals?.provider_name,
+      parsed?.provider,
+      parsed?.providerName,
+      parsed?.provider_name,
+      parsed?.status?.provider,
+      parsed?.status?.providerName,
+      parsed?.status?.provider_name
+    )
+  ) ?? inferProviderFromModel(model)
+  const quotaFamily = inferQuotaFamily(provider, model)
 
   return {
     model,
-    provider: normalizeProviderName(
-      pickString(
-        usageRecord?.provider,
-        usageRecord?.providerName,
-        usageRecord?.provider_name,
-        usageRecord?.usage?.provider,
-        usageRecord?.usage?.providerName,
-        usageRecord?.usage?.provider_name,
-        usageTotals?.provider,
-        usageTotals?.providerName,
-        usageTotals?.provider_name,
-        parsed?.provider,
-        parsed?.providerName,
-        parsed?.provider_name,
-        parsed?.status?.provider,
-        parsed?.status?.providerName,
-        parsed?.status?.provider_name
-      )
-    ) ?? inferProviderFromModel(model),
+    provider,
     totalTokens,
+    inputTokens,
+    outputTokens,
     tokensPerMin,
     remainingTokens,
     percentUsed,
     contextTokens,
+    quotaFamily,
+    quotaLabel: quotaLabelFromFamily(quotaFamily),
     sessionId: pickString(
       parsed?.sessionId,
       parsed?.session_id,

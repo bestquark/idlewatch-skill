@@ -104,9 +104,19 @@ function buildSetupTestEnv(enrolledEnv) {
 
 const persistedEnv = loadPersistedEnvIntoProcess()
 
+const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state']
+const QUOTA_TARGET_TO_FAMILY = {
+  quota_openai_api: 'openai-api',
+  quota_openai_codex: 'openai-codex',
+  quota_anthropic: 'anthropic',
+  quota_google: 'google',
+  quota_local: 'local'
+}
+const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS, ...Object.keys(QUOTA_TARGET_TO_FAMILY)]
+
 function parseMonitorTargets(raw) {
-  const allowed = new Set(['cpu', 'memory', 'gpu', 'openclaw'])
-  const fallback = ['cpu', 'memory', 'openclaw', 'gpu']
+  const allowed = new Set(['cpu', 'memory', 'gpu', 'openclaw', ...OPENCLAW_DERIVED_TARGETS])
+  const fallback = ['cpu', 'memory', 'gpu', ...OPENCLAW_DERIVED_TARGETS]
 
   if (!raw || typeof raw !== 'string') {
     return new Set(fallback)
@@ -116,6 +126,7 @@ function parseMonitorTargets(raw) {
     .split(',')
     .map((item) => item.trim().toLowerCase())
     .filter((item) => allowed.has(item))
+    .flatMap((item) => (item === 'openclaw' ? OPENCLAW_DERIVED_TARGETS : [item]))
 
   if (parsed.length === 0) return new Set(fallback)
   return new Set(parsed)
@@ -493,8 +504,16 @@ const MONITOR_TARGETS = parseMonitorTargets(process.env.IDLEWATCH_MONITOR_TARGET
 const MONITOR_CPU = MONITOR_TARGETS.has('cpu')
 const MONITOR_MEMORY = MONITOR_TARGETS.has('memory')
 const MONITOR_GPU = MONITOR_TARGETS.has('gpu')
-const MONITOR_OPENCLAW = MONITOR_TARGETS.has('openclaw')
-const EFFECTIVE_OPENCLAW_MODE = MONITOR_OPENCLAW ? OPENCLAW_USAGE_MODE : 'off'
+const MONITOR_AGENT_ACTIVITY = MONITOR_TARGETS.has('agent_activity')
+const MONITOR_TOKEN_USAGE = MONITOR_TARGETS.has('token_usage')
+const MONITOR_RUNTIME_STATE = MONITOR_TARGETS.has('runtime_state')
+const MONITOR_QUOTA_FAMILIES = new Set(
+  [...MONITOR_TARGETS]
+    .map((target) => QUOTA_TARGET_TO_FAMILY[target] || null)
+    .filter(Boolean)
+)
+const MONITOR_OPENCLAW_USAGE = MONITOR_TOKEN_USAGE || MONITOR_RUNTIME_STATE || MONITOR_QUOTA_FAMILIES.size > 0
+const EFFECTIVE_OPENCLAW_MODE = MONITOR_OPENCLAW_USAGE ? OPENCLAW_USAGE_MODE : 'off'
 const REQUIRE_FIREBASE_WRITES = process.env.IDLEWATCH_REQUIRE_FIREBASE_WRITES === '1'
 const CLOUD_INGEST_URL = (process.env.IDLEWATCH_CLOUD_INGEST_URL || '').trim()
 const CLOUD_API_KEY = (process.env.IDLEWATCH_CLOUD_API_KEY || '').trim().replace(/^['"]|['"]$/g, '')
@@ -1320,8 +1339,8 @@ async function publish(row, retries = 2) {
 async function collectSample() {
   const sampleStartMs = Date.now()
   const dayLoadSummary = buildRollingLoadSummary(LOCAL_LOG_PATH, sampleStartMs)
-  const openclawEnabled = EFFECTIVE_OPENCLAW_MODE !== 'off'
-  const activitySummary = openclawEnabled ? loadOpenClawActivitySummary({ nowMs: sampleStartMs }) : null
+  const openclawUsageEnabled = EFFECTIVE_OPENCLAW_MODE !== 'off'
+  const activitySummary = MONITOR_AGENT_ACTIVITY ? loadOpenClawActivitySummary({ nowMs: sampleStartMs }) : null
 
   const disabledProbe = {
     result: 'disabled',
@@ -1334,7 +1353,7 @@ async function collectSample() {
     fallbackCacheSource: null
   }
 
-  let usageProbe = openclawEnabled ? loadOpenClawUsage() : { usage: null, probe: disabledProbe }
+  let usageProbe = openclawUsageEnabled ? loadOpenClawUsage() : { usage: null, probe: disabledProbe }
   let usage = usageProbe.usage
   let usageFreshness = deriveUsageFreshness(usage, sampleStartMs, USAGE_STALE_MS, USAGE_NEAR_STALE_MS, USAGE_STALE_GRACE_MS)
   let usageRefreshAttempted = false
@@ -1346,7 +1365,7 @@ async function collectSample() {
   const shouldRefreshForNearStale = USAGE_REFRESH_ON_NEAR_STALE === 1 && usageFreshness.isNearStale
   const canRefreshFromCurrentState = usageProbe.probe.result === 'ok' || usageProbe.probe.result === 'fallback-cache'
 
-  if (openclawEnabled && usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
+  if (openclawUsageEnabled && usage && (usageFreshness.isPastStaleThreshold || shouldRefreshForNearStale) && canRefreshFromCurrentState) {
     usageRefreshAttempted = true
     usageRefreshStartMs = Date.now()
 
@@ -1397,20 +1416,23 @@ async function collectSample() {
       : usage?.integrationStatus === 'partial'
         ? 'ok'
         : (usage?.integrationStatus ?? 'ok')
-    : (openclawEnabled ? 'unavailable' : 'disabled')
+    : (openclawUsageEnabled ? 'unavailable' : 'disabled')
+
+  const quotaFamily = usage?.quotaFamily ?? null
+  const quotaSelected = quotaFamily ? MONITOR_QUOTA_FAMILIES.has(quotaFamily) : false
 
   const source = {
     monitorTargets: [...MONITOR_TARGETS],
-    usage: usage ? 'openclaw' : openclawEnabled ? 'unavailable' : 'disabled',
+    usage: usage ? 'openclaw' : openclawUsageEnabled ? 'unavailable' : 'disabled',
     usageIntegrationStatus,
-    usageIngestionStatus: openclawEnabled
+    usageIngestionStatus: openclawUsageEnabled
       ? usage && ['ok', 'fallback-cache'].includes(usageProbe.probe.result)
         ? 'ok'
         : 'unavailable'
       : 'disabled',
     usageActivityStatus: usage
       ? usageFreshness.freshnessState
-      : (openclawEnabled ? 'unavailable' : 'disabled'),
+      : (openclawUsageEnabled ? 'unavailable' : 'disabled'),
     usageProbeResult: usageProbe.probe.result,
     usageProbeAttempts: usageProbe.probe.attempts,
     usageProbeSweeps: usageProbe.probe.sweeps,
@@ -1421,7 +1443,7 @@ async function collectSample() {
     usageUsedFallbackCache: usageProbe.probe.usedFallbackCache,
     usageFallbackCacheAgeMs: usageProbe.probe.fallbackAgeMs,
     usageFallbackCacheSource: usageProbe.probe.fallbackCacheSource,
-    usageFreshnessState: openclawEnabled
+    usageFreshnessState: openclawUsageEnabled
       ? usage
         ? usageFreshness.freshnessState
         : null
@@ -1441,8 +1463,8 @@ async function collectSample() {
     usageStaleMsThreshold: USAGE_STALE_MS,
     usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
     usageStaleGraceMs: USAGE_STALE_GRACE_MS,
-    activitySource: activitySummary?.source ?? (openclawEnabled ? 'unavailable' : 'disabled'),
-    activityWindowMs: activitySummary?.windowMs ?? null,
+    activitySource: activitySummary?.source ?? (MONITOR_AGENT_ACTIVITY ? 'unavailable' : 'disabled'),
+    activityWindowMs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.windowMs ?? null) : null,
     memPressureSource: memPressure.source,
     cloudIngestionStatus: CLOUD_INGEST_URL && CLOUD_API_KEY
       ? cloudIngestKickedOut ? 'kicked-out' : 'enabled'
@@ -1471,26 +1493,30 @@ async function collectSample() {
     dayCpuAvgPct: MONITOR_CPU ? (dayLoadSummary?.cpuAvgPct ?? null) : null,
     dayMemAvgPct: MONITOR_MEMORY ? (dayLoadSummary?.memAvgPct ?? null) : null,
     dayGpuAvgPct: MONITOR_GPU ? (dayLoadSummary?.gpuAvgPct ?? null) : null,
-    dayTokensAvgPerMin: MONITOR_OPENCLAW ? (dayLoadSummary?.tokensAvgPerMin ?? null) : null,
+    dayTokensAvgPerMin: MONITOR_TOKEN_USAGE ? (dayLoadSummary?.tokensAvgPerMin ?? null) : null,
     gpuSource: gpu.source,
     gpuConfidence: gpu.confidence,
     gpuSampleWindowMs: gpu.sampleWindowMs,
-    tokensPerMin: MONITOR_OPENCLAW ? (usage?.tokensPerMin ?? null) : null,
-    openclawModel: MONITOR_OPENCLAW ? (usage?.model ?? null) : null,
-    openclawProvider: MONITOR_OPENCLAW ? (usage?.provider ?? null) : null,
-    openclawTotalTokens: MONITOR_OPENCLAW ? (usage?.totalTokens ?? null) : null,
-    openclawRemainingTokens: MONITOR_OPENCLAW ? (usage?.remainingTokens ?? null) : null,
-    openclawPercentUsed: MONITOR_OPENCLAW ? (usage?.percentUsed ?? null) : null,
-    openclawContextTokens: MONITOR_OPENCLAW ? (usage?.contextTokens ?? null) : null,
-    openclawBudgetKind: MONITOR_OPENCLAW ? (usage?.budgetKind ?? null) : null,
-    openclawSessionId: MONITOR_OPENCLAW ? (usage?.sessionId ?? null) : null,
-    openclawAgentId: MONITOR_OPENCLAW ? (usage?.agentId ?? null) : null,
-    openclawUsageTs: MONITOR_OPENCLAW ? (usage?.usageTimestampMs ?? null) : null,
-    openclawUsageAgeMs: MONITOR_OPENCLAW ? usageFreshness.usageAgeMs : null,
-    activityWindowMs: MONITOR_OPENCLAW ? (activitySummary?.windowMs ?? null) : null,
-    activityActiveSeconds: MONITOR_OPENCLAW ? (activitySummary?.totalActiveSeconds ?? null) : null,
-    activityIdleSeconds: MONITOR_OPENCLAW ? (activitySummary?.idleSeconds ?? null) : null,
-    activityJobs: MONITOR_OPENCLAW ? (activitySummary?.jobs ?? []) : [],
+    tokensPerMin: MONITOR_TOKEN_USAGE ? (usage?.tokensPerMin ?? null) : null,
+    openclawModel: MONITOR_RUNTIME_STATE ? (usage?.model ?? null) : null,
+    openclawProvider: MONITOR_RUNTIME_STATE ? (usage?.provider ?? null) : null,
+    openclawTotalTokens: MONITOR_TOKEN_USAGE ? (usage?.totalTokens ?? null) : null,
+    openclawInputTokens: MONITOR_TOKEN_USAGE ? (usage?.inputTokens ?? null) : null,
+    openclawOutputTokens: MONITOR_TOKEN_USAGE ? (usage?.outputTokens ?? null) : null,
+    openclawRemainingTokens: quotaSelected ? (usage?.remainingTokens ?? null) : null,
+    openclawPercentUsed: quotaSelected ? (usage?.percentUsed ?? null) : null,
+    openclawContextTokens: quotaSelected ? (usage?.contextTokens ?? null) : null,
+    openclawBudgetKind: quotaSelected ? (usage?.budgetKind ?? null) : null,
+    openclawQuotaFamily: quotaSelected ? quotaFamily : null,
+    openclawQuotaLabel: quotaSelected ? (usage?.quotaLabel ?? null) : null,
+    openclawSessionId: openclawUsageEnabled ? (usage?.sessionId ?? null) : null,
+    openclawAgentId: openclawUsageEnabled ? (usage?.agentId ?? null) : null,
+    openclawUsageTs: openclawUsageEnabled ? (usage?.usageTimestampMs ?? null) : null,
+    openclawUsageAgeMs: openclawUsageEnabled ? usageFreshness.usageAgeMs : null,
+    activityWindowMs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.windowMs ?? null) : null,
+    activityActiveSeconds: MONITOR_AGENT_ACTIVITY ? (activitySummary?.totalActiveSeconds ?? null) : null,
+    activityIdleSeconds: MONITOR_AGENT_ACTIVITY ? (activitySummary?.idleSeconds ?? null) : null,
+    activityJobs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.jobs ?? []) : [],
     localLogPath: LOCAL_LOG_PATH,
     localLogBytes: null,
     source

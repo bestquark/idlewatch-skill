@@ -18,9 +18,13 @@ test('parses openclaw status --json output and chooses best recent session', () 
   assert.equal(usage.model, 'gpt-5.3-codex')
   assert.equal(usage.provider, 'openai')
   assert.equal(usage.totalTokens, 70500)
+  assert.equal(usage.inputTokens, 1200)
+  assert.equal(usage.outputTokens, 210)
   assert.equal(usage.remainingTokens, 201500)
   assert.equal(usage.percentUsed, 26)
   assert.equal(usage.contextTokens, 272000)
+  assert.equal(usage.quotaFamily, 'openai-codex')
+  assert.equal(usage.quotaLabel, 'OpenAI Codex')
   assert.equal(usage.sessionId, '90d2a820-6d77-42f0-8db4-12b90f9f7203')
   assert.equal(usage.agentId, 'main')
   assert.equal(usage.usageTimestampMs, 1771278893678)
@@ -66,9 +70,13 @@ test('parses generic usage payloads', () => {
     model: 'gpt-5.3-codex',
     provider: 'openai',
     totalTokens: 1234,
+    inputTokens: null,
+    outputTokens: null,
     remainingTokens: 3966,
     percentUsed: 24,
     contextTokens: 5200,
+    quotaFamily: 'openai-codex',
+    quotaLabel: 'OpenAI Codex',
     tokensPerMin: 45.67,
     sessionId: 'abc',
     agentId: 'main',
@@ -180,7 +188,10 @@ test('parses stats payloads with nested usage totals', () => {
   assert.ok(usage)
   assert.equal(usage.model, 'claude-opus-4-6')
   assert.equal(usage.totalTokens, 4560)
+  assert.equal(usage.inputTokens, 3000)
+  assert.equal(usage.outputTokens, 1560)
   assert.equal(usage.tokensPerMin, 123.45)
+  assert.equal(usage.quotaFamily, 'anthropic')
   assert.equal(usage.sessionId, 'sess-stats-01')
   assert.equal(usage.agentId, 'agent-stats')
   assert.equal(usage.usageTimestampMs, 1771279012345)

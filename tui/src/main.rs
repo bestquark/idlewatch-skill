@@ -19,7 +19,9 @@ use std::{
 #[derive(Clone)]
 struct MonitorTarget {
     key: &'static str,
+    group: &'static str,
     label: &'static str,
+    description: &'static str,
     available: bool,
     selected: bool,
 }
@@ -136,8 +138,9 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
     let gpu_available = cfg!(target_os = "macos") || command_exists("nvidia-smi", &["--help"]);
     let has_existing = !existing.is_empty();
     let wants = |key: &str, fallback: bool| {
+        let has_legacy_openclaw = existing.iter().any(|item| item == "openclaw");
         if has_existing {
-            existing.iter().any(|item| item == key)
+            existing.iter().any(|item| item == key) || (has_legacy_openclaw && key.starts_with("quota_")) || (has_legacy_openclaw && matches!(key, "agent_activity" | "token_usage" | "runtime_state"))
         } else {
             fallback
         }
@@ -146,27 +149,91 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
     vec![
         MonitorTarget {
             key: "cpu",
+            group: "Compute",
             label: "CPU usage",
+            description: "machine load",
             available: true,
             selected: wants("cpu", true),
         },
         MonitorTarget {
             key: "memory",
+            group: "Compute",
             label: "Memory usage",
+            description: "resident memory pressure",
             available: true,
             selected: wants("memory", true),
         },
         MonitorTarget {
             key: "gpu",
+            group: "Compute",
             label: "GPU usage",
+            description: "accelerator load",
             available: gpu_available,
             selected: wants("gpu", gpu_available),
         },
         MonitorTarget {
-            key: "openclaw",
-            label: "OpenClaw token telemetry",
+            key: "agent_activity",
+            group: "OpenClaw Agents",
+            label: "Idle / awake time",
+            description: "cron run history and idle wedges",
             available: openclaw_available,
-            selected: wants("openclaw", openclaw_available),
+            selected: wants("agent_activity", openclaw_available),
+        },
+        MonitorTarget {
+            key: "token_usage",
+            group: "OpenClaw Agents",
+            label: "Token usage",
+            description: "total, input, output, rate",
+            available: openclaw_available,
+            selected: wants("token_usage", openclaw_available),
+        },
+        MonitorTarget {
+            key: "runtime_state",
+            group: "OpenClaw Agents",
+            label: "Runtime metadata",
+            description: "provider, model, session state",
+            available: openclaw_available,
+            selected: wants("runtime_state", openclaw_available),
+        },
+        MonitorTarget {
+            key: "quota_openai_api",
+            group: "Token Quota",
+            label: "OpenAI API",
+            description: "context budget for GPT/API runtimes",
+            available: openclaw_available,
+            selected: wants("quota_openai_api", openclaw_available),
+        },
+        MonitorTarget {
+            key: "quota_openai_codex",
+            group: "Token Quota",
+            label: "OpenAI Codex",
+            description: "context budget for Codex runtimes",
+            available: openclaw_available,
+            selected: wants("quota_openai_codex", openclaw_available),
+        },
+        MonitorTarget {
+            key: "quota_anthropic",
+            group: "Token Quota",
+            label: "Anthropic",
+            description: "context budget for Claude runtimes",
+            available: openclaw_available,
+            selected: wants("quota_anthropic", openclaw_available),
+        },
+        MonitorTarget {
+            key: "quota_google",
+            group: "Token Quota",
+            label: "Google",
+            description: "context budget for Gemini runtimes",
+            available: openclaw_available,
+            selected: wants("quota_google", openclaw_available),
+        },
+        MonitorTarget {
+            key: "quota_local",
+            group: "Token Quota",
+            label: "Local models",
+            description: "context budget for local runtimes",
+            available: openclaw_available,
+            selected: wants("quota_local", openclaw_available),
         },
     ]
 }
@@ -250,7 +317,7 @@ fn render_monitor_menu(
             .margin(1)
             .constraints([
                 Constraint::Length(4),
-                Constraint::Length(10),
+                Constraint::Length(16),
                 Constraint::Min(1),
             ])
             .split(f.area());
@@ -265,15 +332,22 @@ fn render_monitor_menu(
             );
         f.render_widget(title, chunks[0]);
 
-        let items = monitors
-            .iter()
-            .enumerate()
-            .map(|(idx, target)| {
+        let mut items = Vec::new();
+        let mut last_group = "";
+        for (idx, target) in monitors.iter().enumerate() {
+            if target.group != last_group {
+                last_group = target.group;
+                items.push(
+                    ListItem::new(format!("  {}", target.group))
+                        .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD)),
+                );
+            }
+
                 let marker = if target.selected { "[x]" } else { "[ ]" };
                 let unavailable = if target.available { "" } else { " (not detected)" };
-                let line = format!("{} {}{}", marker, target.label, unavailable);
+                let line = format!("{} {} — {}{}", marker, target.label, target.description, unavailable);
 
-                if idx == cursor {
+                let item = if idx == cursor {
                     ListItem::new(format!("❯ {}", line)).style(
                         Style::default()
                             .fg(Color::White)
@@ -284,9 +358,9 @@ fn render_monitor_menu(
                     ListItem::new(format!("  {}", line)).style(Style::default().fg(Color::Cyan))
                 } else {
                     ListItem::new(format!("  {}", line)).style(Style::default().fg(Color::DarkGray))
-                }
-            })
-            .collect::<Vec<_>>();
+                };
+                items.push(item);
+        }
 
         let list = List::new(items).block(
             Block::default()
@@ -658,7 +732,9 @@ fn main() -> Result<()> {
         selected_keys.join(",")
     };
 
-    let monitor_openclaw = monitor_targets_csv.split(',').any(|item| item == "openclaw");
+    let monitor_openclaw_usage = monitor_targets_csv
+        .split(',')
+        .any(|item| matches!(item, "token_usage" | "runtime_state" | "quota_openai_api" | "quota_openai_codex" | "quota_anthropic" | "quota_google" | "quota_local"));
     let device_name = normalize_device_name(&device_name_input, &host);
     let safe_device_id = {
         let candidate = sanitize_device_id(
@@ -673,7 +749,7 @@ fn main() -> Result<()> {
         format!("IDLEWATCH_DEVICE_NAME={}", device_name),
         format!("IDLEWATCH_DEVICE_ID={}", safe_device_id),
         format!("IDLEWATCH_MONITOR_TARGETS={}", monitor_targets_csv),
-        format!("IDLEWATCH_OPENCLAW_USAGE={}", if monitor_openclaw { "auto" } else { "off" }),
+        format!("IDLEWATCH_OPENCLAW_USAGE={}", if monitor_openclaw_usage { "auto" } else { "off" }),
         format!(
             "IDLEWATCH_LOCAL_LOG_PATH={}",
             config_dir.join("logs").join(format!("{}-metrics.ndjson", safe_device_id)).display()
