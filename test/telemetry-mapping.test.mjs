@@ -23,7 +23,12 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
     memPressureClass: 'normal',
     tokensPerMin: 128.4,
     openclawModel: 'gpt-5.3-codex',
+    openclawProvider: 'openai',
     openclawTotalTokens: 70500,
+    openclawRemainingTokens: 201500,
+    openclawPercentUsed: 26,
+    openclawContextTokens: 272000,
+    openclawBudgetKind: 'context-window',
     openclawSessionId: '90d2a820-6d77-42f0-8db4-12b90f9f7203',
     openclawAgentId: 'main',
     openclawUsageTs: 1771278893678,
@@ -55,7 +60,12 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
   assert.equal(enriched.schemaVersion, OPENCLAW_FLEET_SCHEMA.version)
   assert.deepEqual(enriched.schemaCompat, OPENCLAW_FLEET_SCHEMA.backwardCompatibleWith)
   assert.equal(enriched.fleet.usage.tokensPerMin, legacy.tokensPerMin)
+  assert.equal(enriched.fleet.usage.provider, legacy.openclawProvider)
   assert.equal(enriched.fleet.usage.totalTokens, legacy.openclawTotalTokens)
+  assert.equal(enriched.fleet.usage.remainingTokens, legacy.openclawRemainingTokens)
+  assert.equal(enriched.fleet.usage.percentUsed, legacy.openclawPercentUsed)
+  assert.equal(enriched.fleet.usage.contextTokens, legacy.openclawContextTokens)
+  assert.equal(enriched.fleet.usage.budgetKind, legacy.openclawBudgetKind)
   assert.equal(enriched.fleet.provenance.collectorVersion, '0.1.0')
 })
 
@@ -65,5 +75,6 @@ test('fixture sample remains aligned with schema metadata', () => {
   assert.equal(sample.schemaVersion, OPENCLAW_FLEET_SCHEMA.version)
   assert.deepEqual(sample.schemaCompat, OPENCLAW_FLEET_SCHEMA.backwardCompatibleWith)
   assert.equal(sample.fleet.usage.model, sample.openclawModel)
+  assert.equal(sample.fleet.usage.provider, sample.openclawProvider)
   assert.equal(sample.fleet.usage.sessionId, sample.openclawSessionId)
 })

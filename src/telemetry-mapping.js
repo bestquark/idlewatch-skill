@@ -26,7 +26,12 @@ export function enrichWithOpenClawFleetTelemetry(sample, context = {}) {
       },
       usage: {
         model: sample.openclawModel ?? null,
+        provider: sample.openclawProvider ?? null,
         totalTokens: sample.openclawTotalTokens ?? null,
+        remainingTokens: sample.openclawRemainingTokens ?? null,
+        percentUsed: sample.openclawPercentUsed ?? null,
+        contextTokens: sample.openclawContextTokens ?? null,
+        budgetKind: sample.openclawBudgetKind ?? null,
         tokensPerMin: sample.tokensPerMin ?? null,
         sessionId: sample.openclawSessionId ?? null,
         agentId: sample.openclawAgentId ?? null,

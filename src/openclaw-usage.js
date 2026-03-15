@@ -49,6 +49,67 @@ function pickString(...vals) {
   return null
 }
 
+function normalizeProviderName(value) {
+  const normalized = pickString(value)?.toLowerCase()
+  if (!normalized) return null
+
+  if (['openai', 'anthropic', 'google', 'local', 'other'].includes(normalized)) return normalized
+  if (normalized === 'claude') return 'anthropic'
+  if (normalized === 'gemini') return 'google'
+  if (normalized === 'ollama') return 'local'
+  return normalized
+}
+
+function inferProviderFromModel(model) {
+  const normalized = pickString(model)?.toLowerCase()
+  if (!normalized) return null
+
+  if (
+    normalized.startsWith('openai/') ||
+    normalized.startsWith('gpt-') ||
+    normalized.startsWith('chatgpt') ||
+    normalized.startsWith('codex') ||
+    /^o[1345](?:$|[-.:/])/.test(normalized)
+  ) return 'openai'
+
+  if (normalized.startsWith('anthropic/') || normalized.includes('claude')) return 'anthropic'
+  if (normalized.startsWith('google/') || normalized.includes('gemini')) return 'google'
+
+  if (
+    normalized.startsWith('ollama/') ||
+    normalized.includes('qwen') ||
+    normalized.includes('llama') ||
+    normalized.includes('mistral') ||
+    normalized.includes('mixtral') ||
+    normalized.includes('deepseek') ||
+    normalized.includes('gemma') ||
+    normalized.includes('phi') ||
+    normalized.includes('qwq') ||
+    /:[0-9]+[a-z]?$/.test(normalized)
+  ) return 'local'
+
+  return 'other'
+}
+
+function deriveRemainingTokens(totalTokens, contextTokens) {
+  if (!Number.isFinite(totalTokens) || !Number.isFinite(contextTokens)) return null
+  if (contextTokens < totalTokens) return null
+  return contextTokens - totalTokens
+}
+
+function derivePercentUsed(totalTokens, contextTokens, remainingTokens = null) {
+  if (!Number.isFinite(contextTokens) || contextTokens <= 0) return null
+
+  const usedTokens = Number.isFinite(totalTokens)
+    ? totalTokens
+    : Number.isFinite(remainingTokens)
+      ? contextTokens - remainingTokens
+      : null
+
+  if (!Number.isFinite(usedTokens) || usedTokens < 0) return null
+  return Math.max(0, Math.min(100, Math.round((usedTokens / contextTokens) * 100)))
+}
+
 function isFreshTokenMarker(value) {
   if (value === false || value === 0) return false
   if (value === null || typeof value === 'undefined') return true
@@ -615,6 +676,40 @@ function parseFromStatusJson(parsed) {
     deriveTokensPerMinute(session),
     pickNumber(session?.derived?.tokensPerMinute, session?.derived?.tpm)
   )
+  const contextTokens = pickNumber(
+    session.contextTokens,
+    session.context_tokens,
+    session?.usage?.contextTokens,
+    session?.usage?.context_tokens,
+    defaults.contextTokens,
+    defaults.context_tokens,
+    parsed?.contextTokens,
+    parsed?.context_tokens,
+    parsed?.status?.contextTokens,
+    parsed?.status?.context_tokens
+  )
+  const remainingTokens = pickNumber(
+    session.remainingTokens,
+    session.remaining_tokens,
+    session?.usage?.remainingTokens,
+    session?.usage?.remaining_tokens,
+    parsed?.remainingTokens,
+    parsed?.remaining_tokens,
+    parsed?.status?.remainingTokens,
+    parsed?.status?.remaining_tokens,
+    deriveRemainingTokens(totalTokens, contextTokens)
+  )
+  const percentUsed = pickNumber(
+    session.percentUsed,
+    session.percent_used,
+    session?.usage?.percentUsed,
+    session?.usage?.percent_used,
+    parsed?.percentUsed,
+    parsed?.percent_used,
+    parsed?.status?.percentUsed,
+    parsed?.status?.percent_used,
+    derivePercentUsed(totalTokens, contextTokens, remainingTokens)
+  )
   const sessionAgeMs = pickNumber(session.age, session.ageMs)
   const usageTimestampMs =
     pickTimestamp(
@@ -676,11 +771,31 @@ function parseFromStatusJson(parsed) {
 
   return {
     model,
+    provider: normalizeProviderName(
+      pickString(
+        session.provider,
+        session.providerName,
+        session.provider_name,
+        session?.usage?.provider,
+        session?.usage?.providerName,
+        session?.usage?.provider_name,
+        parsed?.provider,
+        parsed?.providerName,
+        parsed?.provider_name,
+        parsed?.status?.provider,
+        parsed?.status?.providerName,
+        parsed?.status?.provider_name
+      )
+    ) ?? inferProviderFromModel(model),
     totalTokens,
     tokensPerMin,
+    remainingTokens,
+    percentUsed,
+    contextTokens,
     sessionId: pickString(session.sessionId, session.id, session?.usage?.sessionId, session?.usage?.id, session?.session_id),
     agentId: pickString(session.agentId, session?.usage?.agentId, session?.agent_id),
     usageTimestampMs,
+    budgetKind: contextTokens !== null ? 'context-window' : null,
     integrationStatus: hasStrongUsage ? 'ok' : 'partial'
   }
 }
@@ -837,13 +952,73 @@ function parseGenericUsage(parsed) {
     parsed?.rps,
     parsed?.requestsPerMinute
   )
+  const contextTokens = pickNumber(
+    usageRecord?.contextTokens,
+    usageRecord?.context_tokens,
+    usageRecord?.usage?.contextTokens,
+    usageRecord?.usage?.context_tokens,
+    usageTotals?.contextTokens,
+    usageTotals?.context_tokens,
+    parsed?.contextTokens,
+    parsed?.context_tokens,
+    parsed?.status?.contextTokens,
+    parsed?.status?.context_tokens
+  )
+  const remainingTokens = pickNumber(
+    usageRecord?.remainingTokens,
+    usageRecord?.remaining_tokens,
+    usageRecord?.usage?.remainingTokens,
+    usageRecord?.usage?.remaining_tokens,
+    usageTotals?.remainingTokens,
+    usageTotals?.remaining_tokens,
+    parsed?.remainingTokens,
+    parsed?.remaining_tokens,
+    parsed?.status?.remainingTokens,
+    parsed?.status?.remaining_tokens,
+    deriveRemainingTokens(totalTokens, contextTokens)
+  )
+  const percentUsed = pickNumber(
+    usageRecord?.percentUsed,
+    usageRecord?.percent_used,
+    usageRecord?.usage?.percentUsed,
+    usageRecord?.usage?.percent_used,
+    usageTotals?.percentUsed,
+    usageTotals?.percent_used,
+    parsed?.percentUsed,
+    parsed?.percent_used,
+    parsed?.status?.percentUsed,
+    parsed?.status?.percent_used,
+    derivePercentUsed(totalTokens, contextTokens, remainingTokens)
+  )
 
   if (model === null && totalTokens === null && tokensPerMin === null) return null
 
   return {
     model,
+    provider: normalizeProviderName(
+      pickString(
+        usageRecord?.provider,
+        usageRecord?.providerName,
+        usageRecord?.provider_name,
+        usageRecord?.usage?.provider,
+        usageRecord?.usage?.providerName,
+        usageRecord?.usage?.provider_name,
+        usageTotals?.provider,
+        usageTotals?.providerName,
+        usageTotals?.provider_name,
+        parsed?.provider,
+        parsed?.providerName,
+        parsed?.provider_name,
+        parsed?.status?.provider,
+        parsed?.status?.providerName,
+        parsed?.status?.provider_name
+      )
+    ) ?? inferProviderFromModel(model),
     totalTokens,
     tokensPerMin,
+    remainingTokens,
+    percentUsed,
+    contextTokens,
     sessionId: pickString(
       parsed?.sessionId,
       parsed?.session_id,
@@ -935,6 +1110,7 @@ function parseGenericUsage(parsed) {
       parsed?.status?.usage_time,
       parsed?.status?.usageTsMs
     ),
+    budgetKind: contextTokens !== null ? 'context-window' : null,
     integrationStatus: 'ok'
   }
 }
@@ -947,6 +1123,8 @@ function usageCandidateScore(usage) {
   if (usage.model !== null) score += 2
   if (usage.totalTokens !== null) score += 2
   if (usage.tokensPerMin !== null) score += 1
+  if (usage.remainingTokens !== null) score += 1
+  if (usage.contextTokens !== null) score += 1
   if (usage.sessionId !== null) score += 1
   if (usage.agentId !== null) score += 1
   if (usage.usageTimestampMs !== null) score += 1

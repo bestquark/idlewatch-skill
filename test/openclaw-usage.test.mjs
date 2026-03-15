@@ -16,10 +16,15 @@ test('parses openclaw status --json output and chooses best recent session', () 
   const usage = parseOpenClawUsage(fixture('openclaw-status.json'))
   assert.ok(usage)
   assert.equal(usage.model, 'gpt-5.3-codex')
+  assert.equal(usage.provider, 'openai')
   assert.equal(usage.totalTokens, 70500)
+  assert.equal(usage.remainingTokens, 201500)
+  assert.equal(usage.percentUsed, 26)
+  assert.equal(usage.contextTokens, 272000)
   assert.equal(usage.sessionId, '90d2a820-6d77-42f0-8db4-12b90f9f7203')
   assert.equal(usage.agentId, 'main')
   assert.equal(usage.usageTimestampMs, 1771278893678)
+  assert.equal(usage.budgetKind, 'context-window')
   assert.equal(usage.integrationStatus, 'ok')
   assert.equal(usage.tokensPerMin, 384545.45)
 })
@@ -49,6 +54,7 @@ test('parses generic usage payloads', () => {
     usage: {
       model: 'gpt-5.3-codex',
       totalTokens: 1234,
+      contextTokens: 5200,
       tokensPerMinute: 45.67
     },
     sessionId: 'abc',
@@ -58,11 +64,16 @@ test('parses generic usage payloads', () => {
 
   assert.deepEqual(usage, {
     model: 'gpt-5.3-codex',
+    provider: 'openai',
     totalTokens: 1234,
+    remainingTokens: 3966,
+    percentUsed: 24,
+    contextTokens: 5200,
     tokensPerMin: 45.67,
     sessionId: 'abc',
     agentId: 'main',
     usageTimestampMs: 123456000,
+    budgetKind: 'context-window',
     integrationStatus: 'ok'
   })
 })
