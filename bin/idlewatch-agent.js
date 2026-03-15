@@ -13,6 +13,7 @@ import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 import { deriveUsageAlert } from '../src/usage-alert.js'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
+import { DAY_WINDOW_MS, loadOpenClawActivitySummary } from '../src/openclaw-activity.js'
 import { runEnrollmentWizard } from '../src/enrollment.js'
 import { enrichWithOpenClawFleetTelemetry } from '../src/telemetry-mapping.js'
 import pkg from '../package.json' with { type: 'json' }
@@ -230,6 +231,26 @@ function buildLocalDashboardPayload(logPath) {
     latestTs: rows.length ? Number(rows[rows.length - 1].ts || 0) : null,
     series,
     tokenDaily: buildTokenDailyEstimate(rows)
+  }
+}
+
+function buildRollingLoadSummary(logPath, nowMs = Date.now(), windowMs = DAY_WINDOW_MS) {
+  const rows = parseLocalRows(logPath, 20000).filter((row) => Number(row.ts || 0) >= nowMs - windowMs)
+  if (rows.length === 0) return null
+
+  const average = (values) => {
+    const valid = values.filter((value) => Number.isFinite(value))
+    if (valid.length === 0) return null
+    return Number((valid.reduce((sum, value) => sum + value, 0) / valid.length).toFixed(2))
+  }
+
+  return {
+    windowMs,
+    sampleCount: rows.length,
+    cpuAvgPct: average(rows.map((row) => Number(row.cpuPct))),
+    memAvgPct: average(rows.map((row) => Number(row.memPct))),
+    gpuAvgPct: average(rows.map((row) => Number(row.gpuPct))),
+    tokensAvgPerMin: average(rows.map((row) => Number(row.tokensPerMin)))
   }
 }
 
@@ -1298,7 +1319,9 @@ async function publish(row, retries = 2) {
 
 async function collectSample() {
   const sampleStartMs = Date.now()
+  const dayLoadSummary = buildRollingLoadSummary(LOCAL_LOG_PATH, sampleStartMs)
   const openclawEnabled = EFFECTIVE_OPENCLAW_MODE !== 'off'
+  const activitySummary = openclawEnabled ? loadOpenClawActivitySummary({ nowMs: sampleStartMs }) : null
 
   const disabledProbe = {
     result: 'disabled',
@@ -1418,6 +1441,8 @@ async function collectSample() {
     usageStaleMsThreshold: USAGE_STALE_MS,
     usageNearStaleMsThreshold: USAGE_NEAR_STALE_MS,
     usageStaleGraceMs: USAGE_STALE_GRACE_MS,
+    activitySource: activitySummary?.source ?? (openclawEnabled ? 'unavailable' : 'disabled'),
+    activityWindowMs: activitySummary?.windowMs ?? null,
     memPressureSource: memPressure.source,
     cloudIngestionStatus: CLOUD_INGEST_URL && CLOUD_API_KEY
       ? cloudIngestKickedOut ? 'kicked-out' : 'enabled'
@@ -1442,6 +1467,11 @@ async function collectSample() {
     memPressurePct: MONITOR_MEMORY ? memPressure.pct : null,
     memPressureClass: MONITOR_MEMORY ? memPressure.cls : 'disabled',
     gpuPct: MONITOR_GPU ? gpu.pct : null,
+    dayWindowMs: dayLoadSummary?.windowMs ?? DAY_WINDOW_MS,
+    dayCpuAvgPct: MONITOR_CPU ? (dayLoadSummary?.cpuAvgPct ?? null) : null,
+    dayMemAvgPct: MONITOR_MEMORY ? (dayLoadSummary?.memAvgPct ?? null) : null,
+    dayGpuAvgPct: MONITOR_GPU ? (dayLoadSummary?.gpuAvgPct ?? null) : null,
+    dayTokensAvgPerMin: MONITOR_OPENCLAW ? (dayLoadSummary?.tokensAvgPerMin ?? null) : null,
     gpuSource: gpu.source,
     gpuConfidence: gpu.confidence,
     gpuSampleWindowMs: gpu.sampleWindowMs,
@@ -1457,6 +1487,10 @@ async function collectSample() {
     openclawAgentId: MONITOR_OPENCLAW ? (usage?.agentId ?? null) : null,
     openclawUsageTs: MONITOR_OPENCLAW ? (usage?.usageTimestampMs ?? null) : null,
     openclawUsageAgeMs: MONITOR_OPENCLAW ? usageFreshness.usageAgeMs : null,
+    activityWindowMs: MONITOR_OPENCLAW ? (activitySummary?.windowMs ?? null) : null,
+    activityActiveSeconds: MONITOR_OPENCLAW ? (activitySummary?.totalActiveSeconds ?? null) : null,
+    activityIdleSeconds: MONITOR_OPENCLAW ? (activitySummary?.idleSeconds ?? null) : null,
+    activityJobs: MONITOR_OPENCLAW ? (activitySummary?.jobs ?? []) : [],
     localLogPath: LOCAL_LOG_PATH,
     localLogBytes: null,
     source
