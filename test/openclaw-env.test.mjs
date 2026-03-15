@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import { mkdtempSync, writeFileSync, chmodSync, rmSync } from 'node:fs'
 import os from 'node:os'
@@ -10,6 +10,10 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const BIN = path.resolve(__dirname, '../bin/idlewatch-agent.js')
+
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
 
 test('accepts explicit IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS in dry-run', () => {
   const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
@@ -358,6 +362,114 @@ test('quickstart honors IDLEWATCH_ENROLL_DEVICE_NAME in non-interactive mode', (
   assert.match(savedEnv, /IDLEWATCH_DEVICE_ID=now-local-box/)
 })
 
+test('quickstart failure keeps idlewatch --once as the primary retry only for the default saved config path', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-default-retry-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-default-retry-root-'))
+  const rejectServer = path.join(tempRoot, 'reject-server.mjs')
+  const port = 47931
+
+  fs.writeFileSync(rejectServer, `
+    import http from 'node:http'
+    const port = Number(process.argv[2])
+    const server = http.createServer((req, res) => {
+      req.resume()
+      req.on('end', () => {
+        res.writeHead(401, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ error: 'invalid_api_key' }))
+      })
+    })
+    server.listen(port, '127.0.0.1')
+  `)
+
+  const server = spawnSync(process.execPath, ['-e', ''], { encoding: 'utf8' })
+  void server
+  const serverProc = spawn(process.execPath, [rejectServer, String(port)], {
+    stdio: 'ignore'
+  })
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'production',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Retry Box',
+        IDLEWATCH_CLOUD_API_KEY: 'iwk_abcdefghijklmnopqrstuvwxyz123456',
+        IDLEWATCH_CLOUD_INGEST_URL: `http://127.0.0.1:${port}/api/ingest`,
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8'
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Retry with: idlewatch --once/)
+    assert.match(run.stderr, /Or rerun: idlewatch quickstart/)
+    assert.match(run.stderr, /Advanced\/manual fallback: set -a; source ".*idlewatch\.env"; set \+a && idlewatch --once/)
+  } finally {
+    serverProc.kill('SIGTERM')
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('quickstart failure uses custom-path-aware retry copy when setup saved config outside the default path', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-retry-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-retry-root-'))
+  const rejectServer = path.join(tempRoot, 'reject-server.mjs')
+  const customEnvFile = path.join(tempRoot, 'custom.env')
+  const port = 47932
+
+  fs.writeFileSync(rejectServer, `
+    import http from 'node:http'
+    const port = Number(process.argv[2])
+    const server = http.createServer((req, res) => {
+      req.resume()
+      req.on('end', () => {
+        res.writeHead(401, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ error: 'invalid_api_key' }))
+      })
+    })
+    server.listen(port, '127.0.0.1')
+  `)
+
+  const serverProc = spawn(process.execPath, [rejectServer, String(port)], {
+    stdio: 'ignore'
+  })
+  sleep(150)
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'production',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Retry Box',
+        IDLEWATCH_CLOUD_API_KEY: 'iwk_abcdefghijklmnopqrstuvwxyz123456',
+        IDLEWATCH_CLOUD_INGEST_URL: `http://127.0.0.1:${port}/api/ingest`,
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: customEnvFile,
+        IDLEWATCH_ENROLL_CONFIG_DIR: path.join(tempRoot, 'config'),
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8'
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Retry with: idlewatch quickstart/)
+    assert.match(run.stderr, /Use the saved config directly:/)
+    assert.match(run.stderr, /idlewatch --once/)
+    assert.doesNotMatch(run.stderr, /^Retry with: idlewatch --once$/m)
+    assert.doesNotMatch(run.stderr, /Advanced\/manual fallback:/)
+  } finally {
+    serverProc.kill('SIGTERM')
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 test('accepts OpenClaw JSON from stderr payload on non-zero-exit command', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-stderr-'))
   const mockBin = path.join(tempDir, 'openclaw-mock.sh')
@@ -491,4 +603,5 @@ JSON
     rmSync(tempDir, { recursive: true, force: true })
   }
 })
+
 

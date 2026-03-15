@@ -54,8 +54,17 @@ function resolveEnvPath(value) {
   return path.resolve(expandSupportedPathVars(value))
 }
 
+function defaultPersistedEnvFilePath() {
+  return path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+}
+
+function usesDefaultPersistedEnvFile(envFilePath) {
+  if (!envFilePath) return false
+  return path.resolve(envFilePath) === path.resolve(defaultPersistedEnvFilePath())
+}
+
 function loadPersistedEnvIntoProcess() {
-  const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+  const envFile = defaultPersistedEnvFilePath()
   if (!fs.existsSync(envFile)) return null
 
   try {
@@ -416,9 +425,14 @@ if (quickstartRequested) {
 
     console.error(`⚠️ Setup is not finished yet. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
     console.error('The first required telemetry sample did not publish successfully, so this device may not be linked yet.')
-    console.error('Retry with: idlewatch --once')
-    console.error('Or rerun: idlewatch quickstart')
-    console.error(`Advanced/manual fallback: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
+    if (usesDefaultPersistedEnvFile(result.outputEnvFile)) {
+      console.error('Retry with: idlewatch --once')
+      console.error('Or rerun: idlewatch quickstart')
+      console.error(`Advanced/manual fallback: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
+    } else {
+      console.error('Retry with: idlewatch quickstart')
+      console.error(`Use the saved config directly: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
+    }
     process.exit(onceRun.status ?? 1)
   } catch (err) {
     if (String(err?.message || '') === 'setup_cancelled') {
