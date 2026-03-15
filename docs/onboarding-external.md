@@ -51,11 +51,10 @@ See `docs/packaging/macos-dmg.md` for signing/notarization setup.
 
 ## Credential strategy (least privilege)
 
-- Prefer `FIREBASE_SERVICE_ACCOUNT_FILE` over raw JSON env values.
-- Use a dedicated service account per deployment environment.
-- Grant minimal Firestore write permissions needed for telemetry ingestion.
+- Use a dedicated API key per device or deployment environment.
 - Avoid reusing broad admin credentials across developer laptops.
-- Rotate keys periodically and replace the local credential file path atomically.
+- Rotate keys periodically on idlewatch.com/api.
+- For advanced Firebase mode: prefer `FIREBASE_SERVICE_ACCOUNT_FILE` over raw JSON env values, grant minimal Firestore write permissions, and rotate the local credential file path atomically.
 
 ## Automation validation
 
