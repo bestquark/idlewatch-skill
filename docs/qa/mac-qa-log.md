@@ -1,4 +1,19 @@
 
+## QA cycle update — 2026-03-15 11:15 AM America/Toronto
+
+### Smoke checks this cycle
+
+- `npm run test:unit --silent` ✅ (118 pass, 0 fail)
+- Pipeline healthy. No breakage, no regressions.
+
+### Status
+
+- ✅ All prior P1/P2/P3 findings from this lane remain resolved.
+- ✅ Test count stable at 118.
+- ✅ Working tree clean (only TUI build artifacts modified, no source changes).
+- ⚠️ External blockers unchanged: Firebase write creds and macOS codesign/notary secrets still missing.
+- No new findings; nothing to commit beyond this log entry.
+
 ## QA cycle update — 2026-03-15 11:05 AM America/Toronto
 
 ### Smoke checks this cycle
