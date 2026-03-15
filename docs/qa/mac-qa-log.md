@@ -1,4 +1,28 @@
 
+## QA cycle update — 2026-03-15 5:55 AM America/Toronto
+
+### Fixed this cycle
+
+1. **P3 (polish plan ticket #2 follow-up) — `idlewatch status` now shows contextual next-step hints based on device state**
+   - No config → hints at `idlewatch quickstart`
+   - Config but no samples yet → shows `(none yet)` for Last sample and hints at `idlewatch --once` or `idlewatch run`
+   - Config with existing samples → hints at `idlewatch configure` for reconfiguration
+   - The `Last sample` field is now always visible when config exists, reducing ambiguity about collection state.
+   - Regression test added covering all three hint states.
+
+### Smoke checks
+
+- `node --test --test-concurrency=1 'test/*.test.mjs'` ✅ (118 pass, 0 fail)
+- `node bin/idlewatch-agent.js status` (no config) ✅ — hints at quickstart
+- `node bin/idlewatch-agent.js status` (config, no samples) ✅ — shows "(none yet)" + hints at --once/run
+- `node bin/idlewatch-agent.js status` (config, with samples) ✅ — shows sample age + hints at configure
+- `node bin/idlewatch-agent.js --help` ✅
+
+### Status
+
+- ✅ Pipeline healthy. No regressions.
+- ✅ Committed and pushed to main.
+
 ## QA cycle update — 2026-03-15 5:45 AM America/Toronto
 
 ### Fixed this cycle
