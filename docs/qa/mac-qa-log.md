@@ -26,9 +26,9 @@
 
 ### Status
 
-- ⚠️ One new P2 finding (test runner hang).
+- ✅ P2 test runner hang resolved: `test:unit` already uses `--test-concurrency=1`.
 - ✅ All prior polish items from this lane remain resolved.
-- ✅ Pipeline healthy otherwise. No regressions in setup/config/publish flows.
+- ✅ Pipeline healthy. No regressions in setup/config/publish flows.
 
 ### Notes
 
