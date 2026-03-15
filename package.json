@@ -1,6 +1,6 @@
 {
   "name": "idlewatch",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Host telemetry collector for IdleWatch",
   "type": "module",
   "files": [
@@ -9,6 +9,7 @@
     "scripts",
     "skill",
     "tui/src",
+    "tui/bin",
     "tui/Cargo.toml",
     "tui/Cargo.lock",
     "README.md",

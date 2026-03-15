@@ -99,43 +99,47 @@ function cargoAvailable() {
   return cargoProbe.status === 0
 }
 
-function installRustToolchain() {
-  if (cargoAvailable()) return { ok: true, installed: false }
-  if (process.env.IDLEWATCH_DISABLE_RUST_INSTALL === '1') return { ok: false, reason: 'install-disabled' }
-  if (!process.stdin.isTTY || !process.stdout.isTTY) return { ok: false, reason: 'non-tty' }
-  if (!['darwin', 'linux'].includes(process.platform)) return { ok: false, reason: `unsupported-platform:${process.platform}` }
+function bundledTuiBinaryPath() {
+  const platform = process.platform
+  const arch = process.arch
+  const ext = platform === 'win32' ? '.exe' : ''
+  return path.join(PACKAGE_ROOT, 'tui', 'bin', `${platform}-${arch}`, `idlewatch-setup${ext}`)
+}
 
-  console.log('IdleWatch TUI needs Rust/Cargo. Installing rustup + Cargo now...')
-  const install = spawnSync('sh', ['-c', 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'], {
+function tryBundledRustTui({ configDir, outputEnvFile }) {
+  const binPath = bundledTuiBinaryPath()
+  if (!fs.existsSync(binPath)) return { ok: false, reason: 'bundled-binary-missing', binPath }
+
+  try {
+    fs.chmodSync(binPath, 0o755)
+  } catch {
+    // best effort
+  }
+
+  const run = spawnSync(binPath, [], {
     stdio: 'inherit',
     env: {
       ...process.env,
-      CARGO_HOME: process.env.CARGO_HOME || path.join(os.homedir(), '.cargo'),
-      RUSTUP_HOME: process.env.RUSTUP_HOME || path.join(os.homedir(), '.rustup')
+      IDLEWATCH_ENROLL_CONFIG_DIR: configDir,
+      IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: outputEnvFile
     }
   })
 
-  if (install.status !== 0) return { ok: false, reason: `rustup-install-failed:${install.status ?? 'unknown'}` }
-
-  const cargoBinDir = path.join(process.env.CARGO_HOME || path.join(os.homedir(), '.cargo'), 'bin')
-  if (!process.env.PATH?.split(path.delimiter).includes(cargoBinDir)) {
-    process.env.PATH = `${cargoBinDir}${path.delimiter}${process.env.PATH || ''}`
-  }
-
-  return cargoAvailable() ? { ok: true, installed: true } : { ok: false, reason: 'cargo-still-missing' }
+  if (run.status === 0) return { ok: true, binPath }
+  return { ok: false, reason: `bundled-binary-failed:${run.status ?? 'unknown'}`, binPath }
 }
 
-function tryRustTui({ configDir, outputEnvFile, autoInstallRust = true }) {
+function tryRustTui({ configDir, outputEnvFile }) {
   const disabled = process.env.IDLEWATCH_DISABLE_RUST_TUI === '1'
   if (disabled) return { ok: false, reason: 'disabled' }
 
+  const bundled = tryBundledRustTui({ configDir, outputEnvFile })
+  if (bundled.ok) return bundled
+
   if (!cargoAvailable()) {
-    if (autoInstallRust) {
-      const installResult = installRustToolchain()
-      if (!installResult.ok) return { ok: false, reason: installResult.reason || 'cargo-missing' }
-    } else {
-      return { ok: false, reason: 'cargo-missing' }
-    }
+    return bundled.reason === 'bundled-binary-missing'
+      ? { ok: false, reason: 'bundled-binary-missing-and-cargo-missing', binPath: bundled.binPath }
+      : { ok: false, reason: 'cargo-missing' }
   }
 
   const manifestPath = path.join(PACKAGE_ROOT, 'tui', 'Cargo.toml')
@@ -179,7 +183,7 @@ export async function runEnrollmentWizard(options = {}) {
   )
 
   if (!nonInteractive && !noTui) {
-    const tuiResult = tryRustTui({ configDir, outputEnvFile, autoInstallRust: true })
+    const tuiResult = tryRustTui({ configDir, outputEnvFile })
     if (tuiResult.ok) {
       return {
         mode: 'tui',
@@ -188,7 +192,9 @@ export async function runEnrollmentWizard(options = {}) {
       }
     }
 
-    if (!['disabled', 'cargo-missing'].includes(tuiResult.reason || '')) {
+    if (tuiResult.reason === 'bundled-binary-missing-and-cargo-missing') {
+      console.warn('IdleWatch TUI is not bundled for this platform and Cargo is not installed. Falling back to text setup. Use --no-tui to skip this check.')
+    } else if (!['disabled', 'cargo-missing', 'bundled-binary-missing'].includes(tuiResult.reason || '')) {
       console.warn(`IdleWatch TUI unavailable (${tuiResult.reason || 'unknown'}). Falling back to text setup.`)
     }
   }

@@ -17,7 +17,7 @@ npx idlewatch quickstart
 npx idlewatch --dry-run
 ```
 
-`quickstart` is the happy path: create an API key on idlewatch.com/api, run the wizard, pick a device name + metrics, and IdleWatch saves local config before sending a first sample. By default, quickstart will try to install Rust/Cargo automatically if needed so it can launch the ratatui onboarding flow. Use `idlewatch quickstart --no-tui` to skip the TUI and stay on the plain text setup path without installing Cargo.
+`quickstart` is the happy path: create an API key on idlewatch.com/api, run the wizard, pick a device name + metrics, and IdleWatch saves local config before sending a first sample. It prefers a bundled TUI binary when available, otherwise falls back to a local Cargo build only on developer machines that already have Cargo installed. Use `idlewatch quickstart --no-tui` to skip the TUI and stay on the plain text setup path.
 
 ## CLI options
 
