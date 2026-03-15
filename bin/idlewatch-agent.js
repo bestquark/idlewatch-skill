@@ -421,6 +421,10 @@ if (quickstartRequested) {
       } else {
         console.log('Initial telemetry sample sent successfully.')
       }
+      console.log('To keep this device online continuously, run: idlewatch run')
+      if (process.platform === 'darwin') {
+        console.log('On macOS, you can also enable login startup with the bundled LaunchAgent install script.')
+      }
       process.exit(0)
     }
 
