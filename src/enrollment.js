@@ -118,10 +118,49 @@ function cargoAvailable() {
 }
 
 function bundledTuiBinaryPath() {
+  const override = String(process.env.IDLEWATCH_TUI_BIN || '').trim()
+  if (override) return path.resolve(override)
+
   const platform = process.platform
   const arch = process.arch
   const ext = platform === 'win32' ? '.exe' : ''
   return path.join(PACKAGE_ROOT, 'tui', 'bin', `${platform}-${arch}`, `idlewatch-setup${ext}`)
+}
+
+function parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName }) {
+  if (!outputEnvFile || !fs.existsSync(outputEnvFile)) return null
+
+  let raw = ''
+  try {
+    raw = fs.readFileSync(outputEnvFile, 'utf8')
+  } catch {
+    return null
+  }
+
+  const parsed = {}
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const idx = trimmed.indexOf('=')
+    if (idx <= 0) continue
+    const key = trimmed.slice(0, idx).trim()
+    const value = trimmed.slice(idx + 1).trim()
+    if (key) parsed[key] = value
+  }
+
+  const deviceName = normalizeDeviceName(parsed.IDLEWATCH_DEVICE_NAME || fallbackDeviceName || machineName())
+  const deviceId = sanitizeDeviceId(parsed.IDLEWATCH_DEVICE_ID || deviceName, machineName())
+  const monitorTargets = normalizeMonitorTargets(parsed.IDLEWATCH_MONITOR_TARGETS || '', detectAvailableMonitorTargets())
+  const mode = looksLikeCloudApiKey(parsed.IDLEWATCH_CLOUD_API_KEY || '') ? 'production' : 'local'
+
+  return {
+    mode,
+    configDir,
+    outputEnvFile,
+    monitorTargets,
+    deviceName,
+    deviceId
+  }
 }
 
 function tryBundledRustTui({ configDir, outputEnvFile }) {
@@ -204,12 +243,17 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (!nonInteractive && !noTui) {
     const tuiResult = tryRustTui({ configDir, outputEnvFile })
+    const tuiEnrollment = parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName: deviceName })
     if (tuiResult.ok) {
-      return {
+      return tuiEnrollment || {
         mode: 'tui',
         configDir,
         outputEnvFile
       }
+    }
+
+    if (tuiEnrollment) {
+      return tuiEnrollment
     }
 
     if (tuiResult.reason === 'bundled-binary-missing-and-cargo-missing') {
