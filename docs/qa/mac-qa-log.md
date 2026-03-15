@@ -1,3 +1,44 @@
+## QA cycle update — 2026-03-15 2:07 AM America/Toronto
+
+### Prioritized findings
+
+1. **P2 — Local-only quickstart still says the first sample was "sent successfully," which sounds like a cloud/linking success instead of a local smoke check**
+   - **Observed:** local-only quickstart now behaves correctly and ends cleanly, but the final success copy is still cloud-shaped:
+     - `✅ Setup complete. Mode=local ...`
+     - `Initial telemetry sample sent successfully.`
+   - **Exact repro:**
+     1. `cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+     2. Run:
+        ```bash
+        tmp=$(mktemp -d)
+        HOME="$tmp/home" \
+        IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+        IDLEWATCH_ENROLL_MODE=local \
+        IDLEWATCH_ENROLL_DEVICE_NAME='Polish Box' \
+        IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+        node ./bin/idlewatch-agent.js quickstart
+        ```
+     3. Observe the required `--once` check runs in `publish=local-only` mode and prints the expected local-only warning:
+        - `No publish target is configured yet. Running in local-only mode...`
+     4. Then observe the final success tail still says:
+        - `✅ Setup complete. Mode=local ...`
+        - `Initial telemetry sample sent successfully.`
+   - **Why it matters:** the product is finally close to pleasantly boring here, so this little line sticks out. In local-only mode nothing was actually *sent* to a remote service, and the wording risks making users think the device linked to the cloud when it did not.
+   - **Acceptance criteria:**
+     - Local-only quickstart success copy uses local-language like `Initial local telemetry sample recorded successfully.` or `Local telemetry check completed successfully.`
+     - Managed-cloud quickstart can keep stronger linking/publish wording when a real remote publish succeeded.
+     - Final success copy should reflect the chosen mode plainly and avoid implying cloud success in local-only setup.
+
+### Commands run this cycle
+
+- non-interactive local-only `node ./bin/idlewatch-agent.js quickstart` with fresh temp HOME ✅ reproduced misleading `sent successfully` success tail in a healthy local-only flow
+- inspected `bin/idlewatch-agent.js` quickstart success branch ✅ confirmed the same final success string is reused for both local-only and managed-cloud setup
+
+### Notes
+
+- Core setup path still looks healthy; this is copy/taste polish, not a broken pipeline.
+- Highest-value polish theme remains the same: once setup behavior is calm, the remaining friction is mostly wording that accidentally sounds more technical or more cloud-y than the actual product behavior.
+
 ## QA cycle update — 2026-03-15 1:58 AM America/Toronto
 
 ### Completed this cycle
