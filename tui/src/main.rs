@@ -24,6 +24,14 @@ struct MonitorTarget {
     selected: bool,
 }
 
+#[derive(Default)]
+struct ExistingConfig {
+    device_name: Option<String>,
+    device_id: Option<String>,
+    cloud_api_key: Option<String>,
+    monitor_targets: Vec<String>,
+}
+
 fn default_config_dir() -> PathBuf {
     if let Ok(dir) = std::env::var("IDLEWATCH_ENROLL_CONFIG_DIR") {
         return PathBuf::from(dir);
@@ -62,34 +70,75 @@ fn command_exists(cmd: &str, args: &[&str]) -> bool {
         .unwrap_or(false)
 }
 
-fn detect_monitor_targets() -> Vec<MonitorTarget> {
+fn parse_env_file(path: &Path) -> ExistingConfig {
+    let mut config = ExistingConfig::default();
+    let Ok(raw) = fs::read_to_string(path) else {
+        return config;
+    };
+
+    for line in raw.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        let Some((key, value)) = trimmed.split_once('=') else {
+            continue;
+        };
+        let value = value.trim().trim_matches('"').trim_matches('\'').to_string();
+        match key.trim() {
+            "IDLEWATCH_DEVICE_NAME" => config.device_name = Some(value),
+            "IDLEWATCH_DEVICE_ID" => config.device_id = Some(value),
+            "IDLEWATCH_CLOUD_API_KEY" => config.cloud_api_key = Some(value),
+            "IDLEWATCH_MONITOR_TARGETS" => {
+                config.monitor_targets = value
+                    .split(',')
+                    .map(|item| item.trim().to_string())
+                    .filter(|item| !item.is_empty())
+                    .collect();
+            }
+            _ => {}
+        }
+    }
+
+    config
+}
+
+fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
     let openclaw_available = command_exists("openclaw", &["--help"]);
     let gpu_available = cfg!(target_os = "macos") || command_exists("nvidia-smi", &["--help"]);
+    let has_existing = !existing.is_empty();
+    let wants = |key: &str, fallback: bool| {
+        if has_existing {
+            existing.iter().any(|item| item == key)
+        } else {
+            fallback
+        }
+    };
 
     vec![
         MonitorTarget {
             key: "cpu",
             label: "CPU usage",
             available: true,
-            selected: true,
+            selected: wants("cpu", true),
         },
         MonitorTarget {
             key: "memory",
             label: "Memory usage",
             available: true,
-            selected: true,
+            selected: wants("memory", true),
         },
         MonitorTarget {
             key: "gpu",
             label: "GPU usage",
             available: gpu_available,
-            selected: gpu_available,
+            selected: wants("gpu", gpu_available),
         },
         MonitorTarget {
             key: "openclaw",
             label: "OpenClaw token telemetry",
             available: openclaw_available,
-            selected: openclaw_available,
+            selected: wants("openclaw", openclaw_available),
         },
     ]
 }
@@ -227,6 +276,66 @@ fn render_monitor_menu(
     Ok(())
 }
 
+fn render_device_name_prompt(
+    terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+    input: &str,
+    error_message: Option<&str>,
+) -> Result<()> {
+    terminal.draw(|f| {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints([
+                Constraint::Length(4),
+                Constraint::Length(6),
+                Constraint::Length(2),
+                Constraint::Min(1),
+            ])
+            .split(f.area());
+
+        let header = Paragraph::new("Give this machine a name that will appear on idlewatch.com")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Device Name")
+                    .border_style(Style::default().fg(Color::Magenta)),
+            );
+        f.render_widget(header, chunks[0]);
+
+        let content = if input.trim().is_empty() { "Mac mini, Work Laptop, Studio PC…" } else { input };
+        let input_style = if input.trim().is_empty() {
+            Style::default().fg(Color::DarkGray)
+        } else {
+            Style::default().fg(Color::White)
+        };
+
+        let input_box = Paragraph::new(content).style(input_style).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Device")
+                .border_style(Style::default().fg(Color::Cyan)),
+        );
+        f.render_widget(input_box, chunks[1]);
+
+        let warning = error_message.unwrap_or(" ");
+        let warning_widget = Paragraph::new(warning).style(
+            if error_message.is_some() {
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            },
+        );
+        f.render_widget(warning_widget, chunks[2]);
+
+        let help = Paragraph::new("Type name • Backspace edit • Enter continue • q quit")
+            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD));
+        f.render_widget(help, chunks[3]);
+    })?;
+
+    Ok(())
+}
+
 fn render_api_key_prompt(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     input: &str,
@@ -308,12 +417,34 @@ fn looks_like_api_key(value: &str) -> bool {
     value.starts_with("iwk_") && value.len() >= 20
 }
 
+fn normalize_device_name(raw: &str, fallback: &str) -> String {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        fallback.to_string()
+    } else {
+        trimmed.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
+}
+
+fn sanitize_device_id(raw: &str, fallback: &str) -> String {
+    let normalized = normalize_device_name(raw, fallback).to_lowercase();
+    let mut out = normalized
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-') { c } else { '-' })
+        .collect::<String>();
+    while out.contains("--") {
+        out = out.replace("--", "-");
+    }
+    out.trim_matches('-').to_string()
+}
+
 fn main() -> Result<()> {
     let config_dir = default_config_dir();
     let env_file = std::env::var("IDLEWATCH_ENROLL_OUTPUT_ENV_FILE")
         .map(PathBuf::from)
         .unwrap_or_else(|_| config_dir.join("idlewatch.env"));
     let host = sanitize_host(&std::env::var("HOSTNAME").unwrap_or_else(|_| "host".to_string()));
+    let existing = parse_env_file(&env_file);
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -321,7 +452,7 @@ fn main() -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut selected_mode = 0usize;
+    let mut selected_mode = if existing.cloud_api_key.is_some() { 0usize } else { 1usize };
     loop {
         render_mode_menu(&mut terminal, selected_mode, &config_dir)?;
         if event::poll(Duration::from_millis(250))? {
@@ -341,7 +472,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let mut monitor_targets = detect_monitor_targets();
+    let mut monitor_targets = detect_monitor_targets(&existing.monitor_targets);
     let mut monitor_cursor = 0usize;
 
     loop {
@@ -385,7 +516,53 @@ fn main() -> Result<()> {
         _ => "local",
     };
 
-    let mut cloud_api_key_input = String::new();
+    let mut device_name_input = existing
+        .device_name
+        .clone()
+        .unwrap_or_else(|| host.clone());
+    let mut device_name_error: Option<String> = None;
+    loop {
+        render_device_name_prompt(
+            &mut terminal,
+            &device_name_input,
+            device_name_error.as_deref(),
+        )?;
+        if event::poll(Duration::from_millis(250))? {
+            match event::read()? {
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter => {
+                        let normalized = normalize_device_name(&device_name_input, &host);
+                        if !normalized.trim().is_empty() {
+                            device_name_input = normalized;
+                            break;
+                        }
+                        device_name_error = Some("Device name cannot be empty.".to_string());
+                    }
+                    KeyCode::Backspace => {
+                        device_name_input.pop();
+                        device_name_error = None;
+                    }
+                    KeyCode::Char('q') | KeyCode::Esc => {
+                        disable_raw_mode()?;
+                        execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+                        return Ok(());
+                    }
+                    KeyCode::Char(c) => {
+                        device_name_input.push(c);
+                        device_name_error = None;
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    device_name_input.push_str(&text);
+                    device_name_error = None;
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut cloud_api_key_input = existing.cloud_api_key.clone().unwrap_or_default();
     let mut cloud_api_key_error: Option<String> = None;
     if mode == "production" {
         loop {
@@ -449,20 +626,30 @@ fn main() -> Result<()> {
     };
 
     let monitor_openclaw = monitor_targets_csv.split(',').any(|item| item == "openclaw");
+    let device_name = normalize_device_name(&device_name_input, &host);
+    let safe_device_id = {
+        let candidate = sanitize_device_id(
+            existing.device_id.as_deref().unwrap_or(&device_name),
+            &host,
+        );
+        if candidate.is_empty() { host.clone() } else { candidate }
+    };
 
     let mut env_lines = vec![
         "# Generated by idlewatch-agent quickstart (Rust TUI)".to_string(),
+        format!("IDLEWATCH_DEVICE_NAME={}", device_name),
+        format!("IDLEWATCH_DEVICE_ID={}", safe_device_id),
         format!("IDLEWATCH_MONITOR_TARGETS={}", monitor_targets_csv),
         format!("IDLEWATCH_OPENCLAW_USAGE={}", if monitor_openclaw { "auto" } else { "off" }),
         format!(
             "IDLEWATCH_LOCAL_LOG_PATH={}",
-            config_dir.join("logs").join(format!("{}-metrics.ndjson", host)).display()
+            config_dir.join("logs").join(format!("{}-metrics.ndjson", safe_device_id)).display()
         ),
         format!(
             "IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH={}",
             config_dir
                 .join("cache")
-                .join(format!("{}-openclaw-last-good.json", host))
+                .join(format!("{}-openclaw-last-good.json", safe_device_id))
                 .display()
         ),
     ];
@@ -483,7 +670,9 @@ fn main() -> Result<()> {
 
     write_secure_file(&env_file, &format!("{}\n", env_lines.join("\n")))?;
     println!("Enrollment complete. Mode={} envFile={}", mode, env_file.display());
-    println!("Next step: set -a; source \"{}\"; set +a", env_file.display());
-    println!("Then run: idlewatch-agent --once");
+    println!("Saved device name: {}", device_name);
+    println!("You can rerun this TUI anytime to update device name, API key, or metrics.");
+    println!("Next step: idlewatch-agent --once");
+    println!("For background startup on macOS: npm run install:macos-launch-agent");
     Ok(())
 }

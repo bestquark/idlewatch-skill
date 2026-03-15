@@ -38,6 +38,24 @@ function parseEnvFileToObject(envFilePath) {
   return env
 }
 
+function loadPersistedEnvIntoProcess() {
+  const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+  if (!fs.existsSync(envFile)) return null
+
+  try {
+    const parsed = parseEnvFileToObject(envFile)
+    for (const [key, value] of Object.entries(parsed)) {
+      if (!process.env[key]) process.env[key] = value
+    }
+    return { envFile, parsed }
+  } catch (error) {
+    console.error(`Failed to load persisted IdleWatch config from ${envFile}: ${error.message}`)
+    return null
+  }
+}
+
+const persistedEnv = loadPersistedEnvIntoProcess()
+
 function parseMonitorTargets(raw) {
   const allowed = new Set(['cpu', 'memory', 'gpu', 'openclaw'])
   const fallback = ['cpu', 'memory', 'openclaw', 'gpu']
@@ -319,9 +337,11 @@ function runLocalDashboard({ host }) {
 }
 
 const argv = process.argv.slice(2)
-const quickstartRequested = argv[0] === 'quickstart' || argv.includes('--quickstart')
-const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard')
 const args = new Set(argv)
+const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard')
+const runRequested = argv[0] === 'run' || argv.includes('--run')
+const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
+const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested)
 if (args.has('--help') || args.has('-h')) {
   printHelp()
   process.exit(0)
@@ -363,8 +383,14 @@ if (quickstartRequested) {
 
 const DRY_RUN = args.has('--dry-run')
 const ONCE = args.has('--once')
+const DEVICE_NAME = (process.env.IDLEWATCH_DEVICE_NAME || process.env.IDLEWATCH_HOST || os.hostname()).trim()
+const DEVICE_ID = (process.env.IDLEWATCH_DEVICE_ID || DEVICE_NAME)
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9_.-]+/g, '-')
+  .replace(/^-+|-+$/g, '') || 'device'
 const HOST = process.env.IDLEWATCH_HOST || os.hostname()
-const SAFE_HOST = HOST.replace(/[^a-zA-Z0-9_.-]/g, '_')
+const SAFE_HOST = DEVICE_ID.replace(/[^a-zA-Z0-9_.-]/g, '_')
 const INTERVAL_MS = Number(process.env.IDLEWATCH_INTERVAL_MS || 10000)
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID
 const CREDS_FILE = process.env.FIREBASE_SERVICE_ACCOUNT_FILE
@@ -579,9 +605,9 @@ if (firebaseConfigError) {
   process.exit(1)
 }
 
-if (!appReady) {
+if (!appReady && !(CLOUD_INGEST_URL && CLOUD_API_KEY)) {
   console.error(
-    'Firebase is not configured. Running in local-only mode (stdout logging only). Set FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT_FILE (preferred, or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64), or use FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST for emulator writes.'
+    'Firebase is not configured. Running without Firebase writes. Set FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT_FILE (preferred, or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64), use FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST for emulator writes, or configure cloud ingest via idlewatch setup.'
   )
 }
 
@@ -1276,6 +1302,10 @@ async function collectSample() {
 
   const row = {
     host: HOST,
+    hostId: HOST,
+    hostName: HOST,
+    deviceId: DEVICE_ID,
+    deviceName: DEVICE_NAME,
     ts: sampleAtMs,
     cpuPct: MONITOR_CPU ? cpuPct() : null,
     memPct: MONITOR_MEMORY ? usedMemPct : null,
@@ -1373,7 +1403,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 if (DRY_RUN || ONCE) {
   const mode = DRY_RUN ? 'dry-run' : 'once'
   console.log(
-    `idlewatch-agent ${mode} host=${HOST} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH}`
+    `idlewatch-agent ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
   )
   tick()
     .then(() => process.exit(0))
@@ -1383,7 +1413,7 @@ if (DRY_RUN || ONCE) {
     })
 } else {
   console.log(
-    `idlewatch-agent started host=${HOST} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE}`
+    `idlewatch-agent started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} firebase=${appReady} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
   )
   loop()
 }

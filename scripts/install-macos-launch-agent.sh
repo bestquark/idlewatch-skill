@@ -43,6 +43,7 @@ cat > "$PLIST_PATH" <<'PLIST'
   <key>ProgramArguments</key>
   <array>
     <string>{{BIN_PATH}}</string>
+    <string>--run</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
