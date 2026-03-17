@@ -10,6 +10,7 @@ import pkg from '../package.json' with { type: 'json' }
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const ROOT_DIR = path.resolve(__dirname, '..')
+const IS_MAIN_MODULE = process.argv[1] ? path.resolve(process.argv[1]) === __filename : false
 
 function truthy(value) {
   return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase())
@@ -79,18 +80,20 @@ function installMenubarApp({ force = false, launch = false } = {}) {
   return true
 }
 
-const args = parseArgs(process.argv.slice(2))
-const force = args.has('--force')
-const launch = args.has('--launch')
+if (IS_MAIN_MODULE) {
+  const args = parseArgs(process.argv.slice(2))
+  const force = args.has('--force')
+  const launch = args.has('--launch')
 
-try {
-  const installed = installMenubarApp({ force, launch })
-  if (!installed && force) {
-    console.log('IdleWatch menubar install skipped.')
+  try {
+    const installed = installMenubarApp({ force, launch })
+    if (!installed && force) {
+      console.log('IdleWatch menubar install skipped.')
+    }
+  } catch (error) {
+    console.error(`IdleWatch menubar install failed: ${error.message}`)
+    process.exit(1)
   }
-} catch (error) {
-  console.error(`IdleWatch menubar install failed: ${error.message}`)
-  process.exit(1)
 }
 
 export { installMenubarApp }
