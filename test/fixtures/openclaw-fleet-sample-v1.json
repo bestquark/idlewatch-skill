@@ -1,6 +1,6 @@
 {
   "schemaFamily": "idlewatch.openclaw.fleet",
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "schemaCompat": ["0.x-flat-row"],
   "host": "mac-mini-1",
   "ts": 1771278899999,
@@ -64,6 +64,7 @@
       "alertLevel": "ok",
       "alertReason": "healthy"
     },
+    "providerQuotas": [],
     "provenance": {
       "collector": "idlewatch-agent",
       "collectorVersion": "0.1.0",

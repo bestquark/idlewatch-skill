@@ -134,73 +134,11 @@ cat > "$RESOURCES_DIR/packaging-metadata.json" <<METADATA
 }
 METADATA
 
-cat > "$CONTENTS_DIR/Info.plist" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>IdleWatch</string>
-  <key>CFBundleDisplayName</key><string>IdleWatch</string>
-  <key>CFBundleIdentifier</key><string>com.idlewatch.agent</string>
-  <key>CFBundleVersion</key><string>${VERSION}</string>
-  <key>CFBundleShortVersionString</key><string>${VERSION}</string>
-  <key>CFBundleExecutable</key><string>IdleWatch</string>
-  <key>LSMinimumSystemVersion</key><string>13.0</string>
-</dict>
-</plist>
-PLIST
-
-cat > "$MACOS_DIR/IdleWatch" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-RESOURCES_DIR="$(cd "$SCRIPT_DIR/../Resources" && pwd)"
-NODE_BIN="${IDLEWATCH_NODE_BIN:-}"
-if [[ -z "$NODE_BIN" ]]; then
-  BUNDLED_NODE_BIN="$RESOURCES_DIR/runtime/node/bin/node"
-  if [[ -x "$BUNDLED_NODE_BIN" ]]; then
-    NODE_BIN="$BUNDLED_NODE_BIN"
-  else
-    NODE_BIN="$(command -v node || true)"
-  fi
-fi
-
-if [[ -z "$NODE_BIN" || ! -x "$NODE_BIN" ]]; then
-  echo "IdleWatch requires Node.js 20+ (node binary not found). Install Node.js or set IDLEWATCH_NODE_BIN and retry." >&2
-  exit 1
-fi
-
-NODE_MAJOR="$($NODE_BIN -p "process.versions.node.split('.')[0]" 2>/dev/null || echo "")"
-if [[ -z "$NODE_MAJOR" || "$NODE_MAJOR" -lt 20 ]]; then
-  NODE_VERSION="$($NODE_BIN -v 2>/dev/null || echo "unknown")"
-  echo "IdleWatch requires Node.js 20+ (found $NODE_VERSION at $NODE_BIN). Upgrade Node.js or set IDLEWATCH_NODE_BIN to a compatible runtime." >&2
-  exit 1
-fi
-
-# Backward-compatible OpenClaw launcher hint precedence:
-# 1) IDLEWATCH_OPENCLAW_BIN  (runtime override)
-# 2) IDLEWATCH_OPENCLAW_BIN_HINT (legacy launcher hint)
-# 3) packaging metadata fallback (build-time hint)
-OPENCLAW_BIN_HINT="${IDLEWATCH_OPENCLAW_BIN:-${IDLEWATCH_OPENCLAW_BIN_HINT:-}}"
-if [[ -z "$OPENCLAW_BIN_HINT" && -f "$RESOURCES_DIR/packaging-metadata.json" ]]; then
-  OPENCLAW_BIN_HINT="$($NODE_BIN -e 'const fs = require("fs"); const filePath = process.argv[1]; try { const data = JSON.parse(fs.readFileSync(filePath, "utf8")); const hint = data && data.openclawBinHint ? data.openclawBinHint : ""; if (hint) process.stdout.write(String(hint)); } catch (_) {}' "$RESOURCES_DIR/packaging-metadata.json")"
-fi
-
-if [[ -n "$OPENCLAW_BIN_HINT" && -x "$OPENCLAW_BIN_HINT" ]]; then
-  export IDLEWATCH_OPENCLAW_BIN="$OPENCLAW_BIN_HINT"
-elif [[ -n "$OPENCLAW_BIN_HINT" ]]; then
-  echo "Warning: packaged OpenClaw binary hint is not executable at: $OPENCLAW_BIN_HINT" >&2
-fi
-
-PAYLOAD_BIN="$RESOURCES_DIR/payload/package/bin/idlewatch-agent.js"
-if [[ ! -f "$PAYLOAD_BIN" ]]; then
-  echo "IdleWatch package payload missing ($PAYLOAD_BIN)" >&2
-  exit 1
-fi
-
-exec "$NODE_BIN" "$PAYLOAD_BIN" "$@"
-SH
-chmod +x "$MACOS_DIR/IdleWatch"
+node "$ROOT_DIR/scripts/build-macos-menubar-app.mjs" \
+  --app-dir "$APP_DIR" \
+  --version "$VERSION" \
+  --package-root-mode embedded \
+  --openclaw-bin-hint "$OPENCLAW_BIN_HINT"
 
 if [[ -n "$CODESIGN_IDENTITY" ]]; then
   echo "Codesigning IdleWatch.app with identity: $CODESIGN_IDENTITY"

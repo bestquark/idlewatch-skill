@@ -136,6 +136,14 @@ fn parse_env_file(path: &Path) -> ExistingConfig {
 fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
     let openclaw_available = command_exists("openclaw", &["--help"]);
     let gpu_available = cfg!(target_os = "macos") || command_exists("nvidia-smi", &["--help"]);
+    let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+    let provider_quota_available =
+        home_dir.join(".codex/auth.json").exists()
+            || home_dir.join(".claude/.credentials.json").exists()
+            || home_dir.join(".gemini/oauth_creds.json").exists()
+            || command_exists("codex", &["--help"])
+            || command_exists("claude", &["--help"])
+            || command_exists("gemini", &["--help"]);
     let has_existing = !existing.is_empty();
     let wants = |key: &str, fallback: bool| {
         let has_legacy_openclaw = existing.iter().any(|item| item == "openclaw");
@@ -202,6 +210,14 @@ fn detect_monitor_targets(existing: &[String]) -> Vec<MonitorTarget> {
             description: "provider, model, session state",
             available: openclaw_available,
             selected: wants("runtime_state", openclaw_available),
+        },
+        MonitorTarget {
+            key: "provider_quota",
+            group: "Provider Quota",
+            label: "Quota + reset",
+            description: "codex, claude, gemini windows when configured",
+            available: provider_quota_available,
+            selected: wants("provider_quota", false),
         },
     ]
 }

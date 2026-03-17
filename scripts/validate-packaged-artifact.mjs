@@ -8,6 +8,7 @@ const artifactDir = process.env.IDLEWATCH_ARTIFACT_DIR?.trim()
   ? process.env.IDLEWATCH_ARTIFACT_DIR.trim()
   : join(rootDir, 'dist', 'IdleWatch.app')
 const artifactPath = join(artifactDir, 'Contents', 'MacOS', 'IdleWatch')
+const menubarPath = join(artifactDir, 'Contents', 'MacOS', 'IdleWatchMenuBar')
 const metadataPath = join(artifactDir, 'Contents', 'Resources', 'packaging-metadata.json')
 
 function fail(message) {
@@ -157,8 +158,8 @@ function validateSourceDirty(metadata, currentIsClean) {
     fail('Rebuilt artifact is required for dirty-state validation; sourceGitDirtyKnown is missing.')
   }
 
-  const metadataWasClean = parseBoolean(dirtyValue)
-  if (metadataWasClean === null) {
+  const metadataWasDirty = parseBoolean(dirtyValue)
+  if (metadataWasDirty === null) {
     console.error('Reusable packaged artifact has non-boolean sourceGitDirty metadata; rebuild with latest packaging script for strict dirty-state checks.')
     if (shouldAllowLegacyDirtyMetadata(process.env.IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_DIRTY)) {
       console.error('Continuing with legacy compatibility mode (non-strict).')
@@ -169,6 +170,7 @@ function validateSourceDirty(metadata, currentIsClean) {
     fail('Rebuild artifact first: sourceGitDirty must be boolean for strict dirty-state checks.')
   }
 
+  const metadataWasClean = !metadataWasDirty
   if (currentIsClean !== metadataWasClean) {
     console.error('Reusable packaged artifact dirty-state does not match current workspace clean-state.')
     console.error(`Current working tree clean: ${currentIsClean}`)
@@ -212,10 +214,20 @@ function main() {
     fail(`Packaged launcher missing: ${artifactPath}`)
   }
 
+  if (!existsSync(menubarPath)) {
+    fail(`Packaged menubar binary missing: ${menubarPath}`)
+  }
+
   try {
     accessSync(artifactPath, constants.X_OK)
   } catch {
     fail(`Packaged launcher is not executable: ${artifactPath}`)
+  }
+
+  try {
+    accessSync(menubarPath, constants.X_OK)
+  } catch {
+    fail(`Packaged menubar binary is not executable: ${menubarPath}`)
   }
 
   validateMetadataConsistency(metadata)

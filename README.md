@@ -9,6 +9,12 @@ npm install -g idlewatch
 idlewatch --help
 ```
 
+On macOS global installs, IdleWatch now also drops a lightweight menu bar app into `~/Applications/IdleWatch.app` so quota/reset windows stay one click away. Rebuild that app manually any time with:
+
+```bash
+npm run install:macos-menubar
+```
+
 Or run it directly with npx:
 
 ```bash
@@ -292,6 +298,7 @@ DMG release scaffolding is included:
 - Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
   - Runtime copy is now limited to `bin`, `lib`, and `include` directories (with symlink dereference) to keep runtime payloads portable and avoid noise from host-specific completion symlinks.
 - Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
+- `IdleWatch.app` now opens as a native menu bar app on macOS while still preserving CLI passthrough when you execute `Contents/MacOS/IdleWatch` with arguments such as `--dry-run`.
 - Background execution lifecycle helpers:
   - `scripts/install-macos-launch-agent.sh`
   - `scripts/uninstall-macos-launch-agent.sh`

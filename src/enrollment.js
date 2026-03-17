@@ -5,6 +5,7 @@ import readline from 'node:readline/promises'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import { providerQuotaSupported } from './provider-quota.js'
 import { resolveTemperatureProbe } from './thermal.js'
 
 function defaultConfigDir() {
@@ -44,8 +45,9 @@ function writeSecureFile(filePath, content) {
 }
 
 const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state']
+const PROVIDER_TARGETS = ['provider_quota']
 const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS]
-const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'temperature', 'openclaw', ...OPENCLAW_DERIVED_TARGETS]
+const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'temperature', 'openclaw', ...OPENCLAW_DERIVED_TARGETS, ...PROVIDER_TARGETS]
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = path.resolve(MODULE_DIR, '..')
 
@@ -66,6 +68,9 @@ function detectAvailableMonitorTargets() {
 
   if (commandExists('openclaw', ['--help'])) {
     OPENCLAW_DERIVED_TARGETS.forEach((target) => available.add(target))
+  }
+  if (providerQuotaSupported()) {
+    PROVIDER_TARGETS.forEach((target) => available.add(target))
   }
 
   return [...available]
