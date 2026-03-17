@@ -47,6 +47,16 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
         ]
       }
     ],
+    providerConnections: [
+      {
+        providerId: 'codex',
+        providerName: 'Codex',
+        status: 'connected',
+        detail: 'Logged in using ChatGPT',
+        loginCommand: 'codex login',
+        updatedAtMs: 1771278899999
+      }
+    ],
     openclawSessionId: '90d2a820-6d77-42f0-8db4-12b90f9f7203',
     openclawAgentId: 'main',
     openclawUsageTs: 1771278893678,
@@ -89,6 +99,7 @@ test('enriches legacy sample with fleet schema envelope while preserving legacy 
   assert.equal(enriched.fleet.resources.tempC, legacy.deviceTempC)
   assert.equal(enriched.fleet.resources.thermalState, legacy.thermalState)
   assert.equal(enriched.fleet.providerQuotas[0].providerId, 'codex')
+  assert.equal(enriched.fleet.providerConnections[0].providerId, 'codex')
   assert.equal(enriched.fleet.provenance.collectorVersion, '0.1.0')
 })
 
@@ -101,4 +112,5 @@ test('fixture sample remains aligned with schema metadata', () => {
   assert.equal(sample.fleet.usage.provider, sample.openclawProvider)
   assert.equal(sample.fleet.usage.sessionId, sample.openclawSessionId)
   assert.deepEqual(sample.fleet.providerQuotas, [])
+  assert.deepEqual(sample.fleet.providerConnections, [])
 })

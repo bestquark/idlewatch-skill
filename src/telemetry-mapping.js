@@ -1,6 +1,6 @@
 export const OPENCLAW_FLEET_SCHEMA = Object.freeze({
   family: 'idlewatch.openclaw.fleet',
-  version: '1.1.0',
+  version: '1.2.0',
   backwardCompatibleWith: ['0.x-flat-row']
 })
 
@@ -50,6 +50,7 @@ export function enrichWithOpenClawFleetTelemetry(sample, context = {}) {
         alertReason: sample.source?.usageAlertReason ?? 'ingestion-unavailable'
       },
       providerQuotas: Array.isArray(sample.providerQuotas) ? sample.providerQuotas : [],
+      providerConnections: Array.isArray(sample.providerConnections) ? sample.providerConnections : [],
       provenance: {
         collector,
         collectorVersion,

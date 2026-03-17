@@ -4,6 +4,7 @@ import Foundation
 struct ProviderQuotaCache: Decodable {
   let updatedAtMs: Double?
   let providerQuotas: [ProviderQuota]
+  let providerConnections: [ProviderConnection]?
 }
 
 struct ProviderQuota: Decodable {
@@ -13,6 +14,17 @@ struct ProviderQuota: Decodable {
   let accountPlan: String?
   let updatedAtMs: Double?
   let windows: [QuotaWindow]
+}
+
+struct ProviderConnection: Decodable {
+  let providerId: String?
+  let providerName: String?
+  let status: String?
+  let detail: String?
+  let loginCommand: String?
+  let accountEmail: String?
+  let accountPlan: String?
+  let updatedAtMs: Double?
 }
 
 struct QuotaWindow: Decodable {
@@ -27,6 +39,7 @@ struct QuotaSnapshot {
   let cacheURL: URL
   let updatedAt: Date?
   let providers: [ProviderQuota]
+  let connections: [ProviderConnection]
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -106,6 +119,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     runInTerminal(arguments: ["status"])
   }
 
+  @objc private func connectCodex(_ sender: Any?) {
+    runShellCommandInTerminal("codex login")
+  }
+
+  @objc private func connectClaude(_ sender: Any?) {
+    runShellCommandInTerminal("claude auth login")
+  }
+
+  @objc private func connectGemini(_ sender: Any?) {
+    runShellCommandInTerminal("gemini")
+  }
+
   @objc private func quit(_ sender: Any?) {
     NSApplication.shared.terminate(nil)
   }
@@ -149,14 +174,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     guard
       let data = try? Data(contentsOf: latestURL),
-      let payload = try? JSONDecoder().decode(ProviderQuotaCache.self, from: data),
-      !payload.providerQuotas.isEmpty
+      let payload = try? JSONDecoder().decode(ProviderQuotaCache.self, from: data)
     else {
       return nil
     }
 
+    let connections = payload.providerConnections ?? []
+    guard !payload.providerQuotas.isEmpty || !connections.isEmpty else { return nil }
+
     let updatedAt = payload.updatedAtMs.map(dateFromTimestamp)
-    return QuotaSnapshot(cacheURL: latestURL, updatedAt: updatedAt, providers: payload.providerQuotas)
+    return QuotaSnapshot(cacheURL: latestURL, updatedAt: updatedAt, providers: payload.providerQuotas, connections: connections)
   }
 
   private func updateStatusItem(snapshot: QuotaSnapshot?) {
@@ -173,7 +200,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         .min(by: { lhs, rhs in lhs.1 < rhs.1 })
     else {
       button.title = "IW"
-      button.toolTip = "IdleWatch\nNo cached provider quota yet."
+      if let snapshot {
+        button.toolTip = tooltipText(snapshot: snapshot)
+      } else {
+        button.toolTip = "IdleWatch\nNo cached provider snapshot yet."
+      }
       return
     }
 
@@ -187,6 +218,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     if let updatedAt = snapshot.updatedAt {
       lines.append("Updated \(relativeString(for: updatedAt))")
+    }
+
+    if !snapshot.connections.isEmpty {
+      lines.append("Provider sync")
+      for connection in snapshot.connections {
+        lines.append("  \(connectionLine(connection))")
+      }
     }
 
     for provider in snapshot.providers {
@@ -219,6 +257,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     menu.addItem(.separator())
 
     if let snapshot {
+      if !snapshot.connections.isEmpty {
+        let syncHeading = NSMenuItem(title: "Provider sync", action: nil, keyEquivalent: "")
+        syncHeading.isEnabled = false
+        menu.addItem(syncHeading)
+
+        for connection in snapshot.connections {
+          let summaryItem = NSMenuItem(title: connectionLine(connection), action: nil, keyEquivalent: "")
+          summaryItem.isEnabled = false
+          menu.addItem(summaryItem)
+
+          if let detail = trimmed(connection.detail), detail != trimmed(connectionLine(connection)) {
+            let detailItem = NSMenuItem(title: "  \(detail)", action: nil, keyEquivalent: "")
+            detailItem.isEnabled = false
+            menu.addItem(detailItem)
+          }
+
+          if let actionItem = providerSyncActionItem(connection) {
+            menu.addItem(actionItem)
+          }
+        }
+
+        menu.addItem(.separator())
+      }
+
       for provider in snapshot.providers {
         let providerTitle = [provider.providerName ?? provider.providerId ?? "Provider", provider.accountPlan]
           .compactMap { trimmed($0) }
@@ -265,7 +327,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   private func subtitleLine(snapshot: QuotaSnapshot?) -> String {
     guard let snapshot else {
-      return "Waiting for your first quota snapshot"
+      return "Waiting for your first provider snapshot"
     }
 
     let ageLabel = snapshot.updatedAt.map(relativeString(for:)) ?? "time unknown"
@@ -277,6 +339,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let remaining = window.remainingPercent.map { "\(Int($0.rounded()))% left" } ?? "usage signal"
     let reset = window.resetsAtMs.map(dateFromTimestamp).map(dateFormatter.string(from:)) ?? "reset unknown"
     return "\(label) • \(remaining) • resets \(reset)"
+  }
+
+  private func connectionLine(_ connection: ProviderConnection) -> String {
+    let providerName = trimmed(connection.providerName) ?? trimmed(connection.providerId) ?? "Provider"
+    let status = formatConnectionStatus(connection.status)
+    let account = [trimmed(connection.accountPlan), trimmed(connection.accountEmail)]
+      .compactMap { $0 }
+      .joined(separator: " • ")
+    return [providerName, status, account].filter { !$0.isEmpty }.joined(separator: " • ")
+  }
+
+  private func formatConnectionStatus(_ status: String?) -> String {
+    switch trimmed(status)?.lowercased() {
+    case "connected":
+      return "connected"
+    case "needs_login":
+      return "needs login"
+    case "not_installed":
+      return "not installed"
+    case "unsupported":
+      return "unsupported"
+    case "error":
+      return "sync error"
+    default:
+      return "needs login"
+    }
+  }
+
+  private func providerSyncActionItem(_ connection: ProviderConnection) -> NSMenuItem? {
+    let providerId = trimmed(connection.providerId)?.lowercased()
+    let status = trimmed(connection.status)?.lowercased()
+    guard status == "needs_login" || status == "error" else { return nil }
+
+    switch providerId {
+    case "codex":
+      return makeActionItem(title: "Connect Codex in Terminal", action: #selector(connectCodex(_:)))
+    case "claude":
+      return makeActionItem(title: "Connect Claude in Terminal", action: #selector(connectClaude(_:)))
+    case "gemini":
+      return makeActionItem(title: "Open Gemini in Terminal", action: #selector(connectGemini(_:)))
+    default:
+      return nil
+    }
   }
 
   private func makeActionItem(title: String, action: Selector) -> NSMenuItem {
@@ -292,6 +397,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   private func runInTerminal(arguments: [String]) {
     let command = shellQuote(wrapperPath())
       + (arguments.isEmpty ? "" : " " + arguments.map(shellQuote).joined(separator: " "))
+    runShellCommandInTerminal(command)
+  }
+
+  private func runShellCommandInTerminal(_ command: String) {
     let escapedCommand = command
       .replacingOccurrences(of: "\\", with: "\\\\")
       .replacingOccurrences(of: "\"", with: "\\\"")

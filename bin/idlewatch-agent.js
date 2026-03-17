@@ -235,6 +235,14 @@ function formatProviderQuotaSummaryLine(providerQuota) {
   return [providerName, accountBits, windowBits].filter(Boolean).join(' — ')
 }
 
+function formatProviderConnectionSummaryLine(providerConnection) {
+  const providerName = String(providerConnection?.providerName || providerConnection?.providerId || 'Provider').trim()
+  const status = String(providerConnection?.status || 'needs_login').trim().replace(/_/g, ' ')
+  const accountBits = [providerConnection?.accountPlan, providerConnection?.accountEmail].filter(Boolean).join(' • ')
+  const detail = String(providerConnection?.detail || '').trim()
+  return [providerName, status, accountBits, detail].filter(Boolean).join(' — ')
+}
+
 function resolveDashboardLogPath(host) {
   if (process.env.IDLEWATCH_LOCAL_LOG_PATH) {
     return resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
@@ -879,6 +887,16 @@ if (statusRequested) {
   console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)
   if (MONITOR_PROVIDER_QUOTA) {
     const quotaCache = loadProviderQuotaCache(PROVIDER_QUOTA_CACHE_PATH)
+    if (quotaCache?.providerConnections?.length) {
+      const ageMs = quotaCache.updatedAtMs ? Math.max(0, Date.now() - quotaCache.updatedAtMs) : null
+      const ageLabel = Number.isFinite(ageMs) ? `${Math.round(ageMs / 60000)}m ago` : 'unknown'
+      console.log(`  Provider sync: ${quotaCache.providerConnections.length} provider${quotaCache.providerConnections.length === 1 ? '' : 's'} • ${ageLabel}`)
+      quotaCache.providerConnections.forEach((providerConnection) => {
+        console.log(`    - ${formatProviderConnectionSummaryLine(providerConnection)}`)
+      })
+    } else {
+      console.log('  Provider sync: waiting for first provider status')
+    }
     if (quotaCache?.providerQuotas?.length) {
       const ageMs = quotaCache.updatedAtMs ? Math.max(0, Date.now() - quotaCache.updatedAtMs) : null
       const ageLabel = Number.isFinite(ageMs) ? `${Math.round(ageMs / 60000)}m ago` : 'unknown'
@@ -1568,7 +1586,7 @@ async function collectSample() {
       cacheTtlMs: PROVIDER_QUOTA_INTERVAL_MS,
       timeoutMs: PROVIDER_QUOTA_TIMEOUT_MS
     })
-    : { providerQuotas: [], status: 'disabled', updatedAtMs: null, cacheAgeMs: null, errors: [] }
+    : { providerQuotas: [], providerConnections: [], status: 'disabled', updatedAtMs: null, cacheAgeMs: null, errors: [] }
 
   const usageIntegrationStatus = usage
     ? usageFreshness.isStale
@@ -1626,6 +1644,7 @@ async function collectSample() {
     thermalState: thermals.thermalState,
     providerQuotaStatus: providerQuotaSummary.status,
     providerQuotaCount: providerQuotaSummary.providerQuotas.length,
+    providerConnectionCount: providerQuotaSummary.providerConnections.length,
     providerQuotaUpdatedAtMs: providerQuotaSummary.updatedAtMs,
     providerQuotaCacheAgeMs: providerQuotaSummary.cacheAgeMs,
     providerQuotaErrors: providerQuotaSummary.errors,
@@ -1688,6 +1707,7 @@ async function collectSample() {
     activityIdleSeconds: MONITOR_AGENT_ACTIVITY ? (activitySummary?.idleSeconds ?? null) : null,
     activityJobs: MONITOR_AGENT_ACTIVITY ? (activitySummary?.jobs ?? []) : [],
     providerQuotas: providerQuotaSummary.providerQuotas,
+    providerConnections: providerQuotaSummary.providerConnections,
     customMetrics,
     localLogPath: LOCAL_LOG_PATH,
     localLogBytes: null,
@@ -1708,7 +1728,9 @@ function summarizeSetupVerification(row) {
   if (row.memPct !== null && row.memPct !== undefined) metrics.push('memory')
   if (row.gpuPct !== null && row.gpuPct !== undefined) metrics.push('gpu')
   if (row.tokensPerMin !== null && row.tokensPerMin !== undefined) metrics.push('openclaw')
-  if (Array.isArray(row.providerQuotas) && row.providerQuotas.length > 0) metrics.push('provider-quota')
+  if ((Array.isArray(row.providerQuotas) && row.providerQuotas.length > 0) || (Array.isArray(row.providerConnections) && row.providerConnections.length > 0)) {
+    metrics.push('provider-quota')
+  }
   if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.push('custom')
 
   const details = [

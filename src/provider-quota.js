@@ -123,9 +123,93 @@ function normalizeProviderSnapshot(snapshot) {
   }
 }
 
+const PROVIDER_METADATA = Object.freeze({
+  codex: { providerName: 'Codex', loginCommand: 'codex login' },
+  claude: { providerName: 'Claude', loginCommand: 'claude auth login' },
+  gemini: { providerName: 'Gemini', loginCommand: 'gemini' }
+})
+
+function normalizeProviderStatus(value) {
+  const normalized = normalizeString(value).toLowerCase()
+  if (['connected', 'needs_login', 'not_installed', 'unsupported', 'error'].includes(normalized)) {
+    return normalized
+  }
+  return 'needs_login'
+}
+
+function normalizeProviderConnection(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return null
+  const providerId = normalizeString(snapshot.providerId) || 'provider'
+  const metadata = PROVIDER_METADATA[providerId] || {}
+
+  return {
+    providerId,
+    providerName: normalizeString(snapshot.providerName) || metadata.providerName || providerId,
+    status: normalizeProviderStatus(snapshot.status),
+    detail: normalizeString(snapshot.detail) || null,
+    loginCommand: normalizeString(snapshot.loginCommand) || null,
+    accountEmail: normalizeString(snapshot.accountEmail) || null,
+    accountPlan: normalizeString(snapshot.accountPlan) || null,
+    updatedAtMs: normalizeTimestampMs(snapshot.updatedAtMs) || Date.now()
+  }
+}
+
+function buildProviderConnection(providerId, overrides = {}) {
+  const metadata = PROVIDER_METADATA[providerId] || {}
+  const status = normalizeProviderStatus(overrides.status)
+  return normalizeProviderConnection({
+    providerId,
+    providerName: metadata.providerName || providerId,
+    loginCommand: overrides.loginCommand !== undefined
+      ? overrides.loginCommand
+      : (status === 'needs_login' || status === 'connected' || status === 'error'
+        ? metadata.loginCommand || null
+        : null),
+    updatedAtMs: Date.now(),
+    ...overrides,
+    status
+  })
+}
+
+function mergeProviderConnectionSnapshot(connection, snapshot, overrides = {}) {
+  return normalizeProviderConnection({
+    ...connection,
+    accountEmail: snapshot?.accountEmail || connection?.accountEmail || null,
+    accountPlan: snapshot?.accountPlan || connection?.accountPlan || null,
+    updatedAtMs: snapshot?.updatedAtMs || connection?.updatedAtMs || Date.now(),
+    ...overrides
+  })
+}
+
 function commandExists(command, args = ['--help']) {
   const result = spawnSync(command, args, { stdio: 'ignore' })
   return result.status === 0
+}
+
+function runCommandCapture(command, args = [], { timeoutMs = PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS } = {}) {
+  try {
+    const result = spawnSync(command, args, {
+      encoding: 'utf8',
+      timeout: Math.max(1000, Number(timeoutMs) || PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS),
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+
+    return {
+      ok: result.status === 0 && !result.error,
+      status: result.status,
+      stdout: normalizeString(result.stdout),
+      stderr: normalizeString(result.stderr),
+      error: normalizeString(result.error?.message) || null
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      status: null,
+      stdout: '',
+      stderr: '',
+      error: normalizeString(error?.message) || 'spawn_failed'
+    }
+  }
 }
 
 export function providerQuotaSupported() {
@@ -151,10 +235,14 @@ export function loadProviderQuotaCache(cachePath) {
   const providerQuotas = Array.isArray(data.providerQuotas)
     ? data.providerQuotas.map((item) => normalizeProviderSnapshot(item)).filter(Boolean)
     : []
+  const providerConnections = Array.isArray(data.providerConnections)
+    ? data.providerConnections.map((item) => normalizeProviderConnection(item)).filter(Boolean)
+    : []
 
   return {
     updatedAtMs: normalizeTimestampMs(data.updatedAtMs) || null,
-    providerQuotas
+    providerQuotas,
+    providerConnections
   }
 }
 
@@ -294,6 +382,28 @@ async function probeCodexQuota({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA_
   })
 }
 
+function probeCodexConnection({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS } = {}) {
+  if (!commandExists('codex')) {
+    return buildProviderConnection('codex', {
+      status: 'not_installed',
+      detail: 'Install Codex on this Mac to sync plan windows.',
+      updatedAtMs: nowMs
+    })
+  }
+
+  const result = runCommandCapture('codex', ['login', 'status'], { timeoutMs })
+  const statusLine = [result.stdout, result.stderr].filter(Boolean).join(' ').trim()
+  const loggedIn = /\blogged in\b/i.test(statusLine)
+
+  return buildProviderConnection('codex', {
+    status: loggedIn ? 'connected' : 'needs_login',
+    detail: loggedIn
+      ? (statusLine || 'Local Codex login is active.')
+      : 'Run codex login on this Mac.',
+    updatedAtMs: nowMs
+  })
+}
+
 function parseClaudeCredentials() {
   const filePath = path.join(os.homedir(), '.claude', '.credentials.json')
   const raw = readJsonFile(filePath)
@@ -306,8 +416,42 @@ function parseClaudeCredentials() {
 
   return {
     accessToken,
-    accountPlan: formatClaudePlan(oauth?.rateLimitTier || oauth?.rate_limit_tier)
+    accountPlan: formatClaudePlan(oauth?.rateLimitTier || oauth?.rate_limit_tier),
+    accountEmail: normalizeString(oauth?.email || oauth?.user?.email || raw?.email || raw?.user?.email) || null
   }
+}
+
+function probeClaudeConnection({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS } = {}) {
+  if (!commandExists('claude')) {
+    return buildProviderConnection('claude', {
+      status: 'not_installed',
+      detail: 'Install Claude Code on this Mac to sync usage windows.',
+      updatedAtMs: nowMs
+    })
+  }
+
+  const result = runCommandCapture('claude', ['auth', 'status'], { timeoutMs })
+  const rawStatus = result.stdout || result.stderr
+  let payload = null
+  try {
+    payload = rawStatus ? JSON.parse(rawStatus) : null
+  } catch {
+    payload = null
+  }
+
+  const credentials = parseClaudeCredentials()
+  const loggedIn = Boolean(payload?.loggedIn || credentials?.accessToken)
+  const authMethod = normalizeString(payload?.authMethod)
+
+  return buildProviderConnection('claude', {
+    status: loggedIn ? 'connected' : 'needs_login',
+    detail: loggedIn
+      ? [authMethod && authMethod !== 'none' ? `Auth: ${authMethod}` : '', 'Local Claude login is active.'].filter(Boolean).join(' • ')
+      : 'Run claude auth login on this Mac.',
+    accountEmail: credentials?.accountEmail || null,
+    accountPlan: credentials?.accountPlan || null,
+    updatedAtMs: nowMs
+  })
 }
 
 async function probeClaudeQuota({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS, fetchImpl = globalThis.fetch } = {}) {
@@ -375,17 +519,14 @@ function parseGeminiCredentials() {
   const creds = readJsonFile(credsPath)
   const settings = readJsonFile(settingsPath)
   const authType = normalizeString(settings?.authType || settings?.auth_type || settings?.authentication)
-  if (authType && ['api-key', 'vertex-ai'].includes(authType)) return null
 
   const accessToken = normalizeString(creds?.access_token || creds?.accessToken)
-  if (!accessToken) return null
-
   const expiryMs = normalizeTimestampMs(creds?.expiry_date || creds?.expiryDate)
-  if (expiryMs && expiryMs <= Date.now()) return null
-
   const claims = decodeJwtPayload(creds?.id_token || creds?.idToken)
   return {
-    accessToken,
+    authType,
+    accessToken: accessToken || null,
+    expired: Boolean(expiryMs && expiryMs <= Date.now()),
     accountEmail: normalizeString(claims?.email) || null
   }
 }
@@ -421,6 +562,7 @@ function summarizeGeminiBuckets(payload) {
 
 async function probeGeminiQuota({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS, fetchImpl = globalThis.fetch } = {}) {
   const credentials = parseGeminiCredentials()
+  if (credentials?.authType && ['api-key', 'vertex-ai'].includes(credentials.authType)) return null
   if (!credentials?.accessToken || typeof fetchImpl !== 'function') return null
 
   const response = await fetchImpl('https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuota', {
@@ -451,6 +593,40 @@ async function probeGeminiQuota({ nowMs = Date.now(), timeoutMs = PROVIDER_QUOTA
   })
 }
 
+function probeGeminiConnection({ nowMs = Date.now() } = {}) {
+  if (!commandExists('gemini')) {
+    return buildProviderConnection('gemini', {
+      status: 'not_installed',
+      detail: 'Install Gemini CLI on this Mac to sync user quota.',
+      updatedAtMs: nowMs
+    })
+  }
+
+  const credentials = parseGeminiCredentials()
+  if (credentials?.authType && ['api-key', 'vertex-ai'].includes(credentials.authType)) {
+    return buildProviderConnection('gemini', {
+      status: 'unsupported',
+      detail: 'Quota sync needs a personal Gemini login, not API key or Vertex AI mode.',
+      updatedAtMs: nowMs
+    })
+  }
+
+  if (credentials?.accessToken && !credentials.expired) {
+    return buildProviderConnection('gemini', {
+      status: 'connected',
+      detail: 'Local Gemini login is active.',
+      accountEmail: credentials.accountEmail,
+      updatedAtMs: nowMs
+    })
+  }
+
+  return buildProviderConnection('gemini', {
+    status: 'needs_login',
+    detail: 'Open Gemini CLI on this Mac to finish sign-in.',
+    updatedAtMs: nowMs
+  })
+}
+
 export async function collectProviderQuotas(options = {}) {
   const nowMs = options.nowMs ?? Date.now()
   const cachePath = options.cachePath || defaultProviderQuotaCacheFile(options.host || 'device')
@@ -459,9 +635,10 @@ export async function collectProviderQuotas(options = {}) {
   const cached = loadProviderQuotaCache(cachePath)
   const cachedAgeMs = cached?.updatedAtMs ? Math.max(0, nowMs - cached.updatedAtMs) : null
 
-  if (cached && cached.providerQuotas.length > 0 && cachedAgeMs != null && cachedAgeMs < cacheTtlMs) {
+  if (cached && (cached.providerQuotas.length > 0 || cached.providerConnections.length > 0) && cachedAgeMs != null && cachedAgeMs < cacheTtlMs) {
     return {
       providerQuotas: cached.providerQuotas,
+      providerConnections: cached.providerConnections,
       status: 'cache',
       updatedAtMs: cached.updatedAtMs,
       cacheAgeMs: cachedAgeMs,
@@ -470,33 +647,69 @@ export async function collectProviderQuotas(options = {}) {
   }
 
   const probes = [
-    ['codex', probeCodexQuota],
-    ['claude', probeClaudeQuota],
-    ['gemini', probeGeminiQuota]
+    ['codex', probeCodexQuota, probeCodexConnection],
+    ['claude', probeClaudeQuota, probeClaudeConnection],
+    ['gemini', probeGeminiQuota, probeGeminiConnection]
   ]
 
   const providerQuotas = []
+  const providerConnections = []
   const errors = []
 
-  for (const [providerId, probe] of probes) {
+  for (const [providerId, probe, connectionProbe] of probes) {
+    let connection = null
     try {
-      const snapshot = await probe({ nowMs, timeoutMs })
-      if (snapshot) providerQuotas.push(snapshot)
+      connection = connectionProbe({ nowMs, timeoutMs })
     } catch (error) {
+      connection = buildProviderConnection(providerId, {
+        status: 'error',
+        detail: normalizeString(error?.message) || `${providerId}_connection_failed`,
+        updatedAtMs: nowMs
+      })
       errors.push({
         providerId,
-        message: normalizeString(error?.message) || `${providerId}_probe_failed`
+        message: normalizeString(error?.message) || `${providerId}_connection_failed`
       })
+    }
+
+    if (connection) providerConnections.push(connection)
+    if (connection?.status !== 'connected') continue
+
+    try {
+      const snapshot = await probe({ nowMs, timeoutMs })
+      if (snapshot) {
+        providerQuotas.push(snapshot)
+        const index = providerConnections.findIndex((item) => item.providerId === providerId)
+        if (index >= 0) {
+          providerConnections[index] = mergeProviderConnectionSnapshot(providerConnections[index], snapshot, {
+            detail: providerConnections[index]?.detail || 'Local provider login is active.'
+          })
+        }
+      }
+    } catch (error) {
+      const message = normalizeString(error?.message) || `${providerId}_probe_failed`
+      errors.push({
+        providerId,
+        message
+      })
+      const index = providerConnections.findIndex((item) => item.providerId === providerId)
+      if (index >= 0) {
+        providerConnections[index] = mergeProviderConnectionSnapshot(providerConnections[index], null, {
+          detail: `Connected, but quota sync failed (${message}).`
+        })
+      }
     }
   }
 
-  if (providerQuotas.length > 0) {
+  if (providerQuotas.length > 0 || providerConnections.length > 0) {
     saveProviderQuotaCache(cachePath, {
       updatedAtMs: nowMs,
-      providerQuotas
+      providerQuotas,
+      providerConnections
     })
     return {
       providerQuotas,
+      providerConnections,
       status: 'fresh',
       updatedAtMs: nowMs,
       cacheAgeMs: 0,
@@ -504,9 +717,10 @@ export async function collectProviderQuotas(options = {}) {
     }
   }
 
-  if (cached?.providerQuotas?.length) {
+  if (cached?.providerQuotas?.length || cached?.providerConnections?.length) {
     return {
       providerQuotas: cached.providerQuotas,
+      providerConnections: cached.providerConnections,
       status: 'stale-cache',
       updatedAtMs: cached.updatedAtMs,
       cacheAgeMs: cachedAgeMs,
@@ -516,6 +730,7 @@ export async function collectProviderQuotas(options = {}) {
 
   return {
     providerQuotas: [],
+    providerConnections: [],
     status: errors.length > 0 ? 'unavailable' : 'empty',
     updatedAtMs: nowMs,
     cacheAgeMs: cachedAgeMs,
