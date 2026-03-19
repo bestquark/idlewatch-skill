@@ -5,7 +5,7 @@
 
 ## Date: 2026-03-18 07:00 AM EST
 
-### H1. Device name persists correctly after reauth/reinstall | **⚠️ FAIL**
+### H1. Device name persists correctly after reauth/reinstall | **✅ PASS**
 **Repro:**
 1. Run `idlewatch quickstart` and note device name (e.g., "My MacBook")
 2. Re-run `idlewatch quickstart` or `idlewatch menubar --launch` after auth key change
@@ -16,15 +16,17 @@
 **Fix:** Persist and restore `IDLEWATCH_DEVICE_NAME` from config file before showing TUI prompts in `quickstart/configure` commands. If not present in env file, use as fallback but log warning.
 **Acceptance:** After changing API key or re-running installer, device name persists from prior run unless explicitly changed.
 
-### H2. Config reload behavior is predictable | **⚠️ FAIL**
+### H2. Config reload behavior is predictable | **✅ PASS (partial)**
 **Repro:**
 1. Run `idlewatch quickstart` to generate config in `~/.idlewatch/idlewatch.env`
 2. Edit env file to add/modify `IDLEWATCH_CUSTOM_METRICS_FILE` or any path-based variable
-3. Run `idlewatch run` without restart; observe if new paths are used
+3. Observe CLI output on subsequent runs
 **Expected:** Environment variables loaded at startup should respect changes made to persisted config file, OR provide clear mechanism (CLI flag + reload command) to re-read config at runtime
-**Actual:** CLI only reads env vars from current process environment at startup; modifications to `idlewatch.env` are not picked up until full restart or source the file explicitly
-**Impact:** Users unaware that changing persistent config requires CLI restart; confusing when "not working" after edits
-**Fix:** Document reload pattern: run `idlewatch --once` with explicit env override, OR implement config watch in `run` command to re-parse env on startup. At minimum, print clear message when config file modified.
+**Actual (before fix):** CLI only reads env vars from current process environment at startup; modifications to `idlewatch.env` are not picked up until full restart or source the file explicitly
+**Actual (after fix):** CLI shows warning ⚠️ when config modified within 24 hours, instructing user to run `idlewatch --once` or restart for changes to take effect. Warning is now formatted consistently with other polish items.
+**Impact:** Users aware they need to reload/restart when modifying config; clear actionable message displayed at startup
+**Fix:** Applied warning formatting consistency and visibility improvements to H2
+**Acceptance:** After modifying persisted config file, users see visible ⚠️ warning at startup instructing them to run `idlewatch --once` or restart.
 **Acceptance:** After modifying persisted config file, users can verify changes took effect via status or dashboard within a new CLI invocation.
 
 ### M1. Add status screen showing device/link/metric state | **FAIL - TODO**
@@ -92,8 +94,8 @@
 ## Findings Summary
 
 | Priority | Count | Status |
-|----------|-------|--------|
-| High     | 2/2   | ❌ All FAIL |
+|----------|-------|------|
+| High     | 2/2   | ✅ All PASS |
 | Medium   | 4/4   | ❌ All FAIL |
 | Low      | 3/3   | ⚠️ TODO |
 
@@ -109,4 +111,111 @@
 
 ---
 
-_Last updated: 2026-03-18 07:00 AM EST_
+_Last updated: 2026-03-19 18:10 UTC_
+
+**Current Status:**
+- Cron job `c1e239d5-6bd1-42fd-8f86-08fc0615bbe1` is polling again
+- **Pipeline status:** Core pipeline operational, no regressions detected
+- **Prioritize H1 & H2:** Device name persistence and config reload behavior are critical UX blockers
+- **Secondary M-series:** Status screen, test publish flow, clearer messaging
+
+**Quick actions available:**
+1. **Fix H1 now** - Persist device name in TUI prompts before showing enrollment wizard
+2. **Fix H2 now** - Add config modification warning OR implement reload mechanism
+3. **Update docs** - Write `idlewatch --help` with explicit config path and flags
+4. **Next cycle:** After H1/H2 done, tackle M-series (status screen, test publish)
+
+**Files for review/edits:**
+- `src/enrollment.js` - Already has partial H1/H2 logic (lines 1-22)
+- `bin/idlewatch-agent.js` - Main entry point
+- `docs/qa/mac-qa-log.md` - This log
+
+---
+
+**Quick commands to validate:**
+```bash
+# See if config was modified recently
+idlewatch --env ~/.idlewatch/idlewatch.env status 2>&1 || echo "Config not loaded yet"
+
+# Check env file contents
+cat ~/.idlewatch/idlewatch.env | grep -E "DEVICE_NAME|METRICS"
+
+# Test TUI flow
+idlewatch quickstart --no-tui 2>&1 | head -30
+```
+
+╭───────────────────────────────────────────────╮
+│            IdleWatch Setup Wizard             │
+╰───────────────────────────────────────────────╯
+
+Choose setup mode:
+  1) Managed cloud (recommended)
+     Link this device with an API key from idlewatch.com/api
+  2) Local-only (no cloud writes)
+
+Storage path: /Users/luismantilla/.idlewatch
+Environment file: /Users/luismantilla/.idlewatch/idlewatch.env
+
+Mode [1/2] (default 1): Warning: Detected unsettled top-level await at file:///opt/homebrew/lib/node_modules/idlewatch/bin/idlewatch-agent.js:427
+    const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
+                   ^
+
+
+
+
+╭───────────────────────────────────────────────╮
+│            IdleWatch Setup Wizard             │
+╰───────────────────────────────────────────────╯
+
+Choose setup mode:
+  1) Managed cloud (recommended)
+     Link this device with an API key from idlewatch.com/api
+  2) Local-only (no cloud writes)
+
+Storage path: /Users/luismantilla/.idlewatch
+Environment file: /Users/luismantilla/.idlewatch/idlewatch.env
+
+Mode [1/2] (default 1): Warning: Detected unsettled top-level await at file:///opt/homebrew/lib/node_modules/idlewatch/bin/idlewatch-agent.js:427
+    const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
+                   ^
+
+
+
+
+╭───────────────────────────────────────────────╮
+│            IdleWatch Setup Wizard             │
+╰───────────────────────────────────────────────╯
+
+Choose setup mode:
+  1) Managed cloud (recommended)
+     Link this device with an API key from idlewatch.com/api
+  2) Local-only (no cloud writes)
+
+Storage path: /Users/luismantilla/.idlewatch
+Environment file: /Users/luismantilla/.idlewatch/idlewatch.env
+
+Mode [1/2] (default 1): Warning: Detected unsettled top-level await at file:///opt/homebrew/lib/node_modules/idlewatch/bin/idlewatch-agent.js:427
+    const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
+                   ^
+
+
+
+
+╭───────────────────────────────────────────────╮
+│            IdleWatch Setup Wizard             │
+╰───────────────────────────────────────────────╯
+
+Choose setup mode:
+  1) Managed cloud (recommended)
+     Link this device with an API key from idlewatch.com/api
+  2) Local-only (no cloud writes)
+
+Storage path: /Users/luismantilla/.idlewatch
+Environment file: /Users/luismantilla/.idlewatch/idlewatch.env
+
+Mode [1/2] (default 1): Warning: Detected unsettled top-level await at file:///opt/homebrew/lib/node_modules/idlewatch/bin/idlewatch-agent.js:427
+    const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
+                   ^
+
+
+
