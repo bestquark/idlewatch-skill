@@ -54,9 +54,10 @@ Commands:
 Options:
   --once       Collect and publish one sample, then exit
   --dry-run    Collect and print one sample without publishing
+  --json       Output raw JSON instead of summary (with --once/--dry-run)
   --no-tui     Use plain text setup (no Rust TUI)
   --launch     Open menu bar app after install
-  --help       Show this help
+  --help       Show this help (use <command> --help for details)
   --help-env   Show all environment variables
 
 Get started:
@@ -67,6 +68,8 @@ Get started:
 
 function printHelpEnv() {
   console.log(`idlewatch — environment variables
+
+Most users only need the Common section below.
 
 Common:
   IDLEWATCH_CLOUD_API_KEY              API key from idlewatch.com/api
@@ -604,7 +607,55 @@ if (args.has('--help-env')) {
   process.exit(0)
 }
 if (args.has('--help') || args.has('-h')) {
-  printHelp()
+  const subCmd = argv.find(a => !a.startsWith('-'))
+  const subHelp = {
+    quickstart: `idlewatch quickstart — Set up this device
+
+Usage:  idlewatch quickstart [--no-tui]
+
+Walks you through API key, device name, and metric selection.
+Use --no-tui for plain-text prompts (no Rust TUI).`,
+    configure: `idlewatch configure — Change device settings
+
+Usage:  idlewatch configure [--no-tui]
+
+Re-opens the setup wizard to change API key, device name, or metrics.
+Existing values are pre-filled so you only change what you need.`,
+    status: `idlewatch status — Show device state
+
+Usage:  idlewatch status
+
+Displays device config, publish mode, enabled metrics, last sample age,
+and background LaunchAgent state.`,
+    create: `idlewatch create — Create a custom telemetry metric
+
+Usage:  idlewatch create
+
+Interactive wizard to define a new metric with a name, type, and
+shell command that runs each sample cycle.`,
+    menubar: `idlewatch menubar — Install macOS menu bar app
+
+Usage:  idlewatch menubar [--launch]
+
+Installs the Electron menu bar companion app.
+Use --launch to open it immediately after install.`,
+    dashboard: `idlewatch dashboard — Launch local telemetry dashboard
+
+Usage:  idlewatch dashboard
+
+Starts a local web server showing recent telemetry samples.`,
+    run: `idlewatch run — Start the background collector
+
+Usage:  idlewatch run
+
+Begins continuous metric collection at the configured interval.
+Use --once for a single sample or --dry-run to preview without publishing.`
+  }
+  if (subCmd && subHelp[subCmd]) {
+    console.log(subHelp[subCmd])
+  } else {
+    printHelp()
+  }
   process.exit(0)
 }
 
@@ -705,6 +756,7 @@ if (args.has('--help') || args.has('-h')) {
 
 const DRY_RUN = args.has('--dry-run')
 const ONCE = args.has('--once')
+const JSON_OUTPUT = args.has('--json')
 const DEVICE_NAME = (process.env.IDLEWATCH_DEVICE_NAME || process.env.IDLEWATCH_HOST || os.hostname()).trim()
 const DEVICE_ID = (process.env.IDLEWATCH_DEVICE_ID || DEVICE_NAME)
   .trim()
@@ -1866,7 +1918,9 @@ async function tick() {
   row.localLogPath = localUsage.path
   row.localLogBytes = localUsage.bytes
 
-  if (process.env.IDLEWATCH_SETUP_VERIFY === '1') {
+  if (JSON_OUTPUT) {
+    console.log(JSON.stringify(row))
+  } else if (process.env.IDLEWATCH_SETUP_VERIFY === '1' || ONCE || DRY_RUN) {
     console.log(summarizeSetupVerification(row))
   } else {
     console.log(JSON.stringify(row))
