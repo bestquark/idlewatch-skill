@@ -5,6 +5,41 @@
 
 ---
 
+## 2026-03-21 — Round 33: Post-0.2.0 Full Verification (1:00 PM ET)
+
+### Full independent re-verification — all 48 items hold
+
+Fresh-session spot-check of every major surface on v0.2.0:
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 27 lines, clean. All 9 subcommands + `install-agent`/`uninstall-agent` listed. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand (`notacommand`) | Error + exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | stdout: 1 line pure JSON (parses with `jq`). Progress + error on stderr. `publishResult`/`publishError` in JSON. ✅ |
+| `--dry-run` | Metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `run --json` | Banner/tip on stderr, stdout is pure NDJSON (verified via fd separation). ✅ |
+| `status` | LaunchAgent state (`not installed`), Device/ID dedup, mode in footer, log size (30 MB total incl .1 backup). ✅ |
+| All subcommand `--help` | quickstart, configure, status, run, create, dashboard, menubar, install-agent, uninstall-agent, reconfigure — all concise. ✅ |
+| `reconfigure --help` | Shows `(alias for configure)`. ✅ |
+| `menubar --help` | `--force`/`--launch` flags. ✅ |
+| `.env.example` | Cloud key first, Firebase demoted. ✅ |
+| `--help-env` | 4 sections (Common/Tuning/Probe internals/Firebase), "Most users only need..." header. ✅ |
+| README | 51 lines, clean: Install → Quickstart → Verify → Background → More docs. ✅ |
+| Log rotation | Current file 4.1MB (under 10MB cap), .1 backup 26MB (pre-cap). Working correctly. ✅ |
+
+### No new findings
+
+All 48 QA items remain closed. No regressions. The CLI is clean, minimal, and well-organized for v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** The polish cycle is complete. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-21 — Round 32: Version Bump + Final Assessment (12:35 PM ET)
 
 ### Version bumped to 0.2.0
