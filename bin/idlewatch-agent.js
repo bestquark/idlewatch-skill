@@ -39,12 +39,11 @@ import pkg from '../package.json' with { type: 'json' }
 function printHelp() {
   console.log(`idlewatch
 
-Usage:
-  idlewatch <command> [options]
+Usage:  idlewatch <command> [options]
 
 Commands:
   quickstart   Set up this device (API key, name, metrics)
-  configure    Re-open setup to change settings
+  configure    Re-open setup to change settings — values auto-filled
   status       Show device config and background agent state
   run          Start the background collector
   create       Create a custom telemetry metric
@@ -52,6 +51,7 @@ Commands:
   install-agent   Install background LaunchAgent (macOS)
   uninstall-agent Remove background LaunchAgent (macOS)
   menubar      Install the macOS menu bar app
+  version      Show version
 
 Options:
   --once       Collect and publish one sample, then exit
@@ -59,13 +59,10 @@ Options:
   --json       Output raw JSON instead of summary (with --once/--dry-run)
   --no-tui     Use plain text setup (no Rust TUI)
   --launch     Open menu bar app after install
-  --help       Show this help (use <command> --help for details)
+  --help       Show this help
   --help-env   Show all environment variables
 
-Get started:
-  1. Create an API key at idlewatch.com/api
-  2. Run: idlewatch quickstart
-  3. Pick a device name and metrics — done!`)
+Get started:  idlewatch quickstart`)
 }
 
 function printHelpEnv() {
@@ -671,10 +668,11 @@ const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
-if (args.has('--version') || args.has('-V')) {
+if (args.has('--version') || args.has('-V') || argv[0] === 'version') {
   console.log(`idlewatch ${pkg.version}`)
   process.exit(0)
 }
+
 if (args.has('--help-env')) {
   printHelpEnv()
   process.exit(0)
@@ -951,7 +949,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 })()
 
 // Reject unknown subcommands before entering the collector path
-const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent'])
+const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent', 'version'])
 const firstPositional = argv.find(a => !a.startsWith('-'))
 if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
   console.error(`Unknown command "${firstPositional}". Run idlewatch --help for available commands.`)

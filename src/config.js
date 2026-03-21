@@ -21,6 +21,11 @@ const isNonNegFinite = (v) => Number.isFinite(v) && v >= 0
 const isNonNegInt = (v) => Number.isInteger(v) && v >= 0
 const isBool01 = (v) => v === 0 || v === 1
 
+// Reload config by reading current env values and rebuilding
+export function reloadConfig() {
+  return buildConfig()
+}
+
 function expandSupportedPathVars(value) {
   if (typeof value !== 'string' || !value) return value
 

@@ -5,6 +5,56 @@
 
 ---
 
+## 2026-03-21 — Round 34: Post-0.2.0 Regression Fix + Polish (4:07 PM ET)
+
+### Critical: uncommitted changes broke CLI with SyntaxError
+
+**Found**: Uncommitted diff had a duplicated `printHelpEnv()` block (lines 678-680) causing `SyntaxError: Unexpected token '}'`. CLI was completely non-functional.
+
+**Also found**: `showVersion()` called but never defined — would have been a ReferenceError even after syntax fix.
+
+### Fixes applied
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 49 | **P1** | Duplicated `printHelpEnv()` block → SyntaxError, CLI crashes on any invocation | ✅ FIXED — removed duplicate |
+| 50 | **P1** | `showVersion()` undefined → ReferenceError on `--version` | ✅ FIXED — replaced with inline `console.log` |
+| 51 | P2 | `version` listed in `--help` as subcommand but not handled — errors as unknown command | ✅ FIXED — added to KNOWN_SUBCOMMANDS + dispatch |
+| 52 | P3 | `version` line in `--help` had misaligned spacing (extra space) | ✅ FIXED |
+
+### Help output tightened (uncommitted changes, pre-existing)
+
+The uncommitted diff also contained intentional polish:
+- `Usage:` collapsed to single line
+- `configure` description adds "— values auto-filled"
+- `version` subcommand added to help
+- "Get started" compressed to one line: `idlewatch quickstart`
+- `--help` description simplified (removed "use <command> --help for details")
+- `src/config.js`: added `reloadConfig()` export wrapping `buildConfig()`
+
+### Full re-verification — all prior 48 items hold
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 26 lines, clean. All commands + `version` listed. ✅ |
+| `--version` / `version` | `idlewatch 0.2.0`, exit 0. Both flag and subcommand work. ✅ |
+| Unknown subcommand | Error + exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout, `publishResult`/`publishError` present. ✅ |
+| `--dry-run` | Metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `run --json` | Banner/tip on stderr, stdout pure NDJSON. ✅ |
+| `status` | LaunchAgent state, Device/ID dedup, mode in footer. ✅ |
+| `--help-env` | 4 sections, "Most users only need..." header. ✅ |
+| `.env.example` | Cloud key first, Firebase demoted. ✅ |
+| README | 51 lines, clean. ✅ |
+
+### No new findings beyond the fixes above
+
+All 52 QA items closed. CLI is stable on v0.2.0.
+
+---
+
 ## 2026-03-21 — Round 33: Post-0.2.0 Full Verification (1:00 PM ET)
 
 ### Full independent re-verification — all 48 items hold
