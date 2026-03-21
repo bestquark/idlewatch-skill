@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-03-21 — Round 36: Implementer Fix (4:35 PM ET)
+
+### Fixed #53 — `install-agent` re-run fails with confusing I/O error
+
+**Found**: Running `install-agent` when the LaunchAgent was already loaded caused `bootstrap` to fail with `Bootstrap failed: 5: Input/output error`. The existing code did `bootout` then `bootstrap`, but `bootout` wasn't reliably cleaning up the service registration before re-bootstrap.
+
+**Fix**: Detect already-loaded state via `launchctl print`, then explicitly `bootout` before re-bootstrapping. Shows "reinstalled" when updating an existing agent.
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 53 | P2 | `install-agent` re-run fails with I/O error instead of reinstalling | ✅ FIXED |
+
+**Commit**: `fb1aace` — `fix: install-agent handles reinstall gracefully`
+
+---
+
 ## 2026-03-21 — Round 35: Full Independent Verification (4:30 PM ET)
 
 ### Fresh-session spot-check of every major surface on v0.2.0
