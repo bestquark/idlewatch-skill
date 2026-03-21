@@ -5,6 +5,38 @@
 
 ---
 
+## 2026-03-21 — Round 35: Full Independent Verification (4:30 PM ET)
+
+### Fresh-session spot-check of every major surface on v0.2.0
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 26 lines, clean. All commands + `version` listed. ✅ |
+| `--version` / `version` | `idlewatch 0.2.0`, exit 0. Both work. ✅ |
+| Unknown subcommand | `Unknown command "notacommand"...`, exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout (`2>/dev/null \| jq .` parses). `publishResult`/`publishError` fields present. ✅ |
+| `--dry-run` | Metric values (CPU 40%, Memory 65%, GPU 0%, Temp: nominal, OpenClaw stats). Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `run --json` | Banner/tip on stderr, stdout pure NDJSON (verified via fd separation). ✅ |
+| `status` | LaunchAgent `not installed`, Device/ID dedup, mode in footer, log size 20 MB, last sample age. ✅ |
+| `reconfigure --help` | Shows `(alias for configure)`. ✅ |
+| `install-agent --help` / `uninstall-agent --help` | Concise, accurate. ✅ |
+| `.env.example` | Cloud key first, Firebase demoted under "Developer / self-hosted only". ✅ |
+| `--help-env` | 4 sections (Common/Tuning/Probe internals/Firebase), "Most users only need..." header. ✅ |
+| README | 51 lines, clean: Install → Quickstart → Verify → Background → More docs. ✅ |
+| Git status | Clean tree, no uncommitted changes. ✅ |
+
+### No new findings
+
+All 52 QA items remain closed. No regressions. CLI is stable, clean, and minimal on v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** The polish cycle is complete. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-21 — Round 34: Post-0.2.0 Regression Fix + Polish (4:07 PM ET)
 
 ### Critical: uncommitted changes broke CLI with SyntaxError
