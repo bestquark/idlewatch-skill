@@ -183,7 +183,7 @@ idlewatch --once
 |---|-----|---------|--------|
 | 13 | P2 | `--once` / `--dry-run` first line is a noisy debug banner | NEW |
 | 14 | P3 | `menubar` silently reinstalls without confirmation | NEW |
-| 15 | P3 | `--once --json` error path mixes JSON + plaintext to different streams | NEW |
+| 15 | P3 | `--once --json` error stream mixing | ✅ CLOSED — progress to stderr with #19 fix |
 
 ### #13 — `--once` / `--dry-run` first line is a noisy debug banner
 
@@ -250,7 +250,7 @@ idlewatch --once --json 2>&1
 | 12 | P3 | `--help-env` scannability | ✅ CLOSED |
 | 13 | P2 | `--once`/`--dry-run` debug banner as first line | ✅ CLOSED — replaced with concise status line |
 | 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED — detects existing install, requires --force |
-| 15 | P3 | `--once --json` error stream mixing | NEW |
+| 15 | P3 | `--once --json` error stream mixing | ✅ CLOSED — progress to stderr with #19 fix |
 
 ### Top recommendations for next implementer cycle
 1. **#13** — Clean up the `--once`/`--dry-run` first-line debug banner (most visible test-publish surface).
@@ -369,7 +369,7 @@ Dry-run for "test" (cloud mode)…
 | 12 | P3 | `--help-env` scannability | ✅ CLOSED |
 | 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
 | 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
-| 15 | P3 | `--once --json` error stream mixing | OPEN (low priority) |
+| 15 | P3 | `--once --json` error stream mixing | ✅ CLOSED — progress to stderr with #19 fix |
 | 16 | **P1** | Unknown subcommand starts collector loop silently | ✅ CLOSED — prints error + exit 1 |
 | 17 | P2 | `--once` second line still debug-formatted | ✅ CLOSED — concise "✅ Sample collected (N metrics)" |
 | 18 | P3 | `--dry-run` shows no useful sample summary | ✅ CLOSED — shows metric count + "nothing published (dry run)" |
@@ -484,13 +484,13 @@ When device name and ID are identical (which is the common case), this is visual
 | 12 | P3 | `--help-env` scannability | ✅ CLOSED |
 | 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
 | 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
-| 15 | P3 | `--once --json` error stream mixing | OPEN (low priority) |
+| 15 | P3 | `--once --json` error stream mixing | ✅ CLOSED — progress to stderr with #19 fix |
 | 16 | P1 | Unknown subcommand starts collector loop | ✅ CLOSED |
 | 17 | P2 | `--once` second line debug-formatted | ✅ CLOSED |
 | 18 | P3 | `--dry-run` shows no useful sample summary | ✅ CLOSED (count only — values in #20) |
-| 19 | **P2** | `--once --json` progress line on stdout breaks JSON pipe | NEW |
-| 20 | P2 | `--dry-run` shows count but no metric values | NEW |
-| 21 | P3 | `status` shows redundant Device/Device ID | NEW |
+| 19 | **P2** | `--once --json` progress line on stdout breaks JSON pipe | ✅ CLOSED — progress to stderr, stdout pure JSON |
+| 20 | P2 | `--dry-run` shows count but no metric values | ✅ CLOSED — shows CPU/Memory/GPU/Temp/OpenClaw values |
+| 21 | P3 | `status` shows redundant Device/Device ID | ✅ CLOSED — hidden when ID matches normalized name |
 
 ### Top recommendations for next implementer cycle
 1. **#19 (P2)** — `--json` must send only JSON to stdout; progress to stderr.
