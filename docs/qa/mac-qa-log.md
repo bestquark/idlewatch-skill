@@ -79,7 +79,92 @@ or `not installed` / `stopped` as appropriate. Use `launchctl print gui/<uid>/co
 | 7 | P3 | `.env.example` mixes user config with CI vars | OPEN |
 | 8 | P3 | Wizard ASCII box is visually noisy for a 2-option prompt | ✅ CLOSED — replaced with minimal inline prompt |
 
-### Notes
-- 4 items closed this round (--version, self-dep, dev artifacts, dead status.js). Good progress.
-- **Top recommendation for next implementer cycle**: Trim `--help` to ≤25 lines. Move advanced env docs to README or `--help-advanced`. This is the highest-impact polish item remaining.
-- LaunchAgent state in `status` promoted to P2 — it's the natural place users check "is it running?" and currently gives no answer.
+---
+
+## 2026-03-21 — Round 10: Verification + New Findings
+
+### Verified closures from Round 9
+- **`--help`**: Now 26 lines, clean subcommand list + 3-step quickstart. `--help-env` properly separates Common / Tuning / Firebase sections. **Confirmed CLOSED.**
+- **`status` LaunchAgent state**: Shows `LaunchAgent not installed` / `loaded (running, pid X)` / `loaded (idle)` / `installed but not loaded`. **Confirmed CLOSED.**
+- **Wizard ASCII box**: Replaced with inline prompt. **Confirmed CLOSED.**
+- **`--version`**: Returns `idlewatch 0.1.9`, exits cleanly. **Confirmed CLOSED.**
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 9 | P2 | Subcommand `--help` falls through to generic help (no per-command help) | NEW |
+| 10 | P2 | `--once` prints full raw JSON blob before error message — user sees wall of JSON | NEW |
+| 11 | P3 | `.env.example` still references Firebase/Firestore vars — should reference cloud API key instead | NEW |
+| 12 | P3 | `--help-env` lists 30 env vars with no indication which ones matter — `Common` section is the only useful one for most users | NEW |
+
+### #9 — Subcommand `--help` falls through to generic help
+
+**Repro**:
+```
+idlewatch menubar --help
+idlewatch create --help
+```
+
+**Observed**: Both print the top-level help (same as `idlewatch --help`). No subcommand-specific help.
+
+**Why it matters**: `menubar` has options (`--launch`) and `create` has a specific workflow. Users expect `<cmd> --help` to explain the subcommand.
+
+**Acceptance**: Each subcommand with options/workflow prints its own 3-5 line help when called with `--help`.
+
+### #10 — `--once` prints full JSON blob before error
+
+**Repro**:
+```
+idlewatch --once
+```
+(with an invalid or expired API key)
+
+**Observed**: Entire telemetry JSON blob (~100+ fields, single line) is dumped to stdout, followed by the error message. The useful part (`Cloud API key was rejected...`) is buried after a wall of JSON.
+
+**Why it matters**: `--once` is the natural "test publish" action. The output should be human-readable: a summary line + pass/fail, not raw JSON.
+
+**Acceptance**:
+1. `--once` prints a concise summary (device, metrics count, publish result) — not raw JSON
+2. On error: error message is the prominent output, not buried after JSON
+3. Raw JSON available via `--once --json` or `--dry-run` for debugging
+
+### #11 — `.env.example` references Firebase instead of cloud API key
+
+**Repro**: Read `.env.example`
+
+**Observed**: File includes `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_FILE`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `FIRESTORE_EMULATOR_HOST` — but the actual setup flow uses `IDLEWATCH_CLOUD_API_KEY`. A user copying this example would configure Firebase vars that aren't used in the cloud publish path.
+
+**Acceptance**: `.env.example` leads with `IDLEWATCH_CLOUD_API_KEY` and drops or clearly marks Firebase vars as "developer/self-hosted only".
+
+### #12 — `--help-env` could group better for scannability
+
+**Repro**: `idlewatch --help-env`
+
+**Observed**: 37 lines, three sections (Common / Tuning / Firebase). The "Tuning" section has 18 vars that almost no user will ever touch. Minor: the section headers have no visual weight — easy to miss.
+
+**Acceptance**: Minor — add a note like `(most users only need the Common section)` at the top, or bold/underline section headers.
+
+---
+
+## Priority Summary (Round 10, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4 | P2 | Post-quickstart messages are debug-formatted | OPEN |
+| 5 | P2 | npx menubar help text is vague | OPEN |
+| 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
+| 7 | P3 | `.env.example` mixes user/CI vars | OPEN — see also #11 |
+| 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
+| 9 | P2 | Subcommand `--help` falls through to generic help | NEW |
+| 10 | P2 | `--once` dumps raw JSON before error | NEW |
+| 11 | P3 | `.env.example` references Firebase instead of cloud API key | NEW |
+| 12 | P3 | `--help-env` scannability | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#10** — `--once` output: suppress raw JSON, show summary + pass/fail. Highest user-facing impact for test-publish flow.
+2. **#9** — Per-subcommand `--help`: small effort, big polish signal.
+3. **#11** — `.env.example` cleanup: lead with `IDLEWATCH_CLOUD_API_KEY`, demote Firebase vars.
