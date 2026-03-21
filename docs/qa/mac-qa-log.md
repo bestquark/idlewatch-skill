@@ -772,3 +772,88 @@ Minor: It says what can be changed (API key, device name, metrics) but doesn't m
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
 4. **#28 (P3)** — Add "mode" to `configure --help` description.
+
+---
+
+## 2026-03-21 — Round 17: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+Spot-checked all 28 items marked CLOSED. Everything is solid:
+- `--help`: 26 lines. `--version`: `idlewatch 0.1.9`, exit 0. Unknown subcommand: error + exit 1.
+- `--once`: `⚠️` on publish fail, `❌` error with device name. `--json`: pure JSON stdout (1 line, parses with `jq`).
+- `--dry-run`: metric values shown, `Temp: nominal` when 0°C. Exit 0.
+- `status`: LaunchAgent state, Device/ID dedup. `configure --help`: lists mode.
+- `menubar`: detects existing install, `--force`/`--launch` flags.
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: clear sections.
+- README: 128 lines, validation + OpenClaw internals moved to docs/.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 29 | **P2** | `--once --dry-run` together produce contradictory output | NEW |
+| 30 | P2 | README "Advanced Firebase wiring" is 37 lines of self-hosted docs in user-facing README | NEW |
+
+### #29 — `--once --dry-run` together produce contradictory output
+
+**Repro**:
+```
+idlewatch --once --dry-run
+```
+
+**Observed**:
+```
+Dry-run for "test" (cloud mode)…
+  CPU: 26%  Memory: 71%  GPU: 0%  Temp: nominal
+  OpenClaw: gpt-5.4, 5% context used, 30,756 tok/min
+✅ Sample collected (4 metrics) — nothing published (dry run)
+❌ Cloud publish failed for "test": check API key and connectivity.
+```
+Exit code 1. The output says "nothing published (dry run)" — correct for dry-run — but then shows a publish failure error. These contradict each other. The `--dry-run` flag should suppress any publish attempt entirely, making `--once` irrelevant.
+
+**Why it matters**: Confusing for users who aren't sure which flag to use. `--dry-run` should mean "don't publish, just show me what you'd collect." Adding `--once` on top shouldn't change that behavior.
+
+**Acceptance**:
+1. `--dry-run` suppresses publish regardless of `--once`
+2. No `❌` error when `--dry-run` is set — publish was never attempted
+3. Exit code 0 when `--dry-run` succeeds (sample collected OK)
+4. OR: print `--once and --dry-run are mutually exclusive` and exit 1
+
+### #30 — README "Advanced Firebase wiring" section should move to docs/
+
+**Repro**: Read README.md lines 83–120.
+
+**Observed**: 37 lines covering Firebase manual wiring (env vars, raw JSON, base64, emulator mode, least-privilege guidance, require-writes flag). This is self-hosted/developer documentation. The vast majority of users use cloud mode with an API key — they'll never touch Firebase.
+
+The README went from 253→128 lines after Rounds 25 and 27, but the Firebase section survived and is now ~30% of the remaining README. It breaks the clean flow: Install → Quickstart → CLI → done.
+
+**Acceptance**:
+1. Move "Advanced Firebase wiring" to `docs/FIREBASE.md`
+2. README keeps 1-2 lines: `For self-hosted Firebase ingest, see [docs/FIREBASE.md](docs/FIREBASE.md).`
+3. README stays ≤100 lines: Install, Quickstart, CLI, Config, links to advanced docs
+
+---
+
+## Priority Summary (Round 17, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–28 | — | All prior items | ✅ CLOSED |
+| 29 | **P2** | `--once --dry-run` contradictory output (dry-run + publish error) | NEW |
+| 30 | P2 | README Firebase section (37 lines) should move to docs/ | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#29 (P2)** — `--dry-run` must suppress publish entirely; `--once --dry-run` should not attempt or report publish failure.
+2. **#30 (P2)** — Move Firebase wiring docs to `docs/FIREBASE.md`, shrink README to ≤100 lines.
+3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
+4. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
