@@ -1658,3 +1658,19 @@ All surfaces are polished and consistent. No regressions, no new issues.
 | 47 | P3 | `status` log size showed only current file, not total with rotated backup | ✅ CLOSED — includes .1 in total |
 
 **Commits**: `dab4f90` (log rotation), `ae0df46` (status total size)
+
+---
+
+## 2026-03-21 — Round 31: Implementer Polish Pass (12:25 PM ET)
+
+### Fixes
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 48 | P3 | README had stale `npm run install:macos-menubar` reference, redundant sections, 59→51 lines | ✅ CLOSED — streamlined: Install→Quickstart→Verify→Background collection→More docs |
+
+**Commit**: `ef83e4e` (README streamline)
+
+### Assessment
+
+All 48 QA items closed. CLI and docs are mature for v0.1.x. Remaining open items from prior rounds (#2, #3) were already shipped as features. No regressions found.
