@@ -2,3 +2,8 @@ node_modules/
 logs/
 dist/
 *.tgz
+tui/target/
+tui/
+.cron/
+.tide-atlas/
+.wild-rook/

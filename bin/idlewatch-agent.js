@@ -316,31 +316,28 @@ function buildTokenDailyEstimate(rows) {
     .map(([day, tokens]) => ({ day: day.slice(5), tokens: Math.round(tokens) }))
 }
 
-function buildLocalDashboardPayload(logPath) {
-  const rows = parseLocalRows(logPath)
-  let bytes = 0
-  try {
-    bytes = fs.statSync(logPath).size
-  } catch {
-    bytes = 0
-  }
-
-  const series = rows.map((row) => ({
-    ts: Number(row.ts || 0),
-    cpu: Number(row.cpuPct || 0),
-    memory: Number(row.memPct || 0),
-    gpu: Number(row.gpuPct || 0),
-    tokens: Number(row.tokensPerMin || 0)
-  }))
-
+function buildStatusPayload() {
+  const envFile = defaultPersistedEnvFilePath()
+  const parsed = parseEnvFileToObject(envFile)
+  
   return {
-    logPath,
-    logBytes: bytes,
-    logSizeHuman: formatBytes(bytes),
-    sampleCount: rows.length,
-    latestTs: rows.length ? Number(rows[rows.length - 1].ts || 0) : null,
-    series,
-    tokenDaily: buildTokenDailyEstimate(rows)
+    deviceName: String(parsed.IDLEWATCH_DEVICE_NAME || os.hostname()).trim(),
+    linkStatus: String(parsed.IDLEWATCH_CLOUD_API_KEY ? 'linked' : 'pending'),
+    metricsEnabled: [parsed.IDLEWATCH_METRICS?.split(',')].filter(Boolean),
+    lastPublishResult: {
+      status: parsed.IDLEWATCH_LAST_GOOD_STATUS || 'unknown',
+      message: parsed.IDLEWATCH_LAST_GOOD_MESSAGE || 'no recent sample found'
+    }
+  }
+}
+
+function buildLastPublishPayload() {
+  const envFile = defaultPersistedEnvFilePath()
+  const parsed = parseEnvFileToObject(envFile)
+  
+  return {
+    lastPublishStatus: String(parsed.IDLEWATCH_LAST_GOOD_STATUS) || 'unknown',
+    lastPublishMessage: String(parsed.IDLEWATCH_LAST_GOOD_MESSAGE) || ''
   }
 }
 
@@ -531,7 +528,11 @@ const runRequested = argv[0] === 'run' || argv.includes('--run')
 const createRequested = argv[0] === 'create' || argv.includes('--create')
 const menubarRequested = argv[0] === 'menubar'
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
-const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
+const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
+if (args.has('--version') || args.has('-V')) {
+  console.log(`idlewatch ${pkg.version}`)
+  process.exit(0)
+}
 if (args.has('--help') || args.has('-h')) {
   printHelp()
   process.exit(0)
@@ -588,28 +589,29 @@ if (args.has('--help') || args.has('-h')) {
       })
 
       if (onceRun.status === 0) {
-        console.log(`✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
+        const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
+        console.log(`\n✅ Setup complete!`)
+        console.log(`   Device: ${result.deviceName} (${modeLabel} mode)`)
+        console.log(`   Config: ${result.outputEnvFile}`)
         if (result.temperatureHelper?.status === 'installed') {
-          console.log(`Temperature helper installed automatically via ${result.temperatureHelper.installer}.`)
+          console.log(`   Temperature: auto-installed via ${result.temperatureHelper.installer}`)
         } else if (result.temperatureHelper?.status === 'available') {
-          console.log(`Temperature helper detected: ${result.temperatureHelper.helper}.`)
+          console.log(`   Temperature: ${result.temperatureHelper.helper}`)
         } else if (result.temperatureHelper?.status === 'failed') {
-          console.log(`Temperature helper auto-install did not complete. Falling back to thermal state only for now (${result.temperatureHelper.reason}).`)
+          console.log(`   Temperature: thermal state only (${result.temperatureHelper.reason})`)
         }
         if (result.mode === 'local') {
-          console.log('Initial local telemetry check completed successfully.')
+          console.log(`\n   Local telemetry check passed.`)
         } else {
-          console.log('Initial telemetry sample sent successfully.')
+          console.log(`\n   First telemetry sample sent successfully.`)
         }
-        console.log('To keep this device online continuously, run: idlewatch run')
-        if (process.platform === 'darwin') {
-          console.log('On macOS, you can also enable login startup with the bundled LaunchAgent install script.')
-        }
+        console.log(`   Next: run \`idlewatch run\` to keep this device online.`)
         process.exit(0)
       }
 
-      console.error(`⚠️ Setup is not finished yet. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`)
-      console.error('The first required telemetry sample did not publish successfully, so this device may not be linked yet.')
+      console.error(`\n⚠️ Setup saved, but the first telemetry sample didn't publish.`)
+      console.error(`   Device: ${result.deviceName}`)
+      console.error(`   Config: ${result.outputEnvFile}`)
       if (usesDefaultPersistedEnvFile(result.outputEnvFile)) {
         console.error('Retry with: idlewatch --once')
         console.error('Or rerun: idlewatch quickstart')

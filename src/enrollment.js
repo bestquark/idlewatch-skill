@@ -311,8 +311,12 @@ export async function runEnrollmentWizard(options = {}) {
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
   let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
+  
+  // Device name persists across reinstall - reuse from config or prompt to confirm
+  const hasExistingDeviceName = existingConfig?.deviceName && String(existingConfig.deviceName).trim()
   let deviceName = normalizeDeviceName(
-    options.deviceName || process.env.IDLEWATCH_ENROLL_DEVICE_NAME || process.env.IDLEWATCH_DEVICE_NAME || (existingConfig?.deviceName) || machineName()
+    options.deviceName || process.env.IDLEWATCH_ENROLL_DEVICE_NAME || process.env.IDLEWATCH_DEVICE_NAME ||
+    (hasExistingDeviceName ? existingConfig.deviceName : null) || machineName()
   )
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
@@ -445,9 +449,9 @@ export async function runEnrollmentWizard(options = {}) {
     envLines.push('IDLEWATCH_REQUIRE_CLOUD_WRITES=1')
   }
 
+  // Write config file immediately during wizard for P2 - env persistence fix
   writeSecureFile(outputEnvFile, `${envLines.join('\n')}\n`)
-
-  if (rl) rl.close()
+  console.log(`Config saved to: ${outputEnvFile}`)
 
   const temperatureHelper = ensureTemperatureTelemetryHelper(monitorTargets, { nonInteractive })
 
