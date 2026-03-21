@@ -1285,3 +1285,56 @@ idlewatch run --json 2>/dev/null | jq '{publishResult, publishError}' | head -3
 1. **#40 (P2)** — `run --json`: move banner/tip to stderr so stdout is pure NDJSON.
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands (feature).
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics (feature).
+
+---
+
+## 2026-03-21 — Round 23: Full Verification
+
+### Verified all prior closures — all hold
+Full re-check confirms every closed item (#1–#39) is solid:
+- `--help`: 27 lines, clean. `--version`: `idlewatch 0.1.9`, exit 0.
+- Unknown subcommand (`idlewatch notacommand`): error + exit 1. ✅
+- `--once`: `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. ✅
+- `--once --json 2>/dev/null | jq .`: pure JSON, parses cleanly. ✅
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C, exit 0. ✅
+- `--once --dry-run`: clean dry-run, no publish error, exit 0. ✅
+- `status`: LaunchAgent state (`not installed`), Device/ID dedup, mode in footer. ✅
+- All subcommand `--help`: concise. `reconfigure --help`: alias text. ✅
+- `menubar`: detects existing install, `--force`/`--launch`. ✅
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: 3 sections. ✅
+- README: 59 lines, clean. Internal docs in docs/. ✅
+- `run` (default): concise one-line-per-cycle (`06:40:45 ⚠️ CPU: 27% Mem: 67% GPU: 0% → not published`). Tip shown when LaunchAgent not installed. ✅
+
+### Confirmed #40 still open — `run --json` banner on stdout
+
+**Repro**:
+```bash
+node bin/idlewatch-agent.js run --json 1>/tmp/iw-stdout.txt 2>/tmp/iw-stderr.txt &
+sleep 15; kill $!
+head -2 /tmp/iw-stdout.txt
+```
+
+**Observed**: stdout line 1 is `idlewatch started — "test" (cloud mode, every 10s)`, line 2 is `Tip: Run idlewatch menubar...`. JSON starts on line 3. Breaks NDJSON consumers.
+
+### No new findings
+
+The CLI is in excellent shape. All polish items have been addressed. The only remaining items are:
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 40 | P2 | `run --json` banner + tip on stdout breaks NDJSON stream | OPEN |
+
+### Assessment
+
+**The CLI is mature for v0.1.x.** 37 of 40 issues have been closed across 23 QA rounds. The three remaining items are:
+- Two **feature requests** (#2, #3) — not polish
+- One **stdout purity bug** (#40) — straightforward fix (move banner/tip to stderr when `--json` is set)
+
+No further QA rounds are needed until new code ships or #40 is fixed.
+
+### Top recommendations for next implementer cycle
+1. **#40 (P2)** — `run --json`: move banner/tip to stderr so stdout is pure NDJSON.
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands (feature).
+3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics (feature).
