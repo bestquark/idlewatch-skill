@@ -114,27 +114,7 @@ If Firebase vars are omitted entirely, it runs in local-only mode and prints tel
 `firebase-admin` is loaded lazily only when Firebase publish mode is configured, so dry-run/local-only flows remain resilient in minimal packaged/runtime environments.
 Set `IDLEWATCH_REQUIRE_FIREBASE_WRITES=1` to fail fast when running `--once` without a working Firebase publish path.
 
-Validation helpers:
-- `npm run validate:onboarding` validates non-interactive quickstart enrollment output (env + secure credential copy).
-- `npm run validate:firebase-emulator-mode` verifies emulator-only config wiring in dry-run mode.
-- `npm run validate:firebase-write-once` performs a single real write attempt (use with emulator or production credentials).
-- `npm run validate:firebase-write-required-once` is the strict variant and fails fast unless a Firebase write path is configured and successful.
-- `npm run validate:openclaw-usage-health` validates that dry-run telemetry stays on `source.usage=openclaw` with healthy integration/ingestion in OpenClaw-required mode (mocked CLI probe path).
-- `npm run validate:openclaw-stats-ingestion` validates `openclaw stats --json`-only payload ingestion (mocked CLI probe fallback path), covering `status.result.stats.current`, `status.current.stats.current`, and adjacent legacy variants, including millisecond timestamp aliases (`usage_ts_ms`, `usage_timestamp_ms`, `updated_at_ms`, `ts_ms`).
-- `npm run validate:openclaw-release-gates` validates host OpenClaw checks (`validate:openclaw-usage-health`, `validate:openclaw-stats-ingestion`, and `validate:openclaw-cache-recovery-e2e`) in one gate.
-- `npm run validate:openclaw-release-gates:all` runs host OpenClaw checks, and on macOS also appends packaged reuse checks (`validate:packaged-openclaw-release-gates:reuse-artifact`) before proceeding.
-- `npm run validate:packaged-artifact` validates a reusable `dist/IdleWatch.app` before running any `:reuse-artifact` validator (metadata integrity, launcher executability, and matching source commit with current `HEAD` by default).
-  - Disable commit matching for one-off local experiments by setting `IDLEWATCH_REQUIRE_SOURCE_COMMIT_MATCH=0`.
-  - If the artifact lacks `sourceGitCommit`, validation fails fast in strict mode; set `IDLEWATCH_ALLOW_LEGACY_SOURCE_GIT_COMMIT=1` only as a temporary compatibility bridge while you repackage.
-  - If the reuse gate requires bundled runtime, use `npm run validate:packaged-artifact:bundled-runtime`.
-- `npm run validate:packaged-openclaw-stats-ingestion` validates packaged-app stats fallback ingestion under a mocked `openclaw` binary (end-to-end packaged dry-run + `stats --json` command selection), including `status.result`, `status.current`, and timestamp alias payload variants (`usage_ts_ms`, `usage_timestamp_ms`, `usage_timestamp`, `usageTime`, `updated_at_ms`, `ts_ms`, `ts`).
-- `npm run validate:packaged-openclaw-cache-recovery-e2e` validates packaged-app stale-cache recovery behavior with temporary probe failures and reprobe refresh logic.
-- `npm run validate:packaged-openclaw-release-gates` validates `validate:packaged-usage-health`, `validate:packaged-openclaw-stats-ingestion`, and `validate:packaged-openclaw-cache-recovery-e2e` together as one release gate.
-- `npm run validate:packaged-openclaw-release-gates:all` runs both fresh-package and reuse-artifact OpenClaw packaged checks (for local validation when packaging cost is acceptable).
-- `npm run validate:packaged-openclaw-release-gates:reuse-artifact` validates the same three checks against an already-packaged artifact (`IDLEWATCH_SKIP_PACKAGE_MACOS=1`) and is the command used in CI/release smoke for repeatable execution.
-  - `npm run validate:packaged-openclaw-release-gates:reuse-artifact` and all packaged `:reuse-artifact` validators now run through `validate:packaged-artifact` first, so stale artifacts from older commits fail fast with a rebuild hint.
-- `npm run validate:packaged-openclaw-robustness` runs the full packaged resilience slice in one command (`packaged-usage-age-slo`, `packaged-usage-alert-rate-e2e`, `packaged-usage-probe-noise-e2e`, `packaged-openclaw-release-gates`).
-- `npm run validate:packaged-openclaw-robustness:reuse-artifact` runs the same resilience slice against an already-packaged artifact.
+See [docs/VALIDATION.md](docs/VALIDATION.md) for CI validation scripts, packaging, and release-gate helpers.
 
 
 ## OpenClaw usage ingestion (best effort)
@@ -268,83 +248,6 @@ Usage field semantics:
 If OpenClaw stats are unavailable, usage fields are emitted as `null` and collection continues.
 Set `IDLEWATCH_OPENCLAW_USAGE=off` to disable lookup.
 
-## Packaging scaffold
+## Packaging & Release
 
-DMG release scaffolding is included:
-
-- `docs/onboarding-external.md` (external-user quickstart + signed DMG rollout)
-- `docs/packaging/macos-dmg.md`
-- `scripts/package-macos.sh`
-  - Produces `dist/IdleWatch.app/Contents/Resources/packaging-metadata.json` with build provenance for QA/supportability.
-- `scripts/build-dmg.sh`
-- `npm run validate:trusted-prereqs` (local preflight for signing identity + notary profile)
-- `npm run validate:dmg-checksum` (verifies SHA-256 checksum generated by `package:dmg`)
-- `npm run package:trusted` (strict signed + notarized local path)
-- `npm run package:release` (trusted packaging + checksum validation in one step)
-- `.github/workflows/release-macos-trusted.yml` (signed + notarized CI path)
-- CI dry-run schema gates via `npm run validate:dry-run-schema` and `npm run validate:packaged-dry-run-schema` (packaged validator auto-rebuilds `IdleWatch.app` first to avoid stale-artifact mismatches)
-- Usage freshness transition gate via `npm run validate:usage-freshness-e2e` (simulates long-window aging→stale transitions end-to-end)
-- Usage alert-rate quality gate via `npm run validate:usage-alert-rate-e2e` (asserts typical low-traffic ages stay `usageAlertLevel=ok`, with deterministic boundary escalation)
-- Packaged usage alert-rate gate via `npm run validate:packaged-usage-alert-rate-e2e` (verifies alert transitions in packaged launcher runtime path)
-- Packaged usage-age SLO gate via `npm run validate:packaged-usage-age-slo` (requires OpenClaw usage and enforces `openclawUsageAgeMs <= 300000` on packaged dry-run)
-- Dry-run gate timeout via `IDLEWATCH_DRY_RUN_TIMEOUT_MS` (default: `15000`)
-  - Applied by `scripts/validate-dry-run-schema.mjs` to all `--dry-run` schema checks (direct and packaged).
-  - On timeout, validators keep the latest captured row and still validate it when possible, preventing hangs on non-terminating launcher output.
-  - Validation parsers now use a shared noise-tolerant JSON extractor (`scripts/lib/telemetry-row-parser.mjs`) that ignores ANSI/control noise and selects the latest valid JSON candidate in mixed stdout/stderr logs.
-  - Packaged runtime/DMG validators (`validate:packaged-bundled-runtime`, `validate:dmg-install`) default this to `90000` while release-gate helpers (`validate:openclaw-release-gates` and `validate:packaged-openclaw-release-gates`) default to `60000` for parity with host checks.
-- Packaged stale-threshold recovery gate via `npm run validate:packaged-usage-recovery-e2e` (asserts packaged launcher performs forced reprobe recovery when initial usage age is post-threshold)
-- OpenClaw fallback-cache recovery gate via `npm run validate:openclaw-cache-recovery-e2e` (asserts fallback cache usage with stale age still attempts a forced reprobe and recovers to fresh state when the command comes back)
-- DMG install smoke gate via `npm run validate:dmg-install` (mounts DMG, copies app, validates launcher dry-run schema)
-- Optional portable Node runtime bundling for packaged launcher (`IDLEWATCH_NODE_RUNTIME_DIR=/path/to/runtime` with `<runtime>/bin/node`), enabling resolution order: `IDLEWATCH_NODE_BIN` → bundled runtime → `PATH` (`node`).
-  - Runtime copy is now limited to `bin`, `lib`, and `include` directories (with symlink dereference) to keep runtime payloads portable and avoid noise from host-specific completion symlinks.
-- Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
-- `IdleWatch.app` now opens as a native menu bar app on macOS while still preserving CLI passthrough when you execute `Contents/MacOS/IdleWatch` with arguments such as `--dry-run`.
-- Background execution lifecycle helpers:
-  - `scripts/install-macos-launch-agent.sh`
-  - `scripts/uninstall-macos-launch-agent.sh`
-  - Install an auto-starting `LaunchAgent` via `IDLEWATCH_APP_PATH`, `IDLEWATCH_LAUNCH_AGENT_LABEL`, `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT`, and `IDLEWATCH_LAUNCH_AGENT_LOG_DIR`.
-
-Strict packaging mode:
-- Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.
-- In strict mode, `package-macos.sh` requires `MACOS_CODESIGN_IDENTITY`.
-- In strict mode, `build-dmg.sh` requires both `MACOS_CODESIGN_IDENTITY` and `MACOS_NOTARY_PROFILE`.
-- `npm run package:trusted` now runs `npm run validate:trusted-prereqs` first to fail fast when local keychain/notary setup is missing.
-- CI safety guard: tag builds (`refs/tags/*`) now auto-enforce strict trusted requirements even if `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION` is unset.
-- Emergency bypass (explicit): set `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE=1` to allow unsigned tag packaging in CI.
-
-Trusted-release workflow required secrets:
-
-- `MACOS_CODESIGN_IDENTITY`
-- `APPLE_DEVELOPER_ID_APP_P12_BASE64`
-- `APPLE_DEVELOPER_ID_APP_P12_PASSWORD`
-- `APPLE_BUILD_KEYCHAIN_PASSWORD`
-- `APPLE_NOTARY_KEY_ID`
-- `APPLE_NOTARY_ISSUER_ID`
-- `APPLE_NOTARY_API_KEY_P8`
-
-Trusted release workflow policy:
-- OpenClaw usage-health is enforced by default in `.github/workflows/release-macos-trusted.yml` via `npm run validate:packaged-usage-health:reuse-artifact` before artifact upload.
-- The trusted pipeline now also runs `npm run validate:packaged-openclaw-release-gates:reuse-artifact`, which validates: `validate:packaged-usage-health:reuse-artifact`, `validate:packaged-openclaw-stats-ingestion:reuse-artifact`, and `validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact` against the signed artifact before upload (with the wrapper setting `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so checks validate the already-built artifact directly). By default this gate enforces OpenClaw presence (`IDLEWATCH_REQUIRE_OPENCLAW_USAGE=1`) unless explicitly disabled (`0|false|off|no`); set `1|true|on|yes` to force on.
-- Trusted release gate also enforces `IDLEWATCH_MAX_OPENCLAW_USAGE_AGE_MS=300000` to fail fast if packaged usage age is excessively stale.
-
-
-## Reusable OpenClaw release-gate helpers
-
-For CI / script chaining, artifact-aware convenience helpers are available:
-
-- `npm run validate:packaged-openclaw-release-gates:reuse-artifact`
-- `npm run validate:packaged-openclaw-cache-recovery-e2e:reuse-artifact`
-- `npm run validate:packaged-dry-run-schema:reuse-artifact`
-- `npm run validate:packaged-usage-health:reuse-artifact`
-- `npm run validate:packaged-usage-age-slo:reuse-artifact`
-- `npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact`
-- `npm run validate:packaged-usage-recovery-e2e:reuse-artifact`
-- `npm run validate:packaged-usage-probe-noise-e2e:reuse-artifact`
-- `npm run validate:packaged-usage-alert-rate-e2e:reuse-artifact`
-
-Each wrapper sets `IDLEWATCH_SKIP_PACKAGE_MACOS=1` so it reuses the already-built packaged artifact in a run.
-
-## Release validation helpers
-- `validate:release-gate`: host OpenClaw release checks plus packaged robustness checks in one command on macOS; on non-macOS it performs host checks only.
-- `validate:release-gate-all`: full host OpenClaw checks + packaged release checks (`validate:openclaw-release-gates:all`) and packaged robustness checks (fresh `validate:packaged-openclaw-robustness`) on macOS; host-only on non-macOS.
-- `validate:packaged-openclaw-robustness` is the fresh-packaging packaged resilience slice (`usage-age-slo`, `usage-alert-rate-e2e`, `usage-probe-noise-e2e`, and `packaged-openclaw-release-gates`).
+See [docs/VALIDATION.md](docs/VALIDATION.md) for DMG packaging, code signing, CI release gates, and all `npm run validate:*` scripts.

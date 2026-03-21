@@ -1967,7 +1967,9 @@ async function tick() {
     } else if (published) {
       console.log(summarizeSample(row) + ' and published')
     } else {
-      console.log(summarizeSample(row))
+      // Show warning on stdout when publish didn't succeed (collect-only)
+      const base = summarizeSample(row).replace(/^✅/, '⚠️')
+      console.log(base + ' (not published)')
     }
   }
 
