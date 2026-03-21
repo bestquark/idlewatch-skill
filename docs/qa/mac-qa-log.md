@@ -1602,7 +1602,7 @@ Full independent re-verification of all 45 items. Every closed fix confirmed sol
 
 | # | Sev | Summary | Status |
 |---|-----|---------|--------|
-| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | ✅ CLOSED — `install-agent` / `uninstall-agent` subcommands added |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
 | 42 | P2 | `publish()` fetch has no timeout — hang risk if API unresponsive | ✅ CLOSED — AbortSignal.timeout(10s), configurable via IDLEWATCH_PUBLISH_TIMEOUT_MS |
 | 43 | P3 | `--once` ~6.5s overhead — Firebase already lazy-loaded, overhead is probes + Node startup | CLOSED (won't fix — acceptable for one-shot) |
@@ -1610,9 +1610,7 @@ Full independent re-verification of all 45 items. Every closed fix confirmed sol
 
 ### Assessment
 
-**The CLI is mature for v0.1.x.** 40 of 45 issues closed across 28 QA rounds. No regressions detected. The five remaining items are:
-- 2 feature requests (#2, #3) — new functionality, not polish
-- 1 reliability issue (#42) — fetch timeout, straightforward fix
-- 2 minor polish (#43, #45) — startup speed, legacy JSON field
+**The CLI is mature for v0.1.x.** 44 of 45 issues closed across 28 QA rounds + implementer fixes. The one remaining item is:
+- 1 feature request (#3) — custom metric editing in the `create` wizard
 
-No further QA rounds needed until new code ships or open items are addressed.
+No further QA rounds needed until new code ships or #3 is addressed.
