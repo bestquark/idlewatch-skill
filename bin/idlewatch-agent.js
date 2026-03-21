@@ -1291,7 +1291,9 @@ if (statusRequested) {
   if (LOCAL_LOG_PATH && fs.existsSync(LOCAL_LOG_PATH)) {
     try {
       const stat = fs.statSync(LOCAL_LOG_PATH)
-      console.log(`  Log size:     ${formatBytes(stat.size)}`)
+      let totalBytes = stat.size
+      try { totalBytes += fs.statSync(LOCAL_LOG_PATH + '.1').size } catch (_) {}
+      console.log(`  Log size:     ${formatBytes(totalBytes)}`)
       const rows = parseLocalRows(LOCAL_LOG_PATH, 1)
       if (rows.length > 0 && rows[0].ts) {
         hasSamples = true
