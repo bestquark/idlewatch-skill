@@ -498,3 +498,128 @@ When device name and ID are identical (which is the common case), this is visual
 3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands.
 4. **#3 (P2)** — `create` wizard should support editing/deleting existing custom metrics.
 5. **#21 (P3)** — Deduplicate Device/Device ID in `status` when identical.
+
+---
+
+## 2026-03-21 — Round 14: Deep Verification + New Findings
+
+### Verified closures from Round 13
+- **#16 unknown subcommand**: `idlewatch blah` → error + exit 1. **Confirmed CLOSED.**
+- **#17 `--once` output**: Clean `✅ Sample collected (4 metrics)` line. **Confirmed CLOSED.**
+- **#18 `--dry-run`**: Shows metric values (CPU/Memory/GPU/Temp/OpenClaw). **Confirmed CLOSED.**
+- **#19 `--once --json` stdout**: `2>/dev/null | jq .` parses cleanly. **Confirmed CLOSED.**
+- **#20 `--dry-run` values**: Shows actual percentages and OpenClaw stats. **Confirmed CLOSED.**
+- **#21 `status` dedup**: Shows only `Device: test` (no redundant Device ID). **Confirmed CLOSED.**
+- **#14 menubar reinstall**: Detects existing install, requires `--force`. **Confirmed CLOSED.**
+
+### Regression check on #19 — `--once --json` progress line STILL on stdout when stderr is mixed in
+
+**Repro**:
+```
+idlewatch --once --json 2>&1 | head -1
+```
+
+**Observed**: First line is `Collecting sample for "test" (cloud mode)…` — this is the human progress line. When stderr is redirected away (`2>/dev/null`), stdout is pure JSON. But the progress line goes to **stdout**, not stderr.
+
+```
+idlewatch --once --json 2>/dev/null | head -1
+# → {"host":"Leptons-Mini",...}   ← correct, pure JSON
+
+idlewatch --once --json 1>/dev/null 2>&1
+# → (empty)                      ← progress line was on stdout, not stderr
+```
+
+**Verdict**: #19 was marked closed but the progress line is on stdout, not stderr. It works for `2>/dev/null | jq` because the progress line comes first and jq reads the last complete JSON object. But `--json` should mean stdout is *only* JSON. Re-opening as **#22**.
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 22 | **P2** | `--once --json` progress line emitted to stdout, not stderr | NEW |
+| 23 | P3 | `--dry-run` displays `Temp: 0°C` when sensor returns 0 — should show `nominal` or hide | NEW |
+| 24 | P3 | `--once` error exit message could include the device name for multi-device clarity | NEW |
+
+### #22 — `--once --json` progress line goes to stdout
+
+**Repro**:
+```
+idlewatch --once --json 2>&1 | head -1
+```
+
+**Observed**: `Collecting sample for "test" (cloud mode)…` on stdout. The JSON blob follows on line 2. A strict JSON consumer reading all of stdout gets invalid input.
+
+**Why it matters**: `--json` is explicitly for machine consumption. Any non-JSON on stdout breaks parsers. The fact that `2>/dev/null | jq` works is coincidental (jq reads the last valid JSON line).
+
+**Acceptance**:
+1. When `--json` is set, `Collecting sample...` line goes to stderr
+2. stdout contains exactly one JSON object (or nothing on pre-collection failure)
+3. `idlewatch --once --json | jq .` works without stderr redirect
+
+### #23 — `Temp: 0°C` displayed when sensor returns zero
+
+**Repro**:
+```
+idlewatch --dry-run
+```
+
+**Observed**: `Temp: 0°C` — `osx-cpu-temp` returns `0.0°C` on this machine (Apple Silicon, no exposed CPU temp via this tool). Displaying `0°C` is misleading — it implies the CPU is at freezing temperature.
+
+**Acceptance**: When `deviceTempC` is 0 and `thermalState` is `nominal`, display `Temp: nominal` instead of `Temp: 0°C`. Reserve numeric display for when a real non-zero reading exists.
+
+### #24 — Error message doesn't include device name
+
+**Repro**:
+```
+idlewatch --once
+```
+
+**Observed**: `❌ Cloud publish failed: API key rejected (invalid_api_key). Run idlewatch quickstart with a new key.`
+
+Minor: On a multi-device setup, knowing *which* device failed is useful. The collect line says `"test"` but the error line doesn't.
+
+**Acceptance**: Optional — error line could be: `❌ Cloud publish failed for "test": API key rejected...` Low priority.
+
+### Remaining open items from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+
+---
+
+## Priority Summary (Round 14, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4 | P2 | Post-quickstart messages debug-formatted | ✅ CLOSED |
+| 5 | P2 | menubar help text vague | ✅ CLOSED |
+| 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
+| 7 | P3 | `.env.example` mixes user/CI vars | ✅ CLOSED |
+| 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
+| 9 | P2 | Subcommand `--help` falls through | ✅ CLOSED |
+| 10 | P2 | `--once` dumps raw JSON | ✅ CLOSED |
+| 11 | P3 | `.env.example` Firebase refs | ✅ CLOSED |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED |
+| 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
+| 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
+| 15 | P3 | `--once --json` error stream mixing | ✅ CLOSED |
+| 16 | P1 | Unknown subcommand starts collector loop | ✅ CLOSED |
+| 17 | P2 | `--once` second line debug-formatted | ✅ CLOSED |
+| 18 | P3 | `--dry-run` no sample summary | ✅ CLOSED |
+| 19 | P2 | `--once --json` progress on stdout | ✅ CLOSED (superseded by #22) |
+| 20 | P2 | `--dry-run` no metric values | ✅ CLOSED |
+| 21 | P3 | `status` redundant Device/Device ID | ✅ CLOSED |
+| 22 | **P2** | `--once --json` progress line on stdout, not stderr | NEW |
+| 23 | P3 | `Temp: 0°C` when sensor returns zero — misleading | NEW |
+| 24 | P3 | Error message missing device name for multi-device | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#22 (P2)** — `--json` progress line must go to stderr, not stdout.
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands.
+3. **#3 (P2)** — `create` wizard should support editing/deleting existing custom metrics.
+4. **#23 (P3)** — Display `Temp: nominal` instead of `Temp: 0°C` when sensor returns zero.
+5. **#24 (P3)** — Include device name in error messages.
