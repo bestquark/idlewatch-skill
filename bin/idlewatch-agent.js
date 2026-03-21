@@ -49,6 +49,8 @@ Commands:
   run          Start the background collector
   create       Create a custom telemetry metric
   dashboard    Launch local telemetry dashboard
+  install-agent   Install background LaunchAgent (macOS)
+  uninstall-agent Remove background LaunchAgent (macOS)
   menubar      Install the macOS menu bar app
 
 Options:
@@ -598,6 +600,8 @@ const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard
 const runRequested = argv[0] === 'run' || argv.includes('--run')
 const createRequested = argv[0] === 'create' || argv.includes('--create')
 const menubarRequested = argv[0] === 'menubar'
+const installAgentRequested = argv[0] === 'install-agent'
+const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
@@ -636,6 +640,18 @@ Usage:  idlewatch create
 
 Interactive wizard to define a new metric with a name, type, and
 shell command that runs each sample cycle.`,
+    'install-agent': `idlewatch install-agent — Install background LaunchAgent (macOS)
+
+Usage:  idlewatch install-agent
+
+Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
+in the background. Uses the saved config from ~/.idlewatch/idlewatch.env.`,
+    'uninstall-agent': `idlewatch uninstall-agent — Remove background LaunchAgent (macOS)
+
+Usage:  idlewatch uninstall-agent
+
+Stops and removes the IdleWatch LaunchAgent. Telemetry collection stops
+until you manually run idlewatch again.`,
     menubar: `idlewatch menubar — Install macOS menu bar app
 
 Usage:  idlewatch menubar [--launch] [--force]
@@ -697,6 +713,100 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       console.error(`IdleWatch menubar install failed: ${error.message}`)
       process.exit(1)
     }
+  }
+
+  if (installAgentRequested) {
+    if (process.platform !== 'darwin') {
+      console.error('LaunchAgent is only available on macOS.')
+      process.exit(1)
+    }
+    const svcLabel = 'com.idlewatch.agent'
+    const plistDir = path.join(os.homedir(), 'Library', 'LaunchAgents')
+    const plistPath = path.join(plistDir, `${svcLabel}.plist`)
+    const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+
+    if (!fs.existsSync(envFile)) {
+      console.error('No config found. Run idlewatch quickstart first.')
+      process.exit(1)
+    }
+
+    // Find the idlewatch binary
+    const binPath = process.argv[1]
+    const nodePath = process.execPath
+
+    const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${svcLabel}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>${nodePath}</string>
+    <string>${binPath}</string>
+    <string>run</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>${path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stdout.log')}</string>
+  <key>StandardErrorPath</key>
+  <string>${path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stderr.log')}</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>`
+
+    fs.mkdirSync(plistDir, { recursive: true })
+    fs.mkdirSync(path.join(os.homedir(), '.idlewatch', 'logs'), { recursive: true })
+    fs.writeFileSync(plistPath, plistContent, 'utf8')
+
+    // Unload first if already loaded (ignore errors)
+    spawnSync('launchctl', ['bootout', `gui/${process.getuid?.() ?? ''}/${svcLabel}`], { stdio: 'ignore' })
+    const load = spawnSync('launchctl', ['bootstrap', `gui/${process.getuid?.() ?? ''}`, plistPath], { stdio: 'pipe' })
+    if (load.status === 0) {
+      console.log(`✅ LaunchAgent installed and loaded.`)
+      console.log(`   IdleWatch will now run in the background.`)
+      console.log(`   Check status: idlewatch status`)
+      console.log(`   Remove:       idlewatch uninstall-agent`)
+    } else {
+      console.error(`LaunchAgent install failed: ${String(load.stderr).trim() || 'unknown error'}`)
+      console.error(`Plist written to ${plistPath} — try: launchctl load ${plistPath}`)
+      process.exit(1)
+    }
+    process.exit(0)
+  }
+
+  if (uninstallAgentRequested) {
+    if (process.platform !== 'darwin') {
+      console.error('LaunchAgent is only available on macOS.')
+      process.exit(1)
+    }
+    const svcLabel = 'com.idlewatch.agent'
+    const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
+    const uid = process.getuid?.() ?? ''
+
+    if (!fs.existsSync(plistPath)) {
+      console.log('LaunchAgent is not installed. Nothing to remove.')
+      process.exit(0)
+    }
+
+    // Unload (stop the agent)
+    spawnSync('launchctl', ['bootout', `gui/${uid}/${svcLabel}`], { stdio: 'ignore' })
+
+    // Remove plist
+    try {
+      fs.unlinkSync(plistPath)
+    } catch { /* ignore */ }
+
+    console.log('✅ LaunchAgent removed. IdleWatch is no longer running in the background.')
+    console.log('   Reinstall: idlewatch install-agent')
+    process.exit(0)
   }
 
   if (dashboardRequested) {
@@ -775,7 +885,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 })()
 
 // Reject unknown subcommands before entering the collector path
-const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar'])
+const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent'])
 const firstPositional = argv.find(a => !a.startsWith('-'))
 if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
   console.error(`Unknown command "${firstPositional}". Run idlewatch --help for available commands.`)
@@ -2071,7 +2181,7 @@ if (DRY_RUN || ONCE) {
     const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
     accessSync(launchAgentPath, constants.F_OK)
   } catch {
-    runLog.write('Tip: Run idlewatch menubar to install background collection.\n')
+    runLog.write('Tip: Run idlewatch install-agent to run in the background, or idlewatch menubar for the menu bar app.\n')
   }
   loop()
 }
