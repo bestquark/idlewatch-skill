@@ -1492,3 +1492,86 @@ The CLI is **mature for v0.1.x**. All 40 QA items are closed. The only remaining
 - **0 regressions** — all prior fixes hold
 
 No further QA rounds needed until new code ships.
+
+---
+
+## 2026-03-21 — Round 27: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+Full independent re-verification of every item. Every closed fix is solid:
+- `--help`: 27 lines, clean. `-h` works as alias. `--version`: `idlewatch 0.1.9`, exit 0.
+- Unknown subcommand: error + exit 1.
+- `--once`: `⚠️` on publish fail, `❌` with device name. Exit 1.
+- `--once --json 2>/dev/null | jq .`: pure JSON, parses cleanly. `publishResult`/`publishError` fields present.
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0.
+- `--once --dry-run`: clean dry-run, no publish error, exit 0.
+- `run --json`: banner/tip on stderr, stdout is pure NDJSON. Confirmed via pipe separation.
+- `status`: LaunchAgent state (`not installed`), Device/ID dedup, mode in footer.
+- All subcommand `--help`: concise. `reconfigure --help`: alias text. `configure --help`: lists mode.
+- `menubar`: `--force`/`--launch` flags documented.
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: 3 sections with note + sub-grouped Tuning.
+- README: 59 lines, clean. Internal docs in docs/.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 42 | P2 | `publish()` fetch has no timeout — `--once` can hang if API unresponsive | OPEN |
+| 43 | P3 | `--once` ~6.5s overhead, possibly from Firebase SDK loading in cloud-only mode | OPEN |
+
+### Confirmed #42 still open
+`fetch()` at line 1647 of `bin/idlewatch-agent.js` has no `signal: AbortSignal.timeout(...)`. No timeout protection on the publish HTTP request.
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 45 | P3 | JSON schema: `device` field is `null` while `deviceName` is correct — legacy artifact | NEW |
+
+### #45 — JSON output has `device: null` alongside correct `deviceName`
+
+**Repro**:
+```bash
+idlewatch --once --json 2>/dev/null | jq '{device, deviceName, deviceId}'
+```
+
+**Observed**:
+```json
+{"device": null, "deviceName": "test", "deviceId": "test"}
+```
+
+The `device` field is always `null`. `deviceName` and `deviceId` carry the correct values. This appears to be a legacy field that was never populated or was superseded.
+
+**Why it matters**: Minor — any consumer reading `device` gets `null` and must know to use `deviceName` instead. Could confuse API consumers or dashboard renderers that check `device` first.
+
+**Acceptance**: Either:
+- A) Populate `device` with the same value as `deviceName` for backwards compat
+- B) Remove `device` from the JSON schema entirely
+- C) Document that `deviceName` is the canonical field
+
+---
+
+## Priority Summary (Round 27, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1–41 | — | All prior items | ✅ CLOSED |
+| 42 | P2 | `publish()` fetch has no timeout — hang risk | OPEN |
+| 43 | P3 | `--once` slow startup from Firebase SDK | OPEN |
+| 45 | P3 | JSON `device` field is null — legacy artifact | NEW |
+
+### Assessment
+
+The CLI is **mature for v0.1.x**. 40 of 45 items are closed. The remaining items:
+- **2 feature requests** (#2, #3) — not polish
+- **1 reliability issue** (#42) — fetch timeout, straightforward fix
+- **2 minor polish** (#43, #45) — startup speed, legacy field
+
+### Top recommendations for next implementer cycle
+1. **#42 (P2)** — Add `AbortSignal.timeout(10000)` to `fetch()` in `publish()`. Prevents `--once` from hanging.
+2. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+3. **#3 (P2)** — `create` wizard edit/delete support (feature).
+4. **#45 (P3)** — Clean up `device: null` in JSON schema.
+5. **#43 (P3)** — Lazy-load Firebase SDK in cloud-only mode for faster `--once`.
