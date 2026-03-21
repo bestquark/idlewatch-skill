@@ -1095,22 +1095,20 @@ idlewatch status
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
 | 4–31 | — | All prior items | ✅ CLOSED |
-| 32 | P3 | README GPU support matrix is implementation detail | OPEN |
-| 33 | P3 | README Reliability improvements is implementation detail | OPEN |
-| 34 | P2 | README "CLI options" duplicates `--help` output | OPEN |
-| 35 | P3 | `--help-env` Tuning section: 16 vars, no sub-grouping | OPEN |
-| 36 | P3 | `--once --json` no error field in JSON on publish failure | NEW |
-| 37 | P3 | `status` footer omits "mode" as changeable setting | NEW |
+| 32 | P3 | README GPU support matrix is implementation detail | ✅ CLOSED — removed from README (98→59 lines) |
+| 33 | P3 | README Reliability improvements is implementation detail | ✅ CLOSED — removed from README |
+| 34 | P2 | README "CLI options" duplicates `--help` output | ✅ CLOSED — replaced with one-liner |
+| 35 | P3 | `--help-env` Tuning section: 16 vars, no sub-grouping | ✅ CLOSED — split into Tuning (4) + Probe internals (13) |
+| 36 | P3 | `--once --json` no error field in JSON on publish failure | OPEN (low priority) |
+| 37 | P3 | `status` footer omits "mode" as changeable setting | ✅ CLOSED — now lists mode |
 
 ### Assessment
 
-The CLI is in **good shape**. All P1s are closed. The remaining open items are:
+The CLI is in **good shape**. All P1s and P2s are closed. The remaining open items are:
 - **2 feature requests** (#2 LaunchAgent subcommands, #3 custom metric editing) — these are real features, not polish
-- **README bloat** (#32, #33, #34) — README is 98 lines but ~40 lines are internal docs that belong in docs/
-- **Minor polish** (#35, #36, #37) — nice-to-haves
+- **1 minor polish** (#36) — nice-to-have JSON error field
 
 ### Top recommendations for next implementer cycle
-1. **#32 + #33 + #34** — README cleanup: move GPU matrix + Reliability + CLI options to docs/. Target ≤65 lines.
-2. **#37** — One-line fix: add "mode" to `status` footer text.
-3. **#2** — `install-agent` / `uninstall-agent` subcommands (feature).
-4. **#3** — `create` wizard edit/delete support (feature).
+1. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+2. **#3 (P2)** — `create` wizard edit/delete support (feature).
+3. **#36 (P3)** — Add `publishResult` field to `--once --json` output.
