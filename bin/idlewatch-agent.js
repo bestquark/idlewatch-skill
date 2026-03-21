@@ -619,7 +619,7 @@ Use --no-tui for plain-text prompts (no Rust TUI).`,
 
 Usage:  idlewatch configure [--no-tui]
 
-Re-opens the setup wizard to change API key, device name, or metrics.
+Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.`,
     status: `idlewatch status — Show device state
 
