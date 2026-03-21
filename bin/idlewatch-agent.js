@@ -85,6 +85,7 @@ Tuning:
   IDLEWATCH_INTERVAL_MS                Sampling interval in ms (default: 10000)
   IDLEWATCH_PROVIDER_QUOTA_INTERVAL_MS Provider quota refresh interval (default: 900000)
   IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS  Provider quota probe timeout (default: 4000)
+  IDLEWATCH_PUBLISH_TIMEOUT_MS         Cloud publish HTTP timeout (default: 10000)
 
 Probe internals (rarely needed):
   IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS  OpenClaw probe timeout (default: 2500)
@@ -837,6 +838,8 @@ const PROVIDER_QUOTA_INTERVAL_MS = process.env.IDLEWATCH_PROVIDER_QUOTA_INTERVAL
 const PROVIDER_QUOTA_TIMEOUT_MS = process.env.IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS
   ? Number(process.env.IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS)
   : PROVIDER_QUOTA_DEFAULT_TIMEOUT_MS
+
+const PUBLISH_TIMEOUT_MS = Number(process.env.IDLEWATCH_PUBLISH_TIMEOUT_MS || 10000)
 
 const LOCAL_LOG_PATH = process.env.IDLEWATCH_LOCAL_LOG_PATH
   ? resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
@@ -1650,7 +1653,8 @@ async function publish(row, retries = 2) {
             'content-type': 'application/json',
             'x-idlewatch-key': CLOUD_API_KEY
           },
-          body: JSON.stringify(row)
+          body: JSON.stringify(row),
+          signal: AbortSignal.timeout(PUBLISH_TIMEOUT_MS)
         })
 
         if (!response.ok) {
