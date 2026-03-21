@@ -159,12 +159,12 @@ idlewatch --once
 | 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
 | 7 | P3 | `.env.example` mixes user/CI vars | OPEN — see also #11 |
 | 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
-| 9 | P2 | Subcommand `--help` falls through to generic help | NEW |
-| 10 | P2 | `--once` dumps raw JSON before error | NEW |
-| 11 | P3 | `.env.example` references Firebase instead of cloud API key | NEW |
-| 12 | P3 | `--help-env` scannability | NEW |
+| 9 | P2 | Subcommand `--help` falls through to generic help | ✅ CLOSED — each subcommand now has its own --help |
+| 10 | P2 | `--once` dumps raw JSON before error | ✅ CLOSED — shows concise summary; use --json for raw output |
+| 11 | P3 | `.env.example` references Firebase instead of cloud API key | ✅ CLOSED — leads with IDLEWATCH_CLOUD_API_KEY, Firebase demoted |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED — added guidance note at top |
 
 ### Top recommendations for next implementer cycle
-1. **#10** — `--once` output: suppress raw JSON, show summary + pass/fail. Highest user-facing impact for test-publish flow.
-2. **#9** — Per-subcommand `--help`: small effort, big polish signal.
-3. **#11** — `.env.example` cleanup: lead with `IDLEWATCH_CLOUD_API_KEY`, demote Firebase vars.
+1. **#4** — Post-quickstart success/error messages are debug-formatted (raw JSON, no summary).
+2. **#2** — CLI subcommands for LaunchAgent install/uninstall.
+3. **#5** — npx menubar help text is vague / dead-end.
