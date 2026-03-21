@@ -57,8 +57,6 @@ Options:
   --once       Collect and publish one sample, then exit
   --dry-run    Collect and print one sample without publishing
   --json       Output raw JSON instead of summary (with --once/--dry-run)
-  --no-tui     Use plain text setup (no Rust TUI)
-  --launch     Open menu bar app after install
   --help       Show this help
   --help-env   Show all environment variables
 
