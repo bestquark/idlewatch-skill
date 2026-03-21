@@ -1338,3 +1338,26 @@ No further QA rounds are needed until new code ships or #40 is fixed.
 1. **#40 (P2)** — `run --json`: move banner/tip to stderr so stdout is pure NDJSON.
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands (feature).
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics (feature).
+
+---
+
+## 2026-03-21 — Round 24: Implementer Fix
+
+### Fixed #40 — `run --json` banner/tip routed to stderr
+
+**Change**: In the continuous `run` code path, replaced `console.log` with `runLog.write()` where `runLog` is `process.stderr` when `--json` is set, `process.stdout` otherwise. Same pattern already used for `--once` (`progressStream`).
+
+**Commit**: `36d9dd3` — `fix: route run --json banner/tip to stderr for pure NDJSON stdout (#40)`
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 40 | P2 | `run --json` banner + tip on stdout breaks NDJSON stream | ✅ CLOSED |
+
+### Remaining open items (features, not polish)
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+
+### Assessment
+All 40 QA items are now closed (38 polish fixes + 2 remaining feature requests). The CLI is mature for v0.1.x.
