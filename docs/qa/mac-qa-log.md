@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-03-21 — Round 38: Implementer Polish (4:55 PM ET)
+
+### Fixed #54 — Top-level `--help` listed subcommand-specific flags
+
+**Found**: `--launch` (menubar-only) and `--no-tui` (quickstart/configure-only) were listed in the global Options section of `--help`, cluttering it with flags most users don't need at the top level. Both flags remain documented in their respective subcommand `--help` output.
+
+**Fix**: Removed `--launch` and `--no-tui` from the top-level help. `--help` is now 24 lines (down from 26), focused on universal commands and options.
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 54 | P3 | `--help` lists `--launch` and `--no-tui` in global options — subcommand-specific | ✅ FIXED |
+
+**Commit**: `d8fbb77` — `polish: remove subcommand-specific flags from top-level --help`
+
+### Verification
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. No `--launch`/`--no-tui`. ✅ |
+| `menubar --help` | Still shows `--launch` and `--force`. ✅ |
+| `quickstart --help` | Still shows `--no-tui`. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--dry-run` | Metric values (CPU/Memory/GPU/Temp/OpenClaw). Exit 0. ✅ |
+| `version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | Error + exit 1. ✅ |
+| `status` | LaunchAgent state, Device/ID dedup, mode in footer. ✅ |
+
+### Assessment
+
+All 54 QA items closed. CLI is clean and minimal on v0.2.0. No further polish needed — next pass on new features.
+
+---
+
 ## 2026-03-21 — Round 37: Full Independent Verification (4:41 PM ET)
 
 ### Fresh-session spot-check of every major surface on v0.2.0
