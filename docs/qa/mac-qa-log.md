@@ -1361,3 +1361,41 @@ No further QA rounds are needed until new code ships or #40 is fixed.
 
 ### Assessment
 All 40 QA items are now closed (38 polish fixes + 2 remaining feature requests). The CLI is mature for v0.1.x.
+
+## 2026-03-21 — Round 25: Final Verification
+
+### All 40 items verified — all hold
+
+Full re-check of every closed item confirms all fixes are solid:
+- `--help`: 27 lines, clean layout. ✅
+- `--version`: `idlewatch 0.1.9`, exit 0. ✅
+- Unknown subcommand (`idlewatch blah`): `Unknown command "blah"...`, exit 1. ✅
+- `--once`: `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. ✅
+- `--once --json 2>/dev/null | jq .`: pure JSON, parses cleanly. ✅
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C, exit 0. ✅
+- `--once --dry-run`: clean dry-run, no publish error, exit 0. ✅
+- `run` (default): concise per-cycle summaries (`06:50:42 ⚠️ CPU: 24% Mem: 73% GPU: 10% → not published`). ✅
+- `run --json`: banner/tip on stderr, stdout is pure NDJSON. `| head -1 | jq` parses cleanly. **#40 confirmed CLOSED.** ✅
+- `status`: LaunchAgent state (`not installed`), Device/ID dedup, mode in footer. ✅
+- All subcommand `--help`: concise and accurate. `reconfigure --help`: alias text. ✅
+- `menubar`: detects existing install, `--force`/`--launch` flags. ✅
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: 3 clear sections. ✅
+- README: 59 lines, clean. Internal docs in docs/. ✅
+
+### No new findings
+
+The CLI is **mature for v0.1.x**. All 40 QA items are closed. The only remaining open items are feature requests:
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+
+### QA Summary
+
+- **40 issues found** across 25 rounds
+- **38 polish fixes shipped and verified**
+- **2 feature requests remain** (not polish — real features)
+- **0 regressions** — all prior fixes hold
+
+No further QA rounds needed until new code ships.
