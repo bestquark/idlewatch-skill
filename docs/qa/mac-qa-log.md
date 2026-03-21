@@ -1645,3 +1645,16 @@ All surfaces are polished and consistent. No regressions, no new issues.
 ### Final Assessment
 
 **The CLI is mature for v0.1.x.** All 45 issues closed. Zero open items. No further QA rounds needed until new code ships.
+
+---
+
+## 2026-03-21 — Round 30: Implementer Reliability Pass (12:15 PM ET)
+
+### NEW findings + fixes
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 46 | P2 | NDJSON log grows unbounded (26MB observed) — no rotation | ✅ CLOSED — rotates at 10MB, keeps one .1 backup, configurable via IDLEWATCH_LOCAL_LOG_MAX_MB |
+| 47 | P3 | `status` log size showed only current file, not total with rotated backup | ✅ CLOSED — includes .1 in total |
+
+**Commits**: `dab4f90` (log rotation), `ae0df46` (status total size)
