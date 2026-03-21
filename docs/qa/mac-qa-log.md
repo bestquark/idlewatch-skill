@@ -857,3 +857,95 @@ The README went from 253→128 lines after Rounds 25 and 27, but the Firebase se
 2. **#30 (P2)** — Move Firebase wiring docs to `docs/FIREBASE.md`, shrink README to ≤100 lines.
 3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
 4. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
+
+---
+
+## 2026-03-21 — Round 18: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+All 30 items previously closed remain correctly fixed. Full re-check:
+- `--help`: 26 lines, clean layout. `--version`: `idlewatch 0.1.9`, exit 0. Unknown subcommand: error + exit 1.
+- `--once`: `⚠️ Sample collected (4 metrics) (not published)` + `❌` error with device name. Exit 1.
+- `--once --json 2>/dev/null | jq .`: pure JSON, parses cleanly.
+- `--dry-run`: metric values shown (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` when 0°C. Exit 0.
+- `--once --dry-run`: clean dry-run, no publish error, exit 0. **Confirmed #29 fix holds.**
+- `status`: LaunchAgent state shown, Device/Device ID deduplicated.
+- All subcommand `--help`: quickstart, configure, status, run, create, dashboard, menubar — all concise and accurate.
+- `configure --help`: lists mode as changeable setting.
+- `menubar --help`: shows `--force` and `--launch`.
+- `.env.example`: cloud API key first, Firebase demoted under "Developer / self-hosted only".
+- `--help-env`: "Most users only need the Common section" header, 3 clear sections.
+- README: 98 lines. Validation + OpenClaw internals + Firebase all moved to docs/.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 31 | P2 | `reconfigure` is a hidden alias — `--help` doesn't list it, `reconfigure --help` shows generic help | NEW |
+| 32 | P3 | README "GPU support matrix" section (15 lines) is implementation detail, not user-facing | NEW |
+| 33 | P3 | README "Reliability improvements" section (8 lines) is implementation detail | NEW |
+
+### #31 — `reconfigure` is a hidden undocumented alias
+
+**Repro**:
+```
+idlewatch reconfigure --help
+```
+
+**Observed**: `reconfigure` is accepted (in KNOWN_SUBCOMMANDS) and launches the configure wizard, but:
+1. `--help` doesn't list it as a command
+2. `reconfigure --help` shows the generic top-level help instead of the configure-specific help
+3. There's no indication to users that `reconfigure` exists
+
+**Why it matters**: Either it should be properly documented (listed in `--help`, with its own `--help` text), or it should be removed/consolidated. Having a hidden alias that behaves slightly differently from `configure` (different help output) is confusing for anyone who discovers it.
+
+**Acceptance**: Pick one:
+- A) Remove `reconfigure` from KNOWN_SUBCOMMANDS — let it error like any unknown command
+- B) Make `reconfigure --help` show the same help as `configure --help`, and add a note in configure's help: `(alias: reconfigure)`
+
+### #32 — README "macOS GPU support matrix" is implementation detail
+
+**Repro**: Read README.md lines 52–65.
+
+**Observed**: 15 lines covering AGX/IOGPU ioreg, powermetrics, top parser fallback chains, gpuSource/gpuConfidence field semantics. This is internal telemetry architecture — a user setting up IdleWatch doesn't need to know about AGX probe paths or confidence levels.
+
+**Acceptance**:
+1. Move to `docs/OPENCLAW-INTEGRATION.md` or a new `docs/GPU-PROBING.md`
+2. README keeps 1 line: `GPU metrics are collected automatically on macOS (Apple Silicon and Intel).`
+
+### #33 — README "Reliability improvements" is implementation detail
+
+**Repro**: Read README.md lines 39–50.
+
+**Observed**: 8 lines covering NDJSON durability, retry-once, non-overlapping scheduler, non-blocking CPU sampling, Darwin GPU fallback chain, memory pressure enrichment. These are good engineering features but not user-facing setup info.
+
+**Acceptance**:
+1. Move to docs (CONTRIBUTING.md or similar)
+2. README keeps 0-1 lines — or fold into a "Features" bullet list if desired
+
+---
+
+## Priority Summary (Round 18, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–30 | — | All prior items | ✅ CLOSED |
+| 31 | P2 | `reconfigure` hidden alias — undocumented, wrong help output | NEW |
+| 32 | P3 | README GPU support matrix is implementation detail (15 lines) | NEW |
+| 33 | P3 | README Reliability improvements is implementation detail (8 lines) | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#31 (P2)** — Either remove `reconfigure` alias or make it behave identically to `configure` (including `--help`).
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
+3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
+4. **#32 + #33 (P3)** — Move GPU matrix + Reliability sections out of README into docs/. Target README ≤70 lines.
