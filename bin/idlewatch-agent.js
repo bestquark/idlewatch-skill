@@ -1040,7 +1040,9 @@ if (statusRequested) {
   console.log('IdleWatch status')
   console.log('')
   console.log(`  Device:       ${DEVICE_NAME}`)
-  console.log(`  Device ID:    ${DEVICE_ID}`)
+  if (DEVICE_ID !== DEVICE_NAME.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '')) {
+    console.log(`  Device ID:    ${DEVICE_ID}`)
+  }
   console.log(`  Publish mode: ${publishMode}`)
   if (hasCloudConfig) {
     console.log(`  Cloud link:   ${CLOUD_INGEST_URL}`)
@@ -1911,7 +1913,7 @@ async function collectSample() {
   })
 }
 
-function summarizeSample(row) {
+function summarizeSample(row, { verbose = false } = {}) {
   const metrics = []
   if (row.cpuPct !== null && row.cpuPct !== undefined) metrics.push('cpu')
   if (row.memPct !== null && row.memPct !== undefined) metrics.push('memory')
@@ -1922,7 +1924,25 @@ function summarizeSample(row) {
   }
   if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.push('custom')
 
-  return `✅ Sample collected (${metrics.length} metric${metrics.length === 1 ? '' : 's'})`
+  const headline = `✅ Sample collected (${metrics.length} metric${metrics.length === 1 ? '' : 's'})`
+  if (!verbose) return headline
+
+  const details = []
+  const parts = []
+  if (row.cpuPct != null) parts.push(`CPU: ${Math.round(row.cpuPct)}%`)
+  if (row.memPct != null) parts.push(`Memory: ${Math.round(row.memPct)}%`)
+  if (row.gpuPct != null) parts.push(`GPU: ${Math.round(row.gpuPct)}%`)
+  if (row.deviceTempC != null) parts.push(`Temp: ${Math.round(row.deviceTempC)}°C`)
+  else if (row.thermalState && row.thermalState !== 'disabled' && row.thermalState !== 'unavailable') parts.push(`Temp: ${row.thermalState}`)
+  if (parts.length > 0) details.push(`  ${parts.join('  ')}`)
+
+  const oclawParts = []
+  if (row.openclawModel) oclawParts.push(row.openclawModel)
+  if (row.openclawPercentUsed != null) oclawParts.push(`${Math.round(row.openclawPercentUsed)}% context used`)
+  if (row.tokensPerMin != null) oclawParts.push(`${Math.round(row.tokensPerMin).toLocaleString()} tok/min`)
+  if (oclawParts.length > 0) details.push(`  OpenClaw: ${oclawParts.join(', ')}`)
+
+  return details.length > 0 ? `${details.join('\n')}\n${headline}` : headline
 }
 
 async function tick() {
@@ -1941,7 +1961,7 @@ async function tick() {
 
   if (!JSON_OUTPUT && (process.env.IDLEWATCH_SETUP_VERIFY === '1' || ONCE || DRY_RUN)) {
     if (DRY_RUN) {
-      const summary = summarizeSample(row)
+      const summary = summarizeSample(row, { verbose: true })
       console.log(`${summary} — nothing published (dry run)`)
     } else if (published) {
       console.log(summarizeSample(row) + ' and published')
@@ -2007,8 +2027,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 
 if (DRY_RUN || ONCE) {
-  const mode = DRY_RUN ? 'dry-run' : 'once'
-  console.log(`${DRY_RUN ? 'Dry-run' : 'Collecting sample'} for "${DEVICE_NAME}" (${getPublishModeLabel()} mode)…`)
+  const progressStream = JSON_OUTPUT ? process.stderr : process.stdout
+  progressStream.write(`${DRY_RUN ? 'Dry-run' : 'Collecting sample'} for "${DEVICE_NAME}" (${getPublishModeLabel()} mode)…\n`)
   tick()
     .then(() => process.exit(0))
     .catch((e) => {
