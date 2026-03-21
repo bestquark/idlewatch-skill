@@ -689,7 +689,86 @@ idlewatch --once 2>/dev/null
 | 26 | P3 | `--once` stdout shows ✅ even on publish failure | ✅ CLOSED — shows ⚠️ (not published) when publish fails |
 
 ### Top recommendations for next implementer cycle
-1. **#25 (P2)** — Move validation scripts docs out of README into `docs/VALIDATION.md`.
+1. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
+2. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
+
+---
+
+## 2026-03-21 — Round 16: Full Verification + New Findings
+
+### Re-verified all prior closures — all hold
+All 26 items previously closed remain correctly fixed. Spot-checked:
+- `--help`: 26 lines, clean. `--version`: `idlewatch 0.1.9`, exit 0.
+- Unknown subcommand: error + exit 1. All subcommand `--help`: concise and accurate.
+- `--once`: `⚠️ Sample collected (4 metrics) (not published)` + `❌` error with device name.
+- `--once --json 2>/dev/null | jq .`: pure JSON, parses clean (1 line on stdout).
+- `--dry-run`: Shows CPU/Memory/GPU/Temp/OpenClaw values, `Temp: nominal` when 0°C.
+- `status`: LaunchAgent state shown, Device/Device ID deduplicated.
+- `menubar --help`: shows `--force` and `--launch`. `.env.example`: clean, Firebase demoted.
+- `--help-env`: "Most users only need the Common section" header, three sections.
+- README: 253 lines, validation scripts moved to docs/VALIDATION.md.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 27 | **P2** | README lines 120–250 are 130 lines of internal probe/parser/alerting docs — overwhelms users | NEW |
+| 28 | P3 | `configure --help` says "Existing values are pre-filled" but doesn't mention which settings can be changed | NEW |
+
+### #27 — README "OpenClaw usage ingestion" section is 130 lines of internal implementation docs
+
+**Repro**: Read `README.md` lines 120–250.
+
+**Observed**: 130 lines covering probe sweep order, output buffer caps, cache paths, stale-threshold reprobes, timestamp alias normalization, session selection logic, source metadata field inventory (30+ `source.*` fields), alerting thresholds, and parser hardening notes. This is internal/operator documentation, not user-facing.
+
+A user installing IdleWatch via `npm install -g idlewatch` doesn't need to know about `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP`, `source.usageRefreshReprobes`, or timestamp alias normalization. This section is ~50% of the README.
+
+**Why it matters**: README is the storefront. Users scanning for "how do I use this?" hit a wall of internal probe architecture. Makes the project look over-engineered for what should be a simple telemetry collector.
+
+**Acceptance**:
+1. README "OpenClaw usage" section is ≤15 lines: what it does, how to enable/disable, link to details
+2. Move full probe/parser/alerting docs to `docs/OPENCLAW-INTEGRATION.md` or similar
+3. README stays ≤150 lines total: Install, Quickstart, CLI, Config, Troubleshooting
+
+### #28 — `configure --help` could list changeable settings
+
+**Repro**:
+```
+idlewatch configure --help
+```
+
+**Observed**:
+```
+Re-opens the setup wizard to change API key, device name, or metrics.
+Existing values are pre-filled so you only change what you need.
+```
+
+Minor: It says what can be changed (API key, device name, metrics) but doesn't mention mode (cloud/local). The wizard does allow changing mode. Not a bug, just incomplete help text.
+
+**Acceptance**: Add "mode" to the list: `...to change mode, API key, device name, or metrics.`
+
+---
+
+## Priority Summary (Round 16, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–26 | — | All prior items | ✅ CLOSED |
+| 27 | **P2** | README has 130 lines of internal probe/parser docs — should be in separate doc | NEW |
+| 28 | P3 | `configure --help` doesn't mention mode as changeable setting | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#27 (P2)** — Move OpenClaw probe/parser/alerting internals out of README into `docs/OPENCLAW-INTEGRATION.md`. Keep README ≤150 lines.
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
-4. **#26 (P3)** — `--once` stdout should reflect publish failure.
+4. **#28 (P3)** — Add "mode" to `configure --help` description.
