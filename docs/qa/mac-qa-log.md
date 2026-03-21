@@ -849,8 +849,8 @@ The README went from 253→128 lines after Rounds 25 and 27, but the Firebase se
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
 | 4–28 | — | All prior items | ✅ CLOSED |
-| 29 | **P2** | `--once --dry-run` contradictory output (dry-run + publish error) | NEW |
-| 30 | P2 | README Firebase section (37 lines) should move to docs/ | NEW |
+| 29 | **P2** | `--once --dry-run` contradictory output (dry-run + publish error) | ✅ CLOSED — DRY_RUN guards all publish error paths, exit 0 |
+| 30 | P2 | README Firebase section (37 lines) should move to docs/ | ✅ CLOSED — moved to docs/FIREBASE.md, README 128→98 lines |
 
 ### Top recommendations for next implementer cycle
 1. **#29 (P2)** — `--dry-run` must suppress publish entirely; `--once --dry-run` should not attempt or report publish failure.
