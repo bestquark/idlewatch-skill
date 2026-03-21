@@ -830,11 +830,18 @@ Use --once for a single sample or --dry-run to preview without publishing.`
     fs.mkdirSync(path.join(os.homedir(), '.idlewatch', 'logs'), { recursive: true })
     fs.writeFileSync(plistPath, plistContent, 'utf8')
 
-    // Unload first if already loaded (ignore errors)
-    spawnSync('launchctl', ['bootout', `gui/${process.getuid?.() ?? ''}/${svcLabel}`], { stdio: 'ignore' })
-    const load = spawnSync('launchctl', ['bootstrap', `gui/${process.getuid?.() ?? ''}`, plistPath], { stdio: 'pipe' })
+    const uid = process.getuid?.() ?? ''
+    const domain = `gui/${uid}`
+
+    // Check if already loaded — bootout first to allow clean re-bootstrap
+    const alreadyLoaded = spawnSync('launchctl', ['print', `${domain}/${svcLabel}`], { stdio: 'pipe' }).status === 0
+    if (alreadyLoaded) {
+      spawnSync('launchctl', ['bootout', `${domain}/${svcLabel}`], { stdio: 'ignore' })
+    }
+
+    const load = spawnSync('launchctl', ['bootstrap', domain, plistPath], { stdio: 'pipe' })
     if (load.status === 0) {
-      console.log(`✅ LaunchAgent installed and loaded.`)
+      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} and loaded.`)
       console.log(`   IdleWatch will now run in the background.`)
       console.log(`   Check status: idlewatch status`)
       console.log(`   Remove:       idlewatch uninstall-agent`)
