@@ -5,97 +5,66 @@
 
 ---
 
-## 2026-03-20 — Round 4: Verification + New Findings
+## 2026-03-20 — Round 5: Verification + New Findings
 
-### Verification of Round 3 findings
+### Verification of prior findings
 
 | # | Finding | Status |
 |---|---------|--------|
-| 1 | **P0** `enrollment.js` undeclared `mode`/`cloudApiKey` | **Still open — confirmed crash** in both interactive and non-interactive paths |
-| 2 | P1 `--help` wall of env vars | **Still open** — 69 lines, 25+ env vars in default help |
-| 3 | P1 `status` "no saved config" false negative | **Still open** |
-| 4 | P2 No CLI subcommand for LaunchAgent install/uninstall | **Still open** |
-| 5 | P2 `create` can't edit/delete existing metrics | **Still open** |
-| 6 | P2 Post-quickstart success message debug-formatted | **Still open** |
-| 7 | P2 npx menubar help text vague | **Still open** |
-| 8 | P2 `src/status.js` broken dead code | **Still open** |
-| 9 | P3 LaunchAgent uninstall no CLI path | **Still open** |
-| 10 | P3 `.env.example` misleading defaults | **Still open** |
-| 11 | P3 `status` doesn't show LaunchAgent state | **Still open** |
-| 12 | P3 `.env.example` mixes user config with CI/packaging vars | **Still open** |
+| 1 | **P0** `enrollment.js` undeclared `mode`/`cloudApiKey` | **OPEN — fix exists in `enrollment-new.js` but not swapped in** |
+| 2 | P1 `package.json` self-dependency | OPEN |
+| 3 | P1 `--help` wall of env vars (69 lines) | OPEN |
+| 4 | P1 `status` "no saved config" false negative | OPEN |
+| 5 | P2 No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 6 | P2 `create` can't edit/delete existing metrics | OPEN |
+| 7 | P2 Post-quickstart success message debug-formatted | OPEN |
+| 8 | P2 npx menubar help text vague | OPEN |
+| 9 | P2 `src/status.js` dead code with broken imports/template literals | OPEN |
+| 10 | P3 LaunchAgent uninstall no CLI path | OPEN |
+| 11 | P3 `.env.example` misleading defaults | OPEN |
+| 12 | P3 `status` doesn't show LaunchAgent state | OPEN |
+| 13 | P3 `.env.example` mixes user config with CI/packaging vars | OPEN |
 
-### P0 — `enrollment.js` text-mode path crashes — ALL paths (CONFIRMED WORSE)
+---
 
-**Location**: `src/enrollment.js` → `runEnrollmentWizard()` lines 372, 377, 382, 392, 400–410, 439–448
+### P0 — `enrollment.js` undeclared `mode`/`cloudApiKey` — FIX EXISTS BUT NOT DEPLOYED
 
-**Issue**: `mode` and `cloudApiKey` are used as bare assignments but never declared with `let`/`const`. Since the file is `"type": "module"` (strict mode), any path reaching line 377 throws `ReferenceError: mode is not defined`.
+**Update**: `src/enrollment-new.js` (463 lines) contains the fix — declares `let mode` at line 311 and `let cloudApiKey` properly. However, the live import in `bin/idlewatch-agent.js` still points to `src/enrollment.js` (the broken version). The fix is sitting in a sibling file that nothing imports.
 
-**Critical**: This crashes even the **non-interactive** path (`--non-interactive` or `IDLEWATCH_ENROLL_NON_INTERACTIVE=1`), not just the text-mode TUI fallback. The TUI path exits early and avoids it, but every non-TUI enrollment path is broken.
+**Also**: `src/enrollment.js.tmp` is a 1-line placeholder (`// ENROLLMENT.JS - Full file`). Both `enrollment-new.js` and `enrollment.js.tmp` are leftover dev artifacts.
 
-**Repro** (non-interactive):
+**Repro** (confirmed crash still live):
 ```
 cd idlewatch-skill
-IDLEWATCH_ENROLL_NON_INTERACTIVE=1 node -e "import('./src/enrollment.js').then(m => m.runEnrollmentWizard({ nonInteractive: true }))"
+IDLEWATCH_ENROLL_NON_INTERACTIVE=1 node -e "import('./src/enrollment.js').then(m => m.runEnrollmentWizard({ nonInteractive: true, cloudApiKey: 'iwk_test1234567890abcdef', deviceName: 'test' }))"
 # → ReferenceError: mode is not defined
 ```
 
-**Repro** (interactive text fallback):
-```
-idlewatch quickstart --no-tui
-# → select mode 1 or 2
-# → ReferenceError: mode is not defined
-```
-
-**Root cause**: `modeOption` is declared at line 311 but the code uses bare `mode` starting at line 372. Same pattern with `cloudApiKeyOpt` (line 312) vs bare `cloudApiKey` (line 382+).
-
-**Fix**: Add `let mode = modeOption` and `let cloudApiKey = cloudApiKeyOpt` near line 315.
+**Fix**: Replace `src/enrollment.js` with `src/enrollment-new.js`, delete both `enrollment-new.js` and `enrollment.js.tmp`.
 
 **Acceptance**:
-- `runEnrollmentWizard({ nonInteractive: true })` completes without ReferenceError
-- `idlewatch quickstart --no-tui` completes without ReferenceError
-- Both `mode=1` (production) and `mode=2` (local) paths work
+- `bin/idlewatch-agent.js` imports from `src/enrollment.js` which contains the fixed code
+- No `enrollment-new.js` or `enrollment.js.tmp` in `src/`
+- Non-interactive enrollment completes without ReferenceError
 
-### NEW P1 — `package.json` self-dependency causes npm install loop
+### NEW P2 — Dev artifact files in `src/` shipped in package
 
-**Location**: `package.json` → `dependencies`
+**Location**: `src/enrollment-new.js`, `src/enrollment.js.tmp`
 
-**Issue**: The package declares `"idlewatch": "^0.1.9"` as a dependency on itself. The package name is `"idlewatch"`. This is a circular self-dependency. On a clean `npm install`, npm may try to fetch/install itself from the registry, wasting time and potentially failing if the package isn't published yet or the version doesn't match.
+**Issue**: Two leftover dev files are in the source tree. `enrollment-new.js` contains the fix for the P0 bug but is never imported. `enrollment.js.tmp` is a 1-line placeholder. Both would ship in an npm publish (since `"files"` includes `"src"`).
 
-**Repro**:
-```
-cat package.json | grep -A2 '"dependencies"'
-# → "idlewatch": "^0.1.9"  (self-referencing)
-```
+**Acceptance**: Delete both files after merging the fix into `enrollment.js`.
 
-**Acceptance**: Remove the self-dependency line from `dependencies`. If `firebase-admin` is the only real dependency, `dependencies` should be `{ "firebase-admin": "^12.7.0" }`.
+### P2 — Post-quickstart success/error messages are debug-formatted (STILL OPEN)
 
-### P1 — `--help` is a wall of env vars (STILL OPEN)
+**Location**: `bin/idlewatch-agent.js` lines 588, 608
 
-**Details**: 69 lines. The "Advanced env tuning" and "Advanced Firebase / emulator mode" sections (35+ lines) overwhelm first-time users. Only ~30 lines are relevant for quickstart/daily use.
+Success: `✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`
+Error: `⚠️ Setup is not finished yet. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}`
 
-**Acceptance**:
-- Default `--help` ≤ 35 lines: subcommands + quickstart steps + "Common env" only
-- Advanced env vars move to `--help-advanced` or a separate `idlewatch env` subcommand
+Both read like interpolated debug logs, not user-facing copy.
 
-### P1 — `status` says "no saved config" even when device has data (STILL OPEN)
-
-**Acceptance**: If local log has recent samples but no env file, show `Config: process env (no saved file)` instead of nudging quickstart.
-
-### P2 — No CLI subcommand for LaunchAgent install/uninstall (STILL OPEN)
-
-Shell scripts exist but no CLI path. Users have to know about `npm run install:macos-launch-agent`.
-
-**Acceptance**: `idlewatch launchagent install` / `idlewatch launchagent uninstall` wrappers, OR clear copy-pasteable commands in success/status output.
-
-### P2 — `create` wizard can't edit/delete existing custom metrics (STILL OPEN)
-
-Always starts fresh, no way to edit or remove.
-
-### P2 — Post-quickstart success message is debug-formatted (STILL OPEN)
-
-`✅ Setup complete. Mode=${result.mode} device=${result.deviceName} envFile=${result.outputEnvFile}` reads like a debug log.
-
-**Acceptance**: User-facing copy like:
+**Acceptance** (success):
 ```
 ✅ Setup complete!
    Device: My Mac mini (cloud mode)
@@ -103,44 +72,40 @@ Always starts fresh, no way to edit or remove.
    Next: run `idlewatch run` to start monitoring
 ```
 
-### P2 — npx menubar help text is vague / dead-end (STILL OPEN)
+**Acceptance** (error):
+```
+⚠️ Setup saved, but the first telemetry sample didn't publish.
+   Device: My Mac mini
+   Config: ~/.idlewatch/idlewatch.env
+   Retry: idlewatch --once
+```
 
-"If you used npx, install the package globally first or run the command from the cloned repo." — no concrete command given.
+### P2 — `src/status.js` dead code (STILL OPEN, CONFIRMED BROKEN)
 
-**Acceptance**: Show `npm install -g idlewatch && idlewatch menubar --launch` explicitly.
+Line 22: `${'${process.env...}'}` double-wrapped template literal produces literal `${...}` strings.
+Missing `import fs`, `import os`, `import path` — would crash on first call.
+`getLastPublishResult()` references `config` not in scope.
+Not imported anywhere.
 
-### P2 — `src/status.js` dead code with broken imports/template literals (STILL OPEN)
-
-- Missing `import fs`, `import os`, `import path`
-- Template literals use `${'${...}'}` double-wrapping (produces literal `${...}`)
-- `getLastPublishResult()` references `config` which isn't in scope
-- Currently dead code (not imported anywhere), but would crash if used
-
-**Acceptance**: Either delete `status.js` or fix all issues and wire it into the `status` subcommand.
-
-### P3 findings (STILL OPEN, no change)
-
-- LaunchAgent uninstall no CLI path
-- `.env.example` misleading defaults (`IDLEWATCH_HOST=my-host`, relative `./logs/`)
-- `status` doesn't show LaunchAgent state
-- `.env.example` mixes user config with CI/packaging vars (73 lines)
+**Acceptance**: Delete or fix and wire into the `status` subcommand.
 
 ---
 
-## Priority Summary (updated 2026-03-20 Round 4)
+## Priority Summary (updated 2026-03-20 Round 5)
 
 | # | Sev | Summary | Status |
 |---|-----|---------|--------|
-| 1 | **P0** | `enrollment.js` — undeclared `mode`/`cloudApiKey` crashes ALL non-TUI enrollment | OPEN |
-| 2 | **P1** | `package.json` self-dependency (`"idlewatch": "^0.1.9"` depends on itself) | NEW |
-| 3 | P1 | `--help` dumps 25+ advanced env vars (69 lines) | OPEN |
+| 1 | **P0** | `enrollment.js` undeclared `mode`/`cloudApiKey` — fix exists in `enrollment-new.js` but not swapped | OPEN |
+| 2 | P1 | `package.json` self-dependency (`"idlewatch": "^0.1.9"`) | OPEN |
+| 3 | P1 | `--help` dumps 69 lines including 25+ advanced env vars | OPEN |
 | 4 | P1 | `status` says "no saved config" with active local data | OPEN |
-| 5 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
-| 6 | P2 | `create` wizard can't edit/delete existing custom metrics | OPEN |
-| 7 | P2 | Post-quickstart success message is debug-formatted | OPEN |
-| 8 | P2 | npx menubar help text is vague / dead-end | OPEN |
-| 9 | P2 | `src/status.js` dead code with broken imports/template literals | OPEN |
-| 10 | P3 | LaunchAgent uninstall has no CLI path | OPEN |
-| 11 | P3 | `.env.example` has misleading defaults | OPEN |
-| 12 | P3 | `status` doesn't show LaunchAgent state | OPEN |
-| 13 | P3 | `.env.example` mixes user config with CI/packaging vars (73 lines) | OPEN |
+| 5 | P2 | Dev artifact files (`enrollment-new.js`, `enrollment.js.tmp`) in source tree | NEW |
+| 6 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 7 | P2 | `create` wizard can't edit/delete existing custom metrics | OPEN |
+| 8 | P2 | Post-quickstart success/error messages are debug-formatted | OPEN |
+| 9 | P2 | npx menubar help text is vague / dead-end | OPEN |
+| 10 | P2 | `src/status.js` dead code with broken imports/template literals | OPEN |
+| 11 | P3 | LaunchAgent uninstall has no CLI path | OPEN |
+| 12 | P3 | `.env.example` has misleading defaults | OPEN |
+| 13 | P3 | `status` doesn't show LaunchAgent state | OPEN |
+| 14 | P3 | `.env.example` mixes user config with CI/packaging vars (73 lines) | OPEN |
