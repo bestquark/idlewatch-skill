@@ -685,8 +685,8 @@ idlewatch --once 2>/dev/null
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
 | 4–24 | — | All prior items | ✅ CLOSED |
-| 25 | **P2** | README validation section overwhelms user docs (30 CI bullets) | NEW |
-| 26 | P3 | `--once` stdout shows ✅ even on publish failure | NEW |
+| 25 | **P2** | README validation section overwhelms user docs (30 CI bullets) | ✅ CLOSED — moved to docs/VALIDATION.md, README trimmed 350→253 lines |
+| 26 | P3 | `--once` stdout shows ✅ even on publish failure | ✅ CLOSED — shows ⚠️ (not published) when publish fails |
 
 ### Top recommendations for next implementer cycle
 1. **#25 (P2)** — Move validation scripts docs out of README into `docs/VALIDATION.md`.
