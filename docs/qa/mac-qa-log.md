@@ -154,17 +154,106 @@ idlewatch --once
 | 1 | P1 | `--help` wall of text | ✅ CLOSED |
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
-| 4 | P2 | Post-quickstart messages are debug-formatted | OPEN |
-| 5 | P2 | npx menubar help text is vague | OPEN |
+| 4 | P2 | Post-quickstart messages are debug-formatted | ✅ CLOSED — see Round 11 |
+| 5 | P2 | npx menubar help text is vague | ✅ CLOSED — see Round 11 |
 | 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
-| 7 | P3 | `.env.example` mixes user/CI vars | OPEN — see also #11 |
+| 7 | P3 | `.env.example` mixes user/CI vars | ✅ CLOSED |
 | 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
-| 9 | P2 | Subcommand `--help` falls through to generic help | ✅ CLOSED — each subcommand now has its own --help |
-| 10 | P2 | `--once` dumps raw JSON before error | ✅ CLOSED — shows concise summary; use --json for raw output |
-| 11 | P3 | `.env.example` references Firebase instead of cloud API key | ✅ CLOSED — leads with IDLEWATCH_CLOUD_API_KEY, Firebase demoted |
-| 12 | P3 | `--help-env` scannability | ✅ CLOSED — added guidance note at top |
+| 9 | P2 | Subcommand `--help` falls through to generic help | ✅ CLOSED |
+| 10 | P2 | `--once` dumps raw JSON before error | ✅ CLOSED |
+| 11 | P3 | `.env.example` references Firebase instead of cloud API key | ✅ CLOSED |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED |
+
+---
+
+## 2026-03-21 — Round 11: Deep Verification + New Findings
+
+### Verified closures
+
+- **#4 Post-quickstart messages**: Post-quickstart now shows a clean `✅ Setup complete!` block with device name, mode, config path, temperature helper status, and a clear next-step (`idlewatch run`). Error path also clean with specific retry commands. **CLOSED.**
+- **#5 menubar help**: `idlewatch menubar --help` now shows purpose, usage, and `--launch` flag. **CLOSED.**
+- **#7 `.env.example`**: Now leads with `IDLEWATCH_CLOUD_API_KEY`, Firebase vars clearly demoted under "Developer / self-hosted only" section. **CLOSED.**
+- **#9 subcommand --help**: All subcommands (`quickstart`, `configure`, `status`, `run`, `create`, `dashboard`, `menubar`) have their own concise `--help` output. **CLOSED.**
+- **#10 `--once` JSON dump**: `--once` now shows `summarizeSetupVerification()` output (one-liner summary). Raw JSON only with `--json`. **CLOSED.**
+- **#12 `--help-env`**: Shows "Most users only need the Common section below." at top. Three clear sections. **CLOSED.**
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 13 | P2 | `--once` / `--dry-run` first line is a noisy debug banner | NEW |
+| 14 | P3 | `menubar` silently reinstalls without confirmation | NEW |
+| 15 | P3 | `--once --json` error path mixes JSON + plaintext to different streams | NEW |
+
+### #13 — `--once` / `--dry-run` first line is a noisy debug banner
+
+**Repro**:
+```
+idlewatch --once
+idlewatch --dry-run
+```
+
+**Observed**: First line is always:
+```
+idlewatch once host=Leptons-Mini device=test deviceId=test intervalMs=10000 publish=cloud localLog=/Users/luismantilla/.idlewatch/logs/test-metrics.ndjson env=/Users/luismantilla/.idlewatch/idlewatch.env
+```
+This is a debug-style key=value dump (7 parameters). For a user running a quick test, this is noise before the useful output (the summary line or error).
+
+**Acceptance**:
+1. `--once` prints a short status line: `Collecting sample for "test" (cloud mode)…` then the result
+2. The full key=value debug banner moves behind `--verbose` or is removed entirely
+3. `--dry-run` similarly: `Dry-run for "test"…` then the sample summary
+
+### #14 — `menubar` silently reinstalls without confirmation
+
+**Repro**:
+```
+idlewatch menubar   # first time: installs
+idlewatch menubar   # second time: silently reinstalls/overwrites
+```
+
+**Observed**: Running `menubar` when the app already exists at `~/Applications/IdleWatch.app` silently overwrites it. No "already installed, reinstall?" prompt, no "up to date" message.
+
+**Acceptance**: If app already exists, print `IdleWatch menu bar app already installed at ~/Applications/IdleWatch.app` and skip unless `--force` is passed. Or at minimum, print `Reinstalling…` so the user knows what happened.
+
+### #15 — `--once --json` error mixes JSON stdout + plaintext stderr
+
+**Repro**:
+```
+idlewatch --once --json 2>&1
+```
+(with invalid API key)
+
+**Observed**: stdout gets the full JSON blob, stderr gets the plaintext error. This is technically correct (stdout/stderr separation), but when piped together the output is confusing — a massive JSON line followed by a human error message.
+
+**Minor**: This is standard Unix convention. Marking P3 for awareness only; no change strictly needed. Could improve by adding an `"error"` field to the JSON output on failure instead of relying on stderr.
+
+**Acceptance**: Optional — if `--json` is set, errors could also be JSON: `{"error": "invalid_api_key", "message": "..."}` to stderr. Low priority.
+
+---
+
+## Priority Summary (Round 11, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4 | P2 | Post-quickstart messages debug-formatted | ✅ CLOSED |
+| 5 | P2 | menubar help text vague | ✅ CLOSED |
+| 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
+| 7 | P3 | `.env.example` mixes user/CI vars | ✅ CLOSED |
+| 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
+| 9 | P2 | Subcommand `--help` falls through | ✅ CLOSED |
+| 10 | P2 | `--once` dumps raw JSON | ✅ CLOSED |
+| 11 | P3 | `.env.example` Firebase refs | ✅ CLOSED |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED |
+| 13 | P2 | `--once`/`--dry-run` debug banner as first line | NEW |
+| 14 | P3 | `menubar` silently reinstalls | NEW |
+| 15 | P3 | `--once --json` error stream mixing | NEW |
 
 ### Top recommendations for next implementer cycle
-1. **#4** — Post-quickstart success/error messages are debug-formatted (raw JSON, no summary).
+1. **#13** — Clean up the `--once`/`--dry-run` first-line debug banner (most visible test-publish surface).
 2. **#2** — CLI subcommands for LaunchAgent install/uninstall.
-3. **#5** — npx menubar help text is vague / dead-end.
+3. **#3** — `create` wizard should support editing/deleting existing custom metrics.
+4. **#14** — `menubar` should detect existing install before overwriting.
