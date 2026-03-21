@@ -1200,3 +1200,88 @@ The CLI is **mature** for a v0.1.x. All P1s and P2s are closed except #2 and #3 
 ### Remaining open items
 1. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
 2. **#3 (P2)** — `create` wizard edit/delete support (feature).
+
+---
+
+## 2026-03-21 — Round 22: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+Full re-check of all 39 items. Every closed item confirmed solid:
+- `--help`: 27 lines, clean. `--version`: `idlewatch 0.1.9`, exit 0.
+- Unknown subcommand: error + exit 1. All subcommand `--help`: concise, accurate.
+- `--once`: `⚠️` on fail, `❌` with device name. `--json 2>/dev/null | jq .`: valid JSON, 1 line on stdout.
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0.
+- `--once --dry-run`: clean dry-run, no publish error, exit 0.
+- `status`: LaunchAgent state, Device/ID dedup, mode in footer.
+- `reconfigure --help`: proper alias text. `configure --help`: lists mode.
+- `menubar`: detects existing install, `--force`/`--launch`.
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: 3 sections with note.
+- README: 59 lines, internal docs moved to docs/.
+- `run` (default): concise one-line-per-cycle summaries (`06:30:35 ⚠️ CPU: 50% Mem: 72% GPU: 10% → not published`). Tip shown when LaunchAgent not installed.
+- `--once --json`: `publishResult`/`publishError` fields present in JSON.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 40 | **P2** | `run --json` emits banner + tip lines on stdout, breaking NDJSON stream | NEW |
+| 41 | P3 | `run --json` error messages go to stderr but no error field in per-cycle JSON | NEW |
+
+### #40 — `run --json` emits banner + tip on stdout, breaking NDJSON consumers
+
+**Repro**:
+```bash
+node bin/idlewatch-agent.js run --json 1>/tmp/iw-stdout.txt 2>/tmp/iw-stderr.txt &
+sleep 15; kill $!
+head -3 /tmp/iw-stdout.txt
+```
+
+**Observed**: stdout contains:
+```
+idlewatch started — "test" (cloud mode, every 10s)
+Tip: Run idlewatch menubar to install background collection.
+{"host":"Leptons-Mini",...}
+```
+Lines 1-2 are human-readable text. Line 3+ are JSON. A consumer doing `run --json | jq -c .` per-line will choke on the first two lines.
+
+**Why it matters**: `--json` implies machine-readable stdout. `--once --json` correctly sends progress to stderr — `run --json` should do the same. This is the same class of bug as #22 (which was fixed for `--once`) but the fix wasn't applied to the `run` code path.
+
+**Acceptance**:
+1. When `--json` is set, banner + tip go to stderr
+2. stdout is pure NDJSON: one JSON object per cycle, nothing else
+3. `idlewatch run --json 2>/dev/null | jq -c .` parses every line
+
+### #41 — `run --json` per-cycle JSON has no error info when publish fails
+
+**Repro**:
+```bash
+idlewatch run --json 2>/dev/null | jq '{publishResult, publishError}' | head -3
+```
+
+**Observed**: Each JSON blob includes `"publishResult": "error"` and `"publishError": "invalid_api_key"` — **actually, this works correctly!** The JSON payload already includes `publishResult`/`publishError` from the #36 fix.
+
+**Verdict**: #41 is NOT a real issue. Withdrawing.
+
+---
+
+## Priority Summary (Round 22, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 4–39 | — | All prior items | ✅ CLOSED |
+| 40 | **P2** | `run --json` banner + tip on stdout breaks NDJSON stream | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#40 (P2)** — `run --json`: move banner/tip to stderr so stdout is pure NDJSON.
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands (feature).
+3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics (feature).
