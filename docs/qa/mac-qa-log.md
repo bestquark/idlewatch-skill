@@ -623,3 +623,73 @@ Minor: On a multi-device setup, knowing *which* device failed is useful. The col
 3. **#3 (P2)** — `create` wizard should support editing/deleting existing custom metrics.
 4. **#23 (P3)** — Display `Temp: nominal` instead of `Temp: 0°C` when sensor returns zero.
 5. **#24 (P3)** — Include device name in error messages.
+
+---
+
+## 2026-03-21 — Round 15: Full Re-verification + New Findings
+
+### Verified all prior closures — confirmed solid
+All items #1–#24 marked CLOSED remain correctly fixed:
+- `--help`: 26 lines, clean. `--version`: exits 0. Unknown subcommand: error + exit 1.
+- `--once`: concise output, device name in errors, `--json` pure JSON on stdout.
+- `--dry-run`: shows CPU/Memory/GPU/Temp/OpenClaw values, `Temp: nominal` when 0°C.
+- `status`: LaunchAgent state, deduplicates Device/Device ID.
+- All subcommand `--help`: concise. `menubar`: detects existing install.
+- `.env.example` and `--help-env`: clean, well-organized.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 25 | P2 | README validation section is 30 dense CI bullet points — overwhelms user-facing docs | NEW |
+| 26 | P3 | `--once` stdout shows ✅ even when publish failed (error on stderr only) | NEW |
+
+### #25 — README validation section overwhelms user-facing docs
+
+**Repro**: Read `README.md` lines 117–142.
+
+**Observed**: 30-item bullet list of `npm run validate:*` scripts (packaged-openclaw-robustness, cache-recovery-e2e, probe-noise, release-gates, etc.) with dense descriptions. This is ~25% of the README and entirely CI/developer-facing. A user scrolling past "Quickstart" hits a wall of internal tooling.
+
+**Why it matters**: README is the first thing users see on npm/GitHub. The validation wall makes the project look over-engineered.
+
+**Acceptance**:
+1. Move validation scripts to `docs/VALIDATION.md` or `CONTRIBUTING.md`
+2. README keeps one line: `See docs/VALIDATION.md for CI and release-gate scripts.`
+3. User-visible README sections: Install, Quickstart, CLI, Config, Troubleshooting
+
+### #26 — `--once` stdout shows ✅ when publish actually failed
+
+**Repro**:
+```bash
+idlewatch --once 2>/dev/null
+```
+
+**Observed**: stdout shows `✅ Sample collected (4 metrics)` — the ✅ is misleading because the publish failed (error went to stderr only). Most interactive users see both streams, so impact is low. But stdout alone suggests success.
+
+**Acceptance (minor)**: When publish fails, stdout summary should indicate failure or the error should also appear on stdout.
+
+---
+
+## Priority Summary (Round 15, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–24 | — | All prior items | ✅ CLOSED |
+| 25 | **P2** | README validation section overwhelms user docs (30 CI bullets) | NEW |
+| 26 | P3 | `--once` stdout shows ✅ even on publish failure | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#25 (P2)** — Move validation scripts docs out of README into `docs/VALIDATION.md`.
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
+3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
+4. **#26 (P3)** — `--once` stdout should reflect publish failure.
