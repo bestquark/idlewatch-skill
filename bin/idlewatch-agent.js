@@ -1960,24 +1960,37 @@ async function tick() {
   row.localLogPath = localUsage.path
   row.localLogBytes = localUsage.bytes
 
-  if (JSON_OUTPUT) {
-    console.log(JSON.stringify(row))
-  } else if (!ONCE && !DRY_RUN && process.env.IDLEWATCH_SETUP_VERIFY !== '1') {
-    console.log(JSON.stringify(row))
-  }
-
   const published = await publish(row)
 
-  if (!JSON_OUTPUT && (process.env.IDLEWATCH_SETUP_VERIFY === '1' || ONCE || DRY_RUN)) {
+  if (JSON_OUTPUT) {
+    // Machine-readable: add publishResult field and output JSON
+    const output = { ...row, publishResult: published ? 'ok' : (DRY_RUN ? 'dry_run' : 'error') }
+    if (!published && !DRY_RUN && cloudIngestKickedOut) {
+      output.publishError = cloudIngestKickoutReason || 'unauthorized'
+    }
+    console.log(JSON.stringify(output))
+  } else if (ONCE || DRY_RUN || process.env.IDLEWATCH_SETUP_VERIFY === '1') {
     if (DRY_RUN) {
       const summary = summarizeSample(row, { verbose: true })
       console.log(`${summary} — nothing published (dry run)`)
     } else if (published) {
       console.log(summarizeSample(row) + ' and published')
     } else {
-      // Show warning on stdout when publish didn't succeed (collect-only)
       const base = summarizeSample(row).replace(/^✅/, '⚠️')
       console.log(base + ' (not published)')
+    }
+  } else {
+    // Continuous run mode: one concise line per cycle
+    const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const parts = []
+    if (row.cpuPct != null) parts.push(`CPU: ${Math.round(row.cpuPct)}%`)
+    if (row.memPct != null) parts.push(`Mem: ${Math.round(row.memPct)}%`)
+    if (row.gpuPct != null) parts.push(`GPU: ${Math.round(row.gpuPct)}%`)
+    const metricsStr = parts.join(' ')
+    if (published) {
+      console.log(`${ts} ✅ ${metricsStr} → published`)
+    } else {
+      console.log(`${ts} ⚠️ ${metricsStr} → not published`)
     }
   }
 
@@ -2048,5 +2061,12 @@ if (DRY_RUN || ONCE) {
     })
 } else {
   console.log(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)`)
+  // Hint about background agent if LaunchAgent is not installed
+  try {
+    const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
+    accessSync(launchAgentPath, constants.F_OK)
+  } catch {
+    console.log('Tip: Run idlewatch menubar to install background collection.')
+  }
   loop()
 }
