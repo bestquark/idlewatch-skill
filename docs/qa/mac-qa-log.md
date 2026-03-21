@@ -1603,14 +1603,13 @@ Full independent re-verification of all 45 items. Every closed fix confirmed sol
 | # | Sev | Summary | Status |
 |---|-----|---------|--------|
 | 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | ✅ CLOSED — `install-agent` / `uninstall-agent` subcommands added |
-| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | ✅ CLOSED — wizard now offers create/edit/delete menu when metrics exist |
 | 42 | P2 | `publish()` fetch has no timeout — hang risk if API unresponsive | ✅ CLOSED — AbortSignal.timeout(10s), configurable via IDLEWATCH_PUBLISH_TIMEOUT_MS |
 | 43 | P3 | `--once` ~6.5s overhead — Firebase already lazy-loaded, overhead is probes + Node startup | CLOSED (won't fix — acceptable for one-shot) |
 | 45 | P3 | JSON `device` field — verified field doesn't exist (undefined, not null). QA report was inaccurate | CLOSED (non-issue) |
 
 ### Assessment
 
-**The CLI is mature for v0.1.x.** 44 of 45 issues closed across 28 QA rounds + implementer fixes. The one remaining item is:
-- 1 feature request (#3) — custom metric editing in the `create` wizard
+**The CLI is mature for v0.1.x.** All 45 issues closed across 28 QA rounds + implementer fixes. No remaining open items.
 
-No further QA rounds needed until new code ships or #3 is addressed.
+No further QA rounds needed until new code ships.
