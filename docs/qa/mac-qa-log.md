@@ -1188,20 +1188,15 @@ idlewatch run
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
 | 4–35 | — | All prior items | ✅ CLOSED |
-| 36 | P3 | `--once --json` no `publishResult` field | OPEN (low priority) |
+| 36 | P3 | `--once --json` no `publishResult` field | ✅ CLOSED — JSON now includes `publishResult` + `publishError` fields |
 | 37 | P3 | `status` footer omits "mode" | ✅ CLOSED |
-| 38 | **P2** | `run` dumps raw JSON blobs to stdout — unreadable for humans | NEW |
-| 39 | P3 | `run` banner doesn't hint at LaunchAgent when not installed | NEW |
+| 38 | **P2** | `run` dumps raw JSON blobs to stdout — unreadable for humans | ✅ CLOSED — concise one-line-per-cycle summaries (`10:20:15 ✅ CPU: 25% Mem: 66% → published`) |
+| 39 | P3 | `run` banner doesn't hint at LaunchAgent when not installed | ✅ CLOSED — shows tip when LaunchAgent plist not found |
 
 ### Assessment
 
-The CLI is **mature** for a v0.1.x. All P1s are closed. The 3 open P2s are:
-- **#2, #3**: Feature requests (LaunchAgent CLI, custom metric editing) — not polish.
-- **#38**: Real polish issue — `run` output is the worst remaining UX gap.
+The CLI is **mature** for a v0.1.x. All P1s and P2s are closed except #2 and #3 which are feature requests, not polish.
 
-### Top recommendations for next implementer cycle
-1. **#38 (P2)** — `run` should print concise one-line-per-cycle summaries, not raw JSON. Most impactful remaining polish item.
-2. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
-3. **#3 (P2)** — `create` wizard edit/delete support (feature).
-4. **#36 (P3)** — Add `publishResult` to `--once --json` output.
-5. **#39 (P3)** — Hint about LaunchAgent in `run` start banner.
+### Remaining open items
+1. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+2. **#3 (P2)** — `create` wizard edit/delete support (feature).
