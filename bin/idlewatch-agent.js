@@ -85,6 +85,8 @@ Tuning:
   IDLEWATCH_INTERVAL_MS                Sampling interval in ms (default: 10000)
   IDLEWATCH_PROVIDER_QUOTA_INTERVAL_MS Provider quota refresh interval (default: 900000)
   IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS  Provider quota probe timeout (default: 4000)
+
+Probe internals (rarely needed):
   IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS  OpenClaw probe timeout (default: 2500)
   IDLEWATCH_OPENCLAW_PROBE_RETRIES     Extra probe retries (default: 1)
   IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES  Max probe output capture (default: 2MB)
@@ -1132,7 +1134,7 @@ if (statusRequested) {
   } else if (!hasSamples) {
     console.log('  Run idlewatch --once to collect a test sample, or idlewatch run for continuous monitoring.')
   } else {
-    console.log('  Run idlewatch configure to change device name, metrics, or API key.')
+    console.log('  Run idlewatch configure to change mode, device name, metrics, or API key.')
   }
   process.exit(0)
 }
