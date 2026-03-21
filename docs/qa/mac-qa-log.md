@@ -379,3 +379,122 @@ Dry-run for "test" (cloud mode)…
 2. **#17 (P2)** — Clean up `--once` output to show concise collect/publish result.
 3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands.
 4. **#18 (P3)** — `--dry-run` should show a human-readable sample summary.
+
+---
+
+## 2026-03-21 — Round 13: Verification + New Findings
+
+### Verified closures from Round 12
+- **#16 unknown subcommand**: `idlewatch notacommand` → `Unknown command "notacommand". Run idlewatch --help for available commands.` Exit 1. **Confirmed CLOSED.**
+- **#17 `--once` output**: Clean `✅ Sample collected (4 metrics)` + `❌ Cloud publish failed: API key rejected...`. **Confirmed CLOSED.**
+- **#18 `--dry-run`**: Shows `✅ Sample collected (4 metrics) — nothing published (dry run)`. **Confirmed CLOSED.**
+- **#14 menubar reinstall**: `IdleWatch menu bar app already installed at ~/Applications/IdleWatch.app. Use idlewatch menubar --force to reinstall.` **Confirmed CLOSED.**
+- **All subcommand `--help`**: quickstart, configure, status, run, create, dashboard, menubar all have concise per-command help. **Confirmed CLOSED.**
+- **`--help`**: 26 lines, clean layout. **Confirmed CLOSED.**
+- **`status`**: Shows LaunchAgent state, device config, log size, last sample age. **Confirmed CLOSED.**
+- **`.env.example`**: Leads with cloud API key, Firebase demoted. **Confirmed CLOSED.**
+- **`--help-env`**: "Most users only need the Common section below." header. **Confirmed CLOSED.**
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 19 | P2 | `--once --json` writes human-readable line to stdout, breaking JSON pipe | NEW |
+| 20 | P2 | `--dry-run` shows metric count but no values — missed acceptance from #18 | NEW |
+| 21 | P3 | `status` shows redundant Device + Device ID when they're identical | NEW |
+
+### #19 — `--once --json` sends progress line to stdout, breaking JSON parsing
+
+**Repro**:
+```
+idlewatch --once --json 2>/dev/null | jq .
+```
+
+**Observed**: stdout contains 2 lines:
+```
+Collecting sample for "test" (cloud mode)…
+{"host":"Leptons-Mini", ...}
+```
+The first line is not JSON. `jq` and any JSON parser will choke. The `--json` flag implies machine-readable stdout.
+
+**Acceptance**:
+1. When `--json` is set, stdout contains only valid JSON (one line)
+2. Human-readable progress/status lines go to stderr
+3. `idlewatch --once --json 2>/dev/null | jq .` parses cleanly
+
+### #20 — `--dry-run` shows count but no metric values
+
+**Repro**:
+```
+idlewatch --dry-run
+```
+
+**Observed**:
+```
+Dry-run for "test" (cloud mode)…
+✅ Sample collected (4 metrics) — nothing published (dry run)
+```
+
+This is better than Round 12 (debug banner is gone), but the whole point of `--dry-run` is to preview what would be published. The user sees "4 metrics" but not what those metrics are. Round 12 acceptance criteria called for a summary like:
+```
+  CPU: 27%  Memory: 71%  GPU: 10%  Temp: nominal
+```
+
+**Acceptance**: `--dry-run` prints a 2-4 line summary of collected values:
+```
+Dry-run for "test" (cloud mode)…
+  CPU: 15%  Memory: 71%  GPU: 10%  Temp: nominal
+  OpenClaw: gpt-5.4, 4% context, 48k tok/min
+✅ 4 metrics collected — nothing published (dry run)
+```
+
+### #21 — `status` shows redundant Device / Device ID
+
+**Repro**:
+```
+idlewatch status
+```
+
+**Observed**:
+```
+  Device:       test
+  Device ID:    test
+```
+When device name and ID are identical (which is the common case), this is visual noise.
+
+**Acceptance**: If device name equals device ID, show only `Device: test`. Show both only when they differ.
+
+---
+
+## Priority Summary (Round 13, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4 | P2 | Post-quickstart messages debug-formatted | ✅ CLOSED |
+| 5 | P2 | menubar help text vague | ✅ CLOSED |
+| 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
+| 7 | P3 | `.env.example` mixes user/CI vars | ✅ CLOSED |
+| 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
+| 9 | P2 | Subcommand `--help` falls through | ✅ CLOSED |
+| 10 | P2 | `--once` dumps raw JSON | ✅ CLOSED |
+| 11 | P3 | `.env.example` Firebase refs | ✅ CLOSED |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED |
+| 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
+| 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
+| 15 | P3 | `--once --json` error stream mixing | OPEN (low priority) |
+| 16 | P1 | Unknown subcommand starts collector loop | ✅ CLOSED |
+| 17 | P2 | `--once` second line debug-formatted | ✅ CLOSED |
+| 18 | P3 | `--dry-run` shows no useful sample summary | ✅ CLOSED (count only — values in #20) |
+| 19 | **P2** | `--once --json` progress line on stdout breaks JSON pipe | NEW |
+| 20 | P2 | `--dry-run` shows count but no metric values | NEW |
+| 21 | P3 | `status` shows redundant Device/Device ID | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#19 (P2)** — `--json` must send only JSON to stdout; progress to stderr.
+2. **#20 (P2)** — `--dry-run` should show actual metric values, not just count.
+3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands.
+4. **#3 (P2)** — `create` wizard should support editing/deleting existing custom metrics.
+5. **#21 (P3)** — Deduplicate Device/Device ID in `status` when identical.
