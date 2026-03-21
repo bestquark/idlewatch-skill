@@ -5,197 +5,124 @@
 
 ---
 
-## 2026-03-20 — Round 2: Deep Polish Pass
+## 2026-03-20 — Round 3: Verification + New Findings
+
+### Verification of Round 2 findings
+
+| # | Finding | Status |
+|---|---------|--------|
+| 1 | `--help` wall of env vars | **Still open** — 70+ lines, 25+ env vars in default help |
+| 2 | `status` "no saved config" false negative | **Still open** — no local-data check |
+| 3 | `enrollment.js` undeclared vars (`mode`, `cloudApiKey`) | **Still open — confirmed crash** (see updated P0 below) |
+| 4 | No CLI subcommand for LaunchAgent install | **Still open** |
+| 5 | `create` can't edit/delete existing metrics | **Still open** |
+| 6 | Post-quickstart message debug-formatted | **Still open** |
+| 7 | npx menubar help text vague | **Still open** |
+| 8 | LaunchAgent uninstall no CLI path | **Still open** |
+| 9 | `.env.example` stale defaults | **Still open** |
+| 10 | `status` doesn't show LaunchAgent state | **Still open** |
+
+### P0 — `enrollment.js` text-mode path crashes with ReferenceError (UPGRADED from P1)
+
+**Location**: `src/enrollment.js` → `runEnrollmentWizard()` lines 372, 377, 382, 392, 400-410, 439-448
+
+**Issue**: `mode` and `cloudApiKey` are used as bare assignments but never declared with `let`. The file is an ES module (`"type": "module"` in package.json), so strict mode is enforced. Line 372 (`mode = modeInput === '2' ? 'local' : 'production'`) **will throw `ReferenceError: mode is not defined`**. Same for `cloudApiKey` at lines 392/403/410.
+
+The function declares `modeOption` (line ~307) and `cloudApiKeyOpt` (line ~308) but never `let mode` or `let cloudApiKey` at function scope.
+
+**Repro**:
+```
+idlewatch quickstart --no-tui
+# → select mode 1 or 2
+# → ReferenceError: mode is not defined
+```
+
+**Acceptance**:
+- Add `let mode = modeOption` and `let cloudApiKey = cloudApiKeyOpt` near the top of `runEnrollmentWizard()`
+- Text-mode quickstart completes without errors on both mode 1 and mode 2
 
 ### P1 — `--help` is a wall of env vars
 
-**Location**: `bin/idlewatch-agent.js` → `printHelp()`
-
-**Issue**: The help output dumps 25+ env vars (including "Advanced env tuning" and "Advanced Firebase / emulator mode") directly into `--help`. This is overwhelming for first-time users who just want to know how to get started. The quickstart section is good but drowns in tuning knobs. End users should never see `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS` in a help screen.
-
-**Repro**: `idlewatch --help`
+**Status**: Still open. No change since Round 2.
 
 **Acceptance**:
-- `--help` shows only the subcommands, quickstart steps, and *common* env vars (API key, ingest URL, log path, openclaw usage mode)
-- Advanced/tuning env vars move to `--help-advanced` or just README
-- Keep it under ~30 lines for the default help
-
----
+- Default `--help` ≤ 30 lines, showing subcommands + quickstart + common env only
+- Advanced env vars move to `--help-advanced` or docs
 
 ### P1 — `status` says "no saved config" even when device has data
 
-**Location**: `bin/idlewatch-agent.js` → `statusRequested` block
-
-**Issue**: Running `idlewatch status` shows `Config: (no saved config)` and suggests `Run idlewatch quickstart to set up this device.` even though the device has 258 KB of logged samples and clearly works. This happens because `~/.idlewatch/idlewatch.env` doesn't exist (user ran with env vars or process env). The status screen should distinguish "never set up" from "running without a persisted config file."
-
-**Repro**:
-1. Delete `~/.idlewatch/idlewatch.env` (or never run quickstart)
-2. Run `idlewatch --once` (succeeds, writes local log)
-3. Run `idlewatch status` → shows "no saved config" + "Run idlewatch quickstart"
+**Status**: Still open. No change since Round 2.
 
 **Acceptance**:
-- If local log exists with recent samples, status should say something like `Config: process env (no saved file)` instead of implying setup hasn't happened
-- The nudge to run quickstart should only appear if there's genuinely no data and no config
+- If local log has recent samples but no env file, show `Config: process env (no saved file)` instead of nudging quickstart
 
----
+### P2 — No CLI subcommand for LaunchAgent install/uninstall
 
-### P1 — `enrollment.js` has undeclared variables (`mode`, `cloudApiKey`)
+**Status**: Still open. Shell scripts exist (`scripts/install-macos-launch-agent.sh`, `scripts/uninstall-macos-launch-agent.sh`) but no CLI path.
 
-**Location**: `src/enrollment.js` lines ~190-220
+**Acceptance**: `idlewatch launchagent install` / `idlewatch launchagent uninstall` wrappers, OR clear copy-pasteable commands in success/status output.
 
-**Issue**: In the interactive text-mode path (non-TUI), the code assigns to `mode` and reads `cloudApiKey` as bare names, but these aren't declared with `let` at function scope — `mode` is written as `mode = modeInput === '2' ? 'local' : 'production'` but the only prior declaration is `const modeOption = ...`. Similarly `cloudApiKey` is used but only `cloudApiKeyOpt` is declared. This would throw a ReferenceError on the text-mode fallback path (non-TUI) in strict mode.
+### P2 — `create` wizard can't edit/delete existing custom metrics
 
-**Repro**:
-1. `idlewatch quickstart --no-tui` (forces text-mode path)
-2. Likely throws at the mode assignment
+**Status**: Still open. Always starts fresh.
 
-**Acceptance**:
-- Declare `let mode = modeOption` and `let cloudApiKey = cloudApiKeyOpt` at the top of `runEnrollmentWizard`
-- Verify text-mode quickstart completes without errors
+### P2 — Post-quickstart success message is debug-formatted
 
----
+**Status**: Still open. `Mode=production device=MyDevice envFile=...` is not user-facing copy.
 
-### P2 — LaunchAgent install has no CLI subcommand
+### P2 — npx menubar help text is vague
 
-**Location**: `bin/idlewatch-agent.js`, `scripts/install-macos-launch-agent.sh`
+**Status**: Still open. "install the package globally first or run the command from the cloned repo" — no concrete command.
 
-**Issue**: After quickstart succeeds, the final message says `On macOS, enable login startup at ~/Library/LaunchAgents/com.idlewatch.plist` but there's no `idlewatch launchagent install` subcommand. The user has to know about `npm run install:macos-launch-agent` or find the shell script. This is a dead end for npx users.
+### P2 — `src/status.js` has broken template literals and undefined references
 
-**Repro**:
-1. `idlewatch quickstart --no-tui` → complete setup
-2. See macOS LaunchAgent suggestion
-3. No obvious next step
+**Location**: `src/status.js` — `getApiKeyStatus()`, `getLastPublishResult()`, `getEnabledMetricsCount()`
 
-**Acceptance**:
-- Add `idlewatch launchagent` (or `idlewatch agent install`) subcommand that wraps `install-macos-launch-agent.sh`
-- OR change the success message to show the exact command: `idlewatch menubar --launch` (if that covers it) or `npm run install:macos-launch-agent`
+**Issue (new)**: `status.js` has several bugs:
+1. Template literals use `${'${...}'}` double-wrapping (line ~35, ~54) — produces literal `${...}` strings instead of interpolation
+2. `getLastPublishResult()` references `config` (line ~63) but it's not in scope — it's only a param of `buildStatusPayload()`
+3. Missing `import fs from 'node:fs'` and `import os from 'node:os'` and `import path from 'node:path'`
+4. Functions reference `fs.existsSync`, `fs.readFileSync`, `os.hostname()`, `path.join()` but none are imported
 
----
+**Impact**: Currently `status.js` isn't imported by the main agent (status display is inline in `idlewatch-agent.js`), so this is dead code. But it'll crash immediately if anyone tries to use it.
 
-### P2 — `idlewatch create` doesn't show existing metrics on re-run
+**Acceptance**: Either delete `status.js` or fix imports + template literals + scoping so it's usable.
 
-**Location**: `bin/idlewatch-agent.js` → `runCustomMetricWizard()`
+### P3 — LaunchAgent uninstall has no CLI path
 
-**Issue**: When re-running `idlewatch create`, it shows `Existing metrics: <list>` but then immediately prompts for a brand new metric from scratch. There's no way to edit/delete an existing one. The wizard always starts fresh.
+**Status**: Still open.
 
-**Repro**:
-1. `idlewatch create` → create "my_metric"
-2. `idlewatch create` again → shows "Existing metrics: my_metric" then asks for a new Name from scratch
+### P3 — `.env.example` has misleading defaults
 
-**Acceptance**:
-- If existing metrics exist, offer a choice: "Add new metric" or "Edit existing" or "Delete"
-- Or at minimum, if the user enters the same key, confirm they want to overwrite
+**Status**: Still open. `IDLEWATCH_HOST=my-host` and relative `./logs/` path mislead copy-pasters.
 
----
+### P3 — `status` doesn't show LaunchAgent state
 
-### P2 — Post-quickstart success message is dense and technical
+**Status**: Still open.
 
-**Location**: `bin/idlewatch-agent.js` → quickstart success block (~line 280-295)
-
-**Issue**: After a successful quickstart, the CLI prints:
-```
-✅ Setup complete. Mode=production device=MyDevice envFile=~/.idlewatch/idlewatch.env
-Initial telemetry sample sent successfully.
-To keep this device online continuously, run: idlewatch run
-On macOS, enable login startup at ~/Library/LaunchAgents/com.idlewatch.plist
-```
-The `Mode=production device=MyDevice envFile=...` format is debug-style, not user-facing. "Mode=production" means nothing to an end user. The LaunchAgent line is a dead end (see P2 above).
-
-**Acceptance**:
-- Simplify to something like:
-  ```
-  ✅ Setup complete — MyDevice is online.
-  First sample sent successfully.
-  
-  Next: run `idlewatch run` to keep collecting, or install the menu bar app with `idlewatch menubar`.
-  ```
-- Drop internal key=value debug format from user-facing output
-
----
-
-### P2 — `npm/npx install path` help text is vague
-
-**Location**: `bin/idlewatch-agent.js` → `printHelp()` → "Menu bar" section
-
-**Issue**: Help says `If you used npx, install the package globally first or run the command from the cloned repo.` This doesn't give a concrete command and "cloned repo" makes no sense for end users who installed via npm.
-
-**Repro**: `idlewatch --help` → read "Menu bar" section
-
-**Acceptance**:
-- Replace with: `npx users: run npm install -g idlewatch first, then idlewatch menubar --launch`
-- Or detect npx at runtime and print a targeted hint
-
----
-
-### P3 — Uninstall LaunchAgent has no CLI subcommand either
-
-**Location**: `scripts/uninstall-macos-launch-agent.sh`
-
-**Issue**: There's a clean uninstall script but no way to reach it from the CLI. Users who installed via `npm run install:macos-launch-agent` have no obvious way to undo it.
-
-**Acceptance**:
-- `idlewatch launchagent uninstall` or document the command in `idlewatch status` output when a LaunchAgent is detected as loaded
-
----
-
-### P3 — `.env.example` has stale defaults
+### P3 — `.env.example` is very long and mixes user config with CI/packaging vars
 
 **Location**: `.env.example`
 
-**Issue**: `.env.example` sets `IDLEWATCH_HOST=my-host` and `IDLEWATCH_LOCAL_LOG_PATH=./logs/idlewatch-metrics.ndjson` (relative path). The actual defaults are hostname-based and under `~/.idlewatch/logs/`. This could mislead someone copying the example.
+**Issue (new)**: The example env file is 60+ lines and includes `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION`, `IDLEWATCH_ALLOW_UNSIGNED_TAG_RELEASE`, detailed Firebase emulator docs, and build-time codesigning vars. End users copying this file get overwhelmed. CI/packaging vars don't belong in a user-facing example.
 
-**Acceptance**:
-- Comment out `IDLEWATCH_HOST` and `IDLEWATCH_LOCAL_LOG_PATH` (they have good auto-defaults)
-- Or update to `~/.idlewatch/logs/<hostname>-metrics.ndjson`
+**Acceptance**: Split into `.env.example` (user-facing: device name, API key, metrics, log path) and `.env.ci.example` or document CI vars separately.
 
 ---
 
-### P3 — `idlewatch status` doesn't detect running LaunchAgent
+## Priority Summary (updated 2026-03-20 Round 3)
 
-**Location**: `bin/idlewatch-agent.js` → status block
-
-**Issue**: Status screen shows device, metrics, log, config — but never mentions whether the LaunchAgent is loaded/running. Users can't tell if background collection is active without manually checking `launchctl`.
-
-**Acceptance**:
-- Add a `LaunchAgent:` line that checks `launchctl print gui/$(id -u)/com.idlewatch.agent` and shows `running` / `not loaded` / `not installed`
-
----
-
-## 2026-03-20 — Day 1: Initial Polish Pass
-
-### ~~P1 — LaunchAgent install path clarity~~ → merged into P2 above
-
-### P2 — env file persistence during quickstart ✅ FIXED
-
-**Note**: Code now calls `writeSecureFile(outputEnvFile, ...)` during the wizard before the test publish. Confirmed in `enrollment.js`.
-
-### P2 — metric toggle persistence (create flow)
-
-**Location**: `src/custom-telemetry.js` / `bin/idlewatch-agent.js`
-
-**Issue**: `idlewatch create` saves to JSON but doesn't update `~/.idlewatch/idlewatch.env`. Not a functional bug (custom metrics load from their own JSON file), but confusing because other config lives in the env file.
-
-**Status**: Low priority — custom metrics use a separate JSON store by design. Could mention this in `idlewatch create` output.
-
-### P3 — OpenClaw usage stale threshold clarity
-
-**Status**: Docs-only. Low priority.
-
-### P2 — npx install path clarity → merged into P2 above
-
----
-
-## Priority Summary
-
-| # | Severity | Summary |
-|---|----------|---------|
-| 1 | P1 | `--help` dumps 25+ advanced env vars — overwhelming for users |
-| 2 | P1 | `status` says "no saved config" even with active local data |
-| 3 | P1 | `enrollment.js` text-mode path has undeclared variable bug |
-| 4 | P2 | No CLI subcommand for LaunchAgent install/uninstall |
-| 5 | P2 | `create` wizard can't edit/delete existing custom metrics |
-| 6 | P2 | Post-quickstart success message is debug-formatted |
-| 7 | P2 | npx menubar help text is vague / dead-end |
-| 8 | P3 | LaunchAgent uninstall has no CLI path |
-| 9 | P3 | `.env.example` has misleading defaults |
-| 10 | P3 | `status` doesn't show LaunchAgent state |
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | **P0** | `enrollment.js` text-mode crashes — undeclared `mode`/`cloudApiKey` in strict ES module | OPEN |
+| 2 | P1 | `--help` dumps 25+ advanced env vars | OPEN |
+| 3 | P1 | `status` says "no saved config" with active local data | OPEN |
+| 4 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 5 | P2 | `create` wizard can't edit/delete existing custom metrics | OPEN |
+| 6 | P2 | Post-quickstart success message is debug-formatted | OPEN |
+| 7 | P2 | npx menubar help text is vague / dead-end | OPEN |
+| 8 | P2 | `src/status.js` dead code with broken imports/template literals | OPEN |
+| 9 | P3 | LaunchAgent uninstall has no CLI path | OPEN |
+| 10 | P3 | `.env.example` has misleading defaults | OPEN |
+| 11 | P3 | `status` doesn't show LaunchAgent state | OPEN |
+| 12 | P3 | `.env.example` mixes user config with CI/packaging vars | OPEN |
