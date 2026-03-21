@@ -1613,3 +1613,35 @@ Full independent re-verification of all 45 items. Every closed fix confirmed sol
 **The CLI is mature for v0.1.x.** All 45 issues closed across 28 QA rounds + implementer fixes. No remaining open items.
 
 No further QA rounds needed until new code ships.
+
+---
+
+## 2026-03-21 — Round 29: Independent Full Verification (11:51 AM ET)
+
+### Full re-verification — all 45 items hold
+
+Independent fresh-session verification of every surface:
+
+- **`--help`**: 27 lines, clean layout with all subcommands listed (including `install-agent`/`uninstall-agent`). ✅
+- **`--version`**: `idlewatch 0.1.9`, exit 0. ✅
+- **Unknown subcommand** (`idlewatch notacommand`): `Unknown command "notacommand"...`, exit 1. ✅
+- **`--once`**: `⚠️ Sample collected (4 metrics) (not published)` + `❌ Cloud publish failed for "test": API key rejected`. Exit 1. ✅
+- **`--once --json`**: stdout is pure JSON (1 line), progress + error on stderr. `2>/dev/null | jq .` parses cleanly. `publishResult`/`publishError` fields present. ✅
+- **`--dry-run`**: metric values shown (CPU/Memory/GPU/Temp/OpenClaw with real numbers), `Temp: nominal` at 0°C. Exit 0. ✅
+- **`--once --dry-run`**: clean dry-run, no publish error, exit 0. ✅
+- **`run --json`**: banner/tip on stderr, stdout starts with JSON (verified via fd separation). ✅
+- **`status`**: LaunchAgent state (`not installed`), Device/ID dedup (shows only `Device: test`), mode in footer, log size, last sample age. ✅
+- **All subcommand `--help`**: quickstart, configure, status, run, create, dashboard, menubar, install-agent, uninstall-agent — all concise and accurate. ✅
+- **`reconfigure --help`**: proper alias text. `configure --help`: lists mode. ✅
+- **`menubar --help`**: `--force`/`--launch` flags. ✅
+- **`.env.example`**: cloud key first, Firebase demoted. ✅
+- **`--help-env`**: 4 clear sections (Common/Tuning/Probe internals/Firebase) with "Most users only need..." header. ✅
+- **README**: 59 lines, clean. Internal docs in docs/. ✅
+
+### No new findings
+
+All surfaces are polished and consistent. No regressions, no new issues.
+
+### Final Assessment
+
+**The CLI is mature for v0.1.x.** All 45 issues closed. Zero open items. No further QA rounds needed until new code ships.
