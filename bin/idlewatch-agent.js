@@ -172,10 +172,75 @@ async function runCustomMetricWizard() {
   try {
     console.log('\nIdleWatch custom telemetry')
     console.log(`Config file: ${metricsFile}`)
+
+    // If metrics exist, offer a menu: create / edit / delete
     if (existing.length > 0) {
-      console.log(`Existing metrics: ${existing.map((item) => item.label).join(', ')}`)
+      console.log(`\nExisting metrics:`)
+      existing.forEach((m, i) => console.log(`  ${i + 1}. ${m.label} (${m.key}) — ${m.command}`))
+
+      const action = (await rl.question('\nAction — 1) Create new  2) Edit existing  3) Delete [1]: ')).trim()
+
+      if (action === '2') {
+        // Edit flow
+        const which = existing.length === 1
+          ? '1'
+          : (await rl.question(`Which metric to edit? [1-${existing.length}]: `)).trim()
+        const idx = Math.max(0, Math.min(existing.length - 1, (parseInt(which, 10) || 1) - 1))
+        const target = existing[idx]
+
+        console.log(`\nEditing "${target.label}" — press Enter to keep current value.`)
+        const label = (await rl.question(`Name [${target.label}]: `)).trim() || target.label
+        const kindInput = (await rl.question(`Type [${target.kind}]: `)).trim().toLowerCase()
+        const command = (await rl.question(`Command [${target.command}]: `)).trim() || target.command
+
+        const kind = ['number', 'currency', 'percent'].includes(kindInput) ? kindInput : target.kind
+        let currency = target.currency || ''
+        let suffix = target.suffix || ''
+        if (kind === 'currency') {
+          currency = ((await rl.question(`Currency code [${currency || 'USD'}]: `)).trim() || currency || 'USD').toUpperCase()
+          suffix = ''
+        } else if (kind === 'number') {
+          suffix = (await rl.question(`Suffix [${suffix || 'empty'}]: `)).trim()
+          if (suffix === 'empty') suffix = ''
+          currency = ''
+        } else {
+          currency = ''
+          suffix = ''
+        }
+
+        const definition = normalizeCustomMetricDefinition({ label, key: target.key, kind, command, currency, suffix })
+        if (!definition) throw new Error('custom_metric_invalid_definition')
+
+        const next = existing.map((m) => m.key === target.key ? definition : m)
+        saveCustomMetricDefinitions(next, metricsFile)
+        console.log(`\nUpdated ${definition.label}.`)
+        return
+      }
+
+      if (action === '3') {
+        // Delete flow
+        const which = existing.length === 1
+          ? '1'
+          : (await rl.question(`Which metric to delete? [1-${existing.length}]: `)).trim()
+        const idx = Math.max(0, Math.min(existing.length - 1, (parseInt(which, 10) || 1) - 1))
+        const target = existing[idx]
+
+        const confirm = (await rl.question(`Delete "${target.label}"? [y/N]: `)).trim().toLowerCase()
+        if (confirm !== 'y' && confirm !== 'yes') {
+          console.log('Cancelled.')
+          return
+        }
+
+        const next = existing.filter((m) => m.key !== target.key)
+        saveCustomMetricDefinitions(next, metricsFile)
+        console.log(`\nDeleted ${target.label}. ${next.length} metric${next.length !== 1 ? 's' : ''} remaining.`)
+        return
+      }
+
+      // action === '1' or default: fall through to create
     }
 
+    // Create flow
     const label = (await rl.question('Name: ')).trim() || 'Custom metric'
     const keyInput = (await rl.question(`Key [${slugifyMetricKey(label)}]: `)).trim()
     const kindInput = (await rl.question('Type [number/currency/percent] (default number): ')).trim().toLowerCase()
@@ -634,12 +699,12 @@ Usage:  idlewatch status
 
 Displays device config, publish mode, enabled metrics, last sample age,
 and background LaunchAgent state.`,
-    create: `idlewatch create — Create a custom telemetry metric
+    create: `idlewatch create — Manage custom telemetry metrics
 
 Usage:  idlewatch create
 
-Interactive wizard to define a new metric with a name, type, and
-shell command that runs each sample cycle.`,
+Interactive wizard to create, edit, or delete custom metrics.
+Each metric has a name, type, and shell command that runs each cycle.`,
     'install-agent': `idlewatch install-agent — Install background LaunchAgent (macOS)
 
 Usage:  idlewatch install-agent
