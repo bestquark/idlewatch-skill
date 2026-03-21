@@ -5,6 +5,72 @@
 
 ---
 
+## 2026-03-21 — Round 7: New Findings + Full Reconfirmation
+
+### All 14 prior findings reconfirmed OPEN (no code changes since Round 6)
+
+P0 crash still live: `node bin/idlewatch-agent.js` → enrollment → `ReferenceError: mode is not defined` at `src/enrollment.js:377`. Fix still sitting in `src/enrollment-new.js`, never swapped in.
+
+### NEW P2 — `--version` flag not implemented (hangs or falls through)
+
+**Repro**:
+```
+node bin/idlewatch-agent.js --version
+# Expected: prints "idlewatch 0.1.9" and exits
+# Actual: hangs (falls through to interactive setup or collector start)
+```
+
+**Root cause**: No `--version` handler in argv parsing. `version` is read from `pkg.version` at line 1739 (telemetry payload) but never exposed to the user.
+
+**Acceptance**: `idlewatch --version` prints version string and exits with code 0.
+
+### NEW P3 — `reconfigure` not a recognized subcommand
+
+**Repro**:
+```
+node bin/idlewatch-agent.js reconfigure
+# Expected: reopens setup wizard with existing config pre-filled
+# Actual: falls through to interactive default (no-arg behavior)
+```
+
+**Root cause**: `--help` text says `configure` is an "alias for quickstart; reopen setup to change device name, API key, or metrics" — but `reconfigure` (a natural verb users would try) isn't mapped. Only `quickstart` and `configure` are recognized at line 531.
+
+**Acceptance**: Either add `reconfigure` as an alias, or ensure `--help` makes it unambiguous that `configure` is the correct verb.
+
+### NEW P3 — LaunchAgent plist path mismatch in post-setup hint
+
+**Location**: `bin/idlewatch-agent.js` line 603
+
+**Issue**: After setup, the hint says `~/Library/LaunchAgents/com.idlewatch.plist` but there's no code to create this plist. The running LaunchAgent is `com.idlewatch.agent` (confirmed via `launchctl list`). The hint points to a non-existent file with the wrong label.
+
+**Acceptance**: Either remove the hint (if LaunchAgent install is handled elsewhere) or fix the label to match the actual plist name and add the install logic.
+
+---
+
+## Priority Summary (updated 2026-03-21 Round 7)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | **P0** | `enrollment.js` undeclared `mode`/`cloudApiKey` — fix in `enrollment-new.js` not swapped | OPEN |
+| 2 | P1 | `package.json` self-dependency (`"idlewatch": "^0.1.9"`) | OPEN |
+| 3 | P1 | `--help` dumps 69 lines including 25+ advanced env vars | OPEN |
+| 4 | P1 | `status` says "no saved config" with active LaunchAgent | OPEN |
+| 5 | P2 | Dev artifacts: `enrollment-new.js`, `enrollment.js.tmp`, `enrollment-full-backup.js` | OPEN |
+| 6 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 7 | P2 | `create` wizard can't edit/delete existing custom metrics | OPEN |
+| 8 | P2 | Post-quickstart success/error messages are debug-formatted | OPEN |
+| 9 | P2 | npx menubar help text is vague / dead-end | OPEN |
+| 10 | P2 | `src/status.js` dead code with broken imports/template literals | OPEN |
+| 11 | P2 | `--version` flag not implemented (hangs) | **NEW** |
+| 12 | P3 | LaunchAgent uninstall has no CLI path | OPEN |
+| 13 | P3 | `.env.example` has misleading defaults | OPEN |
+| 14 | P3 | `status` doesn't show LaunchAgent state | OPEN |
+| 15 | P3 | `.env.example` mixes user config with CI/packaging vars (73 lines) | OPEN |
+| 16 | P3 | `reconfigure` not a recognized subcommand | **NEW** |
+| 17 | P3 | LaunchAgent plist path mismatch in post-setup hint | **NEW** |
+
+---
+
 ## 2026-03-21 — Round 6: Reconfirmation + New Findings
 
 ### All prior findings reconfirmed OPEN
