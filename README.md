@@ -27,7 +27,7 @@ npx idlewatch --dry-run
 
 ## CLI options
 
-- `quickstart`: run first-run enrollment wizard
+- `quickstart`/`configure`/`reconfigure`: run wizard or re-open setup flow
 - `--help`: show usage
 - `--dry-run`: collect one sample and exit without remote writes
 - `--once`: collect one sample, publish it using the active configured path, then exit

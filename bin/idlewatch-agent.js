@@ -640,6 +640,12 @@ Usage:  idlewatch menubar [--launch] [--force]
 Installs the macOS menu bar companion app.
   --launch   Open the app immediately after install
   --force    Reinstall even if already installed`,
+    reconfigure: `idlewatch reconfigure — Change device settings (alias for configure)
+
+Usage:  idlewatch reconfigure [--no-tui]
+
+Re-opens the setup wizard to change mode, API key, device name, or metrics.
+Existing values are pre-filled so you only change what you need.`,
     dashboard: `idlewatch dashboard — Launch local telemetry dashboard
 
 Usage:  idlewatch dashboard
