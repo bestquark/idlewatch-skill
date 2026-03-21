@@ -370,9 +370,9 @@ Dry-run for "test" (cloud mode)…
 | 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
 | 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
 | 15 | P3 | `--once --json` error stream mixing | OPEN (low priority) |
-| 16 | **P1** | Unknown subcommand starts collector loop silently | NEW |
-| 17 | P2 | `--once` second line still debug-formatted | NEW |
-| 18 | P3 | `--dry-run` shows no useful sample summary | NEW |
+| 16 | **P1** | Unknown subcommand starts collector loop silently | ✅ CLOSED — prints error + exit 1 |
+| 17 | P2 | `--once` second line still debug-formatted | ✅ CLOSED — concise "✅ Sample collected (N metrics)" |
+| 18 | P3 | `--dry-run` shows no useful sample summary | ✅ CLOSED — shows metric count + "nothing published (dry run)" |
 
 ### Top recommendations for next implementer cycle
 1. **#16 (P1)** — Unknown subcommands must error, not silently start collector.
