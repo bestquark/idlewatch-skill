@@ -1362,6 +1362,99 @@ No further QA rounds are needed until new code ships or #40 is fixed.
 ### Assessment
 All 40 QA items are now closed (38 polish fixes + 2 remaining feature requests). The CLI is mature for v0.1.x.
 
+## 2026-03-21 — Round 26: Deep Edge-Case Pass
+
+### All 40 prior items verified — all hold
+
+Full re-verification of every closed item. Everything solid.
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 42 | P2 | `publish()` has no timeout on `fetch()` — `--once` hangs forever if API is unresponsive | NEW |
+| 43 | P2 | `--once` takes ~6.5s even for a simple reject — probe + publish overhead feels sluggish | NEW |
+| 44 | P3 | `--once` exit with non-zero lacks a summary when `REQUIRE_CLOUD_WRITES` is not set | NEW |
+
+### #42 — `publish()` fetch has no timeout — `--once` can hang indefinitely
+
+**Repro**: Simulate by blocking `api.idlewatch.com` at the network level, then `idlewatch --once`.
+
+**Code**: `bin/idlewatch-agent.js` line ~1649: `await fetch(CLOUD_INGEST_URL, { method: 'POST', ... })` — no `signal: AbortSignal.timeout(...)`.
+
+**Why it matters**: If the ingest API is down, unreachable, or slow, `--once` (the primary test-publish surface) hangs with no feedback. The `--dry-run` path is immune because it returns early. But `--once` is specifically for "does my publish work?" — and it can silently freeze.
+
+**Acceptance**:
+1. `fetch()` in `publish()` uses `AbortSignal.timeout(10000)` (or configurable via `IDLEWATCH_PUBLISH_TIMEOUT_MS`)
+2. On timeout: `❌ Cloud publish timed out for "test". Check connectivity to api.idlewatch.com.`
+3. Exit 1 with clear error, never hang
+
+### #43 — `--once` takes ~6.5s for a simple API key rejection
+
+**Repro**:
+```bash
+time idlewatch --once
+```
+
+**Observed**: 6.5s wall time for: probe OpenClaw (~2s), collect CPU/memory/GPU (~1s), publish + get 401 (~0.2s), cleanup (~3s). The ~3s cleanup is likely Node.js event loop draining (unref'd timers, Firebase SDK teardown, etc.).
+
+**Why it matters**: Minor — 6.5s is acceptable for a one-shot. But on a clean machine without Firebase SDK loaded, this should be <3s. The Firebase SDK may be initializing even when not used (cloud mode with API key).
+
+**Acceptance (minor)**: Lazy-load Firebase SDK only when Firebase env vars are set. Skip `admin.initializeApp()` entirely in cloud-only mode. Target: `--once` < 3s.
+
+### #44 — `--once` exit 1 has no summary line when REQUIRE_CLOUD_WRITES is unset
+
+**Repro**:
+```bash
+idlewatch --once 2>/dev/null; echo $?
+```
+
+**Observed**: Exit code 0 (not 1 — correction from earlier assumption). When `REQUIRE_CLOUD_WRITES` is not set (default), `--once` actually exits 0 even when publish fails. The `⚠️` and `❌` messages go to stdout/stderr respectively, but exit 0 means scripts treating exit code as success/fail won't catch the publish failure.
+
+Wait — re-checking: exit code was 1 in the timed run. Let me re-verify.
+
+```bash
+$ node bin/idlewatch-agent.js --once 2>&1; echo "EXIT=$?"
+# → EXIT=1
+```
+
+Exit code is 1 because `REQUIRE_CLOUD_WRITES` defaults to 0 but the throw at line ~2014 fires for `invalid_api_key` (kicked out). Actually the throw only fires when `REQUIRE_CLOUD_WRITES` is set. Let me re-check.
+
+Re-verified: exit 1 comes from the `throw` in the `REQUIRE_CLOUD_WRITES` path. But the config has `IDLEWATCH_REQUIRE_CLOUD_WRITES=` unset... yet exit is 1.
+
+Actually, looking at the code more carefully — the `--once` path in the outer wrapper catches errors and calls `process.exit(1)`. The throw propagates up. So exit 1 is correct here.
+
+**Verdict**: Withdrawing #44 — exit codes are correct.
+
+---
+
+## Priority Summary (Round 26, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1–40 | — | All prior items | ✅ CLOSED |
+| 42 | **P2** | `publish()` fetch has no timeout — `--once` can hang if API unresponsive | NEW |
+| 43 | P3 | `--once` ~6.5s overhead, possibly from Firebase SDK loading in cloud-only mode | NEW |
+
+### Remaining open items
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 32 | P3 | README GPU matrix is implementation detail | ✅ CLOSED (Round 20) |
+| 33 | P3 | README Reliability section is implementation detail | ✅ CLOSED (Round 20) |
+| 42 | P2 | `publish()` fetch has no timeout | NEW |
+| 43 | P3 | `--once` slow startup (Firebase SDK?) | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#42 (P2)** — Add `AbortSignal.timeout()` to the `fetch()` in `publish()`. Prevents `--once` from hanging if the API is unreachable.
+2. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+3. **#3 (P2)** — `create` wizard edit/delete (feature).
+4. **#43 (P3)** — Lazy-load Firebase SDK to speed up `--once` in cloud-only mode.
+
+---
+
 ## 2026-03-21 — Round 25: Final Verification
 
 ### All 40 items verified — all hold
