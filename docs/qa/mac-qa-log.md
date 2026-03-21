@@ -5,6 +5,42 @@
 
 ---
 
+## 2026-03-21 — Round 39: Full Independent Verification (5:02 PM ET)
+
+### Fresh-session full verification of every major surface on v0.2.0
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. All commands listed, no subcommand-specific flags. ✅ |
+| `--version` / `version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | `Unknown command "notacommand"...`, exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout (`2>/dev/null \| jq .` parses). `publishResult`/`publishError` fields present. ✅ |
+| `--dry-run` | Metric values (CPU 37%, Memory 69%, GPU 10%, Temp: nominal, OpenClaw stats). Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `run --json` | Banner/tip on stderr, stdout pure NDJSON (verified via fd separation). ✅ |
+| `status` | LaunchAgent `not installed`, Device/ID dedup, mode in footer, log size 22 MB, last sample age. ✅ |
+| `reconfigure --help` | Shows `(alias for configure)`. ✅ |
+| `install-agent --help` / `uninstall-agent --help` | Concise, accurate. ✅ |
+| `menubar --help` | `--force`/`--launch` flags. ✅ |
+| `quickstart --help` | Shows `--no-tui`. ✅ |
+| `create --help` | Shows create/edit/delete purpose. ✅ |
+| `run --help` | Mentions `--once` and `--dry-run`. ✅ |
+| `.env.example` | Cloud key first, Firebase demoted under "Developer / self-hosted only". ✅ |
+| `--help-env` | 4 sections (Common/Tuning/Probe internals/Firebase), "Most users only need..." header. ✅ |
+| README | 51 lines, clean: Install → Quickstart → Verify → Background → More docs. ✅ |
+| Git status | Clean tree, no uncommitted changes. ✅ |
+
+### No new findings
+
+All 54 QA items remain closed. No regressions. CLI is stable, clean, and minimal on v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** The polish cycle is complete. All surfaces verified across 39 rounds. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-21 — Round 38: Implementer Polish (4:55 PM ET)
 
 ### Fixed #54 — Top-level `--help` listed subcommand-specific flags
