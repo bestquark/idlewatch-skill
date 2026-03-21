@@ -257,3 +257,125 @@ idlewatch --once --json 2>&1
 2. **#2** — CLI subcommands for LaunchAgent install/uninstall.
 3. **#3** — `create` wizard should support editing/deleting existing custom metrics.
 4. **#14** — `menubar` should detect existing install before overwriting.
+
+---
+
+## 2026-03-21 — Round 12: Verification + New Findings
+
+### Verified closures
+- **#13 debug banner**: `--once` now prints `Collecting sample for "test" (cloud mode)…` — clean one-liner. `--dry-run` prints `Dry-run for "test" (cloud mode)…`. **Confirmed CLOSED.**
+- **#14 menubar reinstall**: `menubar --help` shows `--force` flag. **Confirmed CLOSED.**
+- **`.env.example`**: Leads with `IDLEWATCH_CLOUD_API_KEY`, Firebase vars under "Developer / self-hosted only". **Confirmed CLOSED.**
+- **`--help-env`**: "Most users only need the Common section below." at top. Three clear sections. **Confirmed CLOSED.**
+
+### Remaining open from prior rounds
+- **#2** P2 — No CLI subcommand for LaunchAgent install/uninstall. OPEN.
+- **#3** P2 — `create` wizard can't edit/delete existing custom metrics. OPEN.
+- **#15** P3 — `--once --json` error mixes JSON stdout + plaintext stderr. OPEN (low priority).
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 16 | **P1** | Unknown subcommand silently starts collector loop instead of showing error | NEW |
+| 17 | P2 | `--once` second line is still a debug-style `Initial sample ready (mode=... metrics=... localLog=...)` banner | NEW |
+| 18 | P3 | `--dry-run` shows only that 2nd debug line + nothing else — no sample summary | NEW |
+
+### #16 — **P1** Unknown subcommand silently starts collector loop
+
+**Repro**:
+```
+idlewatch blah
+idlewatch notacommand
+```
+
+**Observed**: No error message. The CLI silently falls through to the default `run` behavior and starts the collector loop (publishing samples every 10s). The user has no idea they typed a wrong command — it just starts collecting.
+
+**Why it matters**: This is a safety and UX problem. A typo like `idlewatch staus` silently starts a background collector. The user expects an error. Every CLI in the world prints "unknown command" for unrecognized input.
+
+**Acceptance**:
+1. Unknown subcommands print: `Unknown command "blah". Run idlewatch --help for available commands.`
+2. Exit code 1
+3. Never fall through to the collector loop on unrecognized input
+
+### #17 — `--once` second line is still debug-formatted
+
+**Repro**:
+```
+idlewatch --once
+```
+
+**Observed**: Output is:
+```
+Collecting sample for "test" (cloud mode)…
+Initial sample ready (mode=cloud metrics=cpu,memory,gpu,openclaw localLog=/Users/luismantilla/.idlewatch/logs/test-metrics.ndjson)
+Cloud API key was rejected (invalid_api_key). This device was disconnected. Run idlewatch quickstart with a new API key.
+```
+
+The second line (`Initial sample ready (mode=cloud metrics=... localLog=...)`) is a debug-style key=value dump. A user testing publish doesn't need to see the localLog path or the mode they already know about.
+
+**Acceptance**: `--once` output should be:
+```
+Collecting sample for "test" (cloud mode)…
+✅ Sample collected (7 metrics)
+❌ Cloud publish failed: API key was rejected. Run idlewatch quickstart with a new key.
+```
+Or on success:
+```
+Collecting sample for "test" (cloud mode)…
+✅ Sample collected and published (7 metrics)
+```
+
+### #18 — `--dry-run` shows only debug line, no useful summary
+
+**Repro**:
+```
+idlewatch --dry-run
+```
+
+**Observed**:
+```
+Dry-run for "test" (cloud mode)…
+Initial sample ready (mode=cloud metrics=cpu,memory,gpu,openclaw localLog=/Users/luismantilla/.idlewatch/logs/test-metrics.ndjson)
+```
+
+No actual sample summary is shown. The user wanted to preview what would be collected — but sees only that a sample was "ready" with no values. The useful output requires `--dry-run --json` which dumps an unreadable 4500-char JSON blob.
+
+**Acceptance**: `--dry-run` should print a concise human-readable summary:
+```
+Dry-run for "test" (cloud mode)…
+  CPU: 27%  Memory: 71%  GPU: 10%  Temp: nominal
+  OpenClaw: gpt-5.4, 4% context used, 110k tok/min
+  7 metrics collected — nothing published (dry run)
+```
+
+---
+
+## Priority Summary (Round 12, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4 | P2 | Post-quickstart messages debug-formatted | ✅ CLOSED |
+| 5 | P2 | menubar help text vague | ✅ CLOSED |
+| 6 | P2 | `status` LaunchAgent state | ✅ CLOSED |
+| 7 | P3 | `.env.example` mixes user/CI vars | ✅ CLOSED |
+| 8 | P3 | Wizard ASCII box too wide | ✅ CLOSED |
+| 9 | P2 | Subcommand `--help` falls through | ✅ CLOSED |
+| 10 | P2 | `--once` dumps raw JSON | ✅ CLOSED |
+| 11 | P3 | `.env.example` Firebase refs | ✅ CLOSED |
+| 12 | P3 | `--help-env` scannability | ✅ CLOSED |
+| 13 | P2 | `--once`/`--dry-run` debug banner | ✅ CLOSED |
+| 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED |
+| 15 | P3 | `--once --json` error stream mixing | OPEN (low priority) |
+| 16 | **P1** | Unknown subcommand starts collector loop silently | NEW |
+| 17 | P2 | `--once` second line still debug-formatted | NEW |
+| 18 | P3 | `--dry-run` shows no useful sample summary | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#16 (P1)** — Unknown subcommands must error, not silently start collector.
+2. **#17 (P2)** — Clean up `--once` output to show concise collect/publish result.
+3. **#2 (P2)** — Add `install-agent` / `uninstall-agent` subcommands.
+4. **#18 (P3)** — `--dry-run` should show a human-readable sample summary.
