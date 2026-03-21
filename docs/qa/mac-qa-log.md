@@ -70,14 +70,14 @@ or `not installed` / `stopped` as appropriate. Use `launchctl print gui/<uid>/co
 
 | # | Sev | Summary | Status |
 |---|-----|---------|--------|
-| 1 | **P1** | `--help` is 69 lines with 30 env vars — overwhelming for new users | OPEN |
+| 1 | **P1** | `--help` is 69 lines with 30 env vars — overwhelming for new users | ✅ CLOSED — trimmed to 26 lines, env vars moved to `--help-env` |
 | 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
 | 3 | P2 | `create` wizard can't edit/delete existing custom metrics | OPEN |
 | 4 | P2 | Post-quickstart success/error messages are debug-formatted | OPEN |
 | 5 | P2 | npx menubar help text is vague / dead-end | OPEN |
-| 6 | P2 | `status` doesn't show LaunchAgent state | OPEN (promoted from P3) |
+| 6 | P2 | `status` doesn't show LaunchAgent state | ✅ CLOSED — status now shows LaunchAgent loaded/idle/not installed |
 | 7 | P3 | `.env.example` mixes user config with CI vars | OPEN |
-| 8 | P3 | Wizard ASCII box is visually noisy for a 2-option prompt | NEW |
+| 8 | P3 | Wizard ASCII box is visually noisy for a 2-option prompt | ✅ CLOSED — replaced with minimal inline prompt |
 
 ### Notes
 - 4 items closed this round (--version, self-dep, dev artifacts, dead status.js). Good progress.
