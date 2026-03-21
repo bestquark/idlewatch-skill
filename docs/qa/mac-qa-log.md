@@ -1112,3 +1112,96 @@ The CLI is in **good shape**. All P1s and P2s are closed. The remaining open ite
 1. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
 2. **#3 (P2)** — `create` wizard edit/delete support (feature).
 3. **#36 (P3)** — Add `publishResult` field to `--once --json` output.
+
+---
+
+## 2026-03-21 — Round 21: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+Full re-check of all 37 items. Every closed item is confirmed solid. Spot-checked:
+- `--help`: 27 lines, clean layout. `--version`: `idlewatch 0.1.9`, exit 0.
+- Unknown subcommand: error + exit 1. All subcommand `--help`: concise, accurate.
+- `--once`: `⚠️` on fail, `❌` with device name. `--json 2>/dev/null | jq .`: valid JSON.
+- `--dry-run`: metric values shown, `Temp: nominal` at 0°C. Exit 0.
+- `--once --dry-run`: clean, no publish error, exit 0.
+- `--dry-run --json 2>/dev/null`: valid JSON on stdout.
+- `status`: LaunchAgent state, Device/ID dedup, mode in footer.
+- `reconfigure --help`: shows "(alias for configure)".
+- `.env.example`: cloud key first, Firebase demoted. `--help-env`: 3 sections, clear header.
+- README: 59 lines, clean. Internal docs in docs/.
+- `-h`: works as alias for `--help`.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 36 | P3 | `--once --json` no `publishResult` field in JSON on failure | OPEN (low priority) |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 38 | P2 | `run` (continuous mode) dumps raw JSON blobs to stdout — no human-readable output | NEW |
+| 39 | P3 | `run` start banner omits LaunchAgent hint when not installed | NEW |
+
+### #38 — `run` (continuous mode) dumps raw JSON to stdout
+
+**Repro**:
+```
+idlewatch run
+# or just: idlewatch (no args, defaults to run)
+```
+
+**Observed**: First line is a clean banner: `idlewatch started — "test" (cloud mode, every 10s)`. Then every 10s, a full raw JSON blob (~2500 chars, single line) is printed to stdout. This is the same machine-readable format from `--once --json`, but printed unconditionally in human-facing continuous mode.
+
+A user starting `idlewatch run` in a terminal sees an unreadable wall of JSON scrolling every 10 seconds. Contrast with `--once` (concise summary) and `--dry-run` (metric values).
+
+**Why it matters**: `run` is the primary ongoing mode. Its output should be human-friendly by default. Raw JSON should be behind `--json` or `--verbose`.
+
+**Acceptance**:
+1. Default `run` output: one summary line per cycle (e.g., `10:20:15 ✅ CPU: 25% Mem: 66% GPU: 10% → published`)
+2. On error: `10:20:15 ❌ publish failed: invalid_api_key`
+3. Raw JSON per cycle available via `run --json` or `run --verbose`
+4. Start/stop banners stay as-is (clean)
+
+### #39 — `run` start banner doesn't suggest LaunchAgent when not installed
+
+**Repro**:
+```
+idlewatch run
+```
+(with LaunchAgent not installed)
+
+**Observed**: Banner: `idlewatch started — "test" (cloud mode, every 10s)`. No hint that a LaunchAgent exists for background operation. `status` shows `Background: LaunchAgent not installed`, but `run` doesn't cross-reference.
+
+**Acceptance (minor)**: After the start banner, add a one-time hint: `Tip: Run idlewatch menubar to install background collection.` Only show when LaunchAgent is not installed.
+
+---
+
+## Priority Summary (Round 21, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 4–35 | — | All prior items | ✅ CLOSED |
+| 36 | P3 | `--once --json` no `publishResult` field | OPEN (low priority) |
+| 37 | P3 | `status` footer omits "mode" | ✅ CLOSED |
+| 38 | **P2** | `run` dumps raw JSON blobs to stdout — unreadable for humans | NEW |
+| 39 | P3 | `run` banner doesn't hint at LaunchAgent when not installed | NEW |
+
+### Assessment
+
+The CLI is **mature** for a v0.1.x. All P1s are closed. The 3 open P2s are:
+- **#2, #3**: Feature requests (LaunchAgent CLI, custom metric editing) — not polish.
+- **#38**: Real polish issue — `run` output is the worst remaining UX gap.
+
+### Top recommendations for next implementer cycle
+1. **#38 (P2)** — `run` should print concise one-line-per-cycle summaries, not raw JSON. Most impactful remaining polish item.
+2. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+3. **#3 (P2)** — `create` wizard edit/delete support (feature).
+4. **#36 (P3)** — Add `publishResult` to `--once --json` output.
+5. **#39 (P3)** — Hint about LaunchAgent in `run` start banner.
