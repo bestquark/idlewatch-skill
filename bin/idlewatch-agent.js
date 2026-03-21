@@ -77,6 +77,7 @@ Common:
   IDLEWATCH_CLOUD_API_KEY              API key from idlewatch.com/api
   IDLEWATCH_CLOUD_INGEST_URL           Ingest endpoint (default: https://api.idlewatch.com/api/ingest)
   IDLEWATCH_LOCAL_LOG_PATH             NDJSON file for local sample durability
+  IDLEWATCH_LOCAL_LOG_MAX_MB           Max log size before rotation (default: 10)
   IDLEWATCH_DASHBOARD_PORT             Local dashboard port (default: 4373)
   IDLEWATCH_OPENCLAW_USAGE             OpenClaw usage mode: auto|off (default: auto)
   IDLEWATCH_REQUIRE_CLOUD_WRITES       Require cloud publish in --once mode: 1|0 (default: 0)
@@ -1349,9 +1350,22 @@ function getLocalLogUsage() {
   }
 }
 
+const LOCAL_LOG_MAX_BYTES = parseInt(process.env.IDLEWATCH_LOCAL_LOG_MAX_MB || '10', 10) * 1024 * 1024
+
+function rotateLocalLogIfNeeded() {
+  try {
+    const stat = fs.statSync(LOCAL_LOG_PATH)
+    if (stat.size >= LOCAL_LOG_MAX_BYTES) {
+      const rotated = LOCAL_LOG_PATH + '.1'
+      fs.renameSync(LOCAL_LOG_PATH, rotated)
+    }
+  } catch (_) { /* file doesn't exist yet — nothing to rotate */ }
+}
+
 function appendLocal(row) {
   try {
     ensureDirFor(LOCAL_LOG_PATH)
+    rotateLocalLogIfNeeded()
     fs.appendFileSync(LOCAL_LOG_PATH, `${JSON.stringify(row)}\n`, 'utf8')
   } catch (err) {
     console.error(`Local log append failed (${LOCAL_LOG_PATH}): ${err.message}`)
