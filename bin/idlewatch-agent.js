@@ -37,7 +37,72 @@ import { installMenubarApp } from '../scripts/install-macos-menubar.mjs'
 import pkg from '../package.json' with { type: 'json' }
 
 function printHelp() {
-  console.log(`idlewatch\n\nUsage:\n  idlewatch [quickstart|configure|status|dashboard|run|create|menubar] [--no-tui] [--dry-run] [--once] [--launch] [--help]\n\nOptions:\n  quickstart  Run first-run setup and save local IdleWatch config\n  configure   Alias for quickstart; reopen setup to change device name, API key, or metrics\n  status      Show current device config, publish mode, last sample age, and cached provider quota\n  dashboard   Launch local dashboard from local IdleWatch logs\n  run         Start the background collector using saved local config\n  create      Create a simple custom telemetry metric from a shell command\n  menubar     Install the macOS menu bar app into ~/Applications/IdleWatch.app\n  --launch    Open the macOS menu bar app after install\n  --no-tui    Skip the Rust TUI and use plain text setup without installing Cargo\n  --dry-run   Collect and print one telemetry sample, then exit without remote writes\n  --once      Collect and publish one telemetry sample, then exit\n  --help      Show this help message\n\nQuickstart:\n  1. Create an API key on idlewatch.com/api\n  2. Run: idlewatch quickstart\n  3. Pick a device name and metrics\n  4. IdleWatch saves your local config and sends a first sample\n\nMenu bar:\n  idlewatch menubar --launch\n  If you used npx, install the package globally first or run the command from the cloned repo.\n\nCustom telemetry:\n  idlewatch create\n  The command should print a number or JSON like {"value": 1234.56}\n\nCommon env (optional):\n  IDLEWATCH_CLOUD_API_KEY            Cloud API key from idlewatch.com/api for device linking\n  IDLEWATCH_CLOUD_INGEST_URL         Cloud ingest endpoint (default: https://api.idlewatch.com/api/ingest)\n  IDLEWATCH_LOCAL_LOG_PATH           Optional NDJSON file path for local sample durability\n  IDLEWATCH_DASHBOARD_PORT           Local dashboard HTTP port (default: 4373)\n  IDLEWATCH_OPENCLAW_USAGE           OpenClaw usage lookup mode: auto|off (default: auto)\n  IDLEWATCH_REQUIRE_CLOUD_WRITES     Require cloud publish path in --once mode: 1|0 (default: 0)\n  IDLEWATCH_CUSTOM_METRICS_FILE      Path to a custom telemetry config JSON file (default: ~/.idlewatch/custom-metrics.json)\n\nAdvanced env tuning:\n  IDLEWATCH_HOST                     Optional custom host label (default: hostname)\n  IDLEWATCH_INTERVAL_MS              Sampling interval in ms (default: 10000)\n  IDLEWATCH_PROVIDER_QUOTA_INTERVAL_MS   Provider quota refresh interval in ms (default: 900000 / 15m)\n  IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS    Provider quota probe timeout in ms (default: 4000)\n  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS OpenClaw command timeout per probe in ms (default: 2500)\n  IDLEWATCH_OPENCLAW_PROBE_RETRIES   Extra OpenClaw probe sweep retries after first pass (default: 1)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES   Max per-command OpenClaw probe output capture in bytes before truncation (default: 2097152 / 2MB)\n  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for auto-retry output capture escalation (default: 16777216 / 16MB)\n  IDLEWATCH_USAGE_STALE_MS           Mark OpenClaw usage stale beyond this age in ms (default: max(interval*3,60000))\n  IDLEWATCH_USAGE_NEAR_STALE_MS      Mark OpenClaw usage as aging beyond this age in ms (default: floor((stale+grace)*0.85))\n  IDLEWATCH_USAGE_STALE_GRACE_MS     Extra grace window before status becomes stale (default: min(interval,10000))\n  IDLEWATCH_USAGE_REFRESH_REPROBES   Forced uncached reprobes when usage crosses stale threshold (default: 1)\n  IDLEWATCH_USAGE_REFRESH_DELAY_MS   Delay between forced stale-threshold reprobes in ms (default: 250)\n  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE Trigger refresh when usage is near-stale: 1|0 (default: 1)\n  IDLEWATCH_USAGE_IDLE_AFTER_MS      Downgrade stale usage alerts to idle notice beyond this age in ms (default: 21600000)\n  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last successful usage snapshot after probe failures up to this age in ms\n  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH Persist/reuse last successful usage snapshot across restarts (default: ~/.idlewatch/cache/<host>-openclaw-last-good.json)\n\nAdvanced Firebase / emulator mode:\n  IDLEWATCH_REQUIRE_FIREBASE_WRITES  Require Firebase publish path in --once mode: 1|0 (default: 0)\n  FIREBASE_PROJECT_ID                Firebase project id\n  FIREBASE_SERVICE_ACCOUNT_FILE      Path to service account JSON file (preferred for production)\n  FIREBASE_SERVICE_ACCOUNT_JSON      Raw JSON service account (supported, less secure than file path)\n  FIREBASE_SERVICE_ACCOUNT_B64       Base64-encoded JSON service account (legacy)\n  FIRESTORE_EMULATOR_HOST            Optional Firestore emulator host; allows local writes without service-account creds\n`)
+  console.log(`idlewatch
+
+Usage:
+  idlewatch <command> [options]
+
+Commands:
+  quickstart   Set up this device (API key, name, metrics)
+  configure    Re-open setup to change settings
+  status       Show device config and background agent state
+  run          Start the background collector
+  create       Create a custom telemetry metric
+  dashboard    Launch local telemetry dashboard
+  menubar      Install the macOS menu bar app
+
+Options:
+  --once       Collect and publish one sample, then exit
+  --dry-run    Collect and print one sample without publishing
+  --no-tui     Use plain text setup (no Rust TUI)
+  --launch     Open menu bar app after install
+  --help       Show this help
+  --help-env   Show all environment variables
+
+Get started:
+  1. Create an API key at idlewatch.com/api
+  2. Run: idlewatch quickstart
+  3. Pick a device name and metrics — done!`)
+}
+
+function printHelpEnv() {
+  console.log(`idlewatch — environment variables
+
+Common:
+  IDLEWATCH_CLOUD_API_KEY              API key from idlewatch.com/api
+  IDLEWATCH_CLOUD_INGEST_URL           Ingest endpoint (default: https://api.idlewatch.com/api/ingest)
+  IDLEWATCH_LOCAL_LOG_PATH             NDJSON file for local sample durability
+  IDLEWATCH_DASHBOARD_PORT             Local dashboard port (default: 4373)
+  IDLEWATCH_OPENCLAW_USAGE             OpenClaw usage mode: auto|off (default: auto)
+  IDLEWATCH_REQUIRE_CLOUD_WRITES       Require cloud publish in --once mode: 1|0 (default: 0)
+  IDLEWATCH_CUSTOM_METRICS_FILE        Custom metrics JSON path (default: ~/.idlewatch/custom-metrics.json)
+
+Tuning:
+  IDLEWATCH_HOST                       Custom host label (default: hostname)
+  IDLEWATCH_INTERVAL_MS                Sampling interval in ms (default: 10000)
+  IDLEWATCH_PROVIDER_QUOTA_INTERVAL_MS Provider quota refresh interval (default: 900000)
+  IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS  Provider quota probe timeout (default: 4000)
+  IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS  OpenClaw probe timeout (default: 2500)
+  IDLEWATCH_OPENCLAW_PROBE_RETRIES     Extra probe retries (default: 1)
+  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES  Max probe output capture (default: 2MB)
+  IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP  Hard cap for output escalation (default: 16MB)
+  IDLEWATCH_USAGE_STALE_MS             Usage stale threshold (default: max(interval*3,60000))
+  IDLEWATCH_USAGE_NEAR_STALE_MS        Near-stale threshold
+  IDLEWATCH_USAGE_STALE_GRACE_MS       Grace window before stale (default: min(interval,10000))
+  IDLEWATCH_USAGE_REFRESH_REPROBES     Stale-threshold reprobes (default: 1)
+  IDLEWATCH_USAGE_REFRESH_DELAY_MS     Reprobe delay (default: 250)
+  IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE  Refresh on near-stale: 1|0 (default: 1)
+  IDLEWATCH_USAGE_IDLE_AFTER_MS        Downgrade stale to idle after (default: 21600000)
+  IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS  Reuse last good snapshot up to this age
+  IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH  Last good snapshot path
+
+Firebase / emulator:
+  IDLEWATCH_REQUIRE_FIREBASE_WRITES    Require Firebase in --once: 1|0 (default: 0)
+  FIREBASE_PROJECT_ID                  Firebase project id
+  FIREBASE_SERVICE_ACCOUNT_FILE        Service account JSON path
+  FIREBASE_SERVICE_ACCOUNT_JSON        Raw service account JSON
+  FIREBASE_SERVICE_ACCOUNT_B64         Base64-encoded service account
+  FIRESTORE_EMULATOR_HOST              Firestore emulator host`)
 }
 
 const require = createRequire(import.meta.url)
@@ -527,10 +592,15 @@ const dashboardRequested = argv[0] === 'dashboard' || argv.includes('--dashboard
 const runRequested = argv[0] === 'run' || argv.includes('--run')
 const createRequested = argv[0] === 'create' || argv.includes('--create')
 const menubarRequested = argv[0] === 'menubar'
+const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
 if (args.has('--version') || args.has('-V')) {
   console.log(`idlewatch ${pkg.version}`)
+  process.exit(0)
+}
+if (args.has('--help-env')) {
+  printHelpEnv()
   process.exit(0)
 }
 if (args.has('--help') || args.has('-h')) {
@@ -908,6 +978,31 @@ if (statusRequested) {
   console.log(`  Metrics:      ${[...MONITOR_TARGETS].join(', ')}`)
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)
+
+  // LaunchAgent state
+  if (process.platform === 'darwin') {
+    const uid = process.getuid?.() ?? ''
+    const svcLabel = 'com.idlewatch.agent'
+    const probe = spawnSync('launchctl', ['print', `gui/${uid}/${svcLabel}`], { timeout: 3000, stdio: ['ignore', 'pipe', 'pipe'] })
+    if (probe.status === 0) {
+      const out = String(probe.stdout)
+      const pidMatch = out.match(/^\s*pid\s*=\s*(\d+)/m)
+      if (pidMatch) {
+        console.log(`  Background:   LaunchAgent loaded (running, pid ${pidMatch[1]})`)
+      } else {
+        console.log(`  Background:   LaunchAgent loaded (idle)`)
+      }
+    } else {
+      // Check if plist exists but isn't loaded
+      const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
+      if (fs.existsSync(plistPath)) {
+        console.log(`  Background:   LaunchAgent installed but not loaded`)
+      } else {
+        console.log(`  Background:   LaunchAgent not installed`)
+      }
+    }
+  }
+
   if (MONITOR_PROVIDER_QUOTA) {
     const quotaCache = loadProviderQuotaCache(PROVIDER_QUOTA_CACHE_PATH)
     if (quotaCache?.providerConnections?.length) {

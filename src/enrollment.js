@@ -232,11 +232,9 @@ function tryRustTui({ configDir, outputEnvFile }) {
 }
 
 function promptModeText({ isReconfigure = false, currentMode = null } = {}) {
-  const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup Wizard'
-  const pad = Math.max(0, Math.floor((47 - title.length) / 2))
-  const titleLine = ' '.repeat(pad) + title
+  const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup'
   const defaultHint = currentMode === 'local' ? ' (default 2)' : ' (default 1)'
-  return `\n╭───────────────────────────────────────────────╮\n│${titleLine.padEnd(47)}│\n╰───────────────────────────────────────────────╯\n\nChoose setup mode:\n  1) Managed cloud (recommended)\n     Link this device with an API key from idlewatch.com/api\n  2) Local-only (no cloud writes)\n`
+  return `\n${title}\n\nSetup mode${defaultHint}:\n  1) Cloud (recommended) — link with an API key from idlewatch.com/api\n  2) Local-only — no cloud writes\n`
 }
 
 function monitorTargetsNeedOpenClawUsage(monitorTargets) {
