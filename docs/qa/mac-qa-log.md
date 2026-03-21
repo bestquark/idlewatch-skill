@@ -613,9 +613,9 @@ Minor: On a multi-device setup, knowing *which* device failed is useful. The col
 | 19 | P2 | `--once --json` progress on stdout | ✅ CLOSED (superseded by #22) |
 | 20 | P2 | `--dry-run` no metric values | ✅ CLOSED |
 | 21 | P3 | `status` redundant Device/Device ID | ✅ CLOSED |
-| 22 | **P2** | `--once --json` progress line on stdout, not stderr | NEW |
-| 23 | P3 | `Temp: 0°C` when sensor returns zero — misleading | NEW |
-| 24 | P3 | Error message missing device name for multi-device | NEW |
+| 22 | **P2** | `--once --json` progress line on stdout, not stderr | ✅ CLOSED — already fixed, verified pure JSON on stdout |
+| 23 | P3 | `Temp: 0°C` when sensor returns zero — misleading | ✅ CLOSED — shows `Temp: nominal` when 0°C |
+| 24 | P3 | Error message missing device name for multi-device | ✅ CLOSED — error includes device name |
 
 ### Top recommendations for next implementer cycle
 1. **#22 (P2)** — `--json` progress line must go to stderr, not stdout.

@@ -1932,8 +1932,9 @@ function summarizeSample(row, { verbose = false } = {}) {
   if (row.cpuPct != null) parts.push(`CPU: ${Math.round(row.cpuPct)}%`)
   if (row.memPct != null) parts.push(`Memory: ${Math.round(row.memPct)}%`)
   if (row.gpuPct != null) parts.push(`GPU: ${Math.round(row.gpuPct)}%`)
-  if (row.deviceTempC != null) parts.push(`Temp: ${Math.round(row.deviceTempC)}°C`)
+  if (row.deviceTempC != null && row.deviceTempC > 0) parts.push(`Temp: ${Math.round(row.deviceTempC)}°C`)
   else if (row.thermalState && row.thermalState !== 'disabled' && row.thermalState !== 'unavailable') parts.push(`Temp: ${row.thermalState}`)
+  else if (row.deviceTempC === 0) parts.push('Temp: nominal')
   if (parts.length > 0) details.push(`  ${parts.join('  ')}`)
 
   const oclawParts = []
@@ -1986,10 +1987,10 @@ async function tick() {
   if (REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `❌ Cloud publish failed: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart with a new key.`
+        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart with a new key.`
       )
     }
-    throw new Error('❌ Cloud publish failed: check API key and connectivity.')
+    throw new Error(`❌ Cloud publish failed for "${DEVICE_NAME}": check API key and connectivity.`)
   }
 }
 
