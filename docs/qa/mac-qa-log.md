@@ -764,8 +764,8 @@ Minor: It says what can be changed (API key, device name, metrics) but doesn't m
 | 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
 | 4–26 | — | All prior items | ✅ CLOSED |
-| 27 | **P2** | README has 130 lines of internal probe/parser docs — should be in separate doc | NEW |
-| 28 | P3 | `configure --help` doesn't mention mode as changeable setting | NEW |
+| 27 | **P2** | README has 130 lines of internal probe/parser docs — should be in separate doc | ✅ CLOSED — moved to docs/OPENCLAW-INTEGRATION.md, README 253→128 lines |
+| 28 | P3 | `configure --help` doesn't mention mode as changeable setting | ✅ CLOSED — now lists mode |
 
 ### Top recommendations for next implementer cycle
 1. **#27 (P2)** — Move OpenClaw probe/parser/alerting internals out of README into `docs/OPENCLAW-INTEGRATION.md`. Keep README ≤150 lines.
