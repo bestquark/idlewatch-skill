@@ -2005,8 +2005,6 @@ if (DRY_RUN || ONCE) {
       process.exit(1)
     })
 } else {
-  console.log(
-    `idlewatch started host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} publish=${getPublishModeLabel()} localLog=${LOCAL_LOG_PATH} monitorTargets=${[...MONITOR_TARGETS].join(',')} openclawUsage=${EFFECTIVE_OPENCLAW_MODE} env=${persistedEnv?.envFile || 'process'}`
-  )
+  console.log(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)`)
   loop()
 }
