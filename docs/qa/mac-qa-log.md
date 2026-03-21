@@ -1570,11 +1570,8 @@ The CLI is **mature for v0.1.x**. 40 of 45 items are closed. The remaining items
 - **2 minor polish** (#43, #45) — startup speed, legacy field
 
 ### Top recommendations for next implementer cycle
-1. **#42 (P2)** — Add `AbortSignal.timeout(10000)` to `fetch()` in `publish()`. Prevents `--once` from hanging.
-2. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
-3. **#3 (P2)** — `create` wizard edit/delete support (feature).
-4. **#45 (P3)** — Clean up `device: null` in JSON schema.
-5. **#43 (P3)** — Lazy-load Firebase SDK in cloud-only mode for faster `--once`.
+1. **#2 (P2)** — `install-agent` / `uninstall-agent` subcommands (feature).
+2. **#3 (P2)** — `create` wizard edit/delete support (feature).
 
 ## 2026-03-21 — Round 28: Independent Full Verification
 
@@ -1607,9 +1604,9 @@ Full independent re-verification of all 45 items. Every closed fix confirmed sol
 |---|-----|---------|--------|
 | 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
 | 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
-| 42 | P2 | `publish()` fetch has no timeout — hang risk if API unresponsive | OPEN |
-| 43 | P3 | `--once` ~6.5s overhead, possibly from Firebase SDK loading in cloud-only mode | OPEN |
-| 45 | P3 | JSON `device` field is `null` alongside correct `deviceName` — legacy artifact | OPEN |
+| 42 | P2 | `publish()` fetch has no timeout — hang risk if API unresponsive | ✅ CLOSED — AbortSignal.timeout(10s), configurable via IDLEWATCH_PUBLISH_TIMEOUT_MS |
+| 43 | P3 | `--once` ~6.5s overhead — Firebase already lazy-loaded, overhead is probes + Node startup | CLOSED (won't fix — acceptable for one-shot) |
+| 45 | P3 | JSON `device` field — verified field doesn't exist (undefined, not null). QA report was inaccurate | CLOSED (non-issue) |
 
 ### Assessment
 
