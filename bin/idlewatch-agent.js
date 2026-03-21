@@ -635,10 +635,11 @@ Interactive wizard to define a new metric with a name, type, and
 shell command that runs each sample cycle.`,
     menubar: `idlewatch menubar — Install macOS menu bar app
 
-Usage:  idlewatch menubar [--launch]
+Usage:  idlewatch menubar [--launch] [--force]
 
-Installs the Electron menu bar companion app.
-Use --launch to open it immediately after install.`,
+Installs the macOS menu bar companion app.
+  --launch   Open the app immediately after install
+  --force    Reinstall even if already installed`,
     dashboard: `idlewatch dashboard — Launch local telemetry dashboard
 
 Usage:  idlewatch dashboard
@@ -667,6 +668,16 @@ Use --once for a single sample or --dry-run to preview without publishing.`
     }
 
     try {
+      const forceMenubar = args.has('--force')
+      const menubarAppDir = path.join(os.homedir(), 'Applications', 'IdleWatch.app')
+      if (!forceMenubar && fs.existsSync(menubarAppDir)) {
+        console.log(`IdleWatch menu bar app already installed at ${menubarAppDir}`)
+        console.log('Use idlewatch menubar --force to reinstall.')
+        if (args.has('--launch')) {
+          spawnSync('/usr/bin/open', ['-gj', menubarAppDir], { stdio: 'ignore' })
+        }
+        process.exit(0)
+      }
       const installed = installMenubarApp({ force: true, launch: args.has('--launch') })
       if (!installed) {
         console.error('IdleWatch menubar install skipped.')
@@ -1986,9 +1997,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 
 if (DRY_RUN || ONCE) {
   const mode = DRY_RUN ? 'dry-run' : 'once'
-  console.log(
-    `idlewatch ${mode} host=${HOST} device=${DEVICE_NAME} deviceId=${DEVICE_ID} intervalMs=${INTERVAL_MS} publish=${getPublishModeLabel()} localLog=${LOCAL_LOG_PATH} env=${persistedEnv?.envFile || 'process'}`
-  )
+  console.log(`${DRY_RUN ? 'Dry-run' : 'Collecting sample'} for "${DEVICE_NAME}" (${getPublishModeLabel()} mode)…`)
   tick()
     .then(() => process.exit(0))
     .catch((e) => {
