@@ -1575,3 +1575,47 @@ The CLI is **mature for v0.1.x**. 40 of 45 items are closed. The remaining items
 3. **#3 (P2)** — `create` wizard edit/delete support (feature).
 4. **#45 (P3)** — Clean up `device: null` in JSON schema.
 5. **#43 (P3)** — Lazy-load Firebase SDK in cloud-only mode for faster `--once`.
+
+## 2026-03-21 — Round 28: Independent Full Verification
+
+### Verified all prior closures — all hold
+Full independent re-verification of all 45 items. Every closed fix confirmed solid:
+
+- `--help`: 27 lines, clean layout. `-h` alias works. ✅
+- `--version`: `idlewatch 0.1.9`, exit 0. ✅
+- Unknown subcommand (`idlewatch notacommand`): `Unknown command "notacommand"...`, exit 1. ✅
+- `--once`: `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅
+- `--once --json`: stdout is pure JSON (verified via fd separation: `1>/tmp/out 2>/tmp/err`). Progress + errors on stderr. `2>/dev/null | jq .` parses cleanly. `publishResult`/`publishError` fields present. ✅
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0. ✅
+- `--once --dry-run`: clean dry-run, no publish error, exit 0. ✅
+- `run` default: concise one-line-per-cycle summaries. ✅
+- `run --json`: banner/tip on stderr, stdout is pure NDJSON. Verified via `1>/tmp/stdout 2>/tmp/stderr` — stdout line 1 is JSON. ✅
+- `status`: LaunchAgent state (`not installed`), Device/ID dedup, mode in footer. ✅
+- All subcommand `--help`: quickstart, configure, status, run, create, dashboard, menubar — concise and accurate. ✅
+- `reconfigure --help`: `(alias for configure)` text. ✅
+- `configure --help`: lists mode as changeable. ✅
+- `menubar --help`: `--force`/`--launch` flags. ✅
+- `.env.example`: cloud key first, Firebase under "Developer / self-hosted only". ✅
+- `--help-env`: "Most users only need the Common section" header, 4 sections (Common/Tuning/Probe internals/Firebase). ✅
+- README: 59 lines, clean. Internal docs in docs/. ✅
+
+### No new findings
+
+### Remaining open items
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN (feature) |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN (feature) |
+| 42 | P2 | `publish()` fetch has no timeout — hang risk if API unresponsive | OPEN |
+| 43 | P3 | `--once` ~6.5s overhead, possibly from Firebase SDK loading in cloud-only mode | OPEN |
+| 45 | P3 | JSON `device` field is `null` alongside correct `deviceName` — legacy artifact | OPEN |
+
+### Assessment
+
+**The CLI is mature for v0.1.x.** 40 of 45 issues closed across 28 QA rounds. No regressions detected. The five remaining items are:
+- 2 feature requests (#2, #3) — new functionality, not polish
+- 1 reliability issue (#42) — fetch timeout, straightforward fix
+- 2 minor polish (#43, #45) — startup speed, legacy JSON field
+
+No further QA rounds needed until new code ships or open items are addressed.
