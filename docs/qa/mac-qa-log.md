@@ -5,6 +5,44 @@
 
 ---
 
+## 2026-03-21 — Round 32: Version Bump + Final Assessment (12:35 PM ET)
+
+### Version bumped to 0.2.0
+
+**Commit**: `0f21d8a` — `chore: bump version to 0.2.0`
+
+All 48 QA items closed across 31 QA rounds + implementer fixes. Version 0.2.0 marks the completion of the CLI polish cycle.
+
+### Final open items (none are polish)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| — | — | All 48 items closed | ✅ |
+
+### What shipped in 0.2.0 (since 0.1.9)
+- `--help` trimmed from 69→27 lines, `--help-env` for advanced vars
+- Per-subcommand `--help` for all 9 commands
+- Unknown subcommand error handling (was silently starting collector)
+- `--once`/`--dry-run` concise human-readable output with metric values
+- Pure JSON stdout for `--json` (both `--once` and `run` paths)
+- `--once --dry-run` no longer shows contradictory publish error
+- `status` shows LaunchAgent state, deduplicates Device/ID, includes mode
+- `install-agent`/`uninstall-agent` subcommands
+- Custom metric create/edit/delete wizard
+- `menubar` reinstall detection (`--force`)
+- `publish()` 10s timeout (prevents hang on unresponsive API)
+- Log rotation at 10MB with configurable cap
+- README streamlined from 98→51 lines, internals moved to docs/
+- `.env.example` cleaned up, Firebase vars demoted
+- `Temp: nominal` instead of misleading `0°C`
+- Device name in error messages
+- `publishResult`/`publishError` fields in JSON output
+- `run` banner/tip hint for LaunchAgent when not installed
+
+**No further polish rounds needed until new features ship.**
+
+---
+
 ## 2026-03-21 — Round 9: Status Reconciliation
 
 ### Resolved since Round 8
