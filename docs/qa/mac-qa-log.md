@@ -248,8 +248,8 @@ idlewatch --once --json 2>&1
 | 10 | P2 | `--once` dumps raw JSON | ✅ CLOSED |
 | 11 | P3 | `.env.example` Firebase refs | ✅ CLOSED |
 | 12 | P3 | `--help-env` scannability | ✅ CLOSED |
-| 13 | P2 | `--once`/`--dry-run` debug banner as first line | NEW |
-| 14 | P3 | `menubar` silently reinstalls | NEW |
+| 13 | P2 | `--once`/`--dry-run` debug banner as first line | ✅ CLOSED — replaced with concise status line |
+| 14 | P3 | `menubar` silently reinstalls | ✅ CLOSED — detects existing install, requires --force |
 | 15 | P3 | `--once --json` error stream mixing | NEW |
 
 ### Top recommendations for next implementer cycle
