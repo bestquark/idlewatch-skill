@@ -949,3 +949,79 @@ idlewatch reconfigure --help
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
 4. **#32 + #33 (P3)** — Move GPU matrix + Reliability sections out of README into docs/. Target README ≤70 lines.
+
+---
+
+## 2026-03-21 — Round 19: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+All 30 items previously closed remain correctly fixed. Full re-check confirms:
+- `--help`: 26 lines, clean. `--version`: works. Unknown subcommand: error + exit 1.
+- `--once`: `⚠️` on publish fail, `❌` with device name. `--json`: pure JSON stdout.
+- `--dry-run`: metric values, `Temp: nominal` at 0°C. Exit 0.
+- `--once --dry-run`: clean dry-run, no publish error, exit 0. ✅
+- `status`: LaunchAgent state, dedup Device/ID. All subcommand `--help` concise.
+- `reconfigure --help`: proper alias text with `(alias for configure)`. **#31 CLOSED.**
+- README: 98 lines, Firebase/validation/OpenClaw moved to docs/.
+
+### Verified #31 closure
+`reconfigure --help` now shows: `idlewatch reconfigure — Change device settings (alias for configure)` with full usage. **Confirmed CLOSED.**
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 32 | P3 | README GPU support matrix (15 lines) is implementation detail | OPEN |
+| 33 | P3 | README Reliability improvements (8 lines) is implementation detail | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 34 | P2 | README "CLI options" section is redundant — duplicates `--help` output | NEW |
+| 35 | P3 | `--help-env` Tuning section has 16 vars — visually overwhelming, most are probe internals | NEW |
+
+### #34 — README "CLI options" section is redundant with `--help`
+
+**Repro**: Read README.md lines 35–40.
+
+**Observed**: The "CLI options" section lists `quickstart`/`configure`/`reconfigure`, `--help`, `--dry-run`, `--once` — the same info printed by `idlewatch --help`. Users who ran `npm install -g idlewatch` will immediately run `--help`; they don't need a duplicate in the README.
+
+Meanwhile, the README still has 23 lines of "Reliability improvements" and "GPU support matrix" that are internal implementation details (#32, #33). The README budget is being spent on the wrong things.
+
+**Acceptance**:
+1. Remove or collapse "CLI options" section to 1 line: `Run idlewatch --help for all commands and options.`
+2. Combined with #32+#33 removal, README target: ≤70 lines
+
+### #35 — `--help-env` Tuning section is 16 dense vars
+
+**Repro**: `idlewatch --help-env`
+
+**Observed**: The Tuning section lists 16 environment variables, most of which are probe/cache internals (`IDLEWATCH_USAGE_STALE_MS`, `IDLEWATCH_USAGE_NEAR_STALE_MS`, `IDLEWATCH_USAGE_REFRESH_REPROBES`, etc.). These are only relevant for advanced debugging.
+
+**Why it matters**: Low priority — `--help-env` is already a secondary help surface. But 16 tuning vars with no visual grouping makes it hard to find the one you might actually need (like `IDLEWATCH_INTERVAL_MS`).
+
+**Acceptance (minor)**: Split Tuning into two sub-groups: "Tuning" (3-4 vars like interval, dashboard port) and "Advanced / Probe internals" (the other 12). Or just add a blank line between them.
+
+---
+
+## Priority Summary (Round 19, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–31 | — | All prior items | ✅ CLOSED |
+| 32 | P3 | README GPU support matrix is implementation detail | OPEN |
+| 33 | P3 | README Reliability improvements is implementation detail | OPEN |
+| 34 | P2 | README "CLI options" duplicates `--help` — wasted README budget | NEW |
+| 35 | P3 | `--help-env` Tuning section: 16 vars with no sub-grouping | NEW |
+
+### Top recommendations for next implementer cycle
+1. **#32 + #33 + #34 (P2/P3)** — README cleanup: remove GPU matrix, Reliability improvements, and redundant CLI options. Move to docs/. Target README ≤70 lines: Install → Quickstart → one-liner CLI ref → links to docs.
+2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
+3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
+4. **#35 (P3)** — Split `--help-env` Tuning into user-facing + probe-internals sub-groups.
