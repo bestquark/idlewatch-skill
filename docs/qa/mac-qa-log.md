@@ -1025,3 +1025,92 @@ Meanwhile, the README still has 23 lines of "Reliability improvements" and "GPU 
 2. **#2 (P2)** — Add `install-agent` / `uninstall-agent` CLI subcommands.
 3. **#3 (P2)** — `create` wizard: support editing/deleting existing custom metrics.
 4. **#35 (P3)** — Split `--help-env` Tuning into user-facing + probe-internals sub-groups.
+
+---
+
+## 2026-03-21 — Round 20: Full Verification + New Findings
+
+### Verified all prior closures — all hold
+Full re-check of every closed item confirms all fixes are solid:
+- `--help`: 26 lines, clean. `--version`: `idlewatch 0.1.9`, exit 0. Unknown subcommand: error + exit 1.
+- `--once`: `⚠️` on publish fail, `❌` with device name. `--json 2>/dev/null | jq .`: parses cleanly.
+- `--dry-run`: metric values (CPU/Memory/GPU/Temp/OpenClaw), `Temp: nominal` at 0°C. Exit 0.
+- `--once --dry-run`: clean dry-run, no publish error, exit 0.
+- `status`: LaunchAgent state, Device/ID dedup, log size, last sample age.
+- All subcommand `--help`: concise. `reconfigure --help`: proper alias text.
+- `configure --help`: lists mode. `menubar`: `--force`/`--launch`.
+- `.env.example`: clean, Firebase demoted. `--help-env`: 3 sections with header note.
+- README: 98 lines, internal docs moved to docs/.
+
+### Remaining open from prior rounds
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 2 | P2 | No CLI subcommand for LaunchAgent install/uninstall | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 32 | P3 | README GPU support matrix (15 lines) is implementation detail | OPEN |
+| 33 | P3 | README Reliability improvements (8 lines) is implementation detail | OPEN |
+| 34 | P2 | README "CLI options" duplicates `--help` output | OPEN |
+| 35 | P3 | `--help-env` Tuning section: 16 vars with no sub-grouping | OPEN |
+
+### NEW findings
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 36 | P3 | `--once --json` on publish failure: stdout emits full JSON + exit 1 but no error field in JSON | NEW |
+| 37 | P3 | `status` footer says "change device name, metrics, or API key" — missing "mode" (same gap as old #28 but in `status` footer) | NEW |
+
+### #36 — `--once --json` on failure: no error info in JSON payload
+
+**Repro**:
+```
+idlewatch --once --json 2>/dev/null
+echo $?  # → 1
+```
+
+**Observed**: stdout is a valid JSON object with all telemetry fields, but no `"error"` or `"publishResult"` field. The only way to know publish failed is the exit code and stderr. A script consuming `--json` output has no machine-readable error info.
+
+**Acceptance (minor)**: Add `"publishResult": "ok"` or `"publishResult": "error"` + `"publishError": "invalid_api_key"` to the JSON output. Low priority since exit code works for most scripts.
+
+### #37 — `status` footer omits "mode" as changeable setting
+
+**Repro**:
+```
+idlewatch status
+```
+
+**Observed**: Last line: `Run idlewatch configure to change device name, metrics, or API key.`
+
+`configure --help` correctly lists mode as changeable. But the `status` footer doesn't mention it. Minor inconsistency.
+
+**Acceptance**: Change to `...to change mode, device name, metrics, or API key.`
+
+---
+
+## Priority Summary (Round 20, 2026-03-21)
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 1 | P1 | `--help` wall of text | ✅ CLOSED |
+| 2 | P2 | No LaunchAgent install/uninstall subcommands | OPEN |
+| 3 | P2 | `create` can't edit/delete existing custom metrics | OPEN |
+| 4–31 | — | All prior items | ✅ CLOSED |
+| 32 | P3 | README GPU support matrix is implementation detail | OPEN |
+| 33 | P3 | README Reliability improvements is implementation detail | OPEN |
+| 34 | P2 | README "CLI options" duplicates `--help` output | OPEN |
+| 35 | P3 | `--help-env` Tuning section: 16 vars, no sub-grouping | OPEN |
+| 36 | P3 | `--once --json` no error field in JSON on publish failure | NEW |
+| 37 | P3 | `status` footer omits "mode" as changeable setting | NEW |
+
+### Assessment
+
+The CLI is in **good shape**. All P1s are closed. The remaining open items are:
+- **2 feature requests** (#2 LaunchAgent subcommands, #3 custom metric editing) — these are real features, not polish
+- **README bloat** (#32, #33, #34) — README is 98 lines but ~40 lines are internal docs that belong in docs/
+- **Minor polish** (#35, #36, #37) — nice-to-haves
+
+### Top recommendations for next implementer cycle
+1. **#32 + #33 + #34** — README cleanup: move GPU matrix + Reliability + CLI options to docs/. Target ≤65 lines.
+2. **#37** — One-line fix: add "mode" to `status` footer text.
+3. **#2** — `install-agent` / `uninstall-agent` subcommands (feature).
+4. **#3** — `create` wizard edit/delete support (feature).
