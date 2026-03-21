@@ -765,6 +765,14 @@ Use --once for a single sample or --dry-run to preview without publishing.`
   }
 })()
 
+// Reject unknown subcommands before entering the collector path
+const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar'])
+const firstPositional = argv.find(a => !a.startsWith('-'))
+if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
+  console.error(`Unknown command "${firstPositional}". Run idlewatch --help for available commands.`)
+  process.exit(1)
+}
+
 const DRY_RUN = args.has('--dry-run')
 const ONCE = args.has('--once')
 const JSON_OUTPUT = args.has('--json')
@@ -1903,7 +1911,7 @@ async function collectSample() {
   })
 }
 
-function summarizeSetupVerification(row) {
+function summarizeSample(row) {
   const metrics = []
   if (row.cpuPct !== null && row.cpuPct !== undefined) metrics.push('cpu')
   if (row.memPct !== null && row.memPct !== undefined) metrics.push('memory')
@@ -1914,13 +1922,7 @@ function summarizeSetupVerification(row) {
   }
   if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.push('custom')
 
-  const details = [
-    `mode=${getPublishModeLabel()}`,
-    `metrics=${metrics.length ? metrics.join(',') : 'none'}`
-  ]
-
-  if (row.localLogPath) details.push(`localLog=${row.localLogPath}`)
-  return `Initial sample ready (${details.join(' ')})`
+  return `✅ Sample collected (${metrics.length} metric${metrics.length === 1 ? '' : 's'})`
 }
 
 async function tick() {
@@ -1931,13 +1933,22 @@ async function tick() {
 
   if (JSON_OUTPUT) {
     console.log(JSON.stringify(row))
-  } else if (process.env.IDLEWATCH_SETUP_VERIFY === '1' || ONCE || DRY_RUN) {
-    console.log(summarizeSetupVerification(row))
-  } else {
+  } else if (!ONCE && !DRY_RUN && process.env.IDLEWATCH_SETUP_VERIFY !== '1') {
     console.log(JSON.stringify(row))
   }
 
   const published = await publish(row)
+
+  if (!JSON_OUTPUT && (process.env.IDLEWATCH_SETUP_VERIFY === '1' || ONCE || DRY_RUN)) {
+    if (DRY_RUN) {
+      const summary = summarizeSample(row)
+      console.log(`${summary} — nothing published (dry run)`)
+    } else if (published) {
+      console.log(summarizeSample(row) + ' and published')
+    } else {
+      console.log(summarizeSample(row))
+    }
+  }
 
   if (cloudIngestKickedOut && !cloudIngestKickoutNotified) {
     cloudIngestKickoutNotified = true
@@ -1955,10 +1966,10 @@ async function tick() {
   if (REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `Cloud API key was rejected (${cloudIngestKickoutReason || 'unauthorized'}). This device was disconnected. Run idlewatch quickstart with a new API key.`
+        `❌ Cloud publish failed: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart with a new key.`
       )
     }
-    throw new Error('Cloud write was required but not executed. Check API key and cloud connectivity.')
+    throw new Error('❌ Cloud publish failed: check API key and connectivity.')
   }
 }
 
