@@ -2060,13 +2060,14 @@ if (DRY_RUN || ONCE) {
       process.exit(1)
     })
 } else {
-  console.log(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)`)
+  const runLog = JSON_OUTPUT ? process.stderr : process.stdout
+  runLog.write(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)\n`)
   // Hint about background agent if LaunchAgent is not installed
   try {
     const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
     accessSync(launchAgentPath, constants.F_OK)
   } catch {
-    console.log('Tip: Run idlewatch menubar to install background collection.')
+    runLog.write('Tip: Run idlewatch menubar to install background collection.\n')
   }
   loop()
 }
