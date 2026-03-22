@@ -949,6 +949,15 @@ Use --once for a single sample or --dry-run to preview without publishing.`
   }
 })()
 
+// Subcommands handled inside the async IIFE above call process.exit() when done.
+// Guard: don't let the synchronous collector code below run in parallel with them.
+const SUBCOMMAND_ONLY = new Set(['quickstart', 'configure', 'reconfigure', 'create', 'dashboard', 'menubar', 'install-agent', 'uninstall-agent'])
+if (SUBCOMMAND_ONLY.has(argv[0])) {
+  // The IIFE is handling this subcommand — wait for it to exit. Nothing below should run.
+  // (The IIFE calls process.exit() in all paths, so this file-level code is effectively dead.)
+  await new Promise(() => {}) // eslint-disable-line no-unreachable -- block forever; IIFE exits process
+}
+
 // Reject unknown subcommands before entering the collector path
 const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent', 'version'])
 const firstPositional = argv.find(a => !a.startsWith('-'))
