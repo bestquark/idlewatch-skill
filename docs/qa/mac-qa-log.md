@@ -5,6 +5,45 @@
 
 ---
 
+## 2026-03-22 — Round 59: Confirmation pass
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 20 failures (same stale-assertion set as R57-R58, no regressions)
+
+The grep `✖` count of 41 is 20 unique tests listed twice (run line + summary). Confirmed no new failures.
+
+### Full Surface Walkthrough — All Clean
+
+- `--help`: concise, lists all commands, mentions `--help-env` ✅
+- `--help-env`: organized sections, separator before probe internals ✅
+- `configure --help`: mentions pre-fill ✅
+- `install-agent`: clean success, shows check/remove commands ✅
+- `status` (with agent): shows pid, running state, log size ✅
+- `uninstall-agent`: says "Re-enable", keeps config/logs ✅
+- `uninstall-agent` (not installed): "Nothing to remove." ✅
+- `--dry-run`: human-readable summary with metric values ✅
+- `--once` (bad key): suggests `configure` (not `quickstart`) ✅
+- `version`: "idlewatch 0.2.0" ✅
+- `postinstall`: prints quickstart hint ✅
+- README: documents npm -g + npx, mentions `--no-tui` ✅
+
+### New Findings
+
+**None.** Product surface remains clean. P3-7 and P3-8 confirmed fixed.
+
+### Open Items
+
+1. **P1-1** — 20/127 tests fail (stale assertions, not product bugs) — test-only fix needed
+
+### Assessment
+
+Same as R58: installer/CLI is polished for v0.2.0. Only remaining work is updating 20 stale test assertions.
+
+---
+
 ## 2026-03-22 — Round 58: Full surface pass
 
 ### Test Environment
