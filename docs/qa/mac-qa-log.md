@@ -16,10 +16,10 @@ Re-evaluating current code against `/idlewatch-cron-polish-plan.md` to identify 
 | H2 | P1 | Config reload behavior predictable | ❌ Unclear if config auto-relloads during runtime |
 | M1 | P2 | Status screen showing device/link/metric state | ⚠️ `status` command exists but limited scope |
 | M2 | P2 | Explicit test publish flow in setup/control | ✅ `--once` does test publish with clear feedback |
-| M3 | P2 | Clearer success confirmation after first link/publish | ❌ Messages could be clearer about what succeeded |
-| M4 | P2 | Test publish errors are clear and actionable | ⚠️ Could show more specific remediation steps |
+| M3 | P2 | Clearer success confirmation after first link/publish | ✅ Fixed — setup shows "is live!", dashboard ETA, structured next steps |
+| M4 | P2 | Test publish errors are clear and actionable | ✅ Fixed — publish failure shows common fixes (API key, connectivity) |
 | L1 | P3 | Settings/edit flow for partial metric updates | ✅ Implemented via `create` subcommand |
-| L2 | P3 | Launch-agent install/uninstall is clear and safe | ❌ Messages could emphasize safety/rollback |
+| L2 | P3 | Launch-agent install/uninstall is clear and safe | ✅ Fixed — uninstall confirms data preserved, install shows "(safe)" hint |
 | L3 | P3 | Local storage location is clear/expected | ⚠️ Location printed but not obvious from help output |
 
 ### Priority Findings for Fix Queue
