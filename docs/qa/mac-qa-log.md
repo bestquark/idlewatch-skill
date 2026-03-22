@@ -67,9 +67,9 @@ All 20 unique test cases now fail. No passing tests remain. The failures fall in
 1. **P1-1** — 0/20 tests pass (regression from 8/41) — test suite is fully red, blocks all regression detection
 2. **P1-2** — npx quickstart may fail with confusing Cargo message if TUI binary missing
 3. **P2-5** — No config reload without restart (no SIGHUP or file-watch)
-4. **P2-7** — `status` log size shows total (active + rotated), can exceed configured max — confusing
-5. **P2-8** — TUI fallback message mentions "Cargo" — jargon, confusing for end users
-6. **P3-6** — README `npx` path doesn't mention `--no-tui` for platforms without bundled TUI
+4. ~~**P2-7** — `status` log size shows total (active + rotated), can exceed configured max — confusing~~ ✅ Fixed: now shows "X (+ Y rotated)"
+5. ~~**P2-8** — TUI fallback message mentions "Cargo" — jargon, confusing for end users~~ ✅ Fixed: simplified to "TUI setup not available for this platform. Using text prompts."
+6. ~~**P3-6** — README `npx` path doesn't mention `--no-tui` for platforms without bundled TUI~~ ✅ Fixed: added note to README
 
 ### Closed (fixed in prior rounds)
 
@@ -83,6 +83,9 @@ All 20 unique test cases now fail. No passing tests remain. The failures fall in
 - ✅ P3-3 — No-args non-TTY prints help
 - ✅ P3-4 — Uninstall says "Re-enable"
 - ✅ P3-5 — `--help-env` probe section labeled clearly
+- ✅ P2-7 — `status` log size now shows active vs rotated separately
+- ✅ P2-8 — TUI fallback no longer mentions Cargo jargon
+- ✅ P3-6 — README now mentions `--no-tui` for npx path
 
 ---
 

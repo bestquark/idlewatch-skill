@@ -14,6 +14,8 @@ Or run directly with npx:
 npx idlewatch quickstart
 ```
 
+> **Note:** On platforms without a bundled TUI binary, add `--no-tui` to go straight to text prompts.
+
 ## Quickstart
 
 1. Create an API key at [idlewatch.com/api](https://idlewatch.com/api)
