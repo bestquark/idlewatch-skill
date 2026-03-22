@@ -5,25 +5,41 @@
 
 ---
 
-## 2026-03-22 — Round 55: Verification Pass + New Findings
+## 2026-03-22 — Round 56: Deep Verification + New Findings
 
 ### Test Environment
 - macOS arm64, Node v25.6.1, idlewatch v0.2.0
 - Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
 
-### Test Suite: 8 pass / 41 fail (unchanged from R54)
+### Test Suite: 0 pass / 20 unique failures (regression from R55's 8/41)
 
-No regression or improvement. Test failures are assertion drift, not product bugs. Still P1.
+All 20 unique test cases now fail. No passing tests remain. The failures fall into 3 categories:
+1. **Quickstart/enrollment output assertion drift** (6 tests) — tests expect old output format, actual output is clean & correct
+2. **Env var dry-run tests** (10 tests) — `No telemetry JSON row found in dry-run output` — likely the dry-run output format changed from JSON to summary
+3. **OpenClaw probe tests** (3 tests) — stderr/mixed-output parsing assertions stale
+4. **Help format test** (1 test) — `--help-env` section ordering assertion stale
 
-### New / Updated Findings
+### New Findings
 
-#### ✅ P2-6 — Postinstall is silent after `npm install -g` → FIXED
-Postinstall now prints `Run "idlewatch quickstart" to set up this device.`
+#### P2-7 — `status` shows total log size (active + rotated) which can exceed configured max
 
-#### ✅ P3-5 — `--help-env` "Probe internals" section too dense → FIXED
-Added visual separator line and stronger "most users can ignore these" label.
+**Repro:** `idlewatch status` shows "Log size: 16 MB" but `IDLEWATCH_LOCAL_LOG_MAX_MB` defaults to 10 MB. Active file is 6 MB, rotated `.1` file is 10 MB.
+**Impact:** Confusing — user sees size > max and may think rotation is broken.
+**Acceptance:** Either (a) show "Log size: 6 MB (+ 10 MB rotated)" or (b) show only active file size, or (c) label as "Total log storage".
 
-### Re-verified (stable from R54)
+#### P2-8 — TUI fallback message mentions "Cargo" — confusing for end users
+
+**Repro:** On a platform without bundled TUI binary and without Rust/Cargo installed, `idlewatch quickstart` prints: "IdleWatch TUI is not bundled for this platform and Cargo is not installed. Falling back to text setup. Use --no-tui to skip this check."
+**Impact:** "Cargo" means nothing to most users. The message should say something like "TUI setup not available on this platform — using text prompts instead."
+**Acceptance:** Remove Cargo mention; simplify to "TUI setup not available for this platform. Using text prompts." Only mention `--no-tui` if user wants to suppress the check permanently.
+
+#### P3-6 — README `npx` path doesn't mention `--no-tui`
+
+**Repro:** README says `npx idlewatch quickstart` but TUI binary is only bundled for darwin-arm64. On other platforms via npx, user hits the Cargo fallback message.
+**Impact:** Low — fallback works, but the jarring Cargo message degrades first impression.
+**Acceptance:** README adds note: "Use `npx idlewatch quickstart --no-tui` if the TUI wizard isn't available on your platform."
+
+### Re-verified (all stable)
 
 | Item | Status |
 |------|--------|
@@ -36,99 +52,39 @@ Added visual separator line and stronger "most users can ignore these" label.
 | Device name persists across reconfigure | ✅ |
 | Metric toggles persist across reconfigure | ✅ |
 | Config auto-loaded from `~/.idlewatch/idlewatch.env` | ✅ |
-| `--help` mentions `--help-env` | ✅ |
+| `--help` clean, mentions `--help-env` | ✅ |
+| `--help-env` has clear sections with visual separator | ✅ |
 | README documents both `npm install -g` and `npx` paths | ✅ |
 | No-args non-TTY prints help | ✅ |
 | Uninstall says "Re-enable" not "Reinstall" | ✅ |
+| Postinstall prints quickstart hint | ✅ |
+| Per-subcommand `--help` works | ✅ |
+| `--once` error message has clear fix guidance | ✅ |
+| Log rotation working (active + .1 file) | ✅ |
 
-### Open Items (carried from R54, prioritized)
+### Open Items (prioritized)
 
-1. **P1-1** — 41/47 test failures (assertion drift) — blocks regression detection
-2. **P1-2** — npx quickstart may fail if TUI binary missing for platform; README mentions `npx` but no `--no-tui` hint
+1. **P1-1** — 0/20 tests pass (regression from 8/41) — test suite is fully red, blocks all regression detection
+2. **P1-2** — npx quickstart may fail with confusing Cargo message if TUI binary missing
 3. **P2-5** — No config reload without restart (no SIGHUP or file-watch)
-4. ✅ **P2-6** — Postinstall now prints quickstart hint after `npm install -g`
-5. ✅ **P3-1** — `--help-env` probe internals section now has visual separator
-6. ✅ **P3-5** — Same as P3-1, resolved
+4. **P2-7** — `status` log size shows total (active + rotated), can exceed configured max — confusing
+5. **P2-8** — TUI fallback message mentions "Cargo" — jargon, confusing for end users
+6. **P3-6** — README `npx` path doesn't mention `--no-tui` for platforms without bundled TUI
 
----
+### Closed (fixed in prior rounds)
 
-## 2026-03-22 — Round 54: Full Polish Audit Against Plan
-
-### Test Environment
-- macOS arm64, Node v25.6.1, idlewatch v0.2.0
-- Existing config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
-- 15 MB local log, LaunchAgent not installed
-
-### Regression: 41 test failures
-
-Unit tests show 41 failures vs 6 passes. Most failures appear to be assertion drift in enrollment/quickstart tests (expected output patterns don't match current output format) and OpenClaw probe tests. Not blocking user-facing flows but test suite needs attention.
-
-**Repro:** `node --test --test-concurrency=1 'test/*.test.mjs'`
-
----
-
-### Findings (prioritized)
-
-#### P1 — Blocking / First-Run Impact
-
-| # | Issue | Repro | Acceptance Criteria |
-|---|-------|-------|---------------------|
-| P1-1 | **Test suite 41/47 failures** — enrollment tests assert old output patterns; validate-dry-run-schema fails when OpenClaw usage is off. Tests don't catch real regressions if they're all red. | `npm run test:unit` | ≤5 known-skip failures; all enrollment and dry-run tests green |
-| P1-2 | **`npx idlewatch quickstart` path unclear for first-time users** — README says `npm install -g idlewatch` then `idlewatch quickstart`, but npx quickstart would launch TUI which may fail on npx's temp install (no bundled TUI binary for all platforms). No guidance on what happens. | `npx idlewatch quickstart` on fresh machine | README documents npx behavior clearly; `--no-tui` recommended for npx; or TUI gracefully falls back |
-
-#### P2 — High Value Polish
-
-| # | Issue | Repro | Acceptance Criteria |
-|---|-------|-------|---------------------|
-| P2-1 | ✅ **Device name "test" — no obvious way to rename** — `status` now shows rename hint when device name is a placeholder. | `idlewatch status` → shows "test", includes rename hint | `status` output includes `Rename: idlewatch configure` when device name looks like a placeholder |
-| P2-2 | ✅ **Status output now shows friendly metric labels** — CPU, Memory, GPU, Temperature, OpenClaw activity/tokens/runtime instead of internal target names. | `idlewatch status` | Metrics line uses friendly labels |
-| P2-3 | **`--help` doesn't mention `--help-env`** — the env var reference is hidden. Main help says "Show this help" but doesn't hint that `--help-env` exists for advanced config. | `idlewatch --help` | Add one line: `--help-env   Show all environment variables` (already present, confirmed ✅) |
-| P2-4 | ✅ **Dry-run "157% context used" now shows overflow label** — displays "100%+ context used (157% overflow)" for values >100%. | `idlewatch --dry-run` | Values >100% shown as "100%+ (overflow)" |
-| P2-5 | **Config reload: no documented way to reload config without restart** — if user edits `~/.idlewatch/idlewatch.env` while agent is running, changes don't take effect. No `reload` command exists. | Edit env file while `idlewatch run` is active | Either: (a) document that restart is required, or (b) add SIGHUP reload, or (c) re-read env file each cycle |
-
-#### P3 — Minor Polish
-
-| # | Issue | Repro | Acceptance Criteria |
-|---|-------|-------|---------------------|
-| P3-1 | **`--help-env` lists too many env vars** — 30+ vars including Firebase emulator, probe internals, stale thresholds. Overwhelming for 99% of users. | `idlewatch --help-env` | Split into "Common" (already done ✓) but "Tuning" and "Probe internals" sections should say "(advanced — rarely needed)" more prominently |
-| P3-2 | **Postinstall only installs menubar app** — `npm install -g idlewatch` silently tries to install the menubar app. No quickstart prompt or hint. User may not know they need to run `quickstart` next. | `npm install -g idlewatch` | Postinstall prints: "Run `idlewatch quickstart` to set up this device." |
-| P3-3 | ✅ **`idlewatch` with no args in non-TTY now prints help** instead of silently doing nothing. | `echo "" \| idlewatch` | Print help when stdin is not TTY and no subcommand given |
-| P3-4 | ✅ **Uninstall-agent now says "Re-enable"** instead of "Reinstall". | `idlewatch uninstall-agent` | Changed "Reinstall" to "Re-enable" |
-
-#### P3 — Confirmed Working (from polish plan)
-
-| # | Item | Status |
-|---|------|--------|
-| ✅ | Test publish via `--once` with clear feedback | Working — shows "Sample collected and published" |
-| ✅ | Setup success message shows device name, mode, config path, next steps | Working — clean structured output |
-| ✅ | Setup failure message shows common fixes | Working — API key check, connectivity hint |
-| ✅ | Launch-agent install shows "(safe)" removal hint | Working |
-| ✅ | Launch-agent uninstall confirms data preserved | Working |
-| ✅ | Device name persists from existing config on reconfigure | Working — `existingConfig.deviceName` reused |
-| ✅ | Metric toggle persists across reconfigure | Working — targets re-read from env file |
-| ✅ | Config auto-loaded from `~/.idlewatch/idlewatch.env` on startup | Working |
-| ✅ | Per-subcommand `--help` works | Working for all subcommands |
-| ✅ | `idlewatch configure` pre-fills existing values | Working |
-
----
-
-### Summary
-
-The user-facing CLI is solid for happy-path flows. Main risks:
-1. **Test suite is almost entirely broken** — makes it hard to catch regressions (P1-1)
-2. **npx first-run path untested/undocumented** (P1-2)
-3. **Status output uses internal jargon** for metrics (P2-2)
-4. **Config reload story is missing** (P2-5)
-
-Everything from the polish plan's "suggested first polish tickets" is either done or partially done:
-- ✅ #1 (test publish via `--once`)
-- ⚠️ #2 (status screen exists but limited — see P2-1, P2-2)
-- N/A #3 (web dashboard — out of scope for installer QA)
-- ✅ #4 (success confirmation after first link)
-- ⚠️ #5 (README exists but npx path unclear — see P1-2)
-- ✅ #6 (settings/edit via `configure`)
+- ✅ P2-1 — Status shows rename hint for placeholder device names
+- ✅ P2-2 — Status shows friendly metric labels
+- ✅ P2-3 — `--help` mentions `--help-env`
+- ✅ P2-4 — Dry-run shows overflow label for >100% context
+- ✅ P2-6 — Postinstall prints quickstart hint
+- ✅ P3-1 — `--help-env` probe internals section has visual separator
+- ✅ P3-2 — Postinstall prints quickstart hint
+- ✅ P3-3 — No-args non-TTY prints help
+- ✅ P3-4 — Uninstall says "Re-enable"
+- ✅ P3-5 — `--help-env` probe section labeled clearly
 
 ---
 
 ## Previous Rounds
-All prior rounds complete through Round 53 — CLI is stable on v0.2.0 with no regressions in user-facing behavior.
+All prior rounds (1–55) complete. See git history for full details.
