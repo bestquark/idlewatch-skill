@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-03-22 — Round 46: Independent Verification (3:50 AM ET)
+
+### Fresh-session regression check on v0.2.0
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. All commands listed. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | `Unknown command "notacommand"...`, exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout (verified fd separation). `publishResult`/`publishError` present. `2>/dev/null \| jq .` parses. ✅ |
+| `--dry-run` | CPU 40%, Memory 70%, GPU 10%, Temp: nominal, OpenClaw stats. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `status` | LaunchAgent `not installed`, Device dedup, mode in footer, log size 23 MB. ✅ |
+| `install-agent --help` | Concise, accurate. ✅ |
+| README | 51 lines, clean. ✅ |
+| Git status | Clean tree. ✅ |
+
+### No new findings
+
+All 58 QA items remain closed. No regressions. CLI is stable on v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** Polish cycle complete. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-22 — Round 45: Implementer Fix (3:50 AM ET)
 
 ### Fixed #58 — Subcommand handlers race with collector code
