@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-03-22 — Round 60: Full suite green
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 127 pass / 0 fail ✅
+
+Full suite green. The 3 remaining transient failures from R59 (two openclaw-env probe tests + one dry-run schema test) pass reliably now — they were flaky under parallel load, not stale assertions.
+
+### Assessment
+
+**All open items closed.** Installer/CLI is fully polished for v0.2.0. No product bugs, no stale tests.
+
+### Open Items
+
+None.
+
+### Closed (this round)
+
+- ✅ P1-1 — Test suite now 127/127 green. Prior "20 failures" were transient/flaky under parallel load, not stale assertions. Confirmed passing on multiple runs.
+
+---
+
 ## 2026-03-22 — Round 59: Confirmation pass
 
 ### Test Environment
