@@ -5,6 +5,38 @@
 
 ---
 
+## 2026-03-22 — Round 51: Independent Verification (7:40 AM ET)
+
+### Fresh-session regression check on v0.2.0
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. All commands listed incl. `install-agent`/`uninstall-agent`/`version`. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | `Unknown command "notacommand"...`, exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout (verified `2>/dev/null \| jq`). `publishResult`/`publishError`/`deviceName` present. ✅ |
+| `--dry-run` | CPU 36%, Memory 73%, GPU 0%, Temp: nominal, OpenClaw stats. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `status` | LaunchAgent `not installed`, Device dedup, mode in footer, log size 27 MB, last sample age. ✅ |
+| `quickstart --help` | Shows `--no-tui`. ✅ |
+| `install-agent --help` | Concise, accurate. ✅ |
+| `uninstall-agent --help` | Concise, accurate. ✅ |
+| `.env.example` | Uses `IDLEWATCH_DEVICE_NAME`, cloud key first, Firebase demoted. ✅ |
+| `--help-env` | 4 sections (Common/Tuning/Probe internals/Firebase), "Most users only need..." header. ✅ |
+| README | 51 lines, clean. ✅ |
+| Git status | Clean tree. ✅ |
+
+### No new findings
+
+All 61 QA items remain closed. No regressions. CLI is stable on v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** Polish cycle complete. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-22 — Round 50: Implementer Polish (7:12 AM ET)
 
 ### Fixed #60 + #61 — .env.example mismatch + stale bin alias
