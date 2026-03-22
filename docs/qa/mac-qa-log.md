@@ -5,6 +5,57 @@
 
 ---
 
+## 2026-03-22 — Round 55: Verification Pass + New Findings
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 8 pass / 41 fail (unchanged from R54)
+
+No regression or improvement. Test failures are assertion drift, not product bugs. Still P1.
+
+### New / Updated Findings
+
+#### P2-6 — Postinstall is silent after `npm install -g`
+**Issue:** `postinstall.mjs` installs the menubar app silently. No output telling the user what to do next. A first-time user gets zero guidance after install.
+**Repro:** `npm install -g idlewatch` → observe no quickstart hint in terminal output.
+**Acceptance:** Postinstall prints one line: `Run "idlewatch quickstart" to set up this device.`
+
+#### P3-5 — `--help-env` "Probe internals" section too dense
+**Issue:** 13 probe-internal env vars listed with no grouping cue that they're truly never-touch. The "(rarely needed)" label is there but visually it blends in. Users may feel overwhelmed scanning for the one var they need.
+**Repro:** `idlewatch --help-env`
+**Acceptance:** Add a blank line separator before "Probe internals" and/or dim/indent the section. Or collapse behind `--help-env --verbose`.
+
+### Re-verified (stable from R54)
+
+| Item | Status |
+|------|--------|
+| `idlewatch quickstart` happy path (cloud + local) | ✅ |
+| `idlewatch configure` pre-fills values | ✅ |
+| `idlewatch status` shows friendly metric labels + rename hint | ✅ |
+| `idlewatch --dry-run` clean summary, overflow handled | ✅ |
+| `idlewatch --once` publishes with clear feedback | ✅ |
+| `idlewatch install-agent` / `uninstall-agent` messaging | ✅ |
+| Device name persists across reconfigure | ✅ |
+| Metric toggles persist across reconfigure | ✅ |
+| Config auto-loaded from `~/.idlewatch/idlewatch.env` | ✅ |
+| `--help` mentions `--help-env` | ✅ |
+| README documents both `npm install -g` and `npx` paths | ✅ |
+| No-args non-TTY prints help | ✅ |
+| Uninstall says "Re-enable" not "Reinstall" | ✅ |
+
+### Open Items (carried from R54, prioritized)
+
+1. **P1-1** — 41/47 test failures (assertion drift) — blocks regression detection
+2. **P1-2** — npx quickstart may fail if TUI binary missing for platform; README mentions `npx` but no `--no-tui` hint
+3. **P2-5** — No config reload without restart (no SIGHUP or file-watch)
+4. **P2-6** — Postinstall silent (new this round)
+5. **P3-1** — `--help-env` probe internals visually noisy
+6. **P3-5** — Same as P3-1, reinforced (new this round)
+
+---
+
 ## 2026-03-22 — Round 54: Full Polish Audit Against Plan
 
 ### Test Environment
