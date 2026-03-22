@@ -396,14 +396,24 @@ export async function runEnrollmentWizard(options = {}) {
     if (!cloudApiKey) {
       if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
       console.log('\nPaste the API key from idlewatch.com/api.')
-      cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+      for (let attempt = 0; attempt < 3; attempt++) {
+        cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+        if (looksLikeCloudApiKey(cloudApiKey)) break
+        if (attempt < 2) console.log('Invalid key — should start with iwk_. Try again.')
+        else cloudApiKey = ''
+      }
     } else if (rl) {
       const masked = cloudApiKey.slice(0, 8) + '…' + cloudApiKey.slice(-4)
       console.log(`\nUsing saved API key: ${masked}`)
       const changeKey = (await rl.question('Keep this key? [Y/n]: ')).trim().toLowerCase()
       if (changeKey === 'n' || changeKey === 'no') {
         console.log('Paste the new API key from idlewatch.com/api.')
-        cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+        for (let attempt = 0; attempt < 3; attempt++) {
+          cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+          if (looksLikeCloudApiKey(cloudApiKey)) break
+          if (attempt < 2) console.log('Invalid key — should start with iwk_. Try again.')
+          else cloudApiKey = ''
+        }
       }
     }
   }
@@ -444,6 +454,8 @@ export async function runEnrollmentWizard(options = {}) {
     envLines.push(`IDLEWATCH_CLOUD_API_KEY=${cloudApiKey}`)
     envLines.push('IDLEWATCH_REQUIRE_CLOUD_WRITES=1')
   }
+
+  if (rl) rl.close()
 
   // Write config file immediately during wizard for P2 - env persistence fix
   writeSecureFile(outputEnvFile, `${envLines.join('\n')}\n`)
