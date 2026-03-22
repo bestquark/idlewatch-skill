@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-03-22 — Round 48: Implementer Polish (4:15 AM ET)
+
+### Fixed #59 — API key not validated inline during setup wizard
+
+**Found**: During `quickstart`/`configure`, if the user pastes a malformed API key (not matching `iwk_` prefix), the wizard continues through monitor target selection and config writing, then fails with a generic error at the very end. The user has to redo the entire wizard.
+
+**Fix**: API key is now validated immediately after entry with up to 3 retry attempts. Clear inline error: `Invalid key — should start with iwk_. Try again.` Also closes the readline interface explicitly before config save to prevent edge-case process hangs.
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 59 | P2 | API key not validated inline — wizard completes then fails on bad key | ✅ FIXED |
+
+**Commit**: `801cc5b` — `polish: validate API key inline during setup wizard, close readline on exit`
+
+### Verification
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. All commands listed. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | Error + exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout. `publishResult`/`publishError`/`deviceName` present. ✅ |
+| `--dry-run` | CPU/Memory/GPU/Temp/OpenClaw values. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `status` | LaunchAgent state, Device dedup, mode in footer. ✅ |
+
+### Assessment
+
+All 59 QA items closed. Inline API key validation reduces setup friction — users get immediate feedback instead of a late failure.
+
+---
+
 ## 2026-03-22 — Round 47: Independent Verification (4:10 AM ET)
 
 ### Fresh-session regression check on v0.2.0
