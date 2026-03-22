@@ -1,4 +1,0 @@
-Reused packaged artifact is not bundled-runtime aware. Rebuild first:
-  npm run package:macos
-(required for node-free PATH validation in bundled-runtime check)
-If this is expected, set IDLEWATCH_BUNDLED_RUNTIME_REQUIRED=0 to run launchability-only validation.

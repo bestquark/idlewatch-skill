@@ -1,5 +1,0 @@
-QA cycle log: logs/qa/mac-qa-cycle-20260227232114.log
-Started: 2026-02-27 11:21:14 PM EST
-
->>> [test_unit] 2026-02-27 23:21:14 EST
-npm run test:unit --silent

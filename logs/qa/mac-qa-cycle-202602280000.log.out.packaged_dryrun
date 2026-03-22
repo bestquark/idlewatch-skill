@@ -1,6 +1,0 @@
-Reused packaged artifact is stale for this workspace revision.
-Current commit : 1c297c0d252834df0ded863c631bc787df45c0a3
-Packaged commit: 28f9561bbb6421d67a9e80953fb1949b355e1c51
-Rebuild artifact first:
-  npm run package:macos
-Packaged artifact is stale and does not match current git revision.

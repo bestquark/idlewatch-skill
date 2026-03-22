@@ -1,3 +1,0 @@
-===== usage_freshness
-===== 2026-02-28 00:00:27 EST
-usage-freshness-e2e: ok (fresh -> aging -> post-threshold-in-grace -> stale)

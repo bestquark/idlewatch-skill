@@ -1,8 +1,0 @@
-==> 2026-02-28T09:35:01Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
-packaged artifact reusable validation ok
-artifact: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch
-artifact version: 0.1.0
-dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)
-validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)
-validate-packaged-openclaw-cache-recovery-e2e: ok (packaged stale cache recovers through reprobe attempts)
-validate-packaged-openclaw-release-gates: ok (release artifact validates OpenClaw health, stats fallback, and cache recovery)

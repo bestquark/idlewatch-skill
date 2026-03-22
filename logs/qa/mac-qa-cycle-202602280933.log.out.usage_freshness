@@ -1,2 +1,0 @@
-==> 2026-02-28T09:33:15Z running: npm run validate:usage-freshness-e2e --silent
-usage-freshness-e2e: ok (fresh -> aging -> post-threshold-in-grace -> stale)

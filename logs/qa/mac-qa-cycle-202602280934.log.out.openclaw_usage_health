@@ -1,2 +1,0 @@
-==> 2026-02-28T09:34:57Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent
-validate-openclaw-usage-health: ok (openclaw usage source required and healthy)

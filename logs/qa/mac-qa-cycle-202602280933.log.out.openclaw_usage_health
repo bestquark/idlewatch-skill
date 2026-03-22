@@ -1,2 +1,0 @@
-==> 2026-02-28T09:33:19Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-usage-health --silent
-run_and_log: command not found: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000

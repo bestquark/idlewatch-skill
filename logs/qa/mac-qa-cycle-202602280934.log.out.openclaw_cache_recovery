@@ -1,2 +1,0 @@
-==> 2026-02-28T09:34:59Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-cache-recovery-e2e --silent
-validate-openclaw-cache-recovery-e2e: ok (fallback-cache sample recovered via forced reprobe)
