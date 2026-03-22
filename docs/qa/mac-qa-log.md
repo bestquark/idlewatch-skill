@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-03-22 — Round 62: Setup wizard polish
+
+### Changes Implemented
+- Simplified mode prompt: removed redundant default hint from intro text (already shown in prompt line)
+- Setup wizard now shows friendly metric labels ("OpenClaw activity" instead of "agent_activity") in available/selected display
+- Added a "Selected: ..." summary line before the metrics prompt for clearer reconfigure flow
+
+### Test Suite: 127 pass / 0 fail ✅
+
+### Assessment
+Small usability polish to reduce cognitive load in setup/reconfigure. No new findings.
+
+### Open Items
+None.
+
+---
+
 ## 2026-03-22 — Round 61: Maintenance pass — all clear
 
 ### Test Environment
