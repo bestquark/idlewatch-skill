@@ -361,8 +361,6 @@ export async function runEnrollmentWizard(options = {}) {
     const currentMode = existingConfig?.mode || null
     const modeDefault = currentMode === 'local' ? '2' : '1'
     console.log(promptModeText({ isReconfigure, currentMode }))
-    console.log(`Storage path: ${configDir}`)
-    console.log(`Environment file: ${outputEnvFile}`)
     if (isReconfigure) {
       console.log(`Current device: ${existingConfig.deviceName} (${currentMode === 'production' ? 'cloud' : 'local-only'})`)
     }

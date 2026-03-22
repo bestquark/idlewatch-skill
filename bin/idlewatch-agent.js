@@ -925,20 +925,16 @@ Use --once for a single sample or --dry-run to preview without publishing.`
         } else {
           console.log(`\n   First telemetry sample sent successfully.`)
         }
-        console.log(`   Next: run \`idlewatch run\` to keep this device online.`)
+        console.log(`   Next: idlewatch install-agent  (runs in background)`)
+        console.log(`         idlewatch run             (runs in foreground)`)
         process.exit(0)
       }
 
       console.error(`\n⚠️ Setup saved, but the first telemetry sample didn't publish.`)
       console.error(`   Device: ${result.deviceName}`)
       console.error(`   Config: ${result.outputEnvFile}`)
-      if (usesDefaultPersistedEnvFile(result.outputEnvFile)) {
-        console.error('Retry with: idlewatch --once')
-        console.error('Or rerun: idlewatch quickstart')
-      } else {
-        console.error('Retry with: idlewatch quickstart')
-        console.error(`Use the saved config directly: set -a; source "${result.outputEnvFile}"; set +a && idlewatch --once`)
-      }
+      console.error(`\n   Retry:  idlewatch --once`)
+      console.error(`   Redo:   idlewatch quickstart`)
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {
