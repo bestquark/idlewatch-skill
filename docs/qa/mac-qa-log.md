@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-03-22 — Round 50: Implementer Polish (7:12 AM ET)
+
+### Fixed #60 + #61 — .env.example mismatch + stale bin alias
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 60 | P3 | `.env.example` uses `IDLEWATCH_HOST` but wizard writes `IDLEWATCH_DEVICE_NAME` — confusing for users copying the example | ✅ FIXED |
+| 61 | P3 | `package.json` exposes `idlewatch-skill` bin alias — internal artifact, not user-facing | ✅ FIXED — removed |
+
+**Commit**: `b87bf62` — `polish: fix .env.example IDLEWATCH_HOST→DEVICE_NAME, remove idlewatch-skill bin alias`
+
+### Verification
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| `--dry-run` | CPU/Memory/GPU/Temp/OpenClaw values. Exit 0. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `.env.example` | Uses `IDLEWATCH_DEVICE_NAME`. ✅ |
+| `package.json` bin | Only `idlewatch` + `idlewatch-agent`. ✅ |
+
+### Assessment
+
+All 61 QA items closed. Two micro-friction points addressed: users copying `.env.example` now see the correct env var name, and `npm install -g` no longer creates a stale `idlewatch-skill` command.
+
+---
+
 ## 2026-03-22 — Round 49: Independent Verification (7:10 AM ET)
 
 ### Fresh-session regression check on v0.2.0
