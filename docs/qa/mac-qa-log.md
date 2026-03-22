@@ -5,6 +5,41 @@
 
 ---
 
+## 2026-03-22 — Round 64: Maintenance pass — all clear
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 127 pass / 0 fail ✅
+
+### Full Surface Walkthrough
+
+- `--help`: concise, all commands listed, mentions `--help-env` ✅
+- `--help-env`: organized (Common → Tuning → separator → Probe internals → Firebase) ✅
+- `configure --help`: mentions pre-fill ✅
+- `install-agent` → `status` (shows pid/running) → `uninstall-agent` → double-uninstall: all messaging clean ✅
+- `--dry-run`: human-readable summary, correct metric count (4) ✅
+- `--dry-run --json`: full JSON, valid schema, `schemaVersion: 1.2.0` ✅
+- `version`: "idlewatch 0.2.0" ✅
+- `status`: rename hint for placeholder name, no redundant lines ✅
+- Unknown command (`boguscmd`): clean error with help pointer, exit code 1 ✅
+- Postinstall: prints quickstart hint ✅
+- README: documents npm -g + npx, mentions `--no-tui`, clear 3-step quickstart ✅
+
+### Note
+- Observed a transient "installed but not loaded" status immediately after `install-agent` (race between `launchctl bootstrap` and the next `status` probe). Resolved within seconds; not a product bug.
+
+### New Findings
+
+**None.**
+
+### Open Items
+
+None. All items closed as of Round 60.
+
+---
+
 ## 2026-03-22 — Round 63: Full surface verification pass
 
 ### Test Environment
