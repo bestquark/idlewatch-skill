@@ -1,0 +1,8 @@
+/Users/luismantilla/.openclaw/workspace/idlewatch-skill/tui/target/debug/deps/unicode_width-7d8fe9e03733240b.d: /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/lib.rs /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/tables.rs
+
+/Users/luismantilla/.openclaw/workspace/idlewatch-skill/tui/target/debug/deps/libunicode_width-7d8fe9e03733240b.rlib: /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/lib.rs /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/tables.rs
+
+/Users/luismantilla/.openclaw/workspace/idlewatch-skill/tui/target/debug/deps/libunicode_width-7d8fe9e03733240b.rmeta: /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/lib.rs /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/tables.rs
+
+/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/lib.rs:
+/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-width-0.2.0/src/tables.rs:

@@ -666,6 +666,13 @@ const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
+
+// No args + non-TTY: print help instead of silently doing nothing
+if (argv.length === 0 && (!process.stdin.isTTY || !process.stdout.isTTY) && !statusRequested && !runRequested && !dashboardRequested) {
+  printHelp()
+  process.exit(0)
+}
+
 if (args.has('--version') || args.has('-V') || argv[0] === 'version') {
   console.log(`idlewatch ${pkg.version}`)
   process.exit(0)
@@ -874,7 +881,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 
     console.log('✅ LaunchAgent removed — background collection stopped.')
     console.log('   Your config and logs are still in ~/.idlewatch/')
-    console.log('   Reinstall:  idlewatch install-agent')
+    console.log('   Re-enable:  idlewatch install-agent')
     process.exit(0)
   }
 
@@ -1248,7 +1255,18 @@ if (statusRequested) {
     console.log(`  Cloud link:   ${CLOUD_INGEST_URL}`)
     console.log(`  API key:      ${CLOUD_API_KEY.slice(0, 8)}..${CLOUD_API_KEY.slice(-4)}`)
   }
-  console.log(`  Metrics:      ${[...MONITOR_TARGETS].join(', ')}`)
+  const friendlyMetricLabels = {
+    cpu: 'CPU',
+    memory: 'Memory',
+    gpu: 'GPU',
+    temperature: 'Temperature',
+    agent_activity: 'OpenClaw activity',
+    token_usage: 'OpenClaw tokens',
+    runtime_state: 'OpenClaw runtime',
+    provider_quota: 'Provider quota'
+  }
+  const metricLabels = [...MONITOR_TARGETS].map((t) => friendlyMetricLabels[t] || t)
+  console.log(`  Metrics:      ${metricLabels.join(', ')}`)
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)
 
@@ -1320,6 +1338,12 @@ if (statusRequested) {
     } catch { /* ignore stat errors */ }
   } else if (hasConfig) {
     console.log('  Last sample:  (none yet)')
+  }
+
+  // Hint if device name looks like a placeholder
+  const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
+  if (hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())) {
+    console.log(`  ℹ️  Rename this device:  idlewatch configure`)
   }
 
   console.log('')
@@ -2156,7 +2180,12 @@ function summarizeSample(row, { verbose = false } = {}) {
 
   const oclawParts = []
   if (row.openclawModel) oclawParts.push(row.openclawModel)
-  if (row.openclawPercentUsed != null) oclawParts.push(`${Math.round(row.openclawPercentUsed)}% context used`)
+  if (row.openclawPercentUsed != null) {
+    const pctLabel = row.openclawPercentUsed > 100
+      ? `100%+ context used (${Math.round(row.openclawPercentUsed)}% overflow)`
+      : `${Math.round(row.openclawPercentUsed)}% context used`
+    oclawParts.push(pctLabel)
+  }
   if (row.tokensPerMin != null) oclawParts.push(`${Math.round(row.tokensPerMin).toLocaleString()} tok/min`)
   if (oclawParts.length > 0) details.push(`  OpenClaw: ${oclawParts.join(', ')}`)
 

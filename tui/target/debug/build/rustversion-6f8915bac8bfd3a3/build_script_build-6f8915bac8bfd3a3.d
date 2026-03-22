@@ -1,0 +1,6 @@
+/Users/luismantilla/.openclaw/workspace/idlewatch-skill/tui/target/debug/build/rustversion-6f8915bac8bfd3a3/build_script_build-6f8915bac8bfd3a3.d: /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/build.rs /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/rustc.rs
+
+/Users/luismantilla/.openclaw/workspace/idlewatch-skill/tui/target/debug/build/rustversion-6f8915bac8bfd3a3/build_script_build-6f8915bac8bfd3a3: /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/build.rs /var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/rustc.rs
+
+/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/build.rs:
+/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-tui-handoff-home-4DrWRw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rustversion-1.0.22/build/rustc.rs:
