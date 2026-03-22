@@ -5,6 +5,40 @@
 
 ---
 
+## 2026-03-22 — Round 45: Implementer Fix (3:50 AM ET)
+
+### Fixed #58 — Subcommand handlers race with collector code
+
+**Found**: The async IIFE handling quickstart/configure/create/menubar/install-agent/uninstall-agent runs concurrently with the synchronous collector code below it. When running `idlewatch configure`, the enrollment wizard starts but the collector also initializes and begins publishing in parallel. The IIFE's `process.exit()` eventually kills everything, but the collector shouldn't start at all.
+
+**Fix**: Added a top-level `await` guard after the IIFE that blocks the collector code when a subcommand-only path is active. The guard uses `await new Promise(() => {})` to block forever — the IIFE's `process.exit()` is the sole exit point for subcommand paths.
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 58 | P2 | Collector starts in parallel with subcommand handlers (configure, quickstart, create, etc.) | ✅ FIXED |
+
+**Commit**: `7d178b1` — `fix: prevent collector from running in parallel with subcommand handlers`
+
+### Verification
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | Error + exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout. `publishResult`/`publishError` present. ✅ |
+| `--dry-run` | CPU/Memory/GPU/Temp/OpenClaw values. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `status` | LaunchAgent state, Device dedup, mode in footer. Exit 0. ✅ |
+| `install-agent --help` | Concise, accurate. Exit 0. ✅ |
+
+### Assessment
+
+All 58 QA items closed. Reliability fix — subcommands no longer race with the collector.
+
+---
+
 ## 2026-03-21 — Round 44: Independent Verification (10:00 PM ET)
 
 ### Fresh-session regression check on v0.2.0
