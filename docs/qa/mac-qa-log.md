@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-03-21 — Round 42: Implementer Polish (9:25 PM ET)
+
+### Fixes
+
+| # | Sev | Summary | Status |
+|---|-----|---------|--------|
+| 55 | P3 | Post-quickstart success only suggests `idlewatch run` — doesn't mention `install-agent` | ✅ FIXED — now shows both background and foreground options |
+| 56 | P3 | Post-quickstart failure path has verbose `source`/`set -a` advice — unnecessary friction | ✅ FIXED — simplified to `Retry: idlewatch --once` / `Redo: idlewatch quickstart` |
+| 57 | P3 | Reconfigure prompt shows storage path + env file path before mode question — noise | ✅ FIXED — removed (path shown after save) |
+
+**Commit**: `d0da64e` — `polish: improve post-setup next steps and simplify failure path`
+
+### Verification
+
+| Surface | Result |
+|---------|--------|
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--dry-run` | CPU/Memory/GPU/Temp/OpenClaw values. Exit 0. ✅ |
+| `--help` | 24 lines, clean. ✅ |
+| `--version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| `status` | LaunchAgent state, Device/ID dedup, mode in footer. ✅ |
+
+### Assessment
+
+All 57 QA items closed. Three micro-friction points addressed in setup flows. No regressions.
+
+---
+
 ## 2026-03-21 — Round 41: Independent Verification (9:10 PM ET)
 
 ### Fresh-session full verification on v0.2.0
