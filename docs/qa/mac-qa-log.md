@@ -5,71 +5,77 @@
 
 ---
 
-## 2026-03-22 — Round 56: Deep Verification + New Findings
+## 2026-03-22 — Round 57: Fresh verification pass
 
 ### Test Environment
 - macOS arm64, Node v25.6.1, idlewatch v0.2.0
 - Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
 
-### Test Suite: 0 pass / 20 unique failures (regression from R55's 8/41)
+### Test Suite: 107 pass / 20 fail
 
-All 20 unique test cases now fail. No passing tests remain. The failures fall into 3 categories:
-1. **Quickstart/enrollment output assertion drift** (6 tests) — tests expect old output format, actual output is clean & correct
-2. **Env var dry-run tests** (10 tests) — `No telemetry JSON row found in dry-run output` — likely the dry-run output format changed from JSON to summary
-3. **OpenClaw probe tests** (3 tests) — stderr/mixed-output parsing assertions stale
-4. **Help format test** (1 test) — `--help-env` section ordering assertion stale
+Prior QA log incorrectly said 0/20. Actual is **107/127 pass** (84%). The 20 failures are stale assertions, not regressions — the product behavior is correct.
+
+Failure categories:
+1. **Dry-run schema tests (10)** — tests pipe `--dry-run` output through a JSON validator, but `--dry-run` now prints human-friendly summary. Tests need `--json` flag.
+2. **Quickstart/enrollment output tests (6)** — assert old output strings ("Quickstart:", "Common env (optional):") that were cleaned up in the help/output refactors.
+3. **OpenClaw probe stderr tests (3)** — assert stale stderr parsing formats.
+4. **Help format test (1)** — expects `--help` to inline env var sections; those moved to `--help-env`.
+
+**None of these are product bugs.** All are test-assertion drift from output improvements. Fixing: add `--json` flag to dry-run tests, update string assertions to match current output.
 
 ### New Findings
 
-#### P2-7 — `status` shows total log size (active + rotated) which can exceed configured max
+#### P3-7 — `status` shows redundant "configure" hints when device name is a placeholder
 
-**Repro:** `idlewatch status` shows "Log size: 16 MB" but `IDLEWATCH_LOCAL_LOG_MAX_MB` defaults to 10 MB. Active file is 6 MB, rotated `.1` file is 10 MB.
-**Impact:** Confusing — user sees size > max and may think rotation is broken.
-**Acceptance:** Either (a) show "Log size: 6 MB (+ 10 MB rotated)" or (b) show only active file size, or (c) label as "Total log storage".
+**Repro:** `idlewatch status` with device name "test" shows:
+```
+  ℹ️  Rename this device:  idlewatch configure
 
-#### P2-8 — TUI fallback message mentions "Cargo" — confusing for end users
+  Change:   idlewatch configure
+```
+**Impact:** Two consecutive lines both say "run configure". Visually noisy, redundant.
+**Acceptance:** When the rename hint is shown, suppress the standalone "Change:" line (rename hint already links to configure).
 
-**Repro:** On a platform without bundled TUI binary and without Rust/Cargo installed, `idlewatch quickstart` prints: "IdleWatch TUI is not bundled for this platform and Cargo is not installed. Falling back to text setup. Use --no-tui to skip this check."
-**Impact:** "Cargo" means nothing to most users. The message should say something like "TUI setup not available on this platform — using text prompts instead."
-**Acceptance:** Remove Cargo mention; simplify to "TUI setup not available for this platform. Using text prompts." Only mention `--no-tui` if user wants to suppress the check permanently.
+#### P3-8 — `--once` error says "Run idlewatch quickstart with a new key" — too aggressive
 
-#### P3-6 — README `npx` path doesn't mention `--no-tui`
-
-**Repro:** README says `npx idlewatch quickstart` but TUI binary is only bundled for darwin-arm64. On other platforms via npx, user hits the Cargo fallback message.
-**Impact:** Low — fallback works, but the jarring Cargo message degrades first impression.
-**Acceptance:** README adds note: "Use `npx idlewatch quickstart --no-tui` if the TUI wizard isn't available on your platform."
+**Repro:** `idlewatch --once` with an invalid key prints:
+```
+❌ Cloud publish failed for "test": API key rejected (invalid_api_key). Run idlewatch quickstart with a new key.
+```
+**Impact:** "with a new key" implies the key is permanently bad. If the user just typo'd it, `idlewatch configure` is the right fix. `quickstart` re-runs the full wizard unnecessarily.
+**Acceptance:** Change to: `Run idlewatch configure to update your API key.`
 
 ### Re-verified (all stable)
 
 | Item | Status |
 |------|--------|
-| `idlewatch quickstart` happy path (cloud + local) | ✅ |
-| `idlewatch configure` pre-fills values | ✅ |
+| `idlewatch quickstart` text prompts (cloud + local) | ✅ |
+| `idlewatch configure` pre-fills all saved values | ✅ |
 | `idlewatch status` shows friendly metric labels + rename hint | ✅ |
-| `idlewatch --dry-run` clean summary, overflow handled | ✅ |
+| `idlewatch --dry-run` clean summary, correct metric count | ✅ |
+| `idlewatch --dry-run --json` full JSON output | ✅ |
 | `idlewatch --once` publishes with clear feedback | ✅ |
-| `idlewatch install-agent` / `uninstall-agent` messaging | ✅ |
+| `idlewatch install-agent` clean messaging, shows status/remove commands | ✅ |
+| `idlewatch uninstall-agent` says "Re-enable", keeps config/logs | ✅ |
+| `idlewatch status` shows LaunchAgent running + pid after install | ✅ |
 | Device name persists across reconfigure | ✅ |
 | Metric toggles persist across reconfigure | ✅ |
 | Config auto-loaded from `~/.idlewatch/idlewatch.env` | ✅ |
-| `--help` clean, mentions `--help-env` | ✅ |
-| `--help-env` has clear sections with visual separator | ✅ |
-| README documents both `npm install -g` and `npx` paths | ✅ |
+| `--help` clean, lists all commands, mentions `--help-env` | ✅ |
+| `--help-env` organized: Common → Tuning → Probe internals (with separator) | ✅ |
 | No-args non-TTY prints help | ✅ |
-| Uninstall says "Re-enable" not "Reinstall" | ✅ |
+| Per-subcommand `--help` works (configure, install-agent, uninstall-agent, create, dashboard) | ✅ |
 | Postinstall prints quickstart hint | ✅ |
-| Per-subcommand `--help` works | ✅ |
-| `--once` error message has clear fix guidance | ✅ |
-| Log rotation working (active + .1 file) | ✅ |
+| README documents both `npm -g` and `npx` paths + `--no-tui` note | ✅ |
+| Log rotation working (active + rotated shown separately in status) | ✅ |
+| `version` command works | ✅ |
 
 ### Open Items (prioritized)
 
-1. **P1-1** — 0/20 tests pass (regression from 8/41) — test suite is fully red, blocks all regression detection
-2. **P1-2** — npx quickstart may fail with confusing Cargo message if TUI binary missing
-3. **P2-5** — No config reload without restart (no SIGHUP or file-watch)
-4. ~~**P2-7** — `status` log size shows total (active + rotated), can exceed configured max — confusing~~ ✅ Fixed: now shows "X (+ Y rotated)"
-5. ~~**P2-8** — TUI fallback message mentions "Cargo" — jargon, confusing for end users~~ ✅ Fixed: simplified to "TUI setup not available for this platform. Using text prompts."
-6. ~~**P3-6** — README `npx` path doesn't mention `--no-tui` for platforms without bundled TUI~~ ✅ Fixed: added note to README
+1. **P1-1** — 20/127 tests fail (stale assertions, not product bugs) — blocks regression detection for those paths
+2. **P2-5** — No config reload without restart (no SIGHUP or file-watch) — low impact since `install-agent` re-reads
+3. **P3-7** — Redundant "configure" hints in status when device name is placeholder
+4. **P3-8** — `--once` invalid key error suggests `quickstart` instead of `configure`
 
 ### Closed (fixed in prior rounds)
 
@@ -78,16 +84,16 @@ All 20 unique test cases now fail. No passing tests remain. The failures fall in
 - ✅ P2-3 — `--help` mentions `--help-env`
 - ✅ P2-4 — Dry-run shows overflow label for >100% context
 - ✅ P2-6 — Postinstall prints quickstart hint
+- ✅ P2-7 — `status` log size now shows active vs rotated separately
+- ✅ P2-8 — TUI fallback no longer mentions Cargo jargon
 - ✅ P3-1 — `--help-env` probe internals section has visual separator
 - ✅ P3-2 — Postinstall prints quickstart hint
 - ✅ P3-3 — No-args non-TTY prints help
 - ✅ P3-4 — Uninstall says "Re-enable"
 - ✅ P3-5 — `--help-env` probe section labeled clearly
-- ✅ P2-7 — `status` log size now shows active vs rotated separately
-- ✅ P2-8 — TUI fallback no longer mentions Cargo jargon
 - ✅ P3-6 — README now mentions `--no-tui` for npx path
 
 ---
 
 ## Previous Rounds
-All prior rounds (1–55) complete. See git history for full details.
+All prior rounds (1–56) complete. See git history for full details.
