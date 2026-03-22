@@ -18,8 +18,7 @@
   ],
   "bin": {
     "idlewatch": "bin/idlewatch-agent.js",
-    "idlewatch-agent": "bin/idlewatch-agent.js",
-    "idlewatch-skill": "bin/idlewatch-agent.js"
+    "idlewatch-agent": "bin/idlewatch-agent.js"
   },
   "scripts": {
     "postinstall": "node scripts/postinstall.mjs",
