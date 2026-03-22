@@ -5,6 +5,50 @@
 
 ---
 
+## 2026-03-22 — Round 58: Full surface pass
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 97 pass / 20 fail (same 20 stale-assertion failures as R57)
+
+No new test failures. The 20 failures remain stale assertion drift — not product bugs.
+
+### Full Surface Walkthrough
+
+| Area | Verdict | Notes |
+|------|---------|-------|
+| `idlewatch --help` | ✅ | Clean, lists all commands, mentions `--help-env` |
+| `idlewatch --help-env` | ✅ | Well-organized: Common → Tuning → separator → Probe internals → Firebase |
+| `idlewatch configure --help` | ✅ | Concise, mentions pre-fill behavior |
+| `idlewatch install-agent --help` | ✅ | Clear, mentions config path |
+| `idlewatch status` (no agent) | ✅ | Shows "LaunchAgent not installed", rename hint for placeholder name |
+| `idlewatch status` (with agent) | ✅ | Shows pid, running state, log size (active + rotated) |
+| `idlewatch install-agent` | ✅ | Clean success message, shows check/remove commands |
+| `idlewatch uninstall-agent` | ✅ | Says "Re-enable", keeps config/logs |
+| `idlewatch uninstall-agent` (not installed) | ✅ | "LaunchAgent is not installed. Nothing to remove." |
+| `idlewatch --dry-run` | ✅ | Human-readable summary with metric values |
+| `idlewatch --dry-run --json` | ✅ | Full JSON, correct schema |
+| `idlewatch --once` (bad key) | ✅ | Suggests `configure` not `quickstart` |
+| `idlewatch version` | ✅ | "idlewatch 0.2.0" |
+| No-args non-TTY | ✅ | Prints help |
+| README | ✅ | Documents both `npm -g` and `npx`, mentions `--no-tui` |
+
+### New Findings
+
+**None.** All previously reported items (P3-7, P3-8) confirmed fixed. Product surface is clean.
+
+### Open Items (prioritized)
+
+1. **P1-1** — 20/127 tests fail (stale assertions, not product bugs) — blocks regression detection for those paths. Categories: dry-run schema tests expect JSON from human-friendly output; quickstart/enrollment tests assert old strings; OpenClaw probe stderr tests assert old format; help format test expects inlined env vars.
+
+### Assessment
+
+The installer/CLI is in good shape for v0.2.0. Setup wizard, config persistence, launch-agent lifecycle, test-publish messaging, and docs are all polished. The only open item is updating the 20 stale test assertions to match current (improved) output — a test-only task with no product changes needed.
+
+---
+
 ## 2026-03-22 — Round 57: Fresh verification pass
 
 ### Test Environment
