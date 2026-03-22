@@ -74,8 +74,6 @@ Failure categories:
 
 1. **P1-1** — 20/127 tests fail (stale assertions, not product bugs) — blocks regression detection for those paths
 2. **P2-5** — No config reload without restart (no SIGHUP or file-watch) — low impact since `install-agent` re-reads
-3. **P3-7** — Redundant "configure" hints in status when device name is placeholder
-4. **P3-8** — `--once` invalid key error suggests `quickstart` instead of `configure`
 
 ### Closed (fixed in prior rounds)
 
@@ -92,6 +90,8 @@ Failure categories:
 - ✅ P3-4 — Uninstall says "Re-enable"
 - ✅ P3-5 — `--help-env` probe section labeled clearly
 - ✅ P3-6 — README now mentions `--no-tui` for npx path
+- ✅ P3-7 — Redundant "configure" hints in status when device name is placeholder
+- ✅ P3-8 — `--once` invalid key error suggests `configure` instead of `quickstart`
 
 ---
 
