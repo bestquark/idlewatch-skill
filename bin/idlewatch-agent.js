@@ -1347,7 +1347,8 @@ if (statusRequested) {
 
   // Hint if device name looks like a placeholder
   const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
-  if (hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())) {
+  const isPlaceholderName = hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())
+  if (isPlaceholderName) {
     console.log(`  ℹ️  Rename this device:  idlewatch configure`)
   }
 
@@ -1357,7 +1358,7 @@ if (statusRequested) {
   } else if (!hasSamples) {
     console.log('  Test:     idlewatch --once')
     console.log('  Start:    idlewatch run  or  idlewatch install-agent')
-  } else {
+  } else if (!isPlaceholderName) {
     console.log('  Change:   idlewatch configure')
   }
   process.exit(0)
@@ -2252,7 +2253,7 @@ async function tick() {
   if (!DRY_RUN && REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart with a new key.`
+        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch configure to update your API key.`
       )
     }
     throw new Error(`❌ Cloud publish failed for "${DEVICE_NAME}": check API key and connectivity.`)
