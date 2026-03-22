@@ -33,10 +33,10 @@ Unit tests show 41 failures vs 6 passes. Most failures appear to be assertion dr
 
 | # | Issue | Repro | Acceptance Criteria |
 |---|-------|-------|---------------------|
-| P2-1 | **Device name "test" — no obvious way to rename** — `status` shows device name but doesn't hint at `configure` for renaming. Users who picked a bad name during first setup may not realize they can change it. | `idlewatch status` → shows "test", no rename hint | `status` output includes `Rename: idlewatch configure` when device name looks like a placeholder |
-| P2-2 | **Status output doesn't show enabled metric list in human terms** — shows raw target names like `agent_activity, token_usage, runtime_state` which are internal. End users don't know what those mean. | `idlewatch status` | Metrics line uses friendly labels: "CPU, Memory, GPU, Temperature, OpenClaw (activity, tokens, runtime)" |
+| P2-1 | ✅ **Device name "test" — no obvious way to rename** — `status` now shows rename hint when device name is a placeholder. | `idlewatch status` → shows "test", includes rename hint | `status` output includes `Rename: idlewatch configure` when device name looks like a placeholder |
+| P2-2 | ✅ **Status output now shows friendly metric labels** — CPU, Memory, GPU, Temperature, OpenClaw activity/tokens/runtime instead of internal target names. | `idlewatch status` | Metrics line uses friendly labels |
 | P2-3 | **`--help` doesn't mention `--help-env`** — the env var reference is hidden. Main help says "Show this help" but doesn't hint that `--help-env` exists for advanced config. | `idlewatch --help` | Add one line: `--help-env   Show all environment variables` (already present, confirmed ✅) |
-| P2-4 | **Dry-run "157% context used" looks broken** — `--dry-run` showed "157% context used" which looks like a bug to users even if it's technically correct (context overflow). Should cap display or explain. | `idlewatch --dry-run` | Values >100% shown as "100%+" or "157% (overflow)" |
+| P2-4 | ✅ **Dry-run "157% context used" now shows overflow label** — displays "100%+ context used (157% overflow)" for values >100%. | `idlewatch --dry-run` | Values >100% shown as "100%+ (overflow)" |
 | P2-5 | **Config reload: no documented way to reload config without restart** — if user edits `~/.idlewatch/idlewatch.env` while agent is running, changes don't take effect. No `reload` command exists. | Edit env file while `idlewatch run` is active | Either: (a) document that restart is required, or (b) add SIGHUP reload, or (c) re-read env file each cycle |
 
 #### P3 — Minor Polish
@@ -45,8 +45,8 @@ Unit tests show 41 failures vs 6 passes. Most failures appear to be assertion dr
 |---|-------|-------|---------------------|
 | P3-1 | **`--help-env` lists too many env vars** — 30+ vars including Firebase emulator, probe internals, stale thresholds. Overwhelming for 99% of users. | `idlewatch --help-env` | Split into "Common" (already done ✓) but "Tuning" and "Probe internals" sections should say "(advanced — rarely needed)" more prominently |
 | P3-2 | **Postinstall only installs menubar app** — `npm install -g idlewatch` silently tries to install the menubar app. No quickstart prompt or hint. User may not know they need to run `quickstart` next. | `npm install -g idlewatch` | Postinstall prints: "Run `idlewatch quickstart` to set up this device." |
-| P3-3 | **`idlewatch` with no args in non-TTY silently does nothing useful** — guard `interactiveDefaultRequested` requires TTY. A user piping or running in CI gets no output and no error. | `echo "" \| idlewatch` | Print help or error when stdin is not TTY and no subcommand given |
-| P3-4 | **Uninstall-agent says "Your config and logs are still in ~/.idlewatch/"** — good, but could also mention `idlewatch install-agent` to re-enable (already does ✅). Minor: the word "Reinstall" implies it was removed, but only the LaunchAgent was removed. | `idlewatch uninstall-agent` | Change "Reinstall" to "Re-enable" |
+| P3-3 | ✅ **`idlewatch` with no args in non-TTY now prints help** instead of silently doing nothing. | `echo "" \| idlewatch` | Print help when stdin is not TTY and no subcommand given |
+| P3-4 | ✅ **Uninstall-agent now says "Re-enable"** instead of "Reinstall". | `idlewatch uninstall-agent` | Changed "Reinstall" to "Re-enable" |
 
 #### P3 — Confirmed Working (from polish plan)
 
