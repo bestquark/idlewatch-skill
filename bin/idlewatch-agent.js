@@ -85,7 +85,8 @@ Tuning:
   IDLEWATCH_PROVIDER_QUOTA_TIMEOUT_MS  Provider quota probe timeout (default: 4000)
   IDLEWATCH_PUBLISH_TIMEOUT_MS         Cloud publish HTTP timeout (default: 10000)
 
-Probe internals (rarely needed):
+  ─────────────────────────────────────────────────────────
+Probe internals (rarely needed — most users can ignore these):
   IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS  OpenClaw probe timeout (default: 2500)
   IDLEWATCH_OPENCLAW_PROBE_RETRIES     Extra probe retries (default: 1)
   IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES  Max probe output capture (default: 2MB)

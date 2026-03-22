@@ -12,3 +12,7 @@ try {
 } catch (error) {
   console.warn(`IdleWatch postinstall menubar setup skipped: ${error.message}`)
 }
+
+console.log('')
+console.log('  Run "idlewatch quickstart" to set up this device.')
+console.log('')
