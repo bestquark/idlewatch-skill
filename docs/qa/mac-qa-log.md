@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-03-21 — Round 43: Independent Verification (9:40 PM ET)
+
+### Fresh-session full verification on v0.2.0
+
+| Surface | Result |
+|---------|--------|
+| `--help` | 24 lines, clean. All commands listed incl. `install-agent`/`uninstall-agent`. ✅ |
+| `--version` / `version` | `idlewatch 0.2.0`, exit 0. ✅ |
+| Unknown subcommand | `Unknown command "notacommand"...`, exit 1. ✅ |
+| `--once` | `⚠️ Sample collected (4 metrics) (not published)` + `❌` with device name. Exit 1. ✅ |
+| `--once --json` | Pure JSON stdout (`2>/dev/null \| jq .` parses). `publishResult`/`publishError`/`deviceName` fields present. ✅ |
+| `--dry-run` | CPU 37%, Memory 64%, GPU 0%, Temp: nominal, OpenClaw stats. Exit 0. ✅ |
+| `--once --dry-run` | Clean dry-run, no publish error, exit 0. ✅ |
+| `status` | LaunchAgent `not installed`, Device dedup (no redundant ID), mode in footer, log size 23 MB, last sample age. ✅ |
+| README | 51 lines, clean. ✅ |
+| Git status | Clean tree, no uncommitted changes. ✅ |
+
+### No new findings
+
+All 57 QA items remain closed. No regressions. CLI is stable, clean, and minimal on v0.2.0.
+
+### Assessment
+
+**No further QA rounds needed.** The polish cycle is complete. All surfaces verified across 43 rounds. Next QA pass should trigger when new features ship.
+
+---
+
 ## 2026-03-21 — Round 42: Implementer Polish (9:25 PM ET)
 
 ### Fixes
