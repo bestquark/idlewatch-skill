@@ -348,7 +348,7 @@ export async function runEnrollmentWizard(options = {}) {
     }
 
     if (tuiResult.reason === 'bundled-binary-missing-and-cargo-missing') {
-      console.warn('IdleWatch TUI is not bundled for this platform and Cargo is not installed. Falling back to text setup. Use --no-tui to skip this check.')
+      console.warn('TUI setup not available for this platform. Using text prompts.')
     } else if (!['disabled', 'cargo-missing', 'bundled-binary-missing'].includes(tuiResult.reason || '')) {
       console.warn(`IdleWatch TUI unavailable (${tuiResult.reason || 'unknown'}). Falling back to text setup.`)
     }

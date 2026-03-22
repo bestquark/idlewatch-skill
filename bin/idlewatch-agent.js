@@ -1323,9 +1323,13 @@ if (statusRequested) {
   if (LOCAL_LOG_PATH && fs.existsSync(LOCAL_LOG_PATH)) {
     try {
       const stat = fs.statSync(LOCAL_LOG_PATH)
-      let totalBytes = stat.size
-      try { totalBytes += fs.statSync(LOCAL_LOG_PATH + '.1').size } catch (_) {}
-      console.log(`  Log size:     ${formatBytes(totalBytes)}`)
+      const activeBytes = stat.size
+      let rotatedBytes = 0
+      try { rotatedBytes = fs.statSync(LOCAL_LOG_PATH + '.1').size } catch (_) {}
+      const logLabel = rotatedBytes > 0
+        ? `${formatBytes(activeBytes)} (+ ${formatBytes(rotatedBytes)} rotated)`
+        : formatBytes(activeBytes)
+      console.log(`  Log size:     ${logLabel}`)
       const rows = parseLocalRows(LOCAL_LOG_PATH, 1)
       if (rows.length > 0 && rows[0].ts) {
         hasSamples = true
