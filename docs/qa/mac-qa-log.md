@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-03-22 — Round 61: Maintenance pass — all clear
+
+### Test Environment
+- macOS arm64, Node v25.6.1, idlewatch v0.2.0
+- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
+
+### Test Suite: 127 pass / 0 fail ✅
+
+### Surface Walkthrough
+
+- `--help`: concise, all commands listed, mentions `--help-env` ✅
+- `--help-env`: organized (Common → Tuning → separator → Probe internals → Firebase) ✅
+- `configure --help`: mentions pre-fill ✅
+- `install-agent` → `status` → `uninstall-agent` → double-uninstall: all messaging clean ✅
+- `--dry-run`: human-readable summary, correct metric count ✅
+- `--once` (bad key): suggests `configure` (not `quickstart`) ✅
+- `version`: "idlewatch 0.2.0" ✅
+- `status`: rename hint for placeholder name, no redundant lines ✅
+- README: documents npm -g + npx, mentions `--no-tui` ✅
+
+### New Findings
+
+**None.**
+
+### Open Items
+
+None. All items closed as of Round 60.
+
+---
+
 ## 2026-03-22 — Round 60: Full suite green
 
 ### Test Environment
