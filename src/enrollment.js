@@ -231,10 +231,9 @@ function tryRustTui({ configDir, outputEnvFile }) {
   return { ok: false, reason: `cargo-run-failed:${run.status ?? 'unknown'}`, manifestPath }
 }
 
-function promptModeText({ isReconfigure = false, currentMode = null } = {}) {
+function promptModeText({ isReconfigure = false } = {}) {
   const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup'
-  const defaultHint = currentMode === 'local' ? ' (default 2)' : ' (default 1)'
-  return `\n${title}\n\nSetup mode${defaultHint}:\n  1) Cloud (recommended) — link with an API key from idlewatch.com/api\n  2) Local-only — no cloud writes\n`
+  return `\n${title}\n\nSetup mode:\n  1) Cloud (recommended) — link with an API key from idlewatch.com/api\n  2) Local-only — no cloud writes\n`
 }
 
 function monitorTargetsNeedOpenClawUsage(monitorTargets) {
@@ -360,7 +359,7 @@ export async function runEnrollmentWizard(options = {}) {
     const isReconfigure = !!existingConfig
     const currentMode = existingConfig?.mode || null
     const modeDefault = currentMode === 'local' ? '2' : '1'
-    console.log(promptModeText({ isReconfigure, currentMode }))
+    console.log(promptModeText({ isReconfigure }))
     if (isReconfigure) {
       console.log(`Current device: ${existingConfig.deviceName} (${currentMode === 'production' ? 'cloud' : 'local-only'})`)
     }
@@ -419,9 +418,17 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if (!nonInteractive && rl) {
-    console.log(`\nDetected monitor targets on this machine: ${availableMonitorTargets.join(', ')}`)
+    const friendlyTargetLabels = {
+      cpu: 'CPU', memory: 'Memory', gpu: 'GPU', temperature: 'Temperature',
+      agent_activity: 'OpenClaw activity', token_usage: 'OpenClaw tokens',
+      runtime_state: 'OpenClaw runtime', provider_quota: 'Provider quota'
+    }
+    const friendlyAvailable = availableMonitorTargets.map(t => friendlyTargetLabels[t] || t)
+    console.log(`\nAvailable metrics: ${friendlyAvailable.join(', ')}`)
     const suggested = monitorTargets.join(',')
-    const monitorInput = (await rl.question(`Monitor targets [${suggested}]: `)).trim()
+    const friendlySuggested = monitorTargets.map(t => friendlyTargetLabels[t] || t).join(', ')
+    console.log(`Selected: ${friendlySuggested}`)
+    const monitorInput = (await rl.question(`Metrics [${suggested}]: `)).trim()
     monitorTargets = normalizeMonitorTargets(monitorInput || suggested, availableMonitorTargets)
   }
 
