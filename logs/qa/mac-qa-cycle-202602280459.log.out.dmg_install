@@ -1,0 +1,17 @@
+== RUN dmg_install ==
+START: 2026-02-28T10:01:21Z
+Reusable packaged artifact is missing sourceGitCommit provenance.
+Rebuild artifact before strict commit-matching reuse checks:
+  npm run package:macos
+Reusable packaged artifact did not record sourceGitDirty provenance.
+Continuing with non-strict dirty-state behavior so existing legacy artifacts can be validated safely.
+Rebuild artifact for strict dirty-state reuse validation:
+  npm run package:macos
+packaged artifact reusable validation ok
+artifact: /Volumes/IdleWatch/IdleWatch.app/Contents/MacOS/IdleWatch
+artifact version: 0.1.0
+Attempt 1/3: validating DMG-installed launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-apps.XXXXXX.yQ5OatMBhi/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+dmg install validation ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg)
+STATUS: PASS
+END: 2026-02-28T10:02:27Z

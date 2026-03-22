@@ -1,0 +1,5 @@
+== RUN openclaw_stats ==
+START: 2026-02-28T09:59:23Z
+validate-openclaw-stats-ingestion: ok (stats-only command path parsed and ingested across multiple payload shapes)
+STATUS: PASS
+END: 2026-02-28T09:59:24Z

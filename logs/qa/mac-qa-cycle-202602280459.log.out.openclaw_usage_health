@@ -1,0 +1,5 @@
+== RUN openclaw_usage_health ==
+START: 2026-02-28T09:59:23Z
+validate-openclaw-usage-health: ok (openclaw usage source required and healthy)
+STATUS: PASS
+END: 2026-02-28T09:59:23Z

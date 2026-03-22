@@ -1,0 +1,4 @@
+packaged artifact reusable validation ok
+artifact: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch
+artifact version: 0.1.0
+validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)

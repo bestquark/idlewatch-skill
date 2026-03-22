@@ -1,0 +1,9 @@
+Using existing packaged app at: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch
+packaging metadata ok for IdleWatch.app 0.1.0
+source commit: 28f9561bbb6421d67a9e80953fb1949b355e1c51
+packaging metadata validation ok
+Running strict path-scrubbed launchability validation using PATH=/usr/bin:/bin
+Attempt 1/3: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+bundled runtime validation ok
+validated launcher dry-run under restricted PATH in 90000ms baseline (+10000ms retry increments, up to 3 attempts)

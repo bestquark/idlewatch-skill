@@ -1,0 +1,1 @@
+usage-alert-rate-e2e: ok (typical cadence stays ok; boundary states escalate notice -> warning -> warning)

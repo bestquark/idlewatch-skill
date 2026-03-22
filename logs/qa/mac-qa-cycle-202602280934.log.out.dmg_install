@@ -1,0 +1,8 @@
+==> 2026-02-28T09:35:54Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent
+packaging metadata is missing a valid sourceGitDirty flag; skipping dirty-state matching.
+packaged artifact reusable validation ok
+artifact: /Volumes/IdleWatch/IdleWatch.app/Contents/MacOS/IdleWatch
+artifact version: 0.1.0
+Attempt 1/3: validating DMG-installed launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-apps.XXXXXX.JQmmFqJ9eB/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+dmg install validation ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg)

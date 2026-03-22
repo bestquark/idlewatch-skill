@@ -1,0 +1,7 @@
+==> 2026-02-28T09:33:19Z running: npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent
+Reused packaged artifact is stale for this workspace revision.
+Current commit : 9fa098a58c634bb44e4a779a1b62a575cc7a870e
+Packaged commit: 0ee73458293dc4fa70396887d7f6111332d2f271
+Rebuild artifact first:
+  npm run package:macos
+Packaged artifact is stale and does not match current git revision.

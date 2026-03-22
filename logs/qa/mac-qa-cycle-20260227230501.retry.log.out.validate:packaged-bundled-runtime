@@ -1,0 +1,21 @@
+
+> idlewatch-skill@0.1.0 validate:packaged-bundled-runtime
+> ./scripts/validate-packaged-bundled-runtime.sh
+
+Packaging IdleWatch.app with bundled runtime: /opt/homebrew
+MACOS_CODESIGN_IDENTITY not set; leaving app unsigned.
+Mac app scaffold package complete.
+Next steps:
+  1) Test: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
+  2) Build DMG: ./scripts/build-dmg.sh
+  3) Optional bundle runtime for node-less targets: export IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"
+  4) Optional signing: export MACOS_CODESIGN_IDENTITY="Developer ID Application: ..." then rerun package-macos
+  5) Optional notarize+staple DMG: set MACOS_NOTARY_PROFILE and rerun build-dmg
+  6) Enforce trusted artifacts: export IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1
+Using a Node-free PATH to validate that launcher falls back to bundled runtime cleanly.
+packaging metadata ok for IdleWatch.app 0.1.0
+packaging metadata validation ok
+Attempt 1/3: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+bundled runtime validation ok
+validated launcher dry-run under restricted PATH in 90000ms baseline (+10000ms retry increments, up to 3 attempts)

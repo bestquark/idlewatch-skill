@@ -1,0 +1,2 @@
+==> 2026-02-28T09:34:52Z running: npm run validate:dmg-checksum --silent
+DMG checksum OK: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg

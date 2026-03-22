@@ -1,0 +1,5 @@
+==> 2026-02-28T09:34:59Z running: IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:openclaw-release-gates --silent
+validate-openclaw-usage-health: ok (openclaw usage source required and healthy)
+validate-openclaw-stats-ingestion: ok (stats-only command path parsed and ingested across multiple payload shapes)
+validate-openclaw-cache-recovery-e2e: ok (fallback-cache sample recovered via forced reprobe)
+validate-openclaw-release-gates: ok (host OpenClaw checks for usage-health, stats fallback, and stale-cache recovery)

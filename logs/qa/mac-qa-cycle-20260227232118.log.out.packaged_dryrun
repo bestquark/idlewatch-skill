@@ -1,0 +1,1 @@
+dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)

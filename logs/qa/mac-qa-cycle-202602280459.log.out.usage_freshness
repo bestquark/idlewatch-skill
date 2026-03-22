@@ -1,0 +1,5 @@
+== RUN usage_freshness ==
+START: 2026-02-28T09:59:19Z
+usage-freshness-e2e: ok (fresh -> aging -> post-threshold-in-grace -> stale)
+STATUS: PASS
+END: 2026-02-28T09:59:21Z

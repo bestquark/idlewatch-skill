@@ -1,0 +1,2 @@
+==> 2026-02-28T09:34:55Z running: npm run validate:trusted-prereqs --silent
+Missing MACOS_CODESIGN_IDENTITY. Example: Developer ID Application: Your Name (TEAMID)

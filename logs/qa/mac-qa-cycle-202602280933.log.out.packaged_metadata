@@ -1,0 +1,4 @@
+==> 2026-02-28T09:33:19Z running: npm run validate:packaged-metadata --silent
+packaging metadata ok for IdleWatch.app 0.1.0
+source commit: 0ee73458293dc4fa70396887d7f6111332d2f271 (dirty)
+packaging metadata validation ok

@@ -1,0 +1,5 @@
+== RUN usage_alert ==
+START: 2026-02-28T09:59:21Z
+usage-alert-rate-e2e: ok (typical cadence stays ok; boundary states escalate notice -> warning -> warning)
+STATUS: PASS
+END: 2026-02-28T09:59:23Z

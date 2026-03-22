@@ -1,0 +1,7 @@
+== RUN packaged_metadata ==
+START: 2026-02-28T09:59:28Z
+packaging metadata ok for IdleWatch.app 0.1.0
+source commit: 82e003996be9b838319622340b565706a4042b5c (dirty)
+packaging metadata validation ok
+STATUS: PASS
+END: 2026-02-28T09:59:28Z

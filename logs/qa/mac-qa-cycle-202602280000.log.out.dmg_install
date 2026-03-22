@@ -1,0 +1,3 @@
+Attempt 1/3: validating DMG-installed launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-apps.XXXXXX.yaelQzU0tG/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+dmg install validation ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg)

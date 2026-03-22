@@ -1,0 +1,3 @@
+===== usage_alert
+===== 2026-02-28 00:00:29 EST
+usage-alert-rate-e2e: ok (typical cadence stays ok; boundary states escalate notice -> warning -> warning)

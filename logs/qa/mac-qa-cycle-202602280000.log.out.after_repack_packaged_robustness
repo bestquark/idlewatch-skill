@@ -1,0 +1,10 @@
+packaged artifact reusable validation ok
+artifact: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch
+artifact version: 0.1.0
+dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)
+validate-packaged-usage-alert-rate-e2e: ok (packaged launcher alert-level transitions remain aligned)
+packaged-usage-probe-noise-e2e: ok (non-zero exit with valid JSON still ingested)
+dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)
+validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)
+validate-packaged-openclaw-cache-recovery-e2e: ok (packaged stale cache recovers through reprobe attempts)
+validate-packaged-openclaw-release-gates: ok (release artifact validates OpenClaw health, stats fallback, and cache recovery)

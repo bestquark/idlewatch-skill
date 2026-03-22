@@ -839,10 +839,9 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 
     const load = spawnSync('launchctl', ['bootstrap', domain, plistPath], { stdio: 'pipe' })
     if (load.status === 0) {
-      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} and loaded.`)
-      console.log(`   IdleWatch will now run in the background.`)
-      console.log(`   Check status: idlewatch status`)
-      console.log(`   Remove:       idlewatch uninstall-agent`)
+      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} — IdleWatch is running in the background.`)
+      console.log(`   Check:   idlewatch status`)
+      console.log(`   Remove:  idlewatch uninstall-agent  (safe — only stops background collection)`)
     } else {
       console.error(`LaunchAgent install failed: ${String(load.stderr).trim() || 'unknown error'}`)
       console.error(`Plist written to ${plistPath} — try: launchctl load ${plistPath}`)
@@ -873,8 +872,9 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       fs.unlinkSync(plistPath)
     } catch { /* ignore */ }
 
-    console.log('✅ LaunchAgent removed. IdleWatch is no longer running in the background.')
-    console.log('   Reinstall: idlewatch install-agent')
+    console.log('✅ LaunchAgent removed — background collection stopped.')
+    console.log('   Your config and logs are still in ~/.idlewatch/')
+    console.log('   Reinstall:  idlewatch install-agent')
     process.exit(0)
   }
 
@@ -910,29 +910,34 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 
       if (onceRun.status === 0) {
         const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
-        console.log(`\n✅ Setup complete!`)
-        console.log(`   Device: ${result.deviceName} (${modeLabel} mode)`)
+        console.log(`\n✅ Setup complete — "${result.deviceName}" is live!`)
+        console.log(`   Mode:   ${modeLabel}`)
         console.log(`   Config: ${result.outputEnvFile}`)
         if (result.temperatureHelper?.status === 'installed') {
-          console.log(`   Temperature: auto-installed via ${result.temperatureHelper.installer}`)
+          console.log(`   Temp:   auto-installed via ${result.temperatureHelper.installer}`)
         } else if (result.temperatureHelper?.status === 'available') {
-          console.log(`   Temperature: ${result.temperatureHelper.helper}`)
+          console.log(`   Temp:   ${result.temperatureHelper.helper}`)
         } else if (result.temperatureHelper?.status === 'failed') {
-          console.log(`   Temperature: thermal state only (${result.temperatureHelper.reason})`)
+          console.log(`   Temp:   thermal state only (${result.temperatureHelper.reason})`)
         }
         if (result.mode === 'local') {
-          console.log(`\n   Local telemetry check passed.`)
+          console.log(`\n   ✓ Local telemetry verified.`)
         } else {
-          console.log(`\n   First telemetry sample sent successfully.`)
+          console.log(`\n   ✓ First sample published to idlewatch.com.`)
+          console.log(`   Your device should appear on the dashboard within a few seconds.`)
         }
-        console.log(`   Next: idlewatch install-agent  (runs in background)`)
-        console.log(`         idlewatch run             (runs in foreground)`)
+        console.log(`\n   To keep it running:`)
+        console.log(`     idlewatch install-agent   Auto-start in background (recommended)`)
+        console.log(`     idlewatch run             Run in foreground`)
         process.exit(0)
       }
 
-      console.error(`\n⚠️ Setup saved, but the first telemetry sample didn't publish.`)
+      console.error(`\n⚠️ Setup saved, but the test sample failed to publish.`)
       console.error(`   Device: ${result.deviceName}`)
       console.error(`   Config: ${result.outputEnvFile}`)
+      console.error(`\n   Common fixes:`)
+      console.error(`     • Check your API key is valid at idlewatch.com/api`)
+      console.error(`     • Verify internet connectivity`)
       console.error(`\n   Retry:  idlewatch --once`)
       console.error(`   Redo:   idlewatch quickstart`)
       process.exit(onceRun.status ?? 1)
@@ -1319,18 +1324,19 @@ if (statusRequested) {
 
   console.log('')
   if (!hasConfig) {
-    console.log('  Run idlewatch quickstart to set up this device.')
+    console.log('  Get started:  idlewatch quickstart')
   } else if (!hasSamples) {
-    console.log('  Run idlewatch --once to collect a test sample, or idlewatch run for continuous monitoring.')
+    console.log('  Test:     idlewatch --once')
+    console.log('  Start:    idlewatch run  or  idlewatch install-agent')
   } else {
-    console.log('  Run idlewatch configure to change mode, device name, metrics, or API key.')
+    console.log('  Change:   idlewatch configure')
   }
   process.exit(0)
 }
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    'Local-only mode: this run will stay on this Mac until you link a publish target. Run idlewatch quickstart any time if you want cloud ingest.'
+    'Running in local-only mode — telemetry is saved to disk but not published. Run idlewatch configure to add a cloud API key.'
   )
 }
 
@@ -2200,9 +2206,8 @@ async function tick() {
   if (!DRY_RUN && cloudIngestKickedOut && !cloudIngestKickoutNotified) {
     cloudIngestKickoutNotified = true
     if (!(REQUIRE_CLOUD_WRITES && ONCE)) {
-      console.error(
-        `Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch quickstart to link a new key.`
-      )
+      console.error(`Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}).`)
+      console.error(`  Fix: idlewatch configure  (to update API key)`)
     }
   }
 

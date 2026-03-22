@@ -1,0 +1,10 @@
+== RUN packaged_release_reuse ==
+START: 2026-02-28T09:59:27Z
+Reused packaged artifact is stale for this workspace revision.
+Current commit : b0b191ce839582bcee7616260056bc7802d8ddb7
+Packaged commit: 82e003996be9b838319622340b565706a4042b5c
+Rebuild artifact first:
+  npm run package:macos
+Packaged artifact is stale and does not match current git revision.
+STATUS: PASS
+END: 2026-02-28T09:59:27Z

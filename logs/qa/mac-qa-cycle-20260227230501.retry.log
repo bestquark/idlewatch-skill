@@ -1,0 +1,2 @@
+validate:usage-alert-rate-e2e :: EXIT=0
+validate:packaged-bundled-runtime :: EXIT=0

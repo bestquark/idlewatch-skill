@@ -1,0 +1,3 @@
+==> 2026-02-28T09:34:55Z running: npm run validate:firebase-write-required-once --silent
+Firebase is not configured. Running in local-only mode (stdout logging only). Set FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT_FILE (preferred, or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64), or use FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST for emulator writes.
+IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 requires Firebase to be configured. Set FIREBASE_PROJECT_ID with service-account creds (or FIRESTORE_EMULATOR_HOST for emulator mode).

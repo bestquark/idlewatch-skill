@@ -1,0 +1,1 @@
+validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)

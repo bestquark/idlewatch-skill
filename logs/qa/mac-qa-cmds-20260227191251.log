@@ -1,0 +1,235 @@
+QA cycle start: Fri, 27 Feb 2026 19:12:51 -0500
+Node: v25.6.1
+npm: 11.9.0
+--- npm run test:unit --silent
+▶ buildConfig
+  ✔ returns default config with no env vars (1.681791ms)
+  ✔ respects IDLEWATCH_INTERVAL_MS (0.592125ms)
+  ✔ throws on invalid IDLEWATCH_INTERVAL_MS (1.179166ms)
+  ✔ throws on non-numeric IDLEWATCH_INTERVAL_MS (0.523584ms)
+  ✔ throws on invalid IDLEWATCH_USAGE_REFRESH_ON_NEAR_STALE (0.476083ms)
+  ✔ derives stale thresholds from interval (0.445375ms)
+  ✔ picks up custom host (0.405875ms)
+  ✔ sanitizes host with special chars (0.371792ms)
+  ✔ sets openclaw usage mode from env (1.83825ms)
+  ✔ sets firebase config (1.108084ms)
+✔ buildConfig (9.306875ms)
+✔ parses ioreg AGX performance statistics device utilization (0.783958ms)
+✔ parses ioreg IOGPU performance statistics when AGX is unavailable (0.126166ms)
+✔ parses powermetrics GPU residency percent (0.079208ms)
+✔ parses top grep fallback output (0.14525ms)
+✔ gpu sampler captures three distinct macOS telemetry sources deterministically (0.68225ms)
+✔ parseMemoryPressurePct derives pressure from free percentage output (0.669542ms)
+✔ parseMemoryPressurePct supports explicit pressure output (0.104792ms)
+✔ memoryPressureDarwin returns unavailable when command fails (0.599042ms)
+✔ memoryPressureDarwin returns classified value when parse succeeds (0.059708ms)
+✔ persists and reloads last-good usage snapshot (3.347791ms)
+✔ returns null on corrupt cache payload (0.517ms)
+✔ accepts explicit IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS in dry-run (76.496625ms)
+✔ rejects invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS (49.262208ms)
+✔ accepts explicit IDLEWATCH_OPENCLAW_PROBE_RETRIES in dry-run (68.513667ms)
+✔ rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES (48.61825ms)
+✔ accepts explicit IDLEWATCH_USAGE_REFRESH_REPROBES in dry-run (66.67175ms)
+✔ rejects invalid IDLEWATCH_USAGE_REFRESH_REPROBES (47.692417ms)
+✔ accepts explicit IDLEWATCH_USAGE_REFRESH_DELAY_MS in dry-run (66.940791ms)
+✔ rejects invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS (46.662417ms)
+✔ accepts Firestore emulator mode without service account credentials (78.489458ms)
+✔ rejects emulator mode when FIREBASE_PROJECT_ID is missing (46.426625ms)
+✔ rejects required Firebase writes when Firebase is not configured (47.506ms)
+✔ accepts required Firebase writes config in emulator mode (dry-run) (78.253083ms)
+✔ accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials (77.485583ms)
+✔ accepts OpenClaw JSON from stderr payload on non-zero-exit command (635.220959ms)
+✔ accepts legacy IDLEWATCH_OPENCLAW_BIN_HINT as explicit binary path in strict mode (564.6605ms)
+✔ parses openclaw status --json output and chooses best recent session (2.363583ms)
+✔ parses noisy openclaw output and alternate sessions key names (0.229083ms)
+✔ ignores non-usage JSON noise and parses later status payload (0.242875ms)
+✔ parses generic usage payloads (0.658375ms)
+✔ supports model_name in generic usage payloads (0.150416ms)
+✔ prefers most recent candidate when scores tie (0.185958ms)
+✔ prefers most recent candidate when timestamps are ISO strings (0.17275ms)
+✔ parses latest candidate when timestamp fields are strings (0.134583ms)
+✔ prefers richer generic usage candidate when status candidate is partial (0.175541ms)
+✔ parses status wrapper payloads under status.current (0.1945ms)
+✔ returns null for invalid payload (0.053583ms)
+✔ parses status payloads with stringified numeric fields and stale token marker fallback (0.173833ms)
+✔ converts epoch-seconds usage timestamps to milliseconds (0.114125ms)
+✔ parses stats payloads with nested usage totals (0.120542ms)
+✔ parses stats payloads nested under data wrapper (0.099084ms)
+✔ parses nested stats current.session wrapper payloads (0.118584ms)
+✔ parses status.stats.current.sessions as array (0.122083ms)
+✔ parses session array payload with model in defaultModel field (0.098625ms)
+✔ supports model_name alias in status sessions payload (0.076875ms)
+✔ supports string snake-case total_tokens in sessions array payloads (0.092417ms)
+✔ parses status payload with nested sessions object and totals in totals.nested field (0.094958ms)
+✔ parses status.current.stats.stats-in-legacy-shape payload (0.1275ms)
+✔ parses wrapped status payload with direct session array and nested usage totals (0.146916ms)
+✔ parses payloads wrapped under data.result with current session aliases (0.099792ms)
+✔ parses status payload where sessions is an object map keyed by session id (0.10925ms)
+✔ selects active session from result.session payload shape (0.541042ms)
+✔ ignores metadata defaults key in session maps and still selects most recent real session (0.187584ms)
+✔ parses data.current stats wrapper payloads (0.224458ms)
+✔ parses payload wrapper stats payloads (0.138291ms)
+✔ parses snake_case current_session payload aliases under status wrapper (0.127792ms)
+✔ uses top-level default model when no sessions are available (0.066ms)
+✔ parses stderr payload even when command exits non-zero (0.069416ms)
+✔ ignores ANSI escape noise and parses JSON session payload (0.208709ms)
+✔ chooses strongest usage payload when earlier JSON is metadata-only (0.104459ms)
+✔ strips complex ANSI cursor/control codes and parses JSON session payload (0.065416ms)
+✔ strips control characters (backspace/ctrl) before parsing JSON (0.068792ms)
+✔ strips OSC/title control sequences before parsing JSON (0.061542ms)
+✔ strips DCS control sequences before parsing JSON (0.112917ms)
+✔ strips mixed terminal noise sequences together (0.14525ms)
+✔ parses stats payload with nested current object under status.stats (0.098209ms)
+✔ parses usage timestamp aliases in snake_case ms fields (0.09725ms)
+✔ enriches legacy sample with fleet schema envelope while preserving legacy fields (3.92025ms)
+✔ fixture sample remains aligned with schema metadata (0.387833ms)
+✔ extractJsonCandidates finds last JSON object in noisy multiline output (1.476958ms)
+✔ extractJsonCandidates handles nested arrays and trailing text (0.099083ms)
+✔ readTelemetryJsonRow prefers the last valid JSON candidate (0.074458ms)
+✔ stripControlNoise removes ANSI control sequences that can break parser (0.066875ms)
+✔ returns critical when ingestion is unavailable (1.216542ms)
+✔ returns warning when activity is stale (0.059083ms)
+✔ prioritizes stale-threshold warning over stale refresh-no-new-noise (0.047792ms)
+✔ keeps stale-no-new-usage notice when explicitly forced despite not being past threshold (0.045292ms)
+✔ returns warning when past stale threshold in grace window (0.043708ms)
+✔ returns notice when near stale (0.039208ms)
+✔ returns off when usage is disabled (0.052792ms)
+✔ returns ok when usage is healthy (0.038666ms)
+✔ downgrades stale to idle notice when usage age exceeds idle threshold (0.05975ms)
+✔ does not emit idle notice when ingestion is unavailable (0.08325ms)
+✔ deriveUsageFreshness marks stale only when age is strictly above threshold (0.64ms)
+✔ deriveUsageFreshness handles invalid or future timestamps safely (0.601083ms)
+✔ deriveUsageFreshness disables stale classification for invalid thresholds (0.050667ms)
+✔ deriveUsageFreshness applies grace window before stale classification (0.050541ms)
+✔ validate dry-run schema passes with OpenClaw usage disabled (119.005625ms)
+✔ validate dry-run schema accepts noisy multiline JSON rows (86.100208ms)
+ℹ tests 99
+ℹ suites 1
+ℹ pass 99
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2076.307625
+--- validate:usage-freshness-e2e
+
+> idlewatch-skill@0.1.0 validate:usage-freshness-e2e
+> node scripts/validate-usage-freshness-e2e.mjs
+
+usage-freshness-e2e: ok (fresh -> aging -> post-threshold-in-grace -> stale)
+--- validate:usage-alert-rate-e2e
+
+> idlewatch-skill@0.1.0 validate:usage-alert-rate-e2e
+> node scripts/validate-usage-alert-rate-e2e.mjs
+
+usage-alert-rate-e2e: ok (typical cadence stays ok; boundary states escalate notice -> warning -> warning)
+--- validate:openclaw-release-gates
+
+> idlewatch-skill@0.1.0 validate:openclaw-release-gates
+> node scripts/validate-openclaw-release-gates.mjs
+
+validate-openclaw-usage-health: ok (openclaw usage source required and healthy)
+validate-openclaw-stats-ingestion: ok (stats-only command path parsed and ingested across multiple payload shapes)
+validate-openclaw-cache-recovery-e2e: ok (fallback-cache sample recovered via forced reprobe)
+validate-openclaw-release-gates: ok (host OpenClaw checks for usage-health, stats fallback, and stale-cache recovery)
+--- validate:packaged-openclaw-release-gates:reuse-artifact
+
+> idlewatch-skill@0.1.0 validate:packaged-openclaw-release-gates:reuse-artifact
+> IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-release-gates --silent
+
+dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)
+validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)
+validate-packaged-openclaw-cache-recovery-e2e: ok (packaged stale cache recovers through reprobe attempts)
+validate-packaged-openclaw-release-gates: ok (release artifact validates OpenClaw health, stats fallback, and cache recovery)
+--- validate:packaged-openclaw-stats-ingestion:reuse-artifact
+
+> idlewatch-skill@0.1.0 validate:packaged-openclaw-stats-ingestion:reuse-artifact
+> IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-openclaw-stats-ingestion --silent
+
+validate-packaged-openclaw-stats-ingestion: ok (packaged app parses stats fallback across payload shapes)
+--- validate:packaged-dry-run-schema:reuse-artifact
+
+> idlewatch-skill@0.1.0 validate:packaged-dry-run-schema:reuse-artifact
+> IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-dry-run-schema --silent
+
+dry-run schema ok (./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run)
+--- validate:packaged-metadata
+
+> idlewatch-skill@0.1.0 validate:packaged-metadata
+> ./scripts/validate-packaged-metadata.sh
+
+packaging metadata ok for IdleWatch.app 0.1.0
+packaging metadata validation ok
+--- validate:packaged-bundled-runtime
+
+> idlewatch-skill@0.1.0 validate:packaged-bundled-runtime
+> ./scripts/validate-packaged-bundled-runtime.sh
+
+Packaging IdleWatch.app with bundled runtime: /opt/homebrew
+MACOS_CODESIGN_IDENTITY not set; leaving app unsigned.
+Mac app scaffold package complete.
+Next steps:
+  1) Test: ./dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run
+  2) Build DMG: ./scripts/build-dmg.sh
+  3) Optional bundle runtime for node-less targets: export IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"
+  4) Optional signing: export MACOS_CODESIGN_IDENTITY="Developer ID Application: ..." then rerun package-macos
+  5) Optional notarize+staple DMG: set MACOS_NOTARY_PROFILE and rerun build-dmg
+  6) Enforce trusted artifacts: export IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1
+packaging metadata ok for IdleWatch.app 0.1.0
+packaging metadata validation ok
+Attempt 1/3: validating packaged launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+bundled runtime validation ok
+validated launcher dry-run under restricted PATH in 90000ms baseline (+10000ms retry increments, up to 3 attempts)
+--- validate:openclaw-stats-ingestion
+
+> idlewatch-skill@0.1.0 validate:openclaw-stats-ingestion
+> node scripts/validate-openclaw-stats-ingestion.mjs
+
+validate-openclaw-stats-ingestion: ok (stats-only command path parsed and ingested across multiple payload shapes)
+--- validate:openclaw-usage-health
+
+> idlewatch-skill@0.1.0 validate:openclaw-usage-health
+> node scripts/validate-openclaw-usage-health.mjs
+
+validate-openclaw-usage-health: ok (openclaw usage source required and healthy)
+--- validate:packaged-usage-probe-noise-e2e:reuse-artifact
+
+> idlewatch-skill@0.1.0 validate:packaged-usage-probe-noise-e2e:reuse-artifact
+> IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-usage-probe-noise-e2e --silent
+
+packaged-usage-probe-noise-e2e: ok (non-zero exit with valid JSON still ingested)
+--- validate:packaged-usage-alert-rate-e2e:reuse-artifact
+
+> idlewatch-skill@0.1.0 validate:packaged-usage-alert-rate-e2e:reuse-artifact
+> IDLEWATCH_SKIP_PACKAGE_MACOS=1 npm run validate:packaged-usage-alert-rate-e2e --silent
+
+validate-packaged-usage-alert-rate-e2e: ok (packaged launcher alert-level transitions remain aligned)
+--- validate:dmg-install
+
+> idlewatch-skill@0.1.0 validate:dmg-install
+> ./scripts/validate-dmg-install.sh
+
+Attempt 1/3: validating DMG-installed launcher dry-run with IDLEWATCH_OPENCLAW_USAGE=auto timeout=90000ms
+dry-run schema ok (/var/folders/hf/pkxphygd3qj854m7t2fvzvkw0000gn/T/idlewatch-apps.XXXXXX.nO0rRFyXzV/IdleWatch.app/Contents/MacOS/IdleWatch --dry-run --once)
+dmg install validation ok (/Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg)
+--- validate:dmg-checksum
+
+> idlewatch-skill@0.1.0 validate:dmg-checksum
+> ./scripts/validate-dmg-checksum.sh
+
+DMG checksum OK: /Users/luismantilla/.openclaw/workspace/idlewatch-skill/dist/IdleWatch-0.1.0-unsigned.dmg
+--- validate:trusted-prereqs
+
+> idlewatch-skill@0.1.0 validate:trusted-prereqs
+> ./scripts/validate-trusted-prereqs.sh
+
+Missing MACOS_CODESIGN_IDENTITY. Example: Developer ID Application: Your Name (TEAMID)
+--- validate:firebase-write-required-once
+
+> idlewatch-skill@0.1.0 validate:firebase-write-required-once
+> IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 IDLEWATCH_OPENCLAW_USAGE=off node bin/idlewatch-agent.js --once
+
+Firebase is not configured. Running in local-only mode (stdout logging only). Set FIREBASE_PROJECT_ID + FIREBASE_SERVICE_ACCOUNT_FILE (preferred, or FIREBASE_SERVICE_ACCOUNT_JSON / FIREBASE_SERVICE_ACCOUNT_B64), or use FIREBASE_PROJECT_ID + FIRESTORE_EMULATOR_HOST for emulator writes.
+IDLEWATCH_REQUIRE_FIREBASE_WRITES=1 requires Firebase to be configured. Set FIREBASE_PROJECT_ID with service-account creds (or FIRESTORE_EMULATOR_HOST for emulator mode).
+QA cycle end: Fri, 27 Feb 2026 19:16:13 -0500

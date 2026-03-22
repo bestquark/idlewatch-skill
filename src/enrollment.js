@@ -399,7 +399,7 @@ export async function runEnrollmentWizard(options = {}) {
       for (let attempt = 0; attempt < 3; attempt++) {
         cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
         if (looksLikeCloudApiKey(cloudApiKey)) break
-        if (attempt < 2) console.log('Invalid key — should start with iwk_. Try again.')
+        if (attempt < 2) console.log('That doesn\'t look right — API keys start with iwk_ (copy from idlewatch.com/api).')
         else cloudApiKey = ''
       }
     } else if (rl) {
@@ -411,7 +411,7 @@ export async function runEnrollmentWizard(options = {}) {
         for (let attempt = 0; attempt < 3; attempt++) {
           cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
           if (looksLikeCloudApiKey(cloudApiKey)) break
-          if (attempt < 2) console.log('Invalid key — should start with iwk_. Try again.')
+          if (attempt < 2) console.log('That doesn\'t look right — API keys start with iwk_ (copy from idlewatch.com/api).')
           else cloudApiKey = ''
         }
       }

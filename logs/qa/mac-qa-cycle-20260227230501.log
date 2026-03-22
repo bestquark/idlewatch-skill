@@ -1,0 +1,65 @@
+QA cycle start: 2026-02-28T04:05:24Z
+
+## npm run test:unit --silent
+----
+npm run test:unit --silent :: EXIT=0
+
+## npm run validate:usage-freshness-e2e --silent
+----
+npm run validate:usage-freshness-e2e --silent :: EXIT=0
+
+## npm run usage-alert-rate-e2e --silent
+----
+npm run usage-alert-rate-e2e --silent :: EXIT=1
+
+## npm run validate:openclaw-release-gates --silent
+----
+npm run validate:openclaw-release-gates --silent :: EXIT=0
+
+## npm run validate:openclaw-stats-ingestion --silent
+----
+npm run validate:openclaw-stats-ingestion --silent :: EXIT=0
+
+## npm run validate:openclaw-usage-health --silent
+----
+npm run validate:openclaw-usage-health --silent :: EXIT=0
+
+## npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent
+----
+npm run validate:packaged-openclaw-stats-ingestion:reuse-artifact --silent :: EXIT=0
+
+## npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent
+----
+npm run validate:packaged-openclaw-release-gates:reuse-artifact --silent :: EXIT=0
+
+## npm run validate:packaged-openclaw-robustness:reuse-artifact --silent
+----
+npm run validate:packaged-openclaw-robustness:reuse-artifact --silent :: EXIT=0
+
+## npm run validate:packaged-bundled-runtime:reuse-artifact --silent
+----
+npm run validate:packaged-bundled-runtime:reuse-artifact --silent :: EXIT=1
+
+## npm run validate:packaged-metadata --silent
+----
+npm run validate:packaged-metadata --silent :: EXIT=0
+
+## IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent
+----
+IDLEWATCH_DRY_RUN_TIMEOUT_MS=90000 npm run validate:dmg-install --silent :: EXIT=0
+
+## npm run validate:dmg-checksum --silent
+----
+npm run validate:dmg-checksum --silent :: EXIT=0
+
+## npm run validate:trusted-prereqs --silent
+----
+npm run validate:trusted-prereqs --silent :: EXIT=1
+
+## npm run validate:firebase-emulator-mode --silent
+----
+npm run validate:firebase-emulator-mode --silent :: EXIT=0
+
+## npm run validate:firebase-write-required-once --silent
+----
+npm run validate:firebase-write-required-once --silent :: EXIT=1

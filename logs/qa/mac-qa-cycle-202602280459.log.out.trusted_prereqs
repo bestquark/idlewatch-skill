@@ -1,0 +1,5 @@
+== RUN trusted_prereqs ==
+START: 2026-02-28T10:02:31Z
+Missing MACOS_CODESIGN_IDENTITY. Example: Developer ID Application: Your Name (TEAMID)
+STATUS: PASS
+END: 2026-02-28T10:02:31Z
