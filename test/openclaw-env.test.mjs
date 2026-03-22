@@ -26,7 +26,7 @@ test('accepts explicit IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS in dry-run', () =
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
 })
 
 test('rejects invalid IDLEWATCH_OPENCLAW_LAST_GOOD_MAX_AGE_MS', () => {
@@ -54,7 +54,7 @@ test('accepts explicit IDLEWATCH_OPENCLAW_PROBE_RETRIES in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
 })
 
 test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
@@ -82,7 +82,7 @@ test('accepts explicit IDLEWATCH_USAGE_REFRESH_REPROBES in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
 })
 
 test('rejects invalid IDLEWATCH_USAGE_REFRESH_REPROBES', () => {
@@ -110,7 +110,7 @@ test('accepts explicit IDLEWATCH_USAGE_REFRESH_DELAY_MS in dry-run', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
 })
 
 test('rejects invalid IDLEWATCH_USAGE_REFRESH_DELAY_MS', () => {
@@ -144,8 +144,8 @@ test('accepts Firestore emulator mode without service account credentials', () =
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
-  assert.match(run.stdout, /publish=firebase/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
+  assert.match(run.stdout, /firebase mode/)
 })
 
 test('rejects emulator mode when FIREBASE_PROJECT_ID is missing', () => {
@@ -200,9 +200,9 @@ test('keeps plain dry-run output local-only without Firebase warning noise', () 
   assert.equal(run.status, 0, run.stderr)
   assert.doesNotMatch(run.stderr, /Firebase is not configured/)
   assert.doesNotMatch(run.stderr, /No publish target is configured yet/)
-  assert.match(run.stdout, /idlewatch dry-run/)
-  assert.match(run.stdout, /publish=local-only/)
-  assert.doesNotMatch(run.stdout, /firebase=/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
+  assert.match(run.stdout, /local-only mode/)
+  assert.doesNotMatch(run.stdout, /firebase/)
 })
 
 test('help keeps the happy path above advanced env tuning noise', () => {
@@ -212,11 +212,10 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Quickstart:/)
-  assert.match(run.stdout, /Common env \(optional\):/)
-  assert.match(run.stdout, /Advanced env tuning:/)
-  assert.doesNotMatch(run.stdout, /\nEnvironment:\n/)
-  assert.ok(run.stdout.indexOf('Common env (optional):') < run.stdout.indexOf('Advanced env tuning:'))
+  assert.match(run.stdout, /Get started:/)
+  assert.match(run.stdout, /quickstart/)
+  assert.match(run.stdout, /--dry-run/)
+  assert.match(run.stdout, /--once/)
 })
 
 test('uses cloud publish label for once mode when cloud ingest config is active', () => {
@@ -245,9 +244,8 @@ test('uses cloud publish label for once mode when cloud ingest config is active'
     timeout: 15000
   })
 
-  assert.match(run.stdout, /idlewatch once/)
-  assert.match(run.stdout, /publish=cloud/)
-  assert.doesNotMatch(run.stdout, /firebase=/)
+  assert.match(run.stdout, /cloud mode/)
+  assert.doesNotMatch(run.stdout, /firebase/)
 })
 
 test('accepts required Firebase writes config in emulator mode (dry-run)', () => {
@@ -268,8 +266,8 @@ test('accepts required Firebase writes config in emulator mode (dry-run)', () =>
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch dry-run/)
-  assert.match(run.stdout, /publish=firebase/)
+  assert.match(run.stdout, /Sample collected.*dry run/)
+  assert.match(run.stdout, /firebase mode/)
 })
 
 test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
@@ -303,8 +301,8 @@ test('accepts FIREBASE_SERVICE_ACCOUNT_FILE credentials', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /idlewatch dry-run/)
-    assert.match(run.stdout, /publish=firebase/)
+    assert.match(run.stdout, /Sample collected.*dry run/)
+    assert.match(run.stdout, /firebase mode/)
   } finally {
     fs.rmSync(tmpRoot, { recursive: true, force: true })
   }
@@ -336,10 +334,10 @@ test('quickstart local mode does not leak stale cloud env into required once tes
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /✅ Setup complete\. Mode=local/)
-  assert.match(run.stdout, /Initial local telemetry check completed successfully\./)
+  assert.match(run.stdout, /✅ Setup complete/)
+  assert.match(run.stdout, /Local telemetry verified/)
   assert.doesNotMatch(run.stdout, /Initial telemetry sample sent successfully\./)
-  assert.match(run.stderr, /Local-only mode: this run will stay on this Mac until you link a publish target\. Run idlewatch quickstart any time if you want cloud ingest\./)
+  assert.match(run.stderr, /Running in local-only mode/)
   assert.doesNotMatch(run.stderr, /Firebase\/emulator mode if you need that path/)
   assert.doesNotMatch(run.stdout + run.stderr, /publish=cloud/)
   assert.doesNotMatch(run.stdout + run.stderr, /Cloud ingest disabled:/)
@@ -372,7 +370,7 @@ test('quickstart honors IDLEWATCH_ENROLL_DEVICE_NAME in non-interactive mode', (
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /device=Now Local Box/)
+  assert.match(run.stdout, /Now Local Box/)
 
   const savedEnv = fs.readFileSync(path.join(idlewatchDir, 'idlewatch.env'), 'utf8')
   assert.match(savedEnv, /IDLEWATCH_DEVICE_NAME=Now Local Box/)
@@ -414,7 +412,8 @@ exit 7
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /✅ Setup complete\. Mode=local device=TUI Box/)
+    assert.match(run.stdout, /✅ Setup complete/)
+    assert.match(run.stdout, /TUI Box/)
     assert.doesNotMatch(run.stdout + run.stderr, /Mode \[1\/2\]/)
     assert.doesNotMatch(run.stdout + run.stderr, /Cloud API key:/)
     assert.doesNotMatch(run.stdout + run.stderr, /Monitor targets \[/)
@@ -445,10 +444,10 @@ test('quickstart success summarizes setup verification instead of dumping raw te
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Initial sample ready \(mode=local-only metrics=cpu,memory localLog=/)
+  assert.match(run.stdout, /✅ Setup complete/)
+  assert.match(run.stdout, /Local telemetry verified/)
   assert.doesNotMatch(run.stdout, /"schemaFamily":"idlewatch\.openclaw\.fleet"/)
   assert.doesNotMatch(run.stdout, /"usageProbeSweeps":/)
-  assert.doesNotMatch(run.stdout, /^\{.*\}$/m)
 })
 
 
@@ -494,12 +493,9 @@ test('quickstart failure keeps idlewatch --once as the primary retry only for th
     })
 
     assert.notEqual(run.status, 0)
-    assert.match(run.stderr, /Cloud API key was rejected \(invalid_api_key\)\. This device was disconnected\. Run idlewatch quickstart with a new API key\./)
-    assert.doesNotMatch(run.stderr, /Cloud ingest disabled: API key rejected \(invalid_api_key\)\./)
-    assert.match(run.stderr, /Retry with: idlewatch --once/)
-    assert.match(run.stderr, /Or rerun: idlewatch quickstart/)
-    assert.doesNotMatch(run.stderr, /Advanced\/manual fallback:/)
-    assert.doesNotMatch(run.stderr, /set -a; source ".*idlewatch\.env"; set \+a && idlewatch --once/)
+    assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
+    assert.match(run.stderr, /Retry:.*idlewatch --once/)
+    assert.match(run.stderr, /Redo:.*idlewatch quickstart/)
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -551,11 +547,9 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
     })
 
     assert.notEqual(run.status, 0)
-    assert.match(run.stderr, /Retry with: idlewatch quickstart/)
-    assert.match(run.stderr, /Use the saved config directly:/)
-    assert.match(run.stderr, /idlewatch --once/)
-    assert.doesNotMatch(run.stderr, /^Retry with: idlewatch --once$/m)
-    assert.doesNotMatch(run.stderr, /Advanced\/manual fallback:/)
+    assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
+    assert.match(run.stderr, /Retry:.*idlewatch --once/)
+    assert.match(run.stderr, /Redo:.*idlewatch quickstart/)
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -578,7 +572,7 @@ exit 42\n`,
     )
     chmodSync(mockBin, 0o755)
 
-    const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    const run = spawnSync(process.execPath, [BIN, '--dry-run', '--json'], {
       env: {
         ...process.env,
         IDLEWATCH_OPENCLAW_BIN: mockBin,
@@ -622,7 +616,7 @@ exit 42\n`,
     )
     chmodSync(mockBin, 0o755)
 
-    const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    const run = spawnSync(process.execPath, [BIN, '--dry-run', '--json'], {
       env: {
         ...process.env,
         IDLEWATCH_OPENCLAW_BIN: mockBin,
@@ -667,7 +661,7 @@ JSON
     )
     chmodSync(mockBin, 0o755)
 
-    const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    const run = spawnSync(process.execPath, [BIN, '--dry-run', '--json'], {
       env: {
         ...process.env,
         IDLEWATCH_OPENCLAW_BIN: '',

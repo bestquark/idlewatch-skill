@@ -25,7 +25,8 @@ function runDryRunSchemaWithOpenClawMode(mode) {
   runDryRunSchemaWithCommand([
     process.execPath,
     path.join(root, 'bin', 'idlewatch-agent.js'),
-    '--dry-run'
+    '--dry-run',
+    '--json'
   ], {
     IDLEWATCH_OPENCLAW_USAGE: mode,
     IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS: '2500',
