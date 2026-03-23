@@ -17,7 +17,7 @@
 This is a final pre-release polish cycle confirming all priority items remain green:
 
 | Priority | Item | Status |
-|----------|------|
+|----------|------|--------|
 | H1 | Device name persists across sessions | ✅ Verified |
 | H2 | Config reloads predictably | ✅ Verified |
 | M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`) |
@@ -56,4 +56,7 @@ All polish items pass. Ready to commit QA log update and proceed with v0.2.0 rel
 
 ---
 
-**Lepton's note**: Final pre-release polish cycle complete — all items verified, no changes needed. Ready to ship.
+## Shipping Status: CLEAN
+All 8 priority items verified green. No code changes needed — shipping v0.2.0 ready.
+
+**Lepton's note**: Round 69 complete — all polish criteria met, ready for main release.
