@@ -1,4 +1,4 @@
-# IdleWatch Installer QA Polish Cycle - **COMPLETE** ✅
+# IdleWatch Installer QA Polish Cycle — COMPLETE ✅
 
 ## Summary
 
@@ -7,7 +7,7 @@ All polish items verified and working in Round 71 (March 23, 2026).
 ### Status Breakdown
 
 | Priority | Items | Status |
-|--------|-------|--------|
+|--------|-------|-------|
 | 🔴 High | H1, H2 | ✅ Verified |
 | 🟡 Medium | M1–M4 | ✅ Verified |
 | 🟢 Low | L1–L3 | As-designed |
@@ -31,4 +31,4 @@ No implementation changes required — mark cycle as complete.
 
 ---
 
-*This file was auto-updated by QA polish verification (2026-03-23).*
+*This file was auto-updated by QA polish verification (2026-03-24).*
