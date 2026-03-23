@@ -93,16 +93,19 @@ echo "Logs: $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
 if [[ -f "$CONFIG_ENV_PATH" ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
   if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then
-    echo "Background runs will auto-load it."
+    echo "✓ Login startup will auto-load this config."
   else
-    echo "Background runs auto-load only the default path: $HOME/.idlewatch/idlewatch.env"
-    echo "Move or copy this config there if you want login startup to reuse it automatically."
+    echo "⚠ Background runs auto-load only the default path: $HOME/.idlewatch/idlewatch.env"
+    echo "   Move or copy to that location for login startup."
   fi
 else
-  echo "No saved IdleWatch config found yet at: $CONFIG_ENV_PATH"
-  echo "Finish setup once before relying on login startup:"
-  echo "  \"$BIN_PATH\" quickstart"
+  echo "No saved IdleWatch config yet at: $CONFIG_ENV_PATH"
+  echo ""
+  echo "Run setup first (either 'quickstart' in Terminal, or '$BIN_PATH quickstart')"
+  echo "then enable the agent from System Settings → Users & Groups → Login Items."
   if command -v idlewatch >/dev/null 2>&1; then
-    echo "If you already installed the CLI on PATH, 'idlewatch quickstart' works too."
+    echo ""
+    echo "💡 Quick status check:"
+    echo "   Run 'idlewatch status' to see your device state, metrics enabled, and last publish result."
   fi
 fi
