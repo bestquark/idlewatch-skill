@@ -26,4 +26,12 @@ Round 71 verification on 2026-03-23 confirmed v0.2.0 readiness. All installer/CL
 **Cycle status**: ✅ Complete — all polish items addressed and verified.
 
 ---
-_Last updated: 2026-03-24T02:45Z_ (America/Toronto)
+_Last updated: 2026-03-23T07:15Z — v0.2.0 polish cycle complete ✓_
+
+## Deployment Ready
+**v0.2.0 ready for production deployment**
+- All 8 polish items verified in Round 71 QA pass
+- No high/medium severity issues blocking release
+- Incremental UX improvements (no auth/backend redesigns)
+
+Next polish cycle: Bi-weekly per [idlewatch-cron-polish-plan.md]
