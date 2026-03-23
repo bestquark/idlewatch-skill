@@ -60,11 +60,24 @@ All prioritized items were already present in v0.2.0 release:
 
 ---
 
-## Round 72 - Ready for Next Polish Cycle
+## Round 72 - Next Polish Cycle (Pending)
 
-**No action required.** All prioritized polish items are already implemented in v0.2.0 and verified working. The installer QA cycle is complete and the product meets production polish standards.
+All prioritized items in v0.2.0:
+- ✅ H1/H2: Config persistence & reload verified (R69-QA)
+- ✅ M1-M4: Status screen, test publish flow, clear messaging functional (R70-R71-QA)
+- ✅ L1-L3: As-designed behaviors confirmed; launch-agent polished in R71
 
-**Next:** Await new UX friction points or user feedback to trigger next polish round.
+**Status:** No implementation required — polish cycle complete.
+All 8 prioritized items verified green across R69-R71.
+
+## Round 73 - Awaiting New Friction Points
+
+Next trigger:
+- User feedback identifies new UX friction points
+- QA logs reveal edge cases not yet tested
+- Config/behavior changes requested during dev phase
+
+**Recommended frequency:** Bi-weekly during active development OR on-demand when friction emerges.
 
 ---
 
