@@ -19,13 +19,13 @@ Round 70 serves as the closing documentation cycle confirming shipping readiness
 |----------|------|
 | H1 | Device name persists across sessions | ✅ Verified (Round 69) |
 | H2 | Config reloads predictably | ✅ Verified (Round 69) |
-| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`) |
-| M2 | Test publish flow exists | ✅ `idlewatch publish --once` |
-| M3 | Clear success messages | ✅ Shows device name + status |
-| M4 | Actionable error messages | ✅ Suggests `idlewatch configure` for auth fixes |
-| L1 | Partial settings edit requires reconfig | ⚠️ As-designed (intentional) |
-| L2 | Launch-agent messaging clear | ✅ Explicit on install/uninstall |
-| L3 | Config location printed at startup | ✅ Confirmed in logs |
+| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`)
+| M2 | Test publish flow exists | ✅ `idlewatch publish --once`
+| M3 | Clear success messages | ✅ Shows device name + status
+| M4 | Actionable error messages | ✅ Suggests `idlewatch configure` for auth fixes
+| L1 | Partial settings edit requires reconfig | ⚠️ As-designed (intentional)
+| L2 | Launch-agent messaging clear | ✅ Explicit on install/uninstall
+| L3 | Config location printed at startup | ✅ Confirmed in logs
 
 **All 8 priority items remain green from Round 69.** No code changes needed.
 
