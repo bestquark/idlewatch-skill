@@ -54,7 +54,7 @@ All 8 priority items verified green — no fixes required, no regressions found.
 ## Next Steps
 
 ### For the Team
-- ✅ Merge v0.2.0 polish changes into main branch
+- **v0.2.0 polished and verified** — deploy now or when convenient
 - ✅ Monitor deployment for any edge cases that surface
 - 📅 Schedule next polish cycle per [idlewatch-cron-polish-plan.md]
 
