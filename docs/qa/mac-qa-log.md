@@ -7,7 +7,7 @@ Round 71 verification on 2026-03-23 confirmed v0.2.0 readiness. All installer/CL
 
 ### Verified Items (8/8)
 | Priority | Item | Status |
-|------|------|-------|
+|------|------|-----|
 | H1 | Device name persists | ✅ |
 | H2 | Config reloads predictably | ✅ |
 | M1 | Status screen visible | ✅ |
