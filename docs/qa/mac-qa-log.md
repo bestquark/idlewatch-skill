@@ -19,7 +19,7 @@ All 8 priority items verified green — no fixes required, no regressions found.
 ## Verified Items (8/8)
 
 | Priority | Item | Status | Notes |
-|----------|------|--------|-------|
+|------|----|--------|---|
 | H1 | Device name persists after reauth/reinstall | ✅ Verified | Working in v0.2.0 |
 | H2 | Config reload behavior predictable | ✅ Verified | Documented reload commands available |
 | M1 | Status screen showing device/link/metric state | ✅ Verified | Visible in v0.2.0 |
