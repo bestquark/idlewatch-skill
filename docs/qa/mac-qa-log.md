@@ -5,41 +5,55 @@
 
 ---
 
-## 2026-03-23 — Round 68: QA polish cycle
+## 2026-03-23 — Round 69: Final pre-release polish check
 
 ### Test Environment
 - macOS arm64, Node v25.6.1, idlewatch v0.2.0
 - Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
 
 ### Assessment
-**Status: Clean — no actionable issues found.**
+**Status: Clean — ready for release.**
 
-This round confirmed Round 67's assessment. All polish items from the cron plan remain validated:
+This is a final pre-release polish cycle confirming all priority items remain green:
 
-- ✅ **H1/H2**: Device identity persists across sessions; config reloads correctly
-- ✅ **M1/M2/M3/M4**: Success/error messages are clear, actionable (e.g., `configure` suggested for bad keys)
-- ✅ **L1/L2/L3**: Settings edit requires reconfig (L1), launch-agent messaging is clear (L2), config location printed at startup (L3)
+| Priority | Item | Status |
+|----------|------|--------|
+| H1 | Device name persists across sessions | ✅ Verified |
+| H2 | Config reloads predictably | ✅ Verified |
+| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`)
+| M2 | Test publish flow exists | ✅ `idlewatch publish --once`
+| M3 | Clear success messages | ✅ Shows device name + status
+| M4 | Actionable error messages | ✅ Suggests `idlewatch configure` for auth fixes |
+| L1 | Partial settings edit required reconfig | ⚠️ As-designed (intentional)
+| L2 | Launch-agent messaging clear | ✅ Explicit on install/uninstall |
+| L3 | Config location printed at startup | ✅ Confirmed in logs |
 
-**No open issues.** The core pipeline remains healthy with no regressions from previous cycles.
+**No open issues.** The installer polish cycle is complete and all items remain validated from Round 68.
 
 ### Key Validations
 
 **Setup wizard quality**
-- Device name input is clear and pre-filled correctly during reconfigure
-- Mode selection (cloud vs local) has friendly guidance
-- API key validation errors suggest `configure` command helpfully
+- Device name pre-filled correctly on reconfigure ✓
+- Mode selection (cloud/local) has friendly guidance ✓
+- API key validation suggests `idlewatch configure` command ✓
 
 **Config persistence/reload**
-- Cloud mode auto-loads via collector without manual sourcing
-- Config location printed at startup confirms where settings live
+- Cloud mode auto-loads via collector without manual sourcing ✓
+- Config location printed at startup confirms where settings live ✓
+- Device identity preserved across sessions ✓
 
 **Launch-agent behavior**
-- Messaging is clear about install/uninstall actions
-- Device state updates visibly reflect changes
+- Messaging is clear about install/uninstall actions ✓
+- Logs written to `~/Library/Logs/IdleWatch/idlewatch.out.log` and `.err.log` ✓
+
+**CLI polish items**
+- Status screen available: `idlewatch --status` shows device name, link status, last publish result, enabled metrics ✓
+- Test publish flow available: `idlewatch publish --once` sends sample data with clear feedback ✓
+- Error messages actionable: bad API key → suggests `idlewatch configure` ✓
 
 ### Next Steps
-No actionable findings. Ready for v0.2.0 release.
+All polish items pass. Ready to commit QA log update and proceed with v0.2.0 release.
 
 ---
 
-**Lepton's note**: QA polish scope (v0.2.0) complete and verified. All priority items pass, no changes needed. Proceed to final sign-off before release.
+**Lepton's note**: Final pre-release polish cycle complete — all items verified, no changes needed. Ready to ship.
