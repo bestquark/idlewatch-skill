@@ -23,7 +23,7 @@ All polish items verified green in Round 71 QA pass:
 ## Round 71 Polish Items Status
 
 | Priority | Item | Status |
-|------|-----|-------|
+|------|-----|----|
 | 🔴 High | H1: Device name persists after reauth/reinstall | ✅ Verified in v0.2.0 |
 | 🔴 High | H2: Config reload behavior is predictable | ✅ Verified in v0.2.0 |
 | 🟡 Medium | M1: Status screen showing device/link/metric state | ✅ Visible and functional |
