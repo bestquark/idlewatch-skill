@@ -1,34 +1,45 @@
-# IdleWatch Installer QA Polish Cycle — COMPLETE ✅
+# IdleWatch Installer QA Log
 
-## Summary
-
-All polish items verified and working in Round 71 (March 23, 2026).
-
-### Status Breakdown
-
-| Priority | Items | Status |
-|--------|-------|-------|
-| 🔴 High | H1, H2 | ✅ Verified |
-| 🟡 Medium | M1–M4 | ✅ Verified |
-| 🟢 Low | L1–L3 | As-designed |
-
-### Key Observations
-
-- v0.2.0 is production-ready
-- Device name persistence works correctly across reauth/reinstall
-- Config reload commands are documented and functional
-- Status screen visible during setup/control flows
-- Test publish (`idlewatch --test-publish`) available with clear error handling
-- Success messages include device name/status (no confusing prompts)
-- Launch-agent install/uninstall messaging is polished per R71
-- Config path printed at startup for clarity
-
-### Next Steps
-
-No implementation changes required — mark cycle as complete.
-
-**Ready to ship v0.2.0.**
+**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
+**Last updated:** Monday, March 23rd 2026 — 1:15 PM (America/Toronto)  
+**Status:** ✅ Round 71 polish cycle COMPLETE
 
 ---
 
-*This file was auto-updated by QA polish verification (2026-03-24).*
+## Current Status
+
+All polish items verified green in Round 71 QA pass:
+- Config auto-loads on restart ✅
+- Test publish succeeds without manual env loading ✅
+- Device appears in fleet on idlewatch.com ✅
+- Metrics toggle persists across restarts ✅  
+- Device name persists correctly after reauth/reinstall ✅
+- Status screen visible showing device state ✅
+- Clear success confirmation after first link/publish ✅
+- Test publish errors clear and actionable ✅
+
+---
+
+## Round 71 Polish Items Status
+
+| Priority | Item | Status |
+|----------|------|--------|
+| 🔴 High | H1: Device name persists after reauth/reinstall | ✅ Verified |
+| 🔴 High | H2: Config reload behavior is predictable | ✅ Verified |
+| 🟡 Medium | M1: Status screen showing device/link/metric state | ✅ Verified |
+| 🟡 Medium | M2: Explicit test publish flow in setup/control | ✅ Verified |
+| 🟡 Medium | M3: Clearer success confirmation after first link/publish | ✅ Verified |
+| 🟡 Medium | M4: Test publish errors clear and actionable | ✅ Verified |
+| 🟢 Low | L1: Settings/edit flow (as-designed) | As-designed |
+| 🟢 Low | L2: Launch-agent install/uninstall is clear and safe | ✅ Verified |
+| 🟢 Low | L3: Local storage location is clear/expected | ✅ Verified |
+
+---
+
+## Next Steps
+
+**v0.2.0 ready to ship.** All acceptance criteria met — no further implementation changes required.
+
+---
+
+*This file was updated by IdleWatch Installer Implementer polish cycle (2026-03-24).*
