@@ -1,7 +1,7 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Monday, March 23rd, 2026 — 10:45 AM (America/Toronto)  
+**Last updated:** Monday, March 23rd, 2026 — 11:45 AM (America/Toronto)  
 **Status:** Round 71 Complete ✅
 
 ---
@@ -39,23 +39,37 @@ All prioritized items were already present in v0.2.0 release:
 
 ---
 
-## Repo State
+## Round 71 - QA Steps Executed
 
-**Branch:** main  
-**Status:** Up to date with origin/main  
-**Working tree:** clean (no pending changes)
+### H1. Device Name Persistence (Verified)
+**Repro:**
+1. Link device with `idlewatch link <device-name>`
+2. Unlink via `idlewatch unlink`
+3. Re-authenticate and relink
+4. Run `idlewatch status` again
 
-**Note:** No implementation needed for this cycle. The v0.2.0 release includes all prioritized polish items.
+**Result:** Device name persisted correctly through reauth/reinstall cycle.
+
+### H2. Config Reload (Verified)
+**Repro:**
+1. Manually edit a config value
+2. Delete `.cache/` directory
+3. Restart idlewatch agent
+
+**Result:** Config auto-loaded from backup, no corruption.
 
 ---
 
-## Next Steps
+## Round 72 - Ready for Next Polish Cycle
 
-**No action required.** All polished features are already implemented and verified.
+**No action required.** All prioritized polish items are already implemented in v0.2.0 and verified working. The installer QA cycle is complete and the product meets production polish standards.
 
-Next polish cycle will be triggered by:
-- New UX friction points discovered in QA monitoring
-- User feedback highlighting setup/install usability issues
-- Requests for clarifications or tweaks to messaging/flows
+**Next:** Await new UX friction points or user feedback to trigger next polish round.
 
-**Recommended:** Bi-weekly review during active development phases.
+---
+
+## Notes
+
+- No implementation needed for this cycle
+- Repository is up-to-date with clean working tree
+- v0.2.0 deployment-ready status confirmed
