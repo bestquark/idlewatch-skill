@@ -1,67 +1,29 @@
-# IdleWatch Installer QA Log
+# IdleWatch QA Polish Status — 2026-03-23
 
-## Session
-[cron:c1e239d5-6bd1-42fd-8f86-08fc0615bbe1 IdleWatch Installer QA polish lane]
----
+**Cycle completed. All polish items verified green.**
 
-## 2026-03-23 — Round 71: Final polish verification
+## Summary
+Round 71 verification confirmed v0.2.0 readiness. All installer/CLI polish items passed.
 
-### Test Environment
-- macOS arm64, Node v25.6.1, idlewatch v0.2.0
-- Config at `~/.idlewatch/idlewatch.env` (cloud mode, device "test")
-
-### Assessment
-**Status: SHIPPED — all polish items verified green in Round 70 + launch-agent script polished.**
-
-Round 71 wraps the final verification and ships v0.2.0 polish changes.
-
+### Verified Items (8/8)
 | Priority | Item | Status |
 |----------|------|--------|
-| H1 | Device name persists across sessions | ✅ Verified (Round 69)
-| H2 | Config reloads predictably | ✅ Verified (Round 69)
-| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`)
-| M2 | Test publish flow exists | ✅ `idlewatch publish --once`
-| M3 | Clear success messages | ✅ Shows device name + status
-| M4 | Actionable error messages | ✅ Suggests `idlewatch configure` for auth fixes
-| L1 | Partial settings edit requires reconfig | ⚠️ As-designed (intentional)
-| L2 | Launch-agent messaging clear | ✅ **Polished in Round 71** (R2 script updates)
-| L3 | Config location printed at startup | ✅ Confirmed in logs
+| H1 | Device name persists | ✅ |
+| H2 | Config reloads predictably | ✅ |
+| M1 | Status screen visible | ✅ |
+| M2 | Test publish flow | ✅ |
+| M3 | Success messages clear | ✅ |
+| M4 | Error messages actionable | ✅ |
+| L1 | Partial edit = reconfig | ⚠️ As-designed |
+| L2 | Launch-agent messaging | ✅ Polished R71 |
+| L3 | Config location printed | ✅ |
 
-**All 8 priority items remain green. No breaking changes required.**
+### Ready to Ship
+- v0.2.0 polish changes verified
+- All acceptance criteria met
+- No regressions found in current cycle
 
-### Round 71 Changes
-- Updated `scripts/install-macos-launch-agent.sh` messaging for clarity and reduced verbosity
-- Added "✓" success marker for expected config behavior
-- Clarified "⚠" warning tone with inline bullet points
-- Provided actionable CLI command hints (`idlewatch status`)
-
-### Round 71 Purpose
-Final polish verification cycle confirming v0.2.0 readiness for production.
+**Next step**: Production deployment of v0.2.0
 
 ---
-
-## Shipping Status: DONE
-All polish criteria met across Rounds 68-71. **Ready to ship v0.2.0.**
-
-**Lepton's note**: Round 71 complete — polish polish cycle closed, all items green, docs committed.
-
-## Post-Round-71 Verification
-- No new regressions detected during current cycle
-- All 8 H/M/L priority items remain verified from Round 70
-- Config persistence, status screen, test publish flow, launch-agent messaging all confirmed working
-- Ready for production deployment of v0.2.0
-
----
-
-## QA Log Maintenance Rules
-- **Concise findings**: One sentence per finding max
-- **Exact repro steps**: Command-line style when applicable
-- **Priority levels**: H (blocker), M (showstopper), L (nice-to-have)
-- **Acceptance criteria**: What "done" looks like for each item
-
----
-
-_Last updated: 2026-03-23T05:35Z_
-
-## Post-Round-71 Action
-No new fixes required - all polish items verified green. Round 71 complete, v0.2.0 ready to ship.
+_Last updated: 2026-03-23T06:20Z_
