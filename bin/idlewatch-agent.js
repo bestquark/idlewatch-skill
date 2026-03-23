@@ -667,6 +667,7 @@ const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
+const reloadRequested = args.has('reload')
 
 // No args + non-TTY: print help instead of silently doing nothing
 if (argv.length === 0 && (!process.stdin.isTTY || !process.stdout.isTTY) && !statusRequested && !runRequested && !dashboardRequested) {
