@@ -1,7 +1,7 @@
 # IdleWatch Installer QA Log
 
 ## Session
-[cron:c1e239d5-6bd1-42fd-8f86-08fc0615bbe1 IdleWatch Installer QA polish lane]
+[cron:084bacee-eb38-42bc-8f49-2c196d6acfcf IdleWatch Installer Implementer polish lane]
 ---
 
 ## 2026-03-23 — Round 70: Confirm shipping status and close polish cycle
@@ -17,8 +17,8 @@ Round 70 serves as the closing documentation cycle confirming shipping readiness
 
 | Priority | Item | Status |
 |----------|------|
-| H1 | Device name persists across sessions | ✅ Verified (Round 69) |
-| H2 | Config reloads predictably | ✅ Verified (Round 69) |
+| H1 | Device name persists across sessions | ✅ Verified (Round 69)
+| H2 | Config reloads predictably | ✅ Verified (Round 69)
 | M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`)
 | M2 | Test publish flow exists | ✅ `idlewatch publish --once`
 | M3 | Clear success messages | ✅ Shows device name + status
@@ -44,3 +44,15 @@ All polish criteria met across Rounds 68-69. **Ready to ship v0.2.0.**
 - All 8 H/M/L priority items remain verified from Round 69
 - Config persistence, status screen, test publish flow all confirmed working
 - Ready for production deployment of v0.2.0
+
+---
+
+## QA Log Maintenance Rules
+- **Concise findings**: One sentence per finding max
+- **Exact repro steps**: Command-line style when applicable
+- **Priority levels**: H (blocker), M (showstopper), L (nice-to-have)
+- **Acceptance criteria**: What "done" looks like for each item
+
+---
+
+_Last updated: 2026-03-23T04:20Z_
