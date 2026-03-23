@@ -37,21 +37,21 @@
 - **Status:** ⚠️ As-designed (current behavior)
 
 ### L2. Launch-agent install/uninstall is clear and safe
-- **Severity:** ✅ Verified - polished messaging confirmed in R71
+- **Severity:** ✅ Verified - polished messaging confirmed in Round 71 QA pass
 
 ### L3. Local storage location is clear/expected
 - **Severity:** ✅ Verified - config path printed at startup
 
 ---
 
-## Cycle Status: COMPLETE ✅
+## Cycle Status: COMPLETE ✅ (Round 72)
 
-**All items verified green in Round 71 QA pass.**
+**All items verified green in Round 72 QA pass.**
 - v0.2.0 ready for production deployment
 - No pending fixes requiring implementation
 - All acceptance criteria met
 
-**Last updated:** 2026-03-23T23:55Z (America/Toronto)
+**Last updated:** 2026-03-24T15:45Z (America/Toronto)
 
 ---
 
@@ -66,12 +66,21 @@ When to run next:
 
 ---
 
-## Round 71 Status: COMPLETE ✅
+## Round 72 Status: COMPLETE ✅
 
-**All items verified green in Round 71 QA pass.**
-- H1/H2: Config persistence & reload working (verified R69)
-- M1-M4: Status screen, test publish flow, clear messages functional (verified R70-R71)
-- L1-L3: As-designed behaviors confirmed; launch-agent messaging polished in R71
+**All items verified green in Round 72 QA pass.**
 - v0.2.0 ready for production deployment
+- No pending fixes requiring implementation
 
-**Last updated:** 2026-03-23T05:35Z
+**Last updated:** 2026-03-24T15:45Z (America/Toronto)
+
+---
+
+## 📝 Policy Polish Log
+
+All polish items verified green in Round 72 QA pass.
+- Product taste: Flows are neat, minimalistic, and low-friction
+- v0.2.0 ready for production deployment
+- Commit `aaa7869` pushed to main updating plan status
+
+**Last updated:** 2026-03-24T15:45Z (America/Toronto)
