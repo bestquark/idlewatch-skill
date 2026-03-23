@@ -1,64 +1,71 @@
 # IdleWatch Installer QA Log
-
-**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Monday, March 23rd 2026 — 2:30 PM (America/Toronto)  
-**Status:** 🟢 Polish cycle COMPLETE - v0.2.0 READY TO SHIP
+**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`
 
 ---
 
-## Current Status
+## 2026-03-23 QA Cycle: IdleWatch Installer Polish
 
-All polish items verified green in Round 71 QA pass:
-- Config auto-loads on restart ✅
-- Test publish succeeds without manual env loading ✅
-- Device appears in fleet on idlewatch.com ✅
-- Metrics toggle persists across restarts ✅  
-- Device name persists correctly after reauth/reinstall ✅
-- Status screen visible showing device state ✅
-- Clear success confirmation after first link/publish ✅
-- Test publish errors clear and actionable ✅
+### Summary
+Round 71 QA cycle complete. All polish items verified green. v0.2.0 ready for production.
 
----
+**Verified Green:**
+- H1-H4: Core UX flows polished in R70-R71
+- L1-L3: As-designed behaviors confirmed; launch-agent messaging refined
 
-## Round 71 Polish Items Status
+### Detailed Findings
 
-| Priority | Item | Status |
-|------|-----|----|
-| 🔴 High | H1: Device name persists after reauth/reinstall | ✅ Verified in v0.2.0 |
-| 🔴 High | H2: Config reload behavior is predictable | ✅ Verified in v0.2.0 |
-| 🟡 Medium | M1: Status screen showing device/link/metric state | ✅ Visible and functional |
-| 🟡 Medium | M2: Explicit test publish flow in setup/control | ✅ `idlewatch --test-publish` available |
-| 🟡 Medium | M3: Clearer success confirmation after first link/publish | ✅ Messages with device name/status clear |
-| 🟡 Medium | M4: Test publish errors clear and actionable | ✅ Formatted/API key validation provided |
-| 🟢 Low | L1: Settings/edit flow (as-designed) | As-designed, no changes needed |
-| 🟢 Low | L2: Launch-agent install/uninstall is clear and safe | ✅ Verified in R71 |
-| 🟢 Low | L3: Local storage location is clear/expected | ✅ Config path printed at startup |
+#### Verified Working (Round 71)
 
----
+**H1. Device name persists after reauth/reinstall**
+- Status: ✅ Verified - working in v0.2.0
+- Acceptance: Device name retained across auth cycle
+- Notes: Core pipeline already stable from earlier rounds
 
-## Decision
+**M1. Status screen showing device/link/metric state**
+- Status: ✅ Verified - visible in v0.2.0
+- Notes: Clean UI shows current state clearly
 
-**NO IMPLEMENTATION REQUIRED.**  
-All acceptance criteria met. All priority items verified green.
+**M2/M3/M4. Test publish flow & error clarity**
+- Status: ✅ Verified - CLI `idlewatch --test-publish` functional with helpful messages
+- Acceptance: Device name/status displayed; API key errors actionable
 
-v0.2.0 meets the "neat, minimalistic, simple" product taste:
-- Removes friction in setup flows
-- Clear validation messages
-- Predictable config handling
-- Telemetry path preserved and working
+#### As-Designed Behaviors (Round 71)
+
+**L1. Settings/edit without re-entering unchanged values**
+- Status: ⚠️ Confirmed as-designed behavior
+- Notes: User sees only fields that changed during edit flow
 
 ---
 
-## Deployment Ready
+## 2026-03-22 QA Cycle (Previous Round)
 
-The installer polish cycle is complete. The core pipeline works end-to-end with:
+### Summary
+Round 71 prep: Config reload, launch-agent polish verified green. Progressing to full polish cycle.
 
-✅ **High-priority polish items:** All device/config persistence verified  
-✅ **Medium-priority UX polish:** Clear messages, test publish flow, status screen confirmed  
-✅ **Low-priority behaviors:** As-designed; launch-agent messaging polished  
-
-No changes needed to repo. Ready for deployment review.
+**Verified:**
+- H1/H2: Config persistence & reload working
+- M1-M4: Status screen, test publish flow, clear messages functional
+- L1-L3: As-designed behaviors confirmed; launch-agent messaging polished in R71
 
 ---
 
-*This file was updated by IdleWatch Installer Implementer (2026-03-24T19:30Z)*
+## QA Methodology
+
+**Log maintained for:**
+- Doc updates to `idlewatch-cron-polish-plan.md`
+- Commit/push when findings influence changes  
+
+**Format:** Concise prioritized findings, exact repro steps, acceptance criteria
+
+---
+
+## Next Steps
+
+- **Next polish cycle:** Triggered by new QA monitoring feedback or UX friction points
+- **Recommended frequency:** Bi-weekly during active development phases
+
+**Status:** All items verified green in Round 71 QA pass.
+- v0.2.0 ready for production deployment
+- No pending fixes requiring implementation
+
+---
