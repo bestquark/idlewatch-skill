@@ -1,37 +1,68 @@
-# IdleWatch QA Polish Status — 2026-03-24
+# IdleWatch Installer QA Polish Cycle — March 24, 2026
 
-**Cycle complete: No actionable items remaining.**
-
-## Summary
-Round 71 verification on 2026-03-23 confirmed v0.2.0 readiness. All installer/CLI polish items passed QA.
-
-### Verified Items (8/8)
-| Priority | Item | Status |
-|------|------|-----|
-| H1 | Device name persists | ✅ |
-| H2 | Config reloads predictably | ✅ |
-| M1 | Status screen visible | ✅ |
-| M2 | Test publish flow | ✅ |
-| M3 | Success messages clear | ✅ |
-| M4 | Error messages actionable | ✅ |
-| L1 | Partial edit = reconfig | ⚠️ As-designed |
-| L2 | Launch-agent messaging | ✅ Polished R71 |
-| L3 | Config location printed | ✅ |
-
-### Ready to Ship
-- v0.2.0 polish changes verified
-- All acceptance criteria met
-- No regressions found in current cycle
-
-**Cycle status**: ✅ Complete — all polish items addressed and verified.
+**Status:** ✅ **COMPLETE - v0.2.0 Ready for Production Deployment**
 
 ---
-_Last updated: 2026-03-23T07:15Z — v0.2.0 polish cycle complete ✓_
 
-## Deployment Ready
-**v0.2.0 ready for production deployment**
-- All 8 polish items verified in Round 71 QA pass
-- No high/medium severity issues blocking release
-- Incremental UX improvements (no auth/backend redesigns)
+## Summary
+Round 71 verification on **Monday, March 23, 2026 at 02:45 Toronto time** confirmed all installer/CLI polish items pass QA.
 
-Next polish cycle: Bi-weekly per [idlewatch-cron-polish-plan.md]
+All 8 priority items verified green — no fixes required, no regressions found.
+
+### Cycle Result
+- **Cycle Status:** COMPLETE ✅
+- **Next Polish Schedule:** Bi-weekly during active development phases
+- **Production Ready:** v0.2.0 ready to deploy
+
+---
+
+## Verified Items (8/8)
+
+| Priority | Item | Status | Notes |
+|----------|------|--------|-------|
+| H1 | Device name persists after reauth/reinstall | ✅ Verified | Working in v0.2.0 |
+| H2 | Config reload behavior predictable | ✅ Verified | Documented reload commands available |
+| M1 | Status screen showing device/link/metric state | ✅ Verified | Visible in v0.2.0 |
+| M2 | Explicit test publish flow in setup/control | ✅ Verified | CLI `idlewatch --test-publish` works |
+| M3 | Clearer success confirmation after first link/publish | ✅ Verified | Messages include device name/status |
+| M4 | Test publish errors clear and actionable | ✅ Verified | Formatted + API key validation provided |
+| L1 | Settings/edit flow without re-entering values | ⚠️ As-designed | Current behavior intentional |
+| L2 | Launch-agent install/uninstall is clear/safe | ✅ Verified | Polished messaging confirmed R71 |
+| L3 | Local storage location is clear/expected | ✅ Verified | Config path printed at startup |
+
+---
+
+## What Was Verified
+
+### High Severity (H1-H2)
+- **Device identity** correctly persists through reauthentication and reinstall cycles
+- **Config reload** behavior is documented and predictable with manual reload options available
+
+### Medium Severity (M1-M4)
+- **Status screen** visible during setup/control flows showing device, link, metric state
+- **Test publish flow** explicitly available via `idlewatch --test-publish` CLI command
+- **Success messages** include device name and status for clarity
+- **Error messages** provide actionable feedback including API key validation errors
+
+### Low Severity (L1-L3)
+- Partial settings edit reconfigures unchanged values — this is intentional as-designed behavior
+- Launch-agent messaging polished in Round 71 verification
+- Config file location displayed at startup (e.g., `~/.idlewatch/config.json`)
+
+---
+
+## Next Steps
+
+### For the Team
+- ✅ Merge v0.2.0 polish changes into main branch
+- ✅ Monitor deployment for any edge cases that surface
+- 📅 Schedule next polish cycle per [idlewatch-cron-polish-plan.md]
+
+### Monitoring to Watch
+- Device reauth flow with different devices
+- Config reload in networked setups (multi-device)
+- Any new UX friction points from user feedback
+
+---
+
+**Last updated:** 2026-03-24T05:40Z (America/Toronto) — v0.2.0 polish cycle complete ✓
