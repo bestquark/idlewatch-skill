@@ -71,4 +71,12 @@
 
 ---
 
-**Last updated:** 2026-03-18 02:01 UTC
+## Round 71 Status: COMPLETE ✅
+
+**All items verified green in Round 71 QA pass.**
+- H1/H2: Config persistence & reload working (verified R69)
+- M1-M4: Status screen, test publish flow, clear messages functional (verified R70-R71)
+- L1-L3: As-designed behaviors confirmed; launch-agent messaging polished in R71
+- v0.2.0 ready for production deployment
+
+**Last updated:** 2026-03-23T05:35Z
