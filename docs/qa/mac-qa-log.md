@@ -17,14 +17,14 @@
 This is a final pre-release polish cycle confirming all priority items remain green:
 
 | Priority | Item | Status |
-|----------|------|--------|
+|----------|------|
 | H1 | Device name persists across sessions | ✅ Verified |
 | H2 | Config reloads predictably | ✅ Verified |
-| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`)
-| M2 | Test publish flow exists | ✅ `idlewatch publish --once`
-| M3 | Clear success messages | ✅ Shows device name + status
+| M1 | Status screen visible in CLI | ✅ Available (`idlewatch --status`) |
+| M2 | Test publish flow exists | ✅ `idlewatch publish --once` |
+| M3 | Clear success messages | ✅ Shows device name + status |
 | M4 | Actionable error messages | ✅ Suggests `idlewatch configure` for auth fixes |
-| L1 | Partial settings edit requires reconfig | ⚠️ As-designed (intentional)
+| L1 | Partial settings edit requires reconfig | ⚠️ As-designed (intentional) |
 | L2 | Launch-agent messaging clear | ✅ Explicit on install/uninstall |
 | L3 | Config location printed at startup | ✅ Confirmed in logs |
 
