@@ -1,8 +1,8 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Monday, March 23rd 2026 — 1:45 PM (America/Toronto)  
-**Status:** 🚀 Round 71 polish cycle COMPLETE → READY TO SHIP
+**Last updated:** Monday, March 23rd 2026 — 2:30 PM (America/Toronto)  
+**Status:** 🟢 Polish cycle COMPLETE - v0.2.0 READY TO SHIP
 
 ---
 
@@ -23,7 +23,7 @@ All polish items verified green in Round 71 QA pass:
 ## Round 71 Polish Items Status
 
 | Priority | Item | Status |
-|----------|------|--------|
+|------|-----|-------|
 | 🔴 High | H1: Device name persists after reauth/reinstall | ✅ Verified in v0.2.0 |
 | 🔴 High | H2: Config reload behavior is predictable | ✅ Verified in v0.2.0 |
 | 🟡 Medium | M1: Status screen showing device/link/metric state | ✅ Visible and functional |
@@ -49,17 +49,16 @@ v0.2.0 meets the "neat, minimalistic, simple" product taste:
 
 ---
 
-## Next Steps
+## Deployment Ready
 
-### Option A: Deploy v0.2.0 to production
-```bash
-cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
-git push main
-```
+The installer polish cycle is complete. The core pipeline works end-to-end with:
 
-### Option B: Continue monitoring
-Keep checking `mac-qa-log.md` for user feedback or new QA items.
+✅ **High-priority polish items:** All device/config persistence verified  
+✅ **Medium-priority UX polish:** Clear messages, test publish flow, status screen confirmed  
+✅ **Low-priority behaviors:** As-designed; launch-agent messaging polished  
+
+No changes needed to repo. Ready for deployment review.
 
 ---
 
-*This file was updated by IdleWatch Installer Implementer polish cycle (2026-03-24).*
+*This file was updated by IdleWatch Installer Implementer (2026-03-24T19:30Z)*
