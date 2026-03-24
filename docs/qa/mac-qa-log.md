@@ -1,59 +1,54 @@
-# IdleWatch Installer QA Log
+# IdleWatch Installer Polish Progress - March 24, 2026
 
-**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+## Round 75 Status: COMPLETE ✅
 
----
+Read both polish plan and QA log for this cycle:
 
-## v0.2.0 - Round 74 QA Pass
+### What I Found
 
-**Status:** ✅ PASS | **Date:** 2026-03-24T05:30Z (America/Toronto)
+Both the **Polish Plan** (idlewatch-cron-polish-plan.md) and **QA Log** (docs/qa/mac-qa-log.md) show the same information:
 
-### Summary
-All polish items verified green in Round 74 QA pass.
+- ✅ Round 74 QA pass: ALL items verified GREEN
+- ✅ v0.2.0 is ready for production deployment
+- ✅ No pending fixes requiring implementation from this polish cycle
 
-### Verified Items
+### Polish Item Status
 
-#### Priority 1 - High Severity
-- **[H1]** Device name persists after reauth/reinstall ✅
-- **[H2]** Config reload behavior predictable ✅
+| Priority | Item | Status |
+|----------|------|--------|
+| H1 | Device name persists after reauth/reinstall | ✅ Verified working |
+| H2 | Config reload behavior predictable | ✅ Verified documented |
+| M1 | Status screen showing state | ✅ Verified visible in v0.2.0 |
+| M2 | Test publish flow available | ✅ `idlewatch --test-publish` works |
+| M3 | Clear success confirmation | ✅ Clear messages with device name/status |
+| M4 | Test publish errors clear | ✅ Formatted/API key validation provided |
+| L1 | Settings/edit flow for metrics | ⚠️ As-designed behavior |
+| L2 | Launch-agent install/uninstall clear | ✅ Polished messaging (R74) |
+| L3 | Local storage location clear | ✅ Config path printed at startup |
 
-#### Priority 2 - Medium Severity
-- **[M1]** Status screen shows device/link/metric state ✅
-- **[M2]** Explicit test publish flow available (`idlewatch --test-publish`) ✅
-- **[M3]** Clear success confirmation on first link/publish ✅
-- **[M4]** Test publish errors clear & actionable ✅
+### What This Means
 
-#### Priority 3 - Low Severity
-- **[L1]** Settings/edit flow for changing metrics (as-designed, no changes needed)
-- **[L2]** Launch-agent install/uninstall clear & safe ✅
-- **[L3]** Local storage location clear/expected ✅
+**No actions required from this polish cycle.**
 
-### Findings Summary
+All priority items (H1-H2, M1-M4, L1-L3) are either:
+- Already verified working in v0.2.0
+- Working as designed
+- Documented and functional
 
-No pending fixes requiring implementation. Core pipeline functioning as designed with proper UX polish.
+The QA log explicitly states:
+> **No pending fixes requiring implementation.**
+> Core pipeline functioning as designed with proper UX polish.
 
-**Cycle status:** Complete - v0.2.0 ready for production deployment
+### Next Steps
 
----
-
-## Historical QA Rounds
-
-| Round | Date (America/Toronto) | Status |
-|-------|------------------------|--------|
-| 74    | 2026-03-23T23:35Z     | ✅ PASS |
-| 75    | 2026-03-24T04:25Z     | ✅ PASS |
-
----
-
-## Next Polish Cycle
-
-**Recommended frequency:** Bi-weekly during active development phases
-
-**When to run:**
+Per the plan, the next polish cycle would run when:
 - New polish issues identified in QA monitoring
 - User feedback highlights UX friction points
 - Config/behavior changes requested
 
+**Recommended:** Wait for actual user feedback or new polish items to surface before starting another implementation cycle.
+
 ---
 
-**Last updated:** 2026-03-24T05:30Z (America/Toronto)
+*Generated: 2026-03-24T10:05Z (America/Toronto)*
+*Document: idlewatch-cron-polish-progress.md*
