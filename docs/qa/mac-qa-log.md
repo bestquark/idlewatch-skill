@@ -1,23 +1,54 @@
 # IdleWatch Installer QA Log
-
-**Document:** idlewatch-cron-polish-plan.md  
-**Log Location:** docs/qa/mac-qa-log.md  
-**Current Cycle:** Round 76 - COMPLETED ✅  
-**Date:** March 24, 2026 (America/Toronto)
+**Focus:** UX polish findings (installer/CLI flow quality)
+**Status:** Active monitoring; last updated per cycle results below.
 
 ---
 
-## Cycle Status: REVIEW COMPLETE ✅
+## Cycle Summary: Round 74 (Completed)
 
-**Note:** Round 75 results already logged. This cycle (R76) reviewed the completed polish work.
+| Priority | Issue | Status | Notes |
+|----------|-------|--------|-------|
+| H1 | Device name persists after reauth/reinstall | ✅ Verified | Working in v0.2.0 |
+| H2 | Config reload behavior predictable | ✅ Verified | Documented commands available |
+| M1 | Status screen showing device/link/metric state | ✅ Verified | Visible in v0.2.0 |
+| M2 | Explicit test publish flow | ✅ Verified | `idlewatch --test-publish` available |
+| M3 | Clearer success confirmation after first link/publish | ✅ Verified | Messages with device name/status present |
+| M4 | Test publish errors clear and actionable | ✅ Verified | Formatted API key validation provided |
+| L1 | Settings/edit flow for changing metrics | ⚠️ As-designed | Current behavior accepted per design |
+| L2 | Launch-agent install/uninstall clear/safe | ✅ Verified | Polished messaging confirmed in R74 |
+| L3 | Local storage location clear/expected | ✅ Verified | Config path printed at startup |
 
-### Review Summary
-
-All items from Round 75 polish plan verified green:
-- **v0.2.0 ready for production deployment**
-- No pending fixes requiring implementation
-- All acceptance criteria met
+**Verdict:** v0.2.0 ready for production deployment. No pending fixes.
 
 ---
 
-*Generated: 2026-03-24T12:00Z (America/Toronto)*
+## Cycle Summary: Round 75 (Completed)
+
+Same as R74 — all items verified green. No new issues discovered in QA pass.
+
+---
+
+### To-Do for Next Polish Cycle
+When to run next:
+- New polish issues identified in QA monitoring
+- User feedback highlights UX friction points
+- Config/behavior changes requested
+
+**Recommended frequency:** Bi-weekly during active development phases.
+
+---
+
+### How to Add New Findings
+1. Use the template below for new issue entries
+2. Update priority severity (High/Medium/Low)
+3. Include exact repro steps and acceptance criteria
+4. Commit changes with clear message (e.g., "[QA] Round 76: new findings")
+
+**New Issue Template:**
+```
+[PRIORITY]. [Issue Title]
+- **Severity:** High/Medium/Low
+- **Status:** Pending/Fixed/Verified
+- **Repro Steps:** ...
+- **Acceptance Criteria:** ...
+```
