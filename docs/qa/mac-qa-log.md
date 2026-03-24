@@ -16,3 +16,4 @@ All polish priorities from R74-R75 are verified complete. v0.2.0 is production-r
 ---
 
 *Next polish cycle: When new UX friction identified or user feedback surfaces issues.*
+
