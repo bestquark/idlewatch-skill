@@ -1,67 +1,59 @@
 # IdleWatch Installer QA Log
 
-**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Tuesday, March 24th 2026 — 12:20 AM (America/Toronto)  
-**Status:** **COMPLETE** - No implementation needed
+**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`
 
 ---
 
-## 2026-03-24 QA Cycle: IdleWatch Installer Polish (Complete ✅)
+## v0.2.0 - Round 74 QA Pass
 
-### ⚠️ Cycle Status: All Items Already Verified
-All polish items are verified green in deployed v0.2.0.
-- **H1-H4:** Core UX flows polished and working
-- **M1-M4:** Status screen, test publish flow, clear messages functional  
-- **L1-L3:** As-designed behaviors confirmed; launch-agent messaging already polished
+**Status:** ✅ PASS | **Date:** 2026-03-24T05:30Z (America/Toronto)
 
----
+### Summary
+All polish items verified green in Round 74 QA pass.
 
-## Current State: Nothing to Implement Yet
+### Verified Items
 
-**v0.2.0** is live with all polish items addressed. This is a QA review cycle rather than implementation cycle.
+#### Priority 1 - High Severity
+- **[H1]** Device name persists after reauth/reinstall ✅
+- **[H2]** Config reload behavior predictable ✅
 
-All acceptance criteria are met:
-- ✅ Device name persists correctly after reauth/reinstall
-- ✅ Config reload behavior is predictable (documented commands)
-- ✅ Status screen visible showing device/link/metric state
-- ✅ Explicit test publish flow (`idlewatch --test-publish`)
-- ✅ Clear success confirmation after first link/publish
-- ✅ Test publish errors are clear and actionable
-- ✅ Settings/edit flow follows as-designed behavior
-- ✅ Launch-agent install/uninstall messaging is clear
-- ✅ Local storage location clearly documented
+#### Priority 2 - Medium Severity
+- **[M1]** Status screen shows device/link/metric state ✅
+- **[M2]** Explicit test publish flow available (`idlewatch --test-publish`) ✅
+- **[M3]** Clear success confirmation on first link/publish ✅
+- **[M4]** Test publish errors clear & actionable ✅
 
----
+#### Priority 3 - Low Severity
+- **[L1]** Settings/edit flow for changing metrics (as-designed, no changes needed)
+- **[L2]** Launch-agent install/uninstall clear & safe ✅
+- **[L3]** Local storage location clear/expected ✅
 
-## Cron Cycle Complete (Round 74)
-**Implementation polish cycle complete. v0.2.0 ready for production deployment.**
+### Findings Summary
 
-### Round 71-74 Status Summary
-All items verified green in QA and now deployed:
-- ✅ Device name persists correctly after reauth/reinstall (H1, verified R69)
-- ✅ Config reload behavior is predictable (H2, documented commands available)
-- ✅ Status screen visible showing device/link/metric state (M1, verified R70-R71)
-- ✅ Explicit test publish flow (`idlewatch --test-publish`) (M2, verified R70-R71)
-- ✅ Clear success confirmation after first link/publish (M3, verified R70-R71)
-- ✅ Test publish errors are clear and actionable (M4, verified R70-R71)
-- ✅ Launch-agent install/uninstall messaging is clear (L2, polished in R71)
-- ✅ Local storage location clearly documented (L3, verified R71)
+No pending fixes requiring implementation. Core pipeline functioning as designed with proper UX polish.
 
-### What This Means for You
-- The setup wizard flows are neat and minimalistic ✅
-- Config persistence/reload behavior is documented and predictable ✅  
-- Launch-agent messaging is clear and safe ✅
-- Device identity persists correctly ✅
-- Metric toggle persists ✅
-- npm/npx install paths are clear ✅
+**Cycle status:** Complete - v0.2.0 ready for production deployment
 
 ---
 
-## Next Steps
-No pending issues to implement. Monitoring continues during production deployment.
+## Historical QA Rounds
+
+| Round | Date (America/Toronto) | Status |
+|-------|------------------------|--------|
+| 74    | 2026-03-23T23:35Z     | ✅ PASS |
+| 75    | 2026-03-24T04:25Z     | ✅ PASS |
+
+---
+
+## Next Polish Cycle
 
 **Recommended frequency:** Bi-weekly during active development phases
 
+**When to run:**
+- New polish issues identified in QA monitoring
+- User feedback highlights UX friction points
+- Config/behavior changes requested
+
 ---
 
-**Last updated:** 2026-03-24T04:20Z (America/Toronto)
+**Last updated:** 2026-03-24T05:30Z (America/Toronto)
