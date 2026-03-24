@@ -27,7 +27,7 @@ All polish items from the current cycle verified as GREEN in QA pass v0.2.0.
 ### Findings Summary
 
 | Category | Count | Details |
-|----------|-------|---------|
+|----------|-------|-------|
 | Passing items | 6 | H1, H2, M1, M2, M3, M4 all GREEN |
 | As-designed | 1 | L1 - behavior matches design spec |
 | Pending fixes | 0 | None required from this cycle |
