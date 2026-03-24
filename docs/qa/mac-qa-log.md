@@ -1,10 +1,9 @@
 # IdleWatch Installer QA Log
 **Focus:** UX polish findings (installer/CLI flow quality)
-**Status:** Active monitoring; last updated per cycle results below.
-
+**Status:** Completed Round 75 — v0.2.0 ready for production.
 ---
 
-## Cycle Summary: Round 74 (Completed)
+## Cycle Summary: Round 75 (Completed)
 
 | Priority | Issue | Status | Notes |
 |----------|-------|--------|-------|
@@ -22,12 +21,6 @@
 
 ---
 
-## Cycle Summary: Round 75 (Completed)
-
-Same as R74 — all items verified green. No new issues discovered in QA pass.
-
----
-
 ### To-Do for Next Polish Cycle
 When to run next:
 - New polish issues identified in QA monitoring
@@ -38,17 +31,9 @@ When to run next:
 
 ---
 
-### How to Add New Findings
-1. Use the template below for new issue entries
-2. Update priority severity (High/Medium/Low)
-3. Include exact repro steps and acceptance criteria
-4. Commit changes with clear message (e.g., "[QA] Round 76: new findings")
+## Current Version Status
 
-**New Issue Template:**
-```
-[PRIORITY]. [Issue Title]
-- **Severity:** High/Medium/Low
-- **Status:** Pending/Fixed/Verified
-- **Repro Steps:** ...
-- **Acceptance Criteria:** ...
-```
+- **Version:** v0.2.0
+- **Status:** Ready for production deployment
+- **Last QA Pass:** 2026-03-24T10:00Z (America/Toronto)
+- **Next Cycle:** Pending new findings or user feedback
