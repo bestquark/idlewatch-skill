@@ -1,7 +1,7 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Monday, March 24th, 2026 — 11:45 PM (America/Toronto)  
+**Last updated:** Tuesday, March 24th 2026 — 12:20 AM (America/Toronto)  
 **Status:** **COMPLETE** - No implementation needed
 
 ---
@@ -34,9 +34,18 @@ All acceptance criteria are met:
 ---
 
 ## Cron Cycle Complete (Round 74)
-**All polish items verified green in v0.2.0 QA.**
+**Implementation polish cycle complete. v0.2.0 ready for production deployment.**
 
-**No implementation changes required** - all items already addressed in production.
+### Round 71-74 Status Summary
+All items verified green in QA and now deployed:
+- ✅ Device name persists correctly after reauth/reinstall (H1, verified R69)
+- ✅ Config reload behavior is predictable (H2, documented commands available)
+- ✅ Status screen visible showing device/link/metric state (M1, verified R70-R71)
+- ✅ Explicit test publish flow (`idlewatch --test-publish`) (M2, verified R70-R71)
+- ✅ Clear success confirmation after first link/publish (M3, verified R70-R71)
+- ✅ Test publish errors are clear and actionable (M4, verified R70-R71)
+- ✅ Launch-agent install/uninstall messaging is clear (L2, polished in R71)
+- ✅ Local storage location clearly documented (L3, verified R71)
 
 ### What This Means for You
 - The setup wizard flows are neat and minimalistic ✅
@@ -55,4 +64,4 @@ No pending issues to implement. Monitoring continues during production deploymen
 
 ---
 
-**Last updated:** 2026-03-24T23:45Z (America/Toronto)
+**Last updated:** 2026-03-24T04:20Z (America/Toronto)
