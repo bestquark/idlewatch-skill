@@ -1,8 +1,8 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`  
-**Last updated:** Monday, March 24th, 2026 — 9:10 PM (America/Toronto)  
-**Status:** **COMPLETE** - Ready for production
+**Last updated:** Monday, March 24th, 2026 — 9:20 PM (America/Toronto)  
+**Status:** **COMPLETE** - All polish items verified
 
 ---
 
@@ -23,16 +23,19 @@ All polish items verified green in v0.2.0.
 
 ---
 
-## Round 73 Status: COMPLETE ✅
-All items verified green in v0.2.0 QA cycle.
-
-### Priority Checks Completed
-- H1/H2: Device name persists + config reload verified
-- M1-M4: Status screen visible, test publish flow clear, success confirmations explicit, error messages actionable
-- L1-L3: Settings/edit flows as-designed, launch-agent install/uninstall safe, local storage location clear
+### Cron Cycle Complete
+Round 73 (c1e239d5-6bd1-42fd-8f86-08fc0615bbe1) QA polish cycle: **COMPLETE**
+All items verified green in v0.2.0 QA.
 
 ### Cycle Summary
 **All polish items passing.** No implementation changes required.
+
+---
+
+## Round 73 Details (9:20 PM)
+- Verified all Priority 1-3 items from idlewatch-cron-polish-plan.md
+- Product taste check: Flows remain neat, minimalistic, low-friction
+- Core pipeline intact; no auth/ingest architecture changes needed
 
 ---
 
@@ -49,9 +52,4 @@ No pending issues - monitoring continues during production deployment.
 
 ---
 
-## 📝 Round 73 Summary
-- QA polish cycle: **COMPLETE**
-- v0.2.0 status: **Production ready**
-- Key finding: All flows confirmed neat, minimalistic, low-friction
-
-**Last updated:** 2026-03-24T21:10Z (America/Toronto)
+**Last updated:** 2026-03-24T21:20Z (America/Toronto)
