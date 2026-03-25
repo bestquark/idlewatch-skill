@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 2:10 PM (America/Toronto)  
-**Status:** CLOSED - R109 no new polish issues
+**Last updated:** Wednesday, March 25th, 2026 — 2:15 PM (America/Toronto)  
+**Status:** CLOSED - R110 shipped one tiny non-TTY setup guidance polish fix
+
+---
+
+## Cycle R110 Status: CLOSED
+
+This pass stayed intentionally narrow: one small non-TTY setup guidance polish fix only, with no setup-flow redesign, no auth/ingest changes, no packaging changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one tiny, low-risk setup/install/status guidance improvement.
+- When the CLI is running without a TTY, first-step and recovery hints now point to `quickstart --no-tui` instead of plain `quickstart`.
+- This keeps headless, cron, paste-into-terminal, and CI-ish contexts on the path that is most likely to work immediately.
+- Telemetry behavior, saved config behavior, LaunchAgent behavior, and durable-install guidance were left untouched.
+
+### R110 spot-check coverage
+- `node --test test/openclaw-env.test.mjs`
+- `npm run validate:onboarding --silent`
+- Non-TTY help/status/install/retry command-hint review in source-checkout and `npx` contexts
+
+### Prioritized findings
+
+#### [x] L20 — Non-TTY setup hints now point straight to `--no-tui`
+**Why it matters:** The product already supports `--no-tui`, but some of the most important next-step hints still suggested plain `quickstart` even when there was no TTY. In those contexts, the calmer path is to point straight at the text-prompt route so the next command works on the first try.
+
+**What shipped**
+- In non-TTY contexts, these hints now use `quickstart --no-tui`:
+  - main `--help` footer
+  - `install-agent` before-setup follow-up (`Save setup:`)
+  - setup-failure retry copy (`Redo:`)
+  - first-run `status` (`Get started:`)
+- Interactive TTY usage remains unchanged and still points to plain `quickstart`.
+
+### Acceptance notes
+- Normal interactive setup still defaults to the standard `quickstart` path.
+- Non-TTY guidance now removes one avoidable setup stumble without adding any new options or branches.
+- The working telemetry path remains untouched.
 
 ---
 

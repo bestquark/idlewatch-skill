@@ -250,8 +250,8 @@ test('help preserves one-off command hints under npm exec', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart/)
-  assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart/)
+  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
+  assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
 })
 
 test('--test-publish aliases to one-shot publish mode', () => {
@@ -560,7 +560,7 @@ test('quickstart failure keeps idlewatch --once as the primary retry only for th
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
     assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should show source-checkout retry command')
-    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart redo command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart redo command')
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -614,7 +614,7 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
     assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should show source-checkout retry command')
-    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart redo command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart redo command')
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -878,7 +878,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
-    assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
+    assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart command')
     assert.ok(run.stdout.includes(`Run now:      ${SOURCE_CMD} run`), 'should show source-checkout foreground run command')
     assert.ok(run.stdout.includes(`Then enable:  ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
     assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
@@ -1281,7 +1281,7 @@ test('status command hides cloud link info in local-only mode', () => {
     assert.ok(!run.stdout.includes('Cloud link:'), 'should not show cloud link in local-only')
     assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
     assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
-    assert.ok(run.stdout.includes(`${SOURCE_CMD} quickstart`), 'should hint at quickstart when no config')
+    assert.ok(run.stdout.includes(`${SOURCE_CMD} quickstart --no-tui`), 'should hint at quickstart when no config')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
@@ -1305,8 +1305,8 @@ test('status command preserves one-off command hints under npm exec env', () => 
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart/)
-    assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart/)
+    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

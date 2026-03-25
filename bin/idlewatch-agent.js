@@ -72,6 +72,11 @@ function inferCliCommand(command = '') {
   return command ? `${base} ${command}` : base
 }
 
+function preferredSetupCommand(command = 'quickstart') {
+  const suffix = process.stdin.isTTY ? '' : ' --no-tui'
+  return inferCliCommand(`${command}${suffix}`)
+}
+
 function launchAgentInfo() {
   const svcLabel = 'com.idlewatch.agent'
   const uid = process.getuid?.() ?? ''
@@ -250,7 +255,7 @@ Options:
   --help                  Show this help
   --help-env              Show all environment variables
 
-Get started:  ${inferCliCommand('quickstart')}`)
+Get started:  ${preferredSetupCommand('quickstart')}`)
 }
 
 function printHelpEnv() {
@@ -895,7 +900,7 @@ if (args.has('--help-env')) {
 }
 if (args.has('--help') || args.has('-h')) {
   const subCmd = argv.find(a => !a.startsWith('-'))
-  const quickstartCommand = inferCliCommand('quickstart')
+  const quickstartCommand = preferredSetupCommand('quickstart')
   const configureCommand = inferCliCommand('configure')
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
@@ -1028,7 +1033,7 @@ const subcommandPromise = (async () => {
     const envFile = defaultPersistedEnvFilePath()
 
     const hasSavedConfig = fs.existsSync(envFile)
-    const quickstartCommand = inferCliCommand('quickstart')
+    const quickstartCommand = preferredSetupCommand('quickstart')
     const installAgentCommand = inferCliCommand('install-agent')
     const statusCommand = inferCliCommand('status')
     const runCommand = inferCliCommand('run')
@@ -1229,7 +1234,7 @@ const subcommandPromise = (async () => {
       console.error(`     • Check your API key is valid at idlewatch.com/api`)
       console.error(`     • Verify internet connectivity`)
       console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
-      console.error(`   Redo:   ${inferCliCommand('quickstart')}`)
+      console.error(`   Redo:   ${preferredSetupCommand('quickstart')}`)
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {
@@ -1641,7 +1646,7 @@ if (statusRequested) {
 
   console.log('')
   if (!hasConfig) {
-    console.log(`  Get started:  ${inferCliCommand('quickstart')}`)
+    console.log(`  Get started:  ${preferredSetupCommand('quickstart')}`)
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
