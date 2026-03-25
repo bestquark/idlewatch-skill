@@ -173,7 +173,8 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
 
   if (backgroundAgentInstalledNeedsRefresh) {
     console.log('\n   Background agent is already installed.')
-    console.log(`   Re-run ${backgroundInstallCommand} to start it with the saved config.`)
+    console.log(`   Start it: ${backgroundInstallCommand}`)
+    console.log('   It will reload using the saved config.')
     if (invocation.kind === 'npx') {
       console.log('   This npx run saved the config, but background mode still uses the durable install.')
     }
@@ -1083,7 +1084,7 @@ const subcommandPromise = (async () => {
       console.log(`   Save setup:   ${quickstartCommand}`)
       console.log(`   Run now:      ${runCommand}`)
       console.log(`   Then enable:  ${installAgentCommand}`)
-      console.log(`   Saved config: ${envFile}`)
+      console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
       process.exit(0)

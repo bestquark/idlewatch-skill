@@ -881,7 +881,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
     assert.ok(run.stdout.includes(`Run now:      ${SOURCE_CMD} run`), 'should show source-checkout foreground run command')
     assert.ok(run.stdout.includes(`Then enable:  ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
-    assert.ok(run.stdout.includes(`Saved config: ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout saved config path')
+    assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
     assert.doesNotMatch(run.stdout, /Save setup:.*idlewatch quickstart/)
@@ -1006,7 +1006,8 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background agent is already installed\./)
-    assert.match(run.stdout, /Re-run .*install-agent to start it with the saved config\./)
+    assert.match(run.stdout, /Start it: .*install-agent/)
+    assert.match(run.stdout, /It will reload using the saved config\./)
     assert.doesNotMatch(run.stdout, /Background collection is not enabled yet\./)
     assert.doesNotMatch(run.stdout, /Auto-start in background \(recommended\)/)
   } finally {

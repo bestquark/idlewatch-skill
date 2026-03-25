@@ -1,8 +1,56 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 2:00 PM (America/Toronto)  
-**Status:** CLOSED - R107 no new polish issues
+**Last updated:** Wednesday, March 25th, 2026 — 2:05 PM (America/Toronto)  
+**Status:** CLOSED - R108 tiny copy polish shipped
+
+---
+
+## Cycle R108 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny setup/install wording cleanup and one tiny setup-completion wording cleanup, with no behavior, config, install semantics, or telemetry changes.
+
+### Outcome
+- Shipped two small, low-risk polish improvements.
+- Install-before-setup no longer says `Saved config:` before any config exists; it now says `Config path:` so the file location is clear without implying setup already happened.
+- Setup/reconfigure completion for the already-installed-but-not-loaded background agent now uses a shorter action-first shape:
+  - `Start it: ...`
+  - `It will reload using the saved config.`
+- No auth, ingest, packaging, or telemetry-path changes were touched.
+
+### R108 spot-check coverage
+- `install-agent` before setup in a clean HOME
+- `quickstart --no-tui` after pre-installing the LaunchAgent
+- `npm run validate:onboarding --silent`
+- `node --test test/openclaw-env.test.mjs`
+
+### Prioritized findings
+
+#### [x] L18 — Install-before-setup no longer implies config was already saved
+**Why it matters:** This was a tiny wording trust seam. The no-config install path behaved correctly, but showing `Saved config:` before setup existed made the path feel a little sloppier than the actual product behavior.
+
+**What shipped**
+- Reworded the no-config install follow-up from:
+  - `Saved config: ...`
+- To:
+  - `Config path: ...`
+- The path still stays visible so cautious users know where setup will save.
+
+#### [x] L19 — Already-installed setup completion now leads with the action instead of a sentence
+**Why it matters:** This path was already honest, but slightly more narrated than the rest of the product. A short action-first follow-up scans faster right after setup succeeds.
+
+**What shipped**
+- Reworded the already-installed background follow-up from:
+  - `Re-run ... install-agent to start it with the saved config.`
+- To:
+  - `Start it: ...`
+  - `It will reload using the saved config.`
+- `npx` still keeps the durable-install reminder unchanged.
+
+### Acceptance notes
+- Install-before-setup still keeps background mode off until setup is saved.
+- The already-installed background path still clearly distinguishes `saved config exists` from `background not loaded yet`.
+- The working telemetry path remains untouched.
 
 ---
 
