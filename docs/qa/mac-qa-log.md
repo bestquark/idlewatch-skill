@@ -2,11 +2,11 @@
 
 **Cycle:** R99 (installer/CLI polish QA — source-checkout command copy pass)
 
-## Status: OPEN — small copy polish follow-up
+## Status: CLOSED — shipped in this cycle
 
 Most of the installer/CLI still feels solid: setup persists, metric toggles save cleanly, config reload expectations are clear, LaunchAgent install/uninstall works, `--test-publish` stays short, device identity persists, and the npx/global install split is now honest.
 
-This pass found one remaining product-taste issue in the source-checkout path.
+This cycle shipped the last small copy polish issue in the source-checkout path.
 
 When IdleWatch is run from source (`node bin/idlewatch-agent.js ...`), some background/setup hints embed the full command inside prose like:
 
@@ -21,13 +21,18 @@ The neat version is simpler:
 
 No flow redesign needed — this is just copy polish in a setup surface users actually read.
 
+### What shipped
+- Source-checkout `status` now uses clean action labels (`Re-enable:` / `Enable:`) instead of wrapping the full install command inside prose.
+- The command itself stays explicit and easy to copy.
+- Global-install and one-off `npx` wording remains unchanged.
+
 ---
 
 ## Priority findings
 
 ### M1. Source-checkout background hints become awkward when the full `node ... install-agent` command is embedded inside prose
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 The global-install and one-off `npx` paths now read cleanly because the command style matches the setup path.
@@ -77,11 +82,11 @@ Any of those is easier on the eyes than `install <command> install-agent`.
 6. The same phrasing pattern also appears in configured source-checkout status/help copy where prose wraps the full command instead of presenting it cleanly.
 
 **Acceptance criteria:**
-- [ ] Source-checkout status/help/setup hints do not produce awkward phrasing like `install node ... install-agent`.
-- [ ] The next-step command remains explicit and copyable.
-- [ ] Global installs still keep the clean `idlewatch install-agent` phrasing.
-- [ ] One-off `npx` guidance remains unchanged and honest about durable install requirements.
-- [ ] No auth, ingest, or major packaging redesign is introduced.
+- [x] Source-checkout status/help/setup hints do not produce awkward phrasing like `install node ... install-agent`.
+- [x] The next-step command remains explicit and copyable.
+- [x] Global installs still keep the clean `idlewatch install-agent` phrasing.
+- [x] One-off `npx` guidance remains unchanged and honest about durable install requirements.
+- [x] No auth, ingest, or major packaging redesign is introduced.
 
 ---
 

@@ -1565,10 +1565,10 @@ if (statusRequested) {
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
         console.log(`  Apply:    re-run ${installAgentCommand} after config changes to refresh the background agent`)
       } else {
-        console.log(`  Background: install ${installAgentCommand} to re-enable background collection`)
+        console.log(`  Re-enable:  ${installAgentCommand}`)
       }
     } else {
-      console.log(`  Background: install ${installAgentCommand} to enable background collection on macOS`)
+      console.log(`  Enable:   ${installAgentCommand}  (background on macOS)`)
     }
   }
   process.exit(0)
