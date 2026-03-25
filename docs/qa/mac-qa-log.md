@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 2:41 PM (America/Toronto)  
-**Status:** CLOSED - R112 found no new installer/CLI polish regressions
+**Last updated:** Wednesday, March 25th, 2026 — 2:52 PM (America/Toronto)  
+**Status:** CLOSED - R113 shipped one tiny help-text consistency polish fix
+
+---
+
+## Cycle R113 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny setup/reconfigure help-text consistency fix only, with no setup-flow changes, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `configure --help` and `reconfigure --help` now match the calmer wording already used elsewhere in the product:
+  - `Saved changes apply on the next start.`
+  - `If background mode is already enabled, re-run ... install-agent to refresh it with the saved config.`
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R113 spot-check coverage
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] Help-text regression coverage in `test/openclaw-env.test.mjs`
+
+### Prioritized findings
+
+#### [x] L21 — Configure help now matches the calmer saved-config / refresh wording used elsewhere
+**Why it matters:** The actual product behavior was already right, but help still used an older, slightly more technical phrasing (`the next time IdleWatch starts`, `restart it with the updated config`). Tightening that seam makes setup/reconfigure feel more consistent with the rest of the CLI.
+
+**What shipped**
+- Reworded configure/reconfigure help from:
+  - `Saved changes apply the next time IdleWatch starts.`
+  - `If the background agent is already running, re-run ... to restart it with the updated config.`
+- To:
+  - `Saved changes apply on the next start.`
+  - `If background mode is already enabled, re-run ... to refresh it with the saved config.`
+
+### Acceptance notes
+- Help now matches the CLI's existing saved-config mental model more closely.
+- No setup semantics changed.
+- The working telemetry path remains untouched.
 
 ---
 

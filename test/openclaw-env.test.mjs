@@ -829,6 +829,20 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
+test('configure help keeps saved-config reload wording short and consistent', () => {
+  const run = spawnSync(process.execPath, [BIN, 'configure', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Saved changes apply on the next start\./)
+  assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
+  assert.doesNotMatch(run.stdout, /restart it with the updated config\./)
+})
+
 test('install-agent refuses disposable npm exec paths and explains the durable path', () => {
   if (process.platform !== 'darwin') {
     return

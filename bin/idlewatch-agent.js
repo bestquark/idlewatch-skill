@@ -923,8 +923,8 @@ Usage:  ${configureCommand} [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
-Saved changes apply the next time IdleWatch starts.
-If the background agent is already running, re-run ${installAgentCommand} to restart it with the updated config.`,
+Saved changes apply on the next start.
+If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
     status: `${statusCommand} — Show device state
 
 Usage:  ${statusCommand}
@@ -959,8 +959,8 @@ Usage:  ${reconfigureCommand} [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
-Saved changes apply the next time IdleWatch starts.
-If the background agent is already running, re-run ${installAgentCommand} to restart it with the updated config.`,
+Saved changes apply on the next start.
+If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
 Usage:  ${dashboardCommand}
