@@ -1,60 +1,56 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R86 (installer/CLI polish follow-up)
+**Cycle:** R87 (installer/CLI polish follow-up)
 
-## Status: CLOSED — local-only setup copy polished
+## Status: OPEN — one docs-level setup-friction issue found
 
-Core setup/install behavior still feels solid. Reconfigure + LaunchAgent refresh now behave like a boring, dependable path, which is exactly what this product wants. This pass only found one small UX polish issue: the local-only quickstart success path still flashes a warning-style sample message right before declaring success.
+The core flow still feels solid: config persists, local verification copy is calmer now, status stays readable, and LaunchAgent install/uninstall remains simple. This pass found one remaining polish issue in the first-run docs path: README quickstart still implies a cloud API key is required before setup, even though local-only mode exists and already works well.
 
 ---
 
 ## Priority findings
 
-### L1. Local-only quickstart still uses warning-flavored sample copy inside an otherwise successful setup flow
-**Priority:** Low  
-**Status:** Fixed
+### M1. README quickstart still frames cloud setup as mandatory even though local-only setup is a valid low-friction path
+**Priority:** Medium  
+**Status:** Open
 
 **Why this matters:**
-The setup flow is almost there, but the emotional tone is slightly crossed. In local-only mode, the wizard says:
-- `Running in local-only mode — telemetry is saved to disk but not published.`
-- `⚠️ Sample collected (3 metrics) (not published)`
-- `✅ Setup complete — "QA Box" is live!`
+This is a small docs issue, but it lands right on the product’s first impression. The CLI now supports a neat local-first setup path, yet the README still starts with:
+- `Create an API key at idlewatch.com/api`
+- `Run the setup wizard`
+- `Pick a device name and metrics — done!`
 
-Technically correct, but not ideal product taste. “Not published” in local mode is expected behavior, not a warning. The warning glyph makes the success path feel like a partial failure for no good reason.
+That makes the product feel more gated and more technical than it actually is. For a utility like this, the nicest setup story is: run it, pick a name, choose local or cloud, done. If cloud is optional, the top-level quickstart should not read like cloud auth is step zero.
 
-For a simple setup flow, local-only mode should feel intentional, calm, and complete — more like “saved locally” than “warning: didn’t publish.”
+This is especially relevant for:
+- people testing via `npx idlewatch quickstart`
+- local-only users who just want telemetry on disk first
+- QA and first-run reviewers judging setup friction from the README before they ever see the wizard
 
 **Exact repro:**
-1. From a source checkout, use a clean temp home:
+1. Open the README install/quickstart section:
    ```bash
    cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
-   TMPHOME=$(mktemp -d)
+   sed -n '1,80p' README.md
    ```
-2. Run local-only quickstart:
+2. Compare the README quickstart copy with the actual local-only setup behavior:
    ```bash
+   TMPHOME=$(mktemp -d)
    HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
      IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
      IDLEWATCH_ENROLL_METRICS='agent_activity,token_usage' \
      node bin/idlewatch-agent.js quickstart --no-tui
    ```
-3. Observe this sequence in the success path:
-   ```text
-   Running in local-only mode — telemetry is saved to disk but not published. Run node bin/idlewatch-agent.js configure to add a cloud API key.
-   Collecting sample for "QA Box" (local-only mode)…
-   ⚠️ Sample collected (3 metrics) (not published)
-
-   ✅ Setup complete — "QA Box" is live!
-      Mode:   local
-      ...
-      ✓ Local telemetry verified.
-   ```
+3. Observe the mismatch:
+   - README implies API key creation is required before setup.
+   - Actual product supports a successful local-only setup with no API key.
 
 **Acceptance criteria:**
-- [x] Local-only quickstart success avoids warning-style framing for expected local behavior.
-- [x] The one-shot verification message feels intentionally successful in local mode (uses calm “saved locally” wording).
-- [x] Users can still clearly tell that local-only mode does not publish to the cloud.
-- [x] Cloud mode keeps stronger publish confirmation language.
-- [x] The setup completion block remains short and visually quiet.
+- [ ] README quickstart makes local-only vs cloud setup feel equally intentional.
+- [ ] Top-level setup instructions do not imply a cloud API key is mandatory for first use.
+- [ ] `npm install -g` and `npx` paths still stay short and obvious.
+- [ ] The docs keep the setup story minimalistic rather than branching into a long decision tree.
+- [ ] Cloud users can still easily find the API-key step when they want publishing.
 
 ---
 
@@ -63,10 +59,9 @@ For a simple setup flow, local-only mode should feel intentional, calm, and comp
 - Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
 - `status` still makes saved-config state, metrics enabled, local log path, log size, last sample age, and LaunchAgent state easy to scan.
 - `--test-publish` still behaves as the documented alias for `--once`.
-- First-run `install-agent` still succeeds and explains uninstall safety clearly.
-- Immediate `install-agent` re-run still behaves like a clean refresh.
-- `uninstall-agent` still preserves config and logs as expected.
-- Postinstall install-path hints are still mostly clear about global install vs one-off `npx` usage.
+- `install-agent` / `uninstall-agent` messaging is still concise and safe.
+- Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
+- README install path is short, but the first-run cloud-vs-local framing still needs polish.
 
 ## Validation used
 ```bash
@@ -81,16 +76,12 @@ cat "$TMPHOME/.idlewatch/idlewatch.env"
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
-HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
 HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
-HOME="$TMPHOME" node bin/idlewatch-agent.js status
 node scripts/postinstall.mjs
+sed -n '1,120p' README.md
 ```
 
-## Resolution
-- Local-only quickstart verification now prints `✅ Sample collected … and saved locally` instead of warning-style `⚠️ … (not published)` copy.
-- The existing stderr note still explains that local-only mode stays on disk until a cloud API key is added, so intent stays clear without making success feel broken.
-
 ## Notes
-- The live repo-level `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` still behaves more like a historical snapshot than an active checklist, so the practical source of truth for this cycle was the current CLI behavior.
-- No packaging, auth, or ingest redesign needed from this pass.
+- The repo-level `idlewatch-cron-polish-plan.md` reads like a historical checklist now; current CLI behavior was the more reliable source of truth for this pass.
+- No auth, ingest, or packaging redesign recommended from this cycle.
+- The product itself is in better shape than the README currently advertises, which is a nice problem to have.
