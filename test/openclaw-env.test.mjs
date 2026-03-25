@@ -807,6 +807,28 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
+test('install-agent help in npx context points straight to the durable path', () => {
+  const run = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^Background mode needs a durable install\./)
+  assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.match(run.stdout, /Then enable:\s+idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+npx idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
+})
+
 test('install-agent refuses disposable npm exec paths and explains the durable path', () => {
   if (process.platform !== 'darwin') {
     return

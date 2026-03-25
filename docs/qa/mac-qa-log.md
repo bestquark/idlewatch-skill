@@ -1,18 +1,53 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:48 PM (America/Toronto)  
-**Status:** OPEN - one npx/install-path help seam worth tightening
+**Last updated:** Wednesday, March 25th, 2026 — 2:10 PM (America/Toronto)  
+**Status:** CLOSED - targeted npx/install-path help seam tightened
 
 ---
 
-## Cycle R100 Status: OPEN
+## Cycle R101 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny `npx` help-path polish only, with no setup-flow reshaping, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk install/help polish improvement.
+- `install-agent --help` in an `npx`-like context no longer headlines `npx idlewatch install-agent` as if it were a usable background command.
+- The help path now goes straight to the durable-install shape:
+  - `Background mode needs a durable install.`
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- No auth, ingest, telemetry, or packaging redesign was touched.
+
+### R101 spot-check coverage
+- `node bin/idlewatch-agent.js install-agent --help`
+- `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+- `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent`
+- `node --test test/openclaw-env.test.mjs` (47/47 passing)
+
+### Prioritized findings
+
+#### [x] L14 — `npx` help for `install-agent` no longer presents the wrong command as the usage line
+**Why it matters:** The real runtime behavior was already right, but help still briefly implied the opposite. Tightening that tiny contradiction makes the setup story feel cleaner and more trustworthy.
+
+**What shipped**
+- `install-agent --help` now detects `npx`/`npm exec` context and shows durable-install guidance directly instead of a misleading `Usage: npx idlewatch install-agent` block.
+- The actual install semantics remain unchanged: one-off foreground runs still work via `npx`, while background install still requires a durable install.
+
+### Acceptance notes
+- `npx` help no longer presents `npx idlewatch install-agent` as the main usage line.
+- The refusal path remains unchanged and still points to the same durable-install commands.
+- The working telemetry path remains untouched.
+
+---
+
+## Cycle R100 Status: CLOSED
 
 This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, LaunchAgent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
 - Most of the targeted polish seams still hold up well.
-- One small but real clarity issue remains in the `npx` background-install help path.
+- One small but real clarity issue remained in the `npx` background-install help path.
 - No auth, ingest, telemetry, or packaging redesign is recommended from this cycle.
 
 ### R100 spot-check coverage

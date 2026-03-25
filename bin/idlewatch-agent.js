@@ -128,6 +128,29 @@ function backgroundInstallCommandForInvocation(invocation = detectCliInvocation(
   return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
 }
 
+function installAgentHelpText() {
+  const invocation = detectCliInvocation()
+  const installAgentCommand = inferCliCommand('install-agent')
+
+  if (invocation.kind === 'npx') {
+    return `Background mode needs a durable install.
+
+Install once: npm install -g idlewatch
+Then enable: idlewatch install-agent`
+  }
+
+  return `${installAgentCommand} — Install background LaunchAgent (macOS)
+
+Usage:  ${installAgentCommand}
+
+Creates a LaunchAgent plist and loads it so IdleWatch starts automatically
+in the background. You can install it before setup, then save config later
+and re-run install-agent when you're ready.
+If you're using npx/npm exec:
+  Install once: npm install -g idlewatch
+  Then enable: idlewatch install-agent`
+}
+
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
@@ -910,16 +933,7 @@ Usage:  ${createCommand}
 
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
-    'install-agent': `${installAgentCommand} — Install background LaunchAgent (macOS)
-
-Usage:  ${installAgentCommand}
-
-Creates a LaunchAgent plist and loads it so IdleWatch starts automatically
-in the background. You can install it before setup, then save config later
-and re-run install-agent when you're ready.
-If you're using npx/npm exec:
-  Install once: npm install -g idlewatch
-  Then enable: idlewatch install-agent`,
+    'install-agent': installAgentHelpText(),
     'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
 
 Usage:  ${uninstallAgentCommand}
