@@ -1,14 +1,25 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:45 AM (America/Toronto)  
+**Last updated:** Wednesday, March 25th, 2026 — 11:08 AM (America/Toronto)  
 **Status:** CLOSED - small polish fixes shipped
 
 ---
 
-## Cycle R80 Status: CLOSED
+## Cycle R81 Status: CLOSED
 
 This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
+
+### Outcome
+- No new user-facing polish regressions found in the targeted R81 spot-checks.
+- Existing R80 polish fixes still read well in first-run and post-setup flows.
+- README install-path guidance still matches current CLI behavior: `npx` is fine for setup/foreground use, while background mode requires a durable install.
+
+### R81 spot-check coverage
+- First-run `status` in a clean HOME
+- Local-only `quickstart --no-tui` in a clean HOME
+- Post-setup `status`
+- `--test-publish` alias behavior
 
 ## Prioritized findings
 
