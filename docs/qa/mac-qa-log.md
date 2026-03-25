@@ -1,16 +1,55 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R82 (installer/CLI polish follow-up)
+**Cycle:** R83 (installer/CLI polish follow-up)
 
-## Status: CLOSED — setup-flow cancel path polished
+## Status: OPEN — one small uninstall copy bug remains
 
-Core setup/install flow still works. This pass found one remaining UX wart in the plain-text setup path: EOF/cancel can leak a raw Node.js warning into the terminal.
+Core setup/install flow still works. This pass found one remaining user-facing polish issue: `uninstall-agent` promises config/logs stay in `~/.idlewatch/` even when IdleWatch is intentionally using a different HOME/config root.
 
 ---
 
 ## Priority findings
 
-### M1. Plain-text `configure --no-tui` can leak raw Node "unsettled top-level await" warning on EOF/cancel
+### M1. `uninstall-agent` hard-codes `~/.idlewatch/` in success copy even when config/logs live somewhere else
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+This is small, but it adds friction right at the "safe to remove" moment. The command correctly preserves config and logs, but the success message points to the wrong place in temp-home, CI, redirected-HOME, and packaged test contexts. That makes a safe action feel less trustworthy than it is.
+
+**Exact repro:**
+1. From a source checkout, use a clean temp home:
+   ```bash
+   cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   TMPHOME=$(mktemp -d)
+   ```
+2. Save config in that temp home:
+   ```bash
+   HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+     node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+3. Install then uninstall the LaunchAgent:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+   HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+   ```
+4. Observe the success copy:
+   ```text
+   ✅ LaunchAgent removed — background collection stopped.
+      Your config and logs are still in ~/.idlewatch/
+   ```
+5. Compare with the real preserved files, which are actually under:
+   ```bash
+   ls -la "$TMPHOME/.idlewatch"
+   ```
+
+**Acceptance criteria:**
+- [ ] `uninstall-agent` does not claim `~/.idlewatch/` when the active config/log root resolves elsewhere.
+- [ ] Success copy either prints the resolved path or uses path-agnostic wording like "Your config and logs were kept.".
+- [ ] Message still reassures users that uninstall is non-destructive and points to the reinstall command.
+- [ ] Source checkout, global npm install, `npx`, packaged app, and temp-home QA flows all show accurate low-noise wording.
+
+### M2. Plain-text `configure --no-tui` can leak raw Node "unsettled top-level await" warning on EOF/cancel
 **Priority:** Medium  
 **Status:** Fixed
 
