@@ -1,10 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:48 AM (America/Toronto)  
-**Status:** CLOSED - one small setup/reconfigure copy polish shipped in targeted QA pass
+**Last updated:** Wednesday, March 25th, 2026 — 11:58 AM (America/Toronto)  
+**Status:** CLOSED - one small npx status hint polish shipped in targeted QA pass
 
 ---
+
+## Cycle R86 Status: CLOSED
+
+This pass stayed intentionally narrow: keep `status` as tidy as setup/reconfigure for `npx` users, especially around saved-config background follow-up hints.
+
+### Outcome
+- Shipped one tiny, low-risk polish improvement.
+- `status` now uses the same shorter durable-install mental model already used in setup/reconfigure:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Telemetry behavior, install semantics, and working background flows were left untouched.
+
+### R86 spot-check coverage
+- `npx`-style `status` with saved config and no samples yet
+- `npx`-style `status` with saved config and existing samples
+- Existing onboarding/status regression test suite slice
+
+### Prioritized findings
+
+#### [x] L5 — `npx` status background hint now matches the calmer setup/reconfigure wording
+**Why it matters:** `status` is often where people sanity-check what to do next. The old one-line `npx` background hint was correct, but wordier and less scannable than the cleaner two-line setup/reconfigure copy.
+
+**What shipped**
+- Replaced the old `status` hint:
+  - `Background: install IdleWatch globally first, then run idlewatch install-agent`
+- With the shorter pair:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+
+### Acceptance notes
+- `npx` status still keeps foreground commands on `npx`.
+- Background guidance still points to durable `idlewatch install-agent`, not `npx idlewatch install-agent`.
+- The copy is shorter, easier to scan, and consistent with setup/reconfigure.
 
 ## Cycle R85 Status: CLOSED
 

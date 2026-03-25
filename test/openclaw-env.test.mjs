@@ -1252,6 +1252,64 @@ test('status command preserves one-off command hints under npm exec env', () => 
   }
 })
 
+test('status command keeps npx background hints short and durable-install oriented', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-npx-config-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(path.join(configDir, 'logs'), { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Hint Box',
+      'IDLEWATCH_DEVICE_ID=hint-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    const noSamples = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(noSamples.status, 0, noSamples.stderr)
+    assert.match(noSamples.stdout, /Start:\s+npx idlewatch run/)
+    assert.match(noSamples.stdout, /Install once:\s+npm install -g idlewatch/)
+    assert.match(noSamples.stdout, /Then enable:\s+idlewatch install-agent/)
+    assert.doesNotMatch(noSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
+
+    fs.writeFileSync(path.join(configDir, 'logs', 'hint-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const withSamples = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(withSamples.status, 0, withSamples.stderr)
+    assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure/)
+    assert.match(withSamples.stdout, /Install once:\s+npm install -g idlewatch/)
+    assert.match(withSamples.stdout, /Then enable:\s+idlewatch install-agent/)
+    assert.doesNotMatch(withSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command shows contextual next-step hints', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-hints-'))
   try {

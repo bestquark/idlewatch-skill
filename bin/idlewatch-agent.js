@@ -1631,7 +1631,8 @@ if (statusRequested) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Start:    ${inferCliCommand('run')}`)
-      console.log('  Background: install IdleWatch globally first, then run idlewatch install-agent')
+      console.log('  Install once: npm install -g idlewatch')
+      console.log('  Then enable:  idlewatch install-agent')
     } else {
       console.log(`  Start:    ${inferCliCommand('run')}`)
       if (process.platform === 'darwin') {
@@ -1653,7 +1654,8 @@ if (statusRequested) {
     console.log(`  Change:   ${inferCliCommand('configure')}`)
 
     if (detectCliInvocation().kind === 'npx') {
-      console.log('  Background: install IdleWatch globally first, then run idlewatch install-agent')
+      console.log('  Install once: npm install -g idlewatch')
+      console.log('  Then enable:  idlewatch install-agent')
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
