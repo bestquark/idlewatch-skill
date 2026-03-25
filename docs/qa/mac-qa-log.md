@@ -1,12 +1,12 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:55 AM (America/Toronto)  
-**Status:** OPEN - 2 small polish issues still worth fixing
+**Last updated:** Wednesday, March 25th, 2026 — 10:45 AM (America/Toronto)  
+**Status:** CLOSED - small polish fixes shipped
 
 ---
 
-## Cycle R80 Status: OPEN
+## Cycle R80 Status: CLOSED
 
 This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
 
@@ -14,7 +14,7 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Priority 2 (Medium)
 
-#### [M1] Setup completion gives the wrong mental model when a LaunchAgent was installed before setup
+#### [x] M1 — Setup completion gives the right mental model when a LaunchAgent was installed before setup
 **Why it matters:** This is a sensible cautious-user path: install background mode first, then finish setup. The mechanics work, but the completion copy still implies background mode is simply off instead of acknowledging that the agent is already installed and just needs a refresh.
 
 **Repro**
@@ -63,7 +63,7 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Priority 3 (Low)
 
-#### [L1] First-run `status` is still a little too visually busy
+#### [x] L1 — First-run `status` is lighter and calmer
 **Why it matters:** The first `status` screen should reassure. Before setup exists, it currently leads with a long advanced metrics list that feels more internal than welcoming.
 
 **Repro**
@@ -84,6 +84,10 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 - Do not simplify configured/status-after-setup output; only soften the pre-setup preview.
 
 ---
+
+## Shipped in this pass
+- [x] Quickstart/configure completion now distinguishes “not enabled yet” from “already installed, re-run install-agent to refresh/start with saved config”.
+- [x] First-run `status` now leads with a calmer default metric preview and moves OpenClaw extras into a secondary line.
 
 ## Verified good in this pass
 - Device identity persistence after reconfigure still looks correct.

@@ -935,6 +935,72 @@ test('install-agent does not claim background is running when launchd still repo
   }
 })
 
+test('quickstart completion stays honest when a LaunchAgent was installed before setup', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-install-first-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-launchctl-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(install.status, 0, install.stderr)
+
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background agent is already installed\./)
+    assert.match(run.stdout, /Re-run .*install-agent to start it with the saved config\./)
+    assert.doesNotMatch(run.stdout, /Background collection is not enabled yet\./)
+    assert.doesNotMatch(run.stdout, /Auto-start in background \(recommended\)/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('first-run status keeps the metric preview lightweight', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-first-run-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Default metrics:\s+CPU, Memory, GPU, Temperature/)
+    assert.match(run.stdout, /Extras available:\s+OpenClaw activity, OpenClaw tokens, OpenClaw runtime/)
+    assert.doesNotMatch(run.stdout, /Metrics preview:/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('quickstart rejects a fully invalid metric selection with a clear validation error', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-invalid-metrics-'))
   try {

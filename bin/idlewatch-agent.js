@@ -125,11 +125,20 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const installAgentCommand = inferCliCommand('install-agent')
   const runCommand = inferCliCommand('run')
   const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
+  const backgroundAgentInstalledNeedsRefresh = launchAgentState?.state === 'installed-not-loaded'
 
   if (isReconfigure && backgroundAgentRunning) {
     console.log('\n   Background agent: already running')
     console.log(`   Apply changes:    re-run ${installAgentCommand} to refresh it with the saved config`)
     console.log(`   Or run now:       ${runCommand}   Run in foreground`)
+    return
+  }
+
+  if (backgroundAgentInstalledNeedsRefresh) {
+    console.log('\n   Background agent is already installed.')
+    console.log(`   Re-run ${installAgentCommand} to start it with the saved config.`)
+    console.log('\n   Use it now:')
+    console.log(`     ${runCommand}   Run in foreground`)
     return
   }
 
@@ -1506,7 +1515,17 @@ if (statusRequested) {
     provider_quota: 'Provider quota'
   }
   const metricLabels = [...MONITOR_TARGETS].map((t) => friendlyMetricLabels[t] || t)
-  console.log(`  ${hasConfig ? 'Metrics:' : 'Metrics preview:'} ${metricLabels.join(', ')}`)
+  if (hasConfig) {
+    console.log(`  Metrics:      ${metricLabels.join(', ')}`)
+  } else {
+    const defaultMetricPreview = ['CPU', 'Memory', 'GPU', 'Temperature']
+    const extraPreview = ['OpenClaw activity', 'OpenClaw tokens', 'OpenClaw runtime', 'Provider quota']
+      .filter((label) => metricLabels.includes(label))
+    console.log(`  Default metrics: ${defaultMetricPreview.join(', ')}`)
+    if (extraPreview.length > 0) {
+      console.log(`  Extras available: ${extraPreview.join(', ')}`)
+    }
+  }
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : 'not saved yet'}`)
 
