@@ -2,7 +2,7 @@
 
 **Cycle:** R89 (installer/CLI polish follow-up)
 
-## Status: OPEN — one remaining status-copy mismatch after uninstall
+## Status: CLOSED — state-aware status footer aligned after uninstall
 
 The core pipeline still works and the setup/configure flow feels clean overall. One small polish issue remains: `status` still prints the “re-run install-agent after config changes if it's already running in the background” apply hint even when the LaunchAgent is not installed.
 
@@ -53,10 +53,10 @@ This is tiny, but it is exactly the sort of thing that makes a polished setup ut
    - `Apply:` still references the special case for when it is already running in the background.
 
 **Acceptance criteria:**
-- [ ] When no LaunchAgent is installed, `status` does not show apply/restart wording that assumes a running background agent.
-- [ ] The no-agent state uses simpler next-step guidance, e.g. install the agent to re-enable background collection.
-- [ ] The loaded/running state can keep the existing “re-run install-agent after config changes” guidance.
-- [ ] The status footer feels state-aware and visually calm, without adding more lines than necessary.
+- [x] When no LaunchAgent is installed, `status` does not show apply/restart wording that assumes a running background agent.
+- [x] The no-agent state uses simpler next-step guidance, e.g. install the agent to re-enable background collection.
+- [x] The loaded/running state can keep the existing “re-run install-agent after config changes” guidance.
+- [x] The status footer feels state-aware and visually calm, without adding more lines than necessary.
 
 ---
 
@@ -155,9 +155,10 @@ sed -n '1,120p' README.md
 
 ## Resolution
 - `configure` / `reconfigure` now detect when the owned LaunchAgent is already loaded and swap the generic first-run footer for a direct refresh hint.
+- `status` now uses a state-aware footer: loaded/running LaunchAgents keep the refresh wording, while the not-installed state switches to a simple re-enable hint.
 - First-run setup still keeps the old minimal "To keep it running" guidance.
-- The change is copy-only around the success footer; saved config behavior and the telemetry path remain unchanged.
-- Added a targeted macOS CLI test covering `quickstart` → `install-agent` → `configure` and asserting the new refresh wording.
+- The change is copy-only around setup/status footers; saved config behavior and the telemetry path remain unchanged.
+- Added/extended targeted macOS CLI coverage so the installed and not-installed status-footer paths are both asserted.
 
 ## Notes
 - The issue here was copy consistency, not persistence correctness: config already saved correctly and `status` already communicated the right behavior.

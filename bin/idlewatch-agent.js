@@ -1514,8 +1514,19 @@ if (statusRequested) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     console.log(`  Start:    ${inferCliCommand('run')}  or  ${inferCliCommand('install-agent')}`)
   } else if (!isPlaceholderName) {
+    const installAgentCommand = inferCliCommand('install-agent')
     console.log(`  Change:   ${inferCliCommand('configure')}`)
-    console.log(`  Apply:    re-run ${inferCliCommand('install-agent')} after config changes if it's already running in the background`)
+
+    if (process.platform === 'darwin') {
+      const launchAgent = probeOwnedLaunchAgentState()
+      if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
+        console.log(`  Apply:    re-run ${installAgentCommand} after config changes to refresh the background agent`)
+      } else {
+        console.log(`  Background: install ${installAgentCommand} to re-enable background collection`)
+      }
+    } else {
+      console.log(`  Background: install ${installAgentCommand} to enable background collection on macOS`)
+    }
   }
   process.exit(0)
 }

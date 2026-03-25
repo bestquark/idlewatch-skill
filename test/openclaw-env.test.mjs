@@ -903,6 +903,11 @@ test('status command shows contextual next-step hints', () => {
     assert.equal(withSamples.status, 0, withSamples.stderr)
     assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} configure`), 'should hint at configure when samples exist')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
+
+    if (process.platform === 'darwin') {
+      assert.ok(withSamples.stdout.includes(`install ${SOURCE_CMD} install-agent to re-enable background collection`), 'should show re-enable hint when LaunchAgent is not installed')
+      assert.doesNotMatch(withSamples.stdout, /Apply:.*already running in the background/, 'should not show running-agent apply hint after uninstall/not-installed state')
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
