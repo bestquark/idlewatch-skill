@@ -1,8 +1,76 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:05 PM (America/Toronto)  
-**Status:** CLOSED - tiny install-help polish shipped in this targeted pass
+**Last updated:** Wednesday, March 25th, 2026 — 12:18 PM (America/Toronto)  
+**Status:** CLOSED - no new polish issues found in this targeted pass
+
+---
+
+## Cycle R90 Status: CLOSED
+
+This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
+
+### Outcome
+- No new end-user polish regressions found in the requested QA lane.
+- The current CLI still feels calm and low-friction in the main seams that tend to get messy: install-before-setup, saved-config refresh language, `npx` vs durable-install guidance, first-run status, and uninstall messaging.
+- Targeted onboarding validation and the full unit suite both passed.
+
+### R90 spot-check coverage
+- `install-agent --help`
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status` with LaunchAgent installed but not loaded
+- `uninstall-agent` messaging
+- `--test-publish` help discoverability
+- `npm run validate:onboarding --silent`
+- `npm run test:unit --silent` (144/144 passing)
+
+### Prioritized findings
+- None. No confusing, verbose, repetitive, or unnecessarily technical user-facing issues worth opening from this cycle.
+
+### Acceptance notes
+- Setup completion still distinguishes first-time background enable from already-installed-but-needs-refresh.
+- Config persistence/reload guidance stays predictable: save config first, then re-run `install-agent` when background mode needs the saved config applied.
+- Device rename / metric toggle persistence coverage still passes in the targeted suite.
+- `npx` guidance remains clean: foreground trial usage stays on `npx`; durable background install stays on `npm install -g idlewatch` + `idlewatch install-agent`.
+- `--test-publish` alias remains present and discoverable.
+- LaunchAgent uninstall messaging stays clear and confirms config/log retention.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install/uninstall commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `node bin/idlewatch-agent.js install-agent --help`
+6. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+8. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+11. `node bin/idlewatch-agent.js --help | sed -n '/test-publish/,+2p'`
+12. `npm run validate:onboarding --silent`
+13. `npm run test:unit --silent`
+
+### Notes
+- The cron payload pointed at `~/.openclaw/workspace/idlewatch-skill`, but the actual active repo for this pass was still `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, or packaging redesign is recommended from this cycle.
 
 ---
 
