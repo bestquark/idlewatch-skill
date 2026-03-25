@@ -1097,6 +1097,40 @@ test('install-agent does not claim background is running when launchd still repo
   }
 })
 
+test('install-agent refresh success keeps the saved-config wording calm', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-refresh-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-launchctl-refresh-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  cat <<\x27EOF\x27\npid = 4242\nEOF\n  exit 0\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /✅ LaunchAgent refreshed — IdleWatch is running in the background\./)
+    assert.match(install.stdout, /Existing background agent refreshed with the saved config\./)
+    assert.doesNotMatch(install.stdout, /restarted with the latest config/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart completion stays honest when a LaunchAgent was installed before setup', () => {
   if (process.platform !== 'darwin') {
     return

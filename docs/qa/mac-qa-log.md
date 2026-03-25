@@ -1,8 +1,48 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 7:55 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R155 found no new user-facing polish regressions
+**Last updated:** Wednesday, March 25th, 2026 — 8:18 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R156 shipped one tiny saved-config wording cleanup
+
+---
+
+## Cycle R156 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny background-refresh success-message cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent` refresh success now uses the same calmer saved-config wording already used by setup completion, status, and help.
+- When a durable background agent was already loaded and `install-agent` refreshed it successfully, the follow-up now says:
+  - `Existing background agent refreshed with the saved config.`
+- This removes one last older `restarted with the latest config` phrase from a high-trust reconfigure/re-enable moment.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R156 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent refresh success keeps the saved-config wording calm|install-agent does not claim background is running when launchd still reports not loaded'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L43 — `install-agent` refresh success now matches the calmer saved-config wording used elsewhere
+**Why it matters:** This was tiny, but it sat in a careful re-enable moment. Most setup/status/help surfaces had already converged on the shorter saved-config mental model, while the successful `install-agent` refresh path still said `Existing background agent restarted with the latest config.` That wording was accurate enough, yet a little more technical and slightly less consistent than the rest of the product.
+
+**What shipped**
+- Reworded the refresh-success follow-up from:
+  - `Existing background agent restarted with the latest config.`
+- To:
+  - `Existing background agent refreshed with the saved config.`
+- Added regression coverage for the already-loaded LaunchAgent case so the calmer wording sticks.
+
+### Acceptance notes
+- Background refresh still behaves exactly the same.
+- The message now reads more like the rest of the setup/reconfigure/background story.
+- The working telemetry path remains untouched.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
