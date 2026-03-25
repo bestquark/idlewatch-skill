@@ -1,20 +1,20 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:30 PM (America/Toronto)  
-**Status:** OPEN - R122 packaged LaunchAgent uninstall copy still has two small trust seams
+**Last updated:** Wednesday, March 25th, 2026 — 3:42 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R122 packaged LaunchAgent uninstall seams fixed
 
 ---
 
-## Cycle R122 Status: OPEN
+## Cycle R122 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup/install polish only, with focus on launch-agent install/uninstall behavior, config persistence mental model, and keeping the packaged-app path as calm as the CLI path.
 
 ### Outcome
-- Core setup/reconfigure/status behavior still looks solid.
-- I did find two small but real packaged-script polish issues in the uninstall lane.
-- Both are copy/path trust seams, not architecture problems.
-- No auth, ingest, packaging redesign, or telemetry changes are recommended.
+- Shipped two tiny, low-risk packaged-script polish improvements in the uninstall lane.
+- Uninstall retention copy now names config and LaunchAgent log locations accurately.
+- Packaged-app uninstall now points re-enable guidance at the sibling bundled install script instead of a repo-relative path.
+- No auth, ingest, packaging redesign, or telemetry changes were made.
 
 ### R122 spot-check coverage
 - [x] `scripts/install-macos-launch-agent.sh` log/output path review
@@ -24,7 +24,7 @@ This pass stayed intentionally narrow and product-facing: setup/install polish o
 
 ### Prioritized findings
 
-#### [ ] M7 — Packaged-app uninstall says logs were kept in `~/.idlewatch`, but that install path writes LaunchAgent logs to `~/Library/Logs/IdleWatch`
+#### [x] M7 — Packaged-app uninstall says logs were kept in `~/.idlewatch`, but that install path writes LaunchAgent logs to `~/Library/Logs/IdleWatch`
 **Why it matters:** This is small, but it sits right in the “safe to uninstall” reassurance moment. The script is trying to calm the user down, so it needs to be exactly right. Right now it says config **and logs** were kept in `~/.idlewatch`, which is only half true for the packaged LaunchAgent path.
 
 **Exact repro**
@@ -61,7 +61,7 @@ This pass stayed intentionally narrow and product-facing: setup/install polish o
 - If `IDLEWATCH_LAUNCH_AGENT_LOG_DIR` is customized, echo that resolved path instead of the default.
 - Keep the tone short, calm, and reversible.
 
-#### [ ] L25 — Packaged-app uninstall still suggests `./scripts/install-macos-launch-agent.sh`, which is the wrong re-enable command for bundled-app users
+#### [x] L25 — Packaged-app uninstall still suggests `./scripts/install-macos-launch-agent.sh`, which is the wrong re-enable command for bundled-app users
 **Why it matters:** This is another tiny but real polish seam. The packaged uninstall script may be run from an absolute path inside the app bundle, but its recovery hint still points to a repo-relative command. That is fine for maintainers in a checkout and subtly wrong for normal app users.
 
 **Exact repro**
@@ -91,6 +91,14 @@ This pass stayed intentionally narrow and product-facing: setup/install polish o
 - If auto-detecting context is annoying, a neutral fallback is acceptable, e.g.:
   - `Re-enable: re-run the matching install-macos-launch-agent.sh script you used for install`
 - Keep the message one line and low-noise.
+
+### What shipped
+- `scripts/uninstall-macos-launch-agent.sh` now separates retained config and LaunchAgent log locations:
+  - `Your config was kept in ~/.idlewatch`
+  - `LaunchAgent logs were kept in ~/Library/Logs/IdleWatch`
+- If `IDLEWATCH_LAUNCH_AGENT_LOG_DIR` is customized, uninstall now echoes that resolved log path.
+- When the uninstall script is run from inside `IdleWatch.app`, the re-enable hint now points to the sibling bundled `install-macos-launch-agent.sh`.
+- Source-checkout usage keeps the existing repo-relative `./scripts/install-macos-launch-agent.sh` hint.
 
 ### Acceptance notes
 - Main CLI `install-agent` / `uninstall-agent` messaging still feels calmer and more trustworthy than the packaged script path.

@@ -4,6 +4,18 @@ set -euo pipefail
 PLIST_LABEL="${IDLEWATCH_LAUNCH_AGENT_LABEL:-com.idlewatch.agent}"
 PLIST_ROOT="${IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT:-$HOME/Library/LaunchAgents}"
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
+LOG_DIR="${IDLEWATCH_LAUNCH_AGENT_LOG_DIR:-$HOME/Library/Logs/IdleWatch}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REINSTALL_SCRIPT="$SCRIPT_DIR/install-macos-launch-agent.sh"
+REINSTALL_HINT="./scripts/install-macos-launch-agent.sh"
+
+if [[ -x "$REINSTALL_SCRIPT" ]]; then
+  case "$SCRIPT_DIR" in
+    */Contents/Resources/payload/package/scripts)
+      REINSTALL_HINT="$REINSTALL_SCRIPT"
+      ;;
+  esac
+fi
 
 if ! command -v launchctl >/dev/null 2>&1; then
   echo "launchctl not available; this script must be run on macOS." >&2
@@ -28,5 +40,6 @@ fi
 
 echo "✅ LaunchAgent removed — background collection stopped."
 echo "   Removed plist: $PLIST_PATH"
-echo "   Your config and logs were kept in $HOME/.idlewatch"
-echo "   Re-enable: ./scripts/install-macos-launch-agent.sh"
+echo "   Your config was kept in $HOME/.idlewatch"
+echo "   LaunchAgent logs were kept in $LOG_DIR"
+echo "   Re-enable: $REINSTALL_HINT"
