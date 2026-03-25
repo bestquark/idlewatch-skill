@@ -2,13 +2,21 @@
 
 **Cycle:** R95 (installer/CLI polish QA — npx follow-up command clarity pass)
 
-## Status: OPEN — small polish issue found
+## Status: CLOSED — shipped in this cycle
 
 Most of the installer/CLI still feels tight: setup works, config persists, metric toggles save cleanly, LaunchAgent install/uninstall remains calm, `--test-publish` is short, device identity persists, and the fresh-home `status` empty state remains honest.
 
-This pass found one new paper cut in the one-off install path: when IdleWatch is launched via `npx`/`npm exec`, several follow-up hints still tell the user to run bare `idlewatch ...` commands.
+This cycle shipped the one missing paper-cut fix in the one-off install path: when IdleWatch is launched via `npx`/`npm exec`, follow-up hints now stay in that same one-off form instead of suddenly assuming a global install.
 
-That is easy to miss in implementation and annoyingly easy for a real user to trip over. If they chose one-off execution specifically to avoid a global install, the product should keep meeting them in that mode instead of suddenly assuming `idlewatch` now exists on their PATH.
+That keeps the product honest in the exact moment users are most likely to copy-paste the next command.
+
+---
+
+## What shipped
+- The CLI command inference helper now treats real `npm exec` / `npx` runs as one-off invocations even when the launched bin looks like a normal PATH shim.
+- `status`, `quickstart`, `configure`, `install-agent`, `uninstall-agent`, and nearby help/startup follow-up hints now preserve `npx idlewatch ...` when appropriate.
+- Source-checkout runs still use `node bin/idlewatch-agent.js ...`, and normal installed PATH usage still stays clean as `idlewatch ...`.
+- Added regression coverage for one-off hint copy across help, status, quickstart/configure, and LaunchAgent flows.
 
 ---
 
@@ -16,7 +24,7 @@ That is easy to miss in implementation and annoyingly easy for a real user to tr
 
 ### M1. One-off `npx` runs print follow-up commands as `idlewatch ...` instead of preserving the one-off path
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 The package already does a nice job in postinstall docs of distinguishing:
@@ -78,11 +86,11 @@ Minimal, calm examples:
    - not `npx idlewatch install-agent` / `npx idlewatch run`
 
 **Acceptance criteria:**
-- [ ] When invoked via `npx` or `npm exec`, next-step hints preserve a one-off command form instead of assuming a global install.
-- [ ] `status`, `quickstart`, `configure`, and LaunchAgent follow-up copy all stay consistent.
-- [ ] Global installs still show the cleaner `idlewatch ...` form.
-- [ ] Source-checkout runs can keep showing `node bin/idlewatch-agent.js ...` if that path is intentional.
-- [ ] No auth, ingest, or packaging redesign is introduced.
+- [x] When invoked via `npx` or `npm exec`, next-step hints preserve a one-off command form instead of assuming a global install.
+- [x] `status`, `quickstart`, `configure`, and LaunchAgent follow-up copy all stay consistent.
+- [x] Global installs still show the cleaner `idlewatch ...` form.
+- [x] Source-checkout runs can keep showing `node bin/idlewatch-agent.js ...` if that path is intentional.
+- [x] No auth, ingest, or packaging redesign is introduced.
 
 ---
 

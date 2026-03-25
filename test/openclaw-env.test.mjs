@@ -221,6 +221,23 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.match(run.stdout, /--test-publish/)
 })
 
+test('help preserves one-off command hints under npm exec', () => {
+  const run = spawnSync(process.execPath, [BIN, '--help'], {
+    env: {
+      ...process.env,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart/)
+  assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart/)
+})
+
 test('--test-publish aliases to one-shot publish mode', () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-test-publish-home-'))
   const envDir = path.join(tempHome, '.idlewatch')
@@ -367,8 +384,8 @@ test('quickstart local mode does not leak stale cloud env into required once tes
   assert.match(run.stdout, /✅ Setup complete/)
   assert.match(run.stdout, /Local telemetry verified/)
   assert.doesNotMatch(run.stdout, /Initial telemetry sample sent successfully\./)
-  assert.match(run.stderr, /Running in local-only mode/)
-  assert.doesNotMatch(run.stderr, /Firebase\/emulator mode if you need that path/)
+  assert.equal(run.stderr.trim(), '')
+  assert.doesNotMatch(run.stdout, /Firebase\/emulator mode if you need that path/)
   assert.doesNotMatch(run.stdout + run.stderr, /publish=cloud/)
   assert.doesNotMatch(run.stdout + run.stderr, /Cloud ingest disabled:/)
 
@@ -767,6 +784,42 @@ test('install-agent help explains config is optional', () => {
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
+test('install-agent follow-up preserves one-off command hints under npm exec env', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Next:         npx idlewatch quickstart'), 'should show one-off quickstart command')
+    assert.ok(run.stdout.includes('Then re-run:  npx idlewatch install-agent'), 'should show one-off reinstall command')
+    assert.ok(run.stdout.includes('Check:        npx idlewatch status'), 'should show one-off status command')
+    assert.ok(run.stdout.includes('Remove:       npx idlewatch uninstall-agent'), 'should show one-off uninstall command')
+  } finally {
+    spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('install-agent follow-up uses source checkout command path', () => {
   if (process.platform !== 'darwin') {
     return
@@ -788,6 +841,48 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.doesNotMatch(run.stdout, /Next:.*idlewatch quickstart/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('quickstart and configure preserve one-off next steps under npm exec env', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-npx-env-'))
+  try {
+    const baseEnv = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false',
+      IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+      IDLEWATCH_ENROLL_MODE: 'local',
+      IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+      IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+    }
+
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: baseEnv,
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+    assert.match(quickstart.stdout, /npx idlewatch install-agent/)
+    assert.match(quickstart.stdout, /npx idlewatch run/)
+    assert.doesNotMatch(quickstart.stdout, /idlewatch install-agent/)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: { ...baseEnv, IDLEWATCH_ENROLL_MONITOR_TARGETS: 'agent_activity' },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /npx idlewatch install-agent/)
+    assert.match(configure.stdout, /npx idlewatch run/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
   }
 })
 
@@ -864,6 +959,31 @@ test('status command hides cloud link info in local-only mode', () => {
     assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
     assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
     assert.ok(run.stdout.includes(`${SOURCE_CMD} quickstart`), 'should hint at quickstart when no config')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command preserves one-off command hints under npm exec env', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-npx-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart/)
+    assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

@@ -48,15 +48,17 @@ function inferCliCommand(command = '') {
   const execArgv = process.execArgv || []
   const npmExecPath = String(process.env.npm_execpath || '').toLowerCase()
   const userAgent = String(process.env.npm_config_user_agent || '').toLowerCase()
+  const npmCommand = String(process.env.npm_command || '').toLowerCase()
+  const npmLifecycleEvent = String(process.env.npm_lifecycle_event || '').toLowerCase()
   const looksLikeRepoScript = scriptBase === 'idlewatch-agent.js' && /(?:^|\/)bin\/idlewatch-agent\.js$/.test(scriptArg)
   const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
-  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || (userAgent.includes('npm/') && execArgv.includes('exec'))
+  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || npmCommand === 'exec' || npmLifecycleEvent === 'npx' || (userAgent.includes('npm/') && execArgv.includes('exec'))
 
   let base
-  if (looksLikeGlobalShim) {
-    base = 'idlewatch'
-  } else if (looksLikeNpx) {
+  if (looksLikeNpx) {
     base = 'npx idlewatch'
+  } else if (looksLikeGlobalShim) {
+    base = 'idlewatch'
   } else if (looksLikeRepoScript) {
     const relativeScript = path.relative(process.cwd(), scriptArg)
     const displayScript = relativeScript && !relativeScript.startsWith('..') && !path.isAbsolute(relativeScript)
@@ -184,7 +186,7 @@ Options:
   --help                  Show this help
   --help-env              Show all environment variables
 
-Get started:  idlewatch quickstart`)
+Get started:  ${inferCliCommand('quickstart')}`)
 }
 
 function printHelpEnv() {
@@ -2517,7 +2519,7 @@ subcommandPromise
       const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
       accessSync(launchAgentPath, constants.F_OK)
     } catch {
-      runLog.write('Tip: Run idlewatch install-agent to run in the background, or idlewatch menubar for the menu bar app.\n')
+      runLog.write(`Tip: Run ${inferCliCommand('install-agent')} to run in the background, or ${inferCliCommand('menubar')} for the menu bar app.\n`)
     }
     loop()
   })
