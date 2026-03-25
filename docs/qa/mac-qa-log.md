@@ -1,95 +1,60 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R77 (polish-focused verification pass)
+**Cycle:** R78 (installer/CLI polish verification pass)
 
-## Status: CLOSED - small polish fixes shipped
+## Status: OPEN - 1 high-priority polish gap
 
-These were small UX/documentation gaps, not architecture problems. The highest-priority low-risk fixes are now implemented.
-
----
-
-## Checklist
-- [x] H1. Clarify config reload/apply behavior
-- [x] M1. Reconcile `--test-publish` docs vs actual CLI
-- [x] M2. Simplify LaunchAgent no-config messaging
-- [x] L1. Tighten install-mode command wording across README/postinstall/docs
+Core flow still looks solid, but one user-facing setup path tells two different stories depending on which install surface they use.
 
 ---
 
-## H1. Config reload behavior is now explicit
+## Priority findings
+
+### H1. `idlewatch install-agent` still blocks on missing config, contradicting packaged script/docs
 **Priority:** High
-**Status:** ✅ Fixed in R77
+**Status:** ❌ Open
 
-**What changed:**
-- Removed the dead internal `reloadRequested` affordance from `bin/idlewatch-agent.js`.
-- `configure` / `reconfigure` / `status` help now state the real rule: saved config applies on the next start.
-- README and packaged LaunchAgent docs now tell users how to apply config changes to a running background agent: re-run `idlewatch install-agent` (or the packaged install script) to restart it with saved config.
+**Why this matters:**
+The packaged macOS install flow and docs now present a nice low-friction story:
+- install the LaunchAgent first,
+- run quickstart when ready,
+- then re-run install once to restart with saved config.
 
-**Result:**
-- No implied live reload behavior.
-- One clear mental model: save config now, apply on next start.
+But the main CLI command still says the opposite. That makes the same product feel inconsistent depending on whether the user arrived via npm/npx vs the packaged app.
 
----
+**Exact repro:**
+1. Use a clean HOME with no `~/.idlewatch/idlewatch.env` present.
+2. Run:
+   ```bash
+   HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent
+   ```
+3. Observe the command exits with:
+   ```text
+   No config found. Run idlewatch quickstart first.
+   ```
 
-## M1. `--test-publish` now exists for real
-**Priority:** Medium
-**Status:** ✅ Fixed in R77
+**Current conflicting surfaces:**
+- `bin/idlewatch-agent.js` hard-fails when config is missing.
+- `scripts/install-macos-launch-agent.sh` explicitly supports no-config install and explains the follow-up flow.
+- `README.md` / `docs/onboarding-external.md` / `docs/packaging/macos-launch-agent.md` imply install-first is valid.
 
-**What changed:**
-- Added `--test-publish` as a real alias for `--once`.
-- CLI help, README, and status hints now document the alias consistently.
-
-**Result:**
-- QA/docs no longer overclaim.
-- Users can use either `idlewatch --once` or `idlewatch --test-publish`, with the same behavior.
-
----
-
-## M2. LaunchAgent install script now tells one clean story
-**Priority:** Medium
-**Status:** ✅ Fixed in R77
-
-**What changed:**
-- Removed the confusing Login Items/System Settings wording from `scripts/install-macos-launch-agent.sh`.
-- No-config installs now clearly say:
-  - the LaunchAgent is already installed,
-  - quickstart is the next step,
-  - then re-run the install script once to restart with the new config.
-
-**Result:**
-- Packaged setup/reconfigure flow is simpler.
-- No mixed signals about multiple startup mechanisms.
+**Acceptance criteria:**
+- Pick one story and make every user-facing surface match it.
+- Preferred polish direction: make `idlewatch install-agent` behave like the packaged install script.
+- On a no-config machine, `idlewatch install-agent` should still install/load the LaunchAgent, then print a short next-step message:
+  - LaunchAgent installed
+  - run `idlewatch quickstart`
+  - re-run `idlewatch install-agent` once after setup to restart with saved config
+- `idlewatch status` should remain clear about “no saved config yet” vs “agent installed”.
+- No auth/ingest redesign; this is just setup-flow consistency.
 
 ---
 
-## L1. Install-path wording is cleaner across surfaces
-**Priority:** Low
-**Status:** ✅ Fixed in R77
-
-**What changed:**
-- `scripts/postinstall.mjs` now distinguishes:
-  - global install → `idlewatch ...`
-  - one-off use → `npx idlewatch ...`
-  - packaged app → bundled command/docs
-- `docs/onboarding-external.md` adds the same rule of thumb.
-- README/background-install copy now better matches the next-start/restart model.
-
----
-
-## Validation notes
-- Targeted CLI/help and behavior checks should cover this lane.
-- No auth/ingest redesign.
-- No packaging rewrite.
-- Telemetry path preserved.
-
----
+## Verified areas in this cycle
+- Config next-start/restart messaging still reads clean.
+- `--test-publish` alias remains wired and documented.
+- Packaged LaunchAgent script messaging is cleaner than older rounds.
+- NPM/global/NPX command-path wording is mostly aligned.
 
 ## Summary
-
-**Shipped in this polish pass:**
-1. Honest next-start config behavior instead of implied reload.
-2. Real `--test-publish` alias for the existing one-shot publish check.
-3. Cleaner LaunchAgent no-config guidance.
-4. Slightly better install-mode wording across user-facing surfaces.
-
-**Conclusion:** R77 closed.
+One important polish gap remains: the npm/CLI install path is stricter than the packaged app install path, even though docs now describe the relaxed path as the intended UX. Fix that mismatch and this lane is back to feeling simple.
