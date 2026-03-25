@@ -150,9 +150,10 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     console.log('\n   Background collection is not enabled yet.')
   }
 
-  console.log('\n   To keep it running:')
-  console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
+  console.log('\n   Use it now:')
   console.log(`     ${runCommand}   Run in foreground`)
+  console.log('\n   For background mode:')
+  console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
 }
 
 function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded }) {

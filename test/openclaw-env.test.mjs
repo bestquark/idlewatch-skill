@@ -1083,6 +1083,11 @@ test('configure success says to refresh an already-running background agent', ()
       timeout: 20000
     })
     assert.equal(quickstart.status, 0, quickstart.stderr)
+    assert.match(quickstart.stdout, /Use it now:/)
+    assert.match(quickstart.stdout, new RegExp(`${SOURCE_CMD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} run`))
+    assert.match(quickstart.stdout, /For background mode:/)
+    assert.match(quickstart.stdout, new RegExp(`${SOURCE_CMD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} install-agent`))
+    assert.doesNotMatch(quickstart.stdout, /To keep it running:/)
 
     const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
       env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
@@ -1123,7 +1128,9 @@ test('configure success says to refresh an already-running background agent', ()
       assert.doesNotMatch(configure.stdout, /To keep it running:/)
     } else {
       assert.match(configure.stdout, /Background collection is not enabled yet\./)
-      assert.match(configure.stdout, /To keep it running:/)
+      assert.match(configure.stdout, /Use it now:/)
+      assert.match(configure.stdout, /For background mode:/)
+      assert.doesNotMatch(configure.stdout, /To keep it running:/)
     }
   } finally {
     spawnSync(process.execPath, [BIN, 'uninstall-agent'], {

@@ -1,5 +1,50 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R121 (installer/CLI polish QA — source-checkout setup heading honesty shipped)
+
+## Status: CLOSED — shipped in this cycle
+
+This pass stayed tiny and fixed the last open wording seam in the source-checkout setup/reconfigure flow.
+
+When IdleWatch was run from source, successful `quickstart` / `configure` output still said `To keep it running:` and then listed both:
+- `node bin/idlewatch-agent.js install-agent`
+- `node bin/idlewatch-agent.js run`
+
+That made the foreground `run` command sound more durable than it is.
+
+The flow now matches the calmer split already used in the one-off path:
+- `Use it now:` for the foreground `run` command
+- `For background mode:` for the durable `install-agent` path
+
+No behavior changed. This was wording-only polish in the setup success block, with regression coverage added. The telemetry path stays untouched.
+
+## What shipped
+- Source-checkout `quickstart` success copy now separates foreground use from durable background setup.
+- Source-checkout `configure` success copy now uses the same split when background mode is not already running.
+- Added regression coverage so source-checkout setup copy does not drift back to `To keep it running:`.
+
+## Acceptance criteria
+- [x] Source-checkout `quickstart` / `configure` success copy no longer frames the foreground `node ... run` command as the way to “keep it running”.
+- [x] Immediate foreground use and durable background setup are separated more clearly.
+- [x] One-off `npx` wording remains unchanged.
+- [x] LaunchAgent behavior, config persistence, auth, ingest, and packaging flows remain unchanged.
+- [x] Copy stays short, calm, and low-noise.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test --test-name-pattern "configure success says to refresh an already-running background agent" test/openclaw-env.test.mjs
+
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui
+```
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This cycle stayed intentionally limited to wording/flow polish only.
+
+---
+
 **Cycle:** R120 (installer/CLI polish QA — source-checkout setup heading honesty pass)
 
 ## Status: OPEN — small polish issue worth fixing
