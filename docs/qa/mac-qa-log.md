@@ -2,7 +2,7 @@
 
 **Cycle:** R93 (installer/CLI polish QA — first-run status honesty pass)
 
-## Status: OPEN — one small setup-state polish issue
+## Status: CLOSED — shipped in this cycle
 
 The installer/CLI still feels mostly clean: quickstart saves config correctly, metric toggles persist, LaunchAgent install/uninstall messaging stays calm, `--test-publish` is concise, device identity persists, and npm/npx setup hints are easy to follow.
 
@@ -18,7 +18,7 @@ That is not a backend problem. It is just a small honesty issue in the setup sur
 
 ### M1. Fresh `status` screen looks partially configured before setup has happened
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 On a totally fresh install, users often check `status` before running setup. The current output shows:
@@ -67,12 +67,12 @@ No redesign needed — just a crisper empty-state presentation.
    - `Background:   LaunchAgent not installed`
 
 **Acceptance criteria:**
-- [ ] On a fresh install with no saved config, `status` reads clearly as an unconfigured/empty state.
-- [ ] The screen does not imply that a device has already been meaningfully set up when `~/.idlewatch/idlewatch.env` does not exist.
-- [ ] If defaults are shown, they are explicitly labeled as defaults or preview values.
-- [ ] The output stays brief, calm, and non-technical.
-- [ ] Existing configured-device `status` output remains as-is or equivalently clear.
-- [ ] No auth, ingest, or major packaging flow redesign is introduced.
+- [x] On a fresh install with no saved config, `status` reads clearly as an unconfigured/empty state.
+- [x] The screen does not imply that a device has already been meaningfully set up when `~/.idlewatch/idlewatch.env` does not exist.
+- [x] If defaults are shown, they are explicitly labeled as defaults or preview values.
+- [x] The output stays brief, calm, and non-technical.
+- [x] Existing configured-device `status` output remains as-is or equivalently clear.
+- [x] No auth, ingest, or major packaging flow redesign is introduced.
 
 ---
 
@@ -114,6 +114,6 @@ node bin/idlewatch-agent.js configure --help
 ```
 
 ## Notes
-- No auth, ingest, or major packaging redesign recommended from this cycle.
-- Main UX nit left: first-run `status` should feel unmistakably like an empty state, not a preconfigured device.
-- Everything else in the requested polish lane looks solid.
+- Shipped: fresh `idlewatch status` now opens with a simple empty-state treatment (`Setup: not completed yet`) and labels default values as preview values until config is saved.
+- Configured-device status remains unchanged in tone and content aside from the fresh-home honesty fix.
+- No auth, ingest, or major packaging redesign was introduced.

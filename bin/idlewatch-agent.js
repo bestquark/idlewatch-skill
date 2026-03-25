@@ -1419,11 +1419,14 @@ if (statusRequested) {
 
   console.log('IdleWatch status')
   console.log('')
-  console.log(`  Device:       ${DEVICE_NAME}`)
-  if (DEVICE_ID !== DEVICE_NAME.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '')) {
+  if (!hasConfig) {
+    console.log('  Setup:        not completed yet')
+  }
+  console.log(`  ${hasConfig ? 'Device:' : 'Device preview:'} ${DEVICE_NAME}`)
+  if (hasConfig && DEVICE_ID !== DEVICE_NAME.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '')) {
     console.log(`  Device ID:    ${DEVICE_ID}`)
   }
-  console.log(`  Publish mode: ${publishMode}`)
+  console.log(`  ${hasConfig ? 'Publish mode:' : 'Publish preview:'} ${publishMode}`)
   if (hasCloudConfig) {
     console.log(`  Cloud link:   ${CLOUD_INGEST_URL}`)
     console.log(`  API key:      ${CLOUD_API_KEY.slice(0, 8)}..${CLOUD_API_KEY.slice(-4)}`)
@@ -1439,9 +1442,9 @@ if (statusRequested) {
     provider_quota: 'Provider quota'
   }
   const metricLabels = [...MONITOR_TARGETS].map((t) => friendlyMetricLabels[t] || t)
-  console.log(`  Metrics:      ${metricLabels.join(', ')}`)
+  console.log(`  ${hasConfig ? 'Metrics:' : 'Metrics preview:'} ${metricLabels.join(', ')}`)
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
-  console.log(`  Config:       ${hasConfig ? envFile : '(no saved config)'}`)
+  console.log(`  Config:       ${hasConfig ? envFile : 'not saved yet'}`)
 
   // LaunchAgent state
   if (process.platform === 'darwin') {
