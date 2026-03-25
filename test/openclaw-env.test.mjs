@@ -1136,7 +1136,7 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background agent is already installed\./)
     assert.match(run.stdout, /Start it: .*install-agent/)
-    assert.match(run.stdout, /It will reload using the saved config\./)
+    assert.match(run.stdout, /It will use the saved config\./)
     assert.doesNotMatch(run.stdout, /Background collection is not enabled yet\./)
     assert.doesNotMatch(run.stdout, /Auto-start in background \(recommended\)/)
   } finally {

@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 6:10 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R147 found no new product-facing polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 6:15 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R148 shipped one tiny setup-completion wording cleanup; cron repo path still stale
+
+---
+
+## Cycle R148 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure completion wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- When setup/reconfigure finishes after a LaunchAgent was installed earlier but is still not loaded, the follow-up no longer says `reload`.
+- That path now says:
+  - `Start it: ...`
+  - `It will use the saved config.`
+- This keeps the wording aligned with the actual state: the agent is installed but not running yet, so this is a start/apply moment, not a reload moment.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R148 spot-check coverage
+- [x] `quickstart --no-tui` after pre-installing the LaunchAgent
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart completion stays honest when a LaunchAgent was installed before setup'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L39 — Installed-but-not-loaded setup completion no longer says `reload`
+**Why it matters:** This was tiny, but it sat right after setup succeeded. The command already led with `Start it: ...`, while the next line still said `It will reload using the saved config.` That wording made the calmest recovery path sound slightly more technical than it really is.
+
+**What shipped**
+- Reworded the installed-but-not-loaded completion hint from:
+  - `It will reload using the saved config.`
+- To:
+  - `It will use the saved config.`
+- Added regression coverage so this calmer wording sticks.
+
+### Acceptance notes
+- Install-before-setup still keeps background mode off until setup is saved.
+- The already-installed background path still clearly distinguishes `installed but not loaded` from `already running`.
+- The working telemetry path remains untouched.
 
 ---
 
