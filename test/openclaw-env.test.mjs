@@ -216,6 +216,8 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Get started:/)
   assert.match(run.stdout, /quickstart/)
+  assert.match(run.stdout, /run\s+Run the collector in the foreground/)
+  assert.doesNotMatch(run.stdout, /run\s+Start the background collector/)
   assert.match(run.stdout, /--dry-run/)
   assert.match(run.stdout, /--once/)
   assert.match(run.stdout, /--test-publish/)
@@ -830,6 +832,8 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background mode is ready, but setup is not saved yet\./)
+    assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Next:         ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
     assert.ok(run.stdout.includes(`Then re-run:  ${SOURCE_CMD} install-agent`), 'should show source-checkout reinstall command')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')

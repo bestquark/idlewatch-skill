@@ -180,7 +180,7 @@ Commands:
   quickstart   Set up this device (API key, name, metrics)
   configure    Re-open setup to change settings — values auto-filled
   status       Show device config and background agent state
-  run          Start the background collector
+  run          Run the collector in the foreground
   create       Create a custom telemetry metric
   dashboard    Launch local telemetry dashboard
   install-agent   Install background LaunchAgent (macOS)
@@ -898,11 +898,11 @@ If the background agent is already running, re-run ${installAgentCommand} to res
 Usage:  ${dashboardCommand}
 
 Starts a local web server showing recent telemetry samples.`,
-    run: `${runCommand} — Start the background collector
+    run: `${runCommand} — Run the collector in the foreground
 
 Usage:  ${runCommand}
 
-Begins continuous metric collection at the configured interval.
+Begins continuous metric collection in the foreground at the configured interval.
 Use --once for a single sample or --dry-run to preview without publishing.`
   }
   if (subCmd && subHelp[subCmd]) {
@@ -1019,7 +1019,12 @@ const subcommandPromise = (async () => {
     const load = bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded })
     if (load.status === 0) {
       launchctlResult(['enable', domainTarget])
-      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
+      if (hasSavedConfig) {
+        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
+      } else {
+        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
+        console.log('   Background mode is ready, but setup is not saved yet.')
+      }
       if (alreadyLoaded) {
         console.log('   Existing background agent restarted with the latest config.')
       }

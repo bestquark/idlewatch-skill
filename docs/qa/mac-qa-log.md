@@ -1,5 +1,49 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R106 (installer/CLI polish QA — run/help honesty + no-config install calmness pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle stayed intentionally small and product-taste-driven.
+
+Two tiny setup/install paper cuts were worth fixing:
+- help text still described `run` like a background command even though it is the foreground collector
+- `install-agent` without saved config sounded a bit more “fully ready” than the actual setup state
+
+Neither issue affected the working telemetry path, but both added avoidable friction in first-run or re-check flows.
+
+## What shipped
+- Main help and `run --help` now describe `run` as the foreground collector.
+- First-install `install-agent` output is calmer and more honest when no saved config exists yet.
+- Source-checkout follow-up commands remain explicit and copyable.
+- Existing setup/reconfigure/background behavior remains unchanged.
+
+## Verified in this cycle
+- `--help` no longer calls `run` a background collector.
+- `run --help` now says it collects in the foreground.
+- `install-agent` with no saved config now says background mode is ready while setup is not saved yet.
+- Saved-config install behavior, reconfigure behavior, and telemetry flow remain unchanged.
+- Focused installer/CLI regression coverage still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test test/openclaw-env.test.mjs
+```
+
+## Acceptance criteria
+- [x] `run` help text matches actual foreground behavior.
+- [x] First-install `install-agent` output stays calm without overstating setup completeness.
+- [x] Setup/reconfigure flows remain unchanged aside from wording polish.
+- [x] The working telemetry path is preserved.
+- [x] No auth, ingest, or packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
+- This was intentionally limited to copy/honesty polish only.
+
+---
+
 **Cycle:** R105 (installer/CLI polish QA — verification-only setup calmness sweep)
 
 ## Status: CLOSED — no action required
