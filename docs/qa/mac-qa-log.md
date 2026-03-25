@@ -1,5 +1,62 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R117 (installer/CLI polish QA — narrow setup-path verification sweep)
+
+## Status: CLOSED — no new polish issue found
+
+This pass re-ran the targeted setup/install checklist against the active repo on disk and did not uncover a new UX issue worth implementation.
+
+The key setup surfaces still feel tidy and low-friction:
+- fresh-home `status` still reads like an actual empty state
+- `quickstart` / `configure` still keep saved config, device identity, and metric choices predictable
+- LaunchAgent install/uninstall still tell a calm installed vs running story
+- local-only `--test-publish` stays concise
+- one-off `npm exec` / `npx` still refuses fragile background installs and points to the durable path plainly
+
+## Verified in this cycle
+- Fresh `status` still shows `Setup: not completed yet` with preview labels.
+- `quickstart --no-tui` still saves config cleanly and uses short next-step copy.
+- `install-agent` still reports a loaded LaunchAgent cleanly once saved config exists.
+- Reconfigure still preserves `IDLEWATCH_DEVICE_ID` while allowing a device-name change.
+- Metric-toggle persistence still works through the same reconfigure path.
+- `uninstall-agent` still removes only the background job and keeps config/logs.
+- One-off `npm exec ... idlewatch status` still keeps follow-up copy honest.
+- One-off `npm exec ... idlewatch install-agent` still fails fast and explains the durable install requirement clearly.
+- Focused installer/CLI regression coverage still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+node --test test/openclaw-env.test.mjs
+```
+
+## Acceptance criteria
+- [x] No new confusing, verbose, repetitive, visually noisy, or overly technical setup issue surfaced in the targeted polish areas.
+- [x] Config persistence and reload/apply behavior still match user-facing messaging.
+- [x] Device name / device id persistence still behave predictably through reconfigure.
+- [x] Metric-toggle persistence still behaves predictably through reconfigure.
+- [x] LaunchAgent install/uninstall behavior remains clear and safe.
+- [x] One-off `npx` / `npm exec` install-path messaging remains honest.
+- [x] No auth, ingest, or major packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This was a verification-only cycle. No implementation changes were needed.
+
+---
+
 **Cycle:** R116 (installer/CLI polish QA — focused calmness verification sweep)
 
 ## Status: CLOSED — no new polish issue found
