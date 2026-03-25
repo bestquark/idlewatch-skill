@@ -1,8 +1,90 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:45 PM (America/Toronto)  
-**Status:** CLOSED - shipped one tiny npx status polish fix in this pass
+**Last updated:** Wednesday, March 25th, 2026 — 1:50 PM (America/Toronto)  
+**Status:** OPEN - two small polish issues logged from installer/CLI QA
+
+---
+
+## Cycle R106 Status: OPEN
+
+This pass stayed narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Found two small but real polish issues worth fixing.
+- Both are UX/trust seams, not architecture problems.
+- Main theme: the app-installer LaunchAgent scripts and the CLI path no longer feel fully consistent.
+
+### R106 spot-check coverage
+- README install / npx guidance review
+- `bin/idlewatch-agent.js` help, setup, install-agent, uninstall-agent, status, and test-publish copy review
+- `src/enrollment.js` device-id + metric persistence review
+- `scripts/install-macos-launch-agent.sh` / `scripts/uninstall-macos-launch-agent.sh` behavior review
+- Config persistence + reload-path review against saved `~/.idlewatch/idlewatch.env` flow
+
+### Prioritized findings
+
+#### [ ] M5 — Packaged app LaunchAgent script still auto-starts even when setup is not saved, unlike the calmer CLI path
+**Why it matters:** This is the biggest remaining polish mismatch. The CLI `idlewatch install-agent` path is careful: if setup is not saved yet, it installs safely but keeps background collection off until the user finishes setup and re-runs install. The packaged app shell installer does the opposite mental model: it always writes `RunAtLoad=true` and `KeepAlive=true`, bootstraps immediately, and then says the agent is already installed and will start at login. That makes the app path feel less predictable and more technical than the CLI path.
+
+**Exact repro**
+1. Open `scripts/install-macos-launch-agent.sh`.
+2. Note that the generated plist always contains:
+   - `<key>RunAtLoad</key><true/>`
+   - `<key>KeepAlive</key><true/>`
+3. Note that the script always runs:
+   - `launchctl bootstrap "gui/$USER_GUID" "$PLIST_PATH"`
+   - `launchctl enable "$PLIST_ID"`
+4. Continue reading the `else` branch for missing config.
+5. Observe the user-facing copy:
+   - `The LaunchAgent is already installed and will start at login.`
+   - `Finish setup to give it a saved config:`
+6. Compare that with `bin/idlewatch-agent.js install-agent`, which intentionally keeps background mode off until config exists and tells the user to re-run install after setup.
+
+**Acceptance criteria**
+- The packaged app installer should match the CLI mental model as closely as possible.
+- If no saved config exists, install should feel safe and dormant, not like a half-configured agent is already live.
+- Messaging should clearly say setup is not finished yet and background collection is not active until the saved config is present / reloaded.
+- App and CLI install paths should give materially the same next-step guidance.
+
+#### [ ] L17 — Shell-script uninstall messaging is much rougher than CLI uninstall and drops the reassuring “config/logs kept” explanation
+**Why it matters:** The CLI uninstall path feels polished and safe: it says background collection stopped and explicitly reassures the user that config and logs were kept. The shell uninstall path is technically fine but emotionally harsher: `Uninstalled LaunchAgent` / `Removed plist` with no reassurance. That makes uninstall feel more destructive than it really is.
+
+**Exact repro**
+1. Open `scripts/uninstall-macos-launch-agent.sh`.
+2. Observe the only success output:
+   - `Uninstalled LaunchAgent: $PLIST_ID`
+   - `Removed plist: $PLIST_PATH`
+3. Compare with `bin/idlewatch-agent.js uninstall-agent`, which says:
+   - `✅ LaunchAgent removed — background collection stopped.`
+   - `Your config and logs were kept in ~/.idlewatch`
+   - `Re-enable: ...`
+4. Note that both paths remove the same background startup mechanism, but only one explains retention and recovery.
+
+**Acceptance criteria**
+- Uninstall copy should explicitly say this stops background startup only.
+- It should reassure the user that saved config and local logs are preserved.
+- It should include a clean re-enable hint, consistent with the install path in use.
+- App-script uninstall should feel as safe and reversible as the CLI uninstall path.
+
+### Acceptance notes
+- Device-name persistence across reconfigure still looks intentional and stable.
+- Metric-toggle persistence still looks clean: selected targets are rewritten once into saved config and reloaded on next start.
+- `npx` vs durable-install guidance in README/CLI is mostly in good shape now.
+- No auth, ingest, or packaging redesign is recommended from this cycle.
+
+### Exact repro steps used in this pass
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Review `README.md` install / quickstart / background sections.
+3. Review `bin/idlewatch-agent.js` help, setup-completion, `status`, `install-agent`, `uninstall-agent`, and `--test-publish` copy.
+4. Review `src/enrollment.js` for saved device name / device ID / metric selection persistence.
+5. Review `scripts/install-macos-launch-agent.sh` for no-config install behavior and success copy.
+6. Review `scripts/uninstall-macos-launch-agent.sh` for uninstall retention / recovery messaging.
+7. Cross-check app-script behavior against the CLI LaunchAgent flow in `bin/idlewatch-agent.js`.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
 
 ---
 
