@@ -1,5 +1,174 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R96 (installer/CLI polish QA — one-off LaunchAgent durability pass)
+
+## Status: OPEN — action recommended
+
+Most of the installer/CLI still feels nicely restrained. But this pass found one setup-path bug that is too sharp to leave in the “paper-cut” bucket:
+
+when the product is run one-off via `npx` / `npm exec`, it now correctly preserves that form in follow-up hints — including `npx idlewatch install-agent`. The problem is that `install-agent` then writes the macOS LaunchAgent against npm’s transient `_npx` cache path rather than a durable executable path.
+
+That means the product currently recommends a background-install command that can silently become invalid as soon as npm clears or rotates the one-off cache.
+
+From a product-taste perspective, this is exactly the kind of thing that makes setup feel trustworthy for five minutes and haunted after lunch.
+
+---
+
+## Priority findings
+
+### H1. `npx idlewatch install-agent` creates a LaunchAgent that depends on npm's disposable `_npx` cache
+**Priority:** High  
+**Status:** Open
+
+**Why this matters:**
+The new one-off command preservation is directionally right, but `install-agent` should not turn a temporary execution path into a persistent background service.
+
+Right now, a one-off user can be guided into this flow:
+
+- `npx idlewatch quickstart`
+- `npx idlewatch install-agent`
+
+and receive a success message saying IdleWatch is now running in the background.
+
+But the generated `com.idlewatch.agent.plist` points `ProgramArguments[1]` at a path like:
+
+- `~/.npm/_npx/<random>/node_modules/.bin/idlewatch`
+
+That path is not a stable install location. It is npm scratch space.
+
+So the experience becomes misleading:
+
+- setup appears successful
+- `status` may look fine immediately
+- background collection can later fail for reasons the user never explicitly opted into
+- the recommended copy makes the fragile path feel first-class when it is really ephemeral
+
+For end users, the neat/simple version is one of these:
+
+- do not recommend `install-agent` from one-off `npx` mode, or
+- install the LaunchAgent against a durable path that survives cache cleanup, or
+- explicitly require a real install before background mode
+
+What should not happen is “success” copy for a background job wired to temp files.
+
+**Exact repro:**
+1. Start with a fresh home:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+   ```
+2. Run one-off setup:
+   ```bash
+   env HOME="$TMPHOME" \
+     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='NPX Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' \
+     npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+     idlewatch quickstart -- --no-tui
+   ```
+3. Install the background agent the way the product suggests:
+   ```bash
+   env HOME="$TMPHOME" \
+     npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+     idlewatch install-agent
+   ```
+4. Inspect the generated LaunchAgent:
+   ```bash
+   plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
+   ```
+5. Observe `ProgramArguments` contains a transient npm cache path similar to:
+   - `/.../.npm/_npx/098ca73bee87ba17/node_modules/.bin/idlewatch`
+6. Simulate cache cleanup by moving or removing that `_npx/...` directory, then restart the job:
+   ```bash
+   launchctl kickstart -k gui/$(id -u)/com.idlewatch.agent
+   cat "$TMPHOME/.idlewatch/logs/agent-stderr.log"
+   ```
+7. Observe background startup fails with `MODULE_NOT_FOUND` because the cached one-off bin path is gone.
+
+**Acceptance criteria:**
+- [ ] One-off `npx` / `npm exec` usage does not install a LaunchAgent that depends on transient npm cache paths.
+- [ ] If background mode requires a durable install, the CLI says that plainly and does not present `npx idlewatch install-agent` as a recommended steady-state path.
+- [ ] Success copy for `install-agent` remains calm and low-friction, but honest about prerequisites.
+- [ ] Global installs still keep the clean `idlewatch install-agent` path.
+- [ ] Source-checkout usage can continue using `node bin/idlewatch-agent.js install-agent` if that path is intentional and durable.
+- [ ] No auth, ingest, or major packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Fresh-home `status` still presents an honest empty state (`Setup: not completed yet`) with preview labels.
+- `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
+- Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
+- Reconfiguring metrics still updates the saved env file correctly (`cpu,memory` → `agent_activity`).
+- `configure` still explains that saved changes apply on next start and points users to `install-agent` to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
+- `install-agent` / `uninstall-agent` messaging remains concise.
+- `--test-publish` remains short and understandable in local-only mode.
+- One-off live follow-up hints now correctly preserve `npx idlewatch ...` command forms.
+- New issue found: one-off `install-agent` currently persists a LaunchAgent against a disposable npm cache path.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+node scripts/postinstall.mjs
+node bin/idlewatch-agent.js --help
+node bin/idlewatch-agent.js configure --help
+
+env HOME="$TMPHOME" \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+  idlewatch status
+
+env HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+  idlewatch quickstart -- --no-tui
+
+env HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='NPX Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+  idlewatch quickstart -- --no-tui
+
+env HOME="$TMPHOME" \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill \
+  idlewatch install-agent
+
+plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
+launchctl print gui/$(id -u)/com.idlewatch.agent | sed -n '1,80p'
+# then simulate npm cache loss and re-kick the agent to confirm failure
+```
+
+## Notes
+- This cycle did not find any need to redesign auth, ingest, or major packaging flows.
+- The new issue is specifically about durable background-install behavior in one-off `npx` mode.
+- Product recommendation: background mode should only be suggested when the executable path is stable enough to deserve user trust.
+
+---
+
 **Cycle:** R95 (installer/CLI polish QA — npx follow-up command clarity pass)
 
 ## Status: CLOSED — shipped in this cycle
