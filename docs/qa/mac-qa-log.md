@@ -1,10 +1,29 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:36 AM (America/Toronto)  
-**Status:** CLOSED - tiny npx/background polish shipped
+**Last updated:** Wednesday, March 25th, 2026 — 11:55 AM (America/Toronto)  
+**Status:** CLOSED - no new polish regressions in targeted QA pass
 
 ---
+
+## Cycle R83 Status: CLOSED
+
+This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
+
+### Outcome
+- No new user-facing polish regressions found in the targeted R83 spot-checks.
+- The small copy/messaging fixes from the prior round still hold up in clean first-run, install-before-setup, and reconfigure flows.
+- Product shape still feels right: low-friction setup, calm first status output, durable-install clarity for background mode, and honest refresh/re-enable language after config changes.
+
+### R83 spot-check coverage
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- Local-only `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status`
+- `configure --no-tui` device rename + metric change persistence
+- `install-agent` / refresh guidance from an `npx`-like invocation
+- `--test-publish` alias behavior
+- `uninstall-agent` messaging
 
 ## Cycle R82 Status: CLOSED
 
