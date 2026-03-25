@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:58 AM (America/Toronto)  
-**Status:** CLOSED - one small npx status hint polish shipped in targeted QA pass
+**Last updated:** Wednesday, March 25th, 2026 — 11:53 AM (America/Toronto)  
+**Status:** CLOSED - no new polish fixes needed in this targeted pass
+
+---
+
+## Cycle R87 Status: CLOSED
+
+This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
+
+### Outcome
+- No new end-user polish regressions found in the targeted R87 checks.
+- The current CLI still reads cleanly in the specific UX seams that were most likely to feel fussy: first-run status, install-before-setup, saved-config refresh guidance, and `npx` vs durable-install messaging.
+- Existing tiny copy fixes from the prior rounds still hold up under spot-check and test coverage.
+
+### R87 spot-check coverage
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status` with LaunchAgent installed but not loaded
+- `npx`-style first-run `status`
+- Targeted installer/onboarding/status unit coverage
+
+### Prioritized findings
+- None. No new polish issues worth opening from this cycle.
+
+### Acceptance notes
+- First-run `status` stays calm: default metrics first, extras secondary.
+- Setup completion still distinguishes first-time background enable from already-installed-but-needs-refresh.
+- Post-setup `status` remains honest when config exists but the LaunchAgent is installed and not loaded.
+- `npx` guidance stays minimal and durable-install oriented: foreground on `npx`, background on `npm install -g idlewatch` + `idlewatch install-agent`.
+- Device rename / metric persistence coverage still passes in the targeted unit suite.
+- `--test-publish` alias remains present and discoverable in status/help output.
 
 ---
 
