@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:30 PM (America/Toronto)  
-**Status:** CLOSED - no new polish issues worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 1:35 PM (America/Toronto)  
+**Status:** CLOSED - one tiny npx setup/reconfigure copy polish shipped
+
+---
+
+## Cycle R103 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny `npx` setup/reconfigure completion copy consistency fix only, with no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk setup copy polish improvement.
+- `npx` `quickstart` / `configure` completion now uses the same calmer two-line durable-install shape already used elsewhere:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- No auth, ingest, telemetry, or packaging redesign was touched.
+
+### R103 spot-check coverage
+- `npx`-like `quickstart --no-tui` in a clean HOME
+- `npx`-like `configure --no-tui`
+- `node --test test/openclaw-env.test.mjs`
+
+### Prioritized findings
+
+#### [x] L15 — `npx` setup/reconfigure completion now matches the calmer durable-install wording used elsewhere
+**Why it matters:** The product behavior was already right, but this one completion path still used an older sentence-style hint instead of the cleaner two-step pattern already used by help and status. Tightening that seam makes setup/reconfigure feel more consistent and easier to scan.
+
+**What shipped**
+- Reworded `npx` quickstart/configure background follow-up from:
+  - `Install IdleWatch once, then run idlewatch install-agent`
+  - `npm install -g idlewatch`
+- To:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Saved-config behavior and background semantics remain unchanged.
+
+### Acceptance notes
+- Foreground `npx` usage still points to `npx idlewatch run`.
+- Background guidance still points to the durable install path, not `npx idlewatch install-agent`.
+- The working telemetry path remains untouched.
 
 ---
 
