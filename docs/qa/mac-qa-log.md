@@ -2,7 +2,24 @@
 
 **Cycle:** R94 (installer/CLI polish QA — local-only messaging noise pass)
 
-## Status: OPEN — one small polish fix worth shipping
+## Status: CLOSED — shipped in this cycle
+
+A tiny but user-visible local-only messaging issue was cleaned up in this cycle.
+
+Successful local-only setup and verification paths now stay quiet on stderr: `quickstart`, `configure`, and `--test-publish` keep the useful success copy on stdout without also emitting a second warning-style line.
+
+That leaves the flow feeling calmer and less ambiguous, especially for wrappers or logs that treat stderr as something suspicious.
+
+---
+
+## What shipped
+- Suppressed the redundant local-only warning during successful one-shot verification paths (`--once` / `--test-publish`).
+- Preserved the existing local-only success messaging on stdout.
+- Left real errors and genuine warning paths on stderr unchanged.
+
+---
+
+## Original finding
 
 Most of the installer/CLI remains in good shape.
 
@@ -18,7 +35,7 @@ That is classic product-taste polish territory: not broken, just more talkative 
 
 ### M1. Local-only setup commands repeat themselves with an extra stderr warning
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 For a local-only user, `quickstart`, `configure`, and `--test-publish` already say the important thing in their normal output:
@@ -82,12 +99,12 @@ Minimal is better.
 5. Observe the same duplicate stderr warning despite successful output.
 
 **Acceptance criteria:**
-- [ ] Successful local-only `quickstart` does not emit redundant warning-style stderr copy when the main success output already explains local-only mode.
-- [ ] Successful local-only `configure` follows the same rule.
-- [ ] Successful local-only `--test-publish` is similarly calm and non-repetitive.
-- [ ] Local-only mode still remains obvious to users.
-- [ ] Real errors still use stderr normally.
-- [ ] No auth, ingest, or packaging redesign is introduced.
+- [x] Successful local-only `quickstart` does not emit redundant warning-style stderr copy when the main success output already explains local-only mode.
+- [x] Successful local-only `configure` follows the same rule.
+- [x] Successful local-only `--test-publish` is similarly calm and non-repetitive.
+- [x] Local-only mode still remains obvious to users.
+- [x] Real errors still use stderr normally.
+- [x] No auth, ingest, or packaging redesign is introduced.
 
 ---
 

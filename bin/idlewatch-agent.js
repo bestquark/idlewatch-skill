@@ -1400,7 +1400,7 @@ if (firebaseConfigError) {
 
 const hasAnyFirebaseConfig = Boolean(PROJECT_ID || CREDS_FILE || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HOST)
 const hasCloudConfig = Boolean(CLOUD_INGEST_URL && CLOUD_API_KEY)
-const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !hasAnyFirebaseConfig && !subcommandOnlyRequested
+const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !ONCE && !hasAnyFirebaseConfig && !subcommandOnlyRequested
 
 function getPublishModeLabel() {
   if (hasCloudConfig) return 'cloud'
