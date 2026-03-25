@@ -1,8 +1,44 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:24 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R129 found no new product-facing polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 8:15 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R130 shipped one tiny install-help wording fix; cron repo path still stale
+
+---
+
+## Cycle R130 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny install/help wording cleanup only, with no setup-flow changes, saved-config behavior changes, launch-agent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent --help` no longer implies the command always loads and starts IdleWatch immediately.
+- The help text now matches the calmer real behavior:
+  - install background mode now
+  - start immediately if setup is already saved
+  - otherwise stay off until setup is saved and `install-agent` is re-run
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R130 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path'`
+
+### Prioritized findings
+
+#### [x] L29 — `install-agent --help` now matches the safe install-before-setup mental model
+**Why it matters:** The product behavior was already polished, but the help text still sounded like background mode always loads right away. That was a tiny trust seam in exactly the cautious-user moment where people stop to read before enabling auto-start.
+
+**What shipped**
+- Reworded standard `install-agent --help` from a start-immediately framing to a state-aware shape:
+  - `Installs the LaunchAgent for background mode.`
+  - `If setup is already saved, IdleWatch starts automatically.`
+  - `If not, it stays off until you save setup and re-run install-agent.`
+- Left `npx` help unchanged.
+- Left actual LaunchAgent/install semantics unchanged.
+
+### Acceptance notes
+- Standard help now matches the current safe install-before-setup behavior more honestly.
+- `npx` help still points directly to the durable install path.
+- The working telemetry path remains untouched.
 
 ---
 

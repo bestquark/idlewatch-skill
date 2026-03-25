@@ -796,8 +796,9 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /You can install it before setup, then save config later/)
-  assert.match(run.stdout, /and re-run install-agent when you're ready\./)
+  assert.match(run.stdout, /Installs the LaunchAgent for background mode\./)
+  assert.match(run.stdout, /If setup is already saved, IdleWatch starts automatically\./)
+  assert.match(run.stdout, /If not, it stays off until you save setup and re-run install-agent\./)
   assert.doesNotMatch(run.stdout, /If you're using npx\/npm exec:/)
   assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.doesNotMatch(run.stdout, /Then enable:\s+idlewatch install-agent/)

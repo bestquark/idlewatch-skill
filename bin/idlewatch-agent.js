@@ -165,9 +165,9 @@ Then enable: idlewatch install-agent`
 
 Usage:  ${installAgentCommand}
 
-Creates a LaunchAgent plist and loads it so IdleWatch starts automatically
-in the background. You can install it before setup, then save config later
-and re-run install-agent when you're ready.`
+Installs the LaunchAgent for background mode.
+If setup is already saved, IdleWatch starts automatically.
+If not, it stays off until you save setup and re-run install-agent.`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
