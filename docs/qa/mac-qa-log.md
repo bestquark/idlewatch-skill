@@ -1,8 +1,90 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 2:52 PM (America/Toronto)  
-**Status:** CLOSED - R113 shipped one tiny help-text consistency polish fix
+**Last updated:** Wednesday, March 25th, 2026 — 3:05 PM (America/Toronto)  
+**Status:** OPEN - R114 found one real device-identity clarity seam
+
+---
+
+## Cycle R114 Status: OPEN
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Reopened one medium-severity polish item in the device-identity lane.
+- Core behavior is still correct: reconfigure preserves the original device ID/log/cache identity on purpose.
+- The product seam is clarity, not correctness: after renaming a device, `status` can read like two different devices unless the CLI explains why the old ID/log stem stayed put.
+- No auth, ingest, packaging, or background-agent behavior changes are recommended from this pass.
+
+### Prioritized findings
+
+#### [ ] M6 — Device rename persistence is correct, but the status screen does not explain the preserved device identity clearly enough
+**Why it matters:** This is exactly the kind of subtle trust seam that makes a polished setup feel slightly off. The product intentionally keeps the original device identity stable across reconfigure, which is good for continuity. But after a rename, `status` shows the new visible name beside the old device ID and old log-file stem with no explanation. To an end user, that can look like partial config drift rather than an intentional identity-preservation rule.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. Run first-time setup:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_NO_TUI=1 \
+   IDLEWATCH_ENROLL_MODE=production \
+   IDLEWATCH_CLOUD_API_KEY=iwk_abcdefghijklmnopqrstuvwxyz123456 \
+   IDLEWATCH_ENROLL_DEVICE_NAME='Kitchen Mac' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,temperature' \
+   node bin/idlewatch-agent.js quickstart
+   ```
+4. Reconfigure with a new visible name and a different metric set:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_NO_TUI=1 \
+   IDLEWATCH_ENROLL_DEVICE_NAME='Desk Mac' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+   node bin/idlewatch-agent.js configure
+   ```
+5. Check status:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
+   ```
+
+**Observed**
+- `configure` preserves identity as designed:
+  - `IDLEWATCH_DEVICE_NAME=Desk Mac`
+  - `IDLEWATCH_DEVICE_ID=kitchen-mac`
+  - `IDLEWATCH_LOCAL_LOG_PATH=.../kitchen-mac-metrics.ndjson`
+- `status` then shows:
+  - `Device: Desk Mac`
+  - `Device ID: kitchen-mac`
+  - `Local log: .../kitchen-mac-metrics.ndjson`
+- Nothing in that screen explains that this is intentional continuity, not a partial rename.
+
+**Why this feels off**
+- The behavior itself is probably the right default.
+- The wording is the seam: the CLI currently makes preserved identity look like a mismatch.
+- This is especially likely to confuse cautious users doing a rename specifically to clean up what they see in the product.
+
+**Acceptance criteria**
+- Keep the current persistence behavior unless product direction changes.
+- Make the status/reconfigure UX explicitly explain that the device name changed while the stable device identity was preserved.
+- A minimal acceptable shape would be one short clarifier when `DEVICE_ID` no longer matches the slugified visible name, e.g.:
+  - `Device ID: kitchen-mac (kept from original setup for continuity)`
+- If the local log/cache path is shown with the old stem, the surrounding copy should make that feel intentional rather than stale.
+- Do not add a long paragraph or extra setup branch; this should stay calm and low-noise.
+
+### Spot-check coverage
+- Clean first-run `status` from a packaged/global install
+- `install-agent` before setup from a packaged/global install
+- `uninstall-agent` retention messaging from a packaged/global install
+- Non-interactive `quickstart` / `configure` rename + metric toggle persistence in a clean HOME
+- `status` after rename with preserved device ID
+- Invalid cloud-key setup failure copy
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- A packaged/global install still gives clean `idlewatch ...` command hints; the confusing seam found in this pass is specifically the preserved-identity explanation after rename, not npm/npx path clarity.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
 
 ---
 
