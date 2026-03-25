@@ -957,7 +957,7 @@ ${quickstartPromptHint}`,
 
 Usage:  ${configureUsage}
 
-Re-opens the setup wizard to change mode, API key, device name, or metrics.
+Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
@@ -994,7 +994,7 @@ Installs the macOS menu bar companion app.
 
 Usage:  ${reconfigureUsage}
 
-Re-opens the setup wizard to change mode, API key, device name, or metrics.
+Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.

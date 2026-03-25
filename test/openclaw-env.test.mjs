@@ -888,6 +888,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Usage:\s+.*configure --no-tui\n/)
+  assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
   assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
@@ -895,6 +896,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
   assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
   assert.doesNotMatch(run.stdout, /restart it with the updated config\./)
+  assert.doesNotMatch(run.stdout, /Re-opens the setup wizard to change mode, API key, device name, or metrics\./)
 })
 
 test('reconfigure help stays clean in non-TTY mode', () => {
@@ -906,9 +908,11 @@ test('reconfigure help stays clean in non-TTY mode', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Usage:\s+.*reconfigure --no-tui\n/)
+  assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*reconfigure \[--no-tui\]/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
+  assert.doesNotMatch(run.stdout, /Re-opens the setup wizard to change mode, API key, device name, or metrics\./)
 })
 
 test('status help matches the calmer saved-config refresh wording', () => {

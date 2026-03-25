@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 4:50 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R136 spot-check stayed clean; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 4:58 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R137 shipped one tiny help-text cleanup; cron repo path still stale
+
+---
+
+## Cycle R137 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure help-text cleanup only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `configure --help` and `reconfigure --help` now match the calmer local-first framing already used by `quickstart --help`.
+- The help line now says:
+  - `Re-opens setup to change device name, metrics, and your optional cloud link.`
+- This removes one small but real cloud-technical seam in the reconfigure lane without adding options or changing behavior.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R137 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|quickstart help stays clean in non-TTY mode'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L33 — `configure --help` / `reconfigure --help` no longer fall back to API-key-first wording
+**Why it matters:** The actual product already treats local-only setup as first-class, and `quickstart --help` was already polished to reflect that. But reconfigure help still said `change mode, API key, device name, or metrics`, which made an ordinary settings edit feel more cloud-technical than it needed to.
+
+**What shipped**
+- Reworded configure/reconfigure help from:
+  - `Re-opens the setup wizard to change mode, API key, device name, or metrics.`
+- To:
+  - `Re-opens setup to change device name, metrics, and your optional cloud link.`
+- Added regression coverage so both help paths keep the calmer wording.
+
+### Acceptance notes
+- Quickstart, configure, and reconfigure now present the same local-first product shape.
+- Saved-config reload guidance remains unchanged.
+- The working telemetry path remains untouched.
 
 ---
 
