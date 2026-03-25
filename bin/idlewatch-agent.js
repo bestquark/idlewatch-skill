@@ -217,8 +217,12 @@ function resolveEnvPath(value) {
   return path.resolve(expandSupportedPathVars(value))
 }
 
+function idlewatchDataDir() {
+  return path.join(os.homedir(), '.idlewatch')
+}
+
 function defaultPersistedEnvFilePath() {
-  return path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+  return path.join(idlewatchDataDir(), 'idlewatch.env')
 }
 
 function usesDefaultPersistedEnvFile(envFilePath) {
@@ -884,7 +888,7 @@ const subcommandPromise = (async () => {
     }
     const { svcLabel, uid, domain, domainTarget, plistPath } = launchAgentInfo()
     const plistDir = path.dirname(plistPath)
-    const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+    const envFile = defaultPersistedEnvFilePath()
 
     const hasSavedConfig = fs.existsSync(envFile)
     const quickstartCommand = inferCliCommand('quickstart')
@@ -972,6 +976,7 @@ const subcommandPromise = (async () => {
     const svcLabel = 'com.idlewatch.agent'
     const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
     const uid = process.getuid?.() ?? ''
+    const dataDir = idlewatchDataDir()
 
     if (!fs.existsSync(plistPath)) {
       console.log('LaunchAgent is not installed. Nothing to remove.')
@@ -987,7 +992,7 @@ const subcommandPromise = (async () => {
     } catch { /* ignore */ }
 
     console.log('✅ LaunchAgent removed — background collection stopped.')
-    console.log('   Your config and logs are still in ~/.idlewatch/')
+    console.log(`   Your config and logs were kept in ${dataDir}`)
     console.log(`   Re-enable:  ${inferCliCommand('install-agent')}`)
     process.exit(0)
   }
