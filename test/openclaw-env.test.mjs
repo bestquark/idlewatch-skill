@@ -1028,7 +1028,8 @@ test('status command shows contextual next-step hints', () => {
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 
     if (process.platform === 'darwin') {
-      assert.ok(withSamples.stdout.includes(`install ${SOURCE_CMD} install-agent to re-enable background collection`), 'should show re-enable hint when LaunchAgent is not installed')
+      assert.ok(withSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should show enable hint when LaunchAgent is not installed')
+      assert.ok(!withSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.doesNotMatch(withSamples.stdout, /Apply:.*already running in the background/, 'should not show running-agent apply hint after uninstall/not-installed state')
     }
   } finally {

@@ -1,5 +1,80 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R101 (installer/CLI polish QA — status action-label honesty pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle found one small but real setup-language paper cut in `status`.
+
+For a configured device with samples and no installed LaunchAgent, the next-step hint could still read like a resume flow rather than a first enable flow. That is harmless mechanically, but slightly off in the exact place users look for the next command.
+
+This pass tightens that wording:
+
+- `status` now says `Enable:` when background mode has not been installed yet.
+- `Re-enable:` is kept for the narrower case where the LaunchAgent plist exists but is currently not loaded.
+- Running-agent `Apply:` guidance stays unchanged.
+
+That keeps setup/reconfigure language a little more honest and a little calmer without changing the working telemetry path or adding any new options.
+
+---
+
+## What shipped
+- `status` now uses `Enable:` for configured devices whose LaunchAgent is truly not installed.
+- `Re-enable:` is now reserved for `installed-not-loaded` LaunchAgent state.
+- Added regression coverage so the not-installed path does not drift back to resume-style wording.
+
+---
+
+## Priority findings
+
+### M1. `status` says `Re-enable` even when background mode was never installed
+**Priority:** Medium  
+**Status:** Fixed
+
+**Why this matters:**
+When setup is already complete and samples exist, users often check `idlewatch status` to find the single next background step.
+
+Before this fix, a not-installed LaunchAgent could still produce resume-flavored copy. That subtly suggests IdleWatch is returning to a previously enabled state, even when the user has never turned background mode on.
+
+The cleaner product behavior is simple:
+- `Enable:` when background mode has not been installed yet
+- `Re-enable:` only when there is something real to re-enable
+- `Apply:` only when a running agent exists and config changes need a refresh
+
+That keeps the CLI feeling deliberate instead of stitched together.
+
+**Acceptance criteria:**
+- [x] Configured `status` output uses `Enable:` when the LaunchAgent is not installed.
+- [x] `Re-enable:` remains available for installed-but-not-loaded state.
+- [x] Running-agent `Apply:` guidance remains unchanged.
+- [x] No auth, ingest, or packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Configured-device `status` still shows concise setup and runtime state.
+- Not-installed LaunchAgent path now says `Enable:` instead of `Re-enable:`.
+- Running-agent refresh guidance remains `Apply:`.
+- Existing focused installer/CLI regression suite still passes.
+- Telemetry and saved-config flows remain unchanged.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test test/openclaw-env.test.mjs
+
+TMPHOME=$(mktemp -d)
+# prepare saved config + sample log without installing the LaunchAgent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+```
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`.
+- This was intentionally kept to a tiny wording/validation change only.
+- No auth, ingest, telemetry-path, or packaging changes were made.
+
+---
+
 **Cycle:** R100 (installer/CLI polish QA — config-file provenance copy pass)
 
 ## Status: CLOSED — shipped in this cycle

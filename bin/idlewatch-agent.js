@@ -1564,8 +1564,10 @@ if (statusRequested) {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
         console.log(`  Apply:    re-run ${installAgentCommand} after config changes to refresh the background agent`)
-      } else {
+      } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Re-enable:  ${installAgentCommand}`)
+      } else {
+        console.log(`  Enable:   ${installAgentCommand}`)
       }
     } else {
       console.log(`  Enable:   ${installAgentCommand}  (background on macOS)`)
