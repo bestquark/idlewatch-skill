@@ -1,5 +1,86 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R103 (installer/CLI polish QA — verification-only polish sweep)
+
+## Status: CLOSED — no action required
+
+This cycle re-ran the current polish checklist without trying to expand scope.
+
+The important setup surfaces still feel tidy and honest:
+- fresh-home `status` reads clearly as an empty state
+- setup/reconfigure persist config and metric choices cleanly
+- device identity still stays stable across reconfigure
+- reload/apply guidance remains short and predictable
+- LaunchAgent install/uninstall copy is calm and easy to follow
+- one-off `npx` runs still refuse fragile background installs and explain the durable path plainly
+- `--test-publish` stays concise in local-only mode
+
+No new polish issue stood out strongly enough to justify implementation.
+
+---
+
+## What was verified
+- `quickstart --no-tui` saves `~/.idlewatch/idlewatch.env` with a neutral/generated header.
+- Re-running `configure --no-tui` updates `IDLEWATCH_MONITOR_TARGETS` in place without changing the persisted device identity.
+- Saved-config wording still matches actual reload behavior: foreground runs pick up changes on next start; a running LaunchAgent is refreshed by re-running `install-agent`.
+- `status` still uses the right next-step language (`Get started`, `Enable`, `Apply`) for each state.
+- `install-agent` / `uninstall-agent` keep config/log retention messaging clear and non-alarming.
+- `npm exec` / `npx` status hints remain honest about foreground-only use and durable background-install requirements.
+- `npm exec` / `npx` `install-agent` still fails fast instead of writing a LaunchAgent against npm cache.
+- Focused installer/CLI regression coverage still passes.
+
+## Repro / validation
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+
+node --test test/openclaw-env.test.mjs
+```
+
+## Acceptance criteria
+- [x] No new confusing, repetitive, or overly technical setup copy surfaced in the targeted polish areas.
+- [x] Config persistence and reload/apply behavior still match the user-facing messaging.
+- [x] Device name / device id persistence still behave predictably through reconfigure.
+- [x] Metric toggle persistence still behaves predictably through reconfigure.
+- [x] LaunchAgent install/uninstall behavior remains clear and safe.
+- [x] One-off `npx` install-path messaging remains honest.
+- [x] No auth, ingest, or major packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
+- This was a verification-only QA cycle. No code changes were needed.
+
+---
+
 **Cycle:** R102 (installer/CLI polish QA — metric-selection validation honesty pass)
 
 ## Status: CLOSED — shipped in this cycle
