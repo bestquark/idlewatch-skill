@@ -1680,6 +1680,53 @@ test('status command shows contextual next-step hints', () => {
   }
 })
 
+test('status command keeps running-agent apply hint aligned with saved-config wording', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-running-apply-'))
+  const fakeBin = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-running-apply-bin-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    const logDir = path.join(configDir, 'logs')
+    fs.mkdirSync(logDir, { recursive: true })
+    fs.mkdirSync(path.join(tempHome, 'Library', 'LaunchAgents'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Apply Box',
+      'IDLEWATCH_DEVICE_ID=apply-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+    fs.writeFileSync(path.join(logDir, 'apply-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  cat <<'EOF'
+pid = 4242
+EOF
+  exit 0
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempHome, PATH: `${fakeBin}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Background:   LaunchAgent loaded (running, pid 4242)'), 'should report the running launch agent state')
+    assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the running-agent apply hint aligned with saved-config wording')
+    assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
+  } finally {
+    rmSync(fakeBin, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded', () => {
   if (process.platform !== 'darwin') return
 

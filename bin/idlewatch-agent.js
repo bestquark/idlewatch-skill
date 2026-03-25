@@ -1735,7 +1735,7 @@ if (statusRequested) {
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
-        console.log(`  Apply:    re-run ${installAgentCommand} after config changes to refresh the background agent`)
+        console.log(`  Apply:    re-run ${installAgentCommand} to refresh it with the saved config`)
       } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Re-enable:  ${installAgentCommand}`)
       } else {

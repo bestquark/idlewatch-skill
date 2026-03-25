@@ -1,8 +1,44 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:28 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R141 spot-check found no new polish issues; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:25 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R142 shipped one tiny status-copy consistency fix; cron repo path still stale
+
+---
+
+## Cycle R142 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `status` copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `status` now uses the same calmer saved-config refresh wording already used by setup completion and help when background mode is already running.
+- The running-agent follow-up now says:
+  - `Apply:    re-run ... install-agent to refresh it with the saved config`
+- This removes one last little wording seam where `status` had still been saying the older, longer `after config changes to refresh the background agent` shape.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R142 spot-check coverage
+- [x] `status` with config, samples, and a running LaunchAgent
+- [x] `status` contextual next-step regression slice
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L36 — `status` running-agent apply hint now matches the calmer saved-config wording used elsewhere
+**Why it matters:** This was tiny, but it sat in a high-trust moment. Setup completion and help had already converged on the shorter saved-config mental model, while `status` still used one older, slightly more narrated sentence when the background agent was already running.
+
+**What shipped**
+- Reworded the running-agent `status` hint from:
+  - `Apply:    re-run ... install-agent after config changes to refresh the background agent`
+- To:
+  - `Apply:    re-run ... install-agent to refresh it with the saved config`
+- Added regression coverage for the running LaunchAgent case so the shorter wording sticks.
+
+### Acceptance notes
+- `status` now reads more like the rest of the setup/reconfigure/background story.
+- The change is copy-only; LaunchAgent state detection and saved-config behavior are unchanged.
+- The working telemetry path remains untouched.
 
 ---
 
