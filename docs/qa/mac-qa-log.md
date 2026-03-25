@@ -1,12 +1,12 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:45 AM (America/Toronto)  
+**Last updated:** Wednesday, March 25th, 2026 — 10:55 AM (America/Toronto)  
 **Status:** OPEN - 2 small polish issues still worth fixing
 
 ---
 
-## Cycle R79 Status: OPEN
+## Cycle R80 Status: OPEN
 
 This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
 
@@ -14,15 +14,32 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Priority 2 (Medium)
 
-#### [M1] Setup completion still gives the wrong mental model when a LaunchAgent was already installed before setup
-**Why it matters:** This is the exact "install background mode first, then finish setup" path a careful user is likely to take. The plumbing works, but the completion copy still sounds like background mode is simply off, instead of acknowledging that the agent is already installed and just needs a refresh.
+#### [M1] Setup completion gives the wrong mental model when a LaunchAgent was installed before setup
+**Why it matters:** This is a sensible cautious-user path: install background mode first, then finish setup. The mechanics work, but the completion copy still implies background mode is simply off instead of acknowledging that the agent is already installed and just needs a refresh.
 
 **Repro**
-1. Use a clean HOME.
-2. Run `env HOME="$TMPHOME" PATH="$PATH" node bin/idlewatch-agent.js install-agent`.
-3. Run `env HOME="$TMPHOME" PATH="$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`.
-4. Read the setup completion message.
-5. Run `env HOME="$TMPHOME" PATH="$PATH" node bin/idlewatch-agent.js status`.
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create a fake `launchctl` that lets `install-agent` succeed but keeps the agent in a not-loaded state:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
 
 **Observed**
 - `install-agent` correctly says setup is not saved yet and leaves collection off.
@@ -46,17 +63,18 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Priority 3 (Low)
 
-#### [L1] First-run `status` is still visually busier than it needs to be
-**Why it matters:** The first `status` screen should reassure. Right now, before setup exists, it leads with a long advanced metrics list that feels more internal than welcoming.
+#### [L1] First-run `status` is still a little too visually busy
+**Why it matters:** The first `status` screen should reassure. Before setup exists, it currently leads with a long advanced metrics list that feels more internal than welcoming.
 
 **Repro**
-1. Use a clean HOME.
-2. Run `env HOME="$TMPHOME" PATH="$PATH" node bin/idlewatch-agent.js status`.
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
 
 **Observed**
 - Before setup, `status` prints:
   - `Metrics preview: CPU, Memory, GPU, Temperature, OpenClaw activity, OpenClaw tokens, OpenClaw runtime`
-- Functional, but a little noisy for first contact.
+- Functional, but noisier than needed for first contact.
 
 **Acceptance criteria**
 - Keep first-run `status` useful, but reduce cognitive load.
@@ -77,4 +95,5 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ## Notes
 - The cron prompt pointed at `~/.openclaw/workspace/idlewatch-skill`, but the active repo/docs for this pass were actually under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree also contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
 - No auth, ingest, or packaging redesign is recommended from this cycle.
