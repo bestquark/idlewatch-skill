@@ -1,5 +1,72 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R123 (installer/CLI polish QA — polish-plan recheck)
+
+## Status: CLOSED — no new polish issue found
+
+This pass stayed scoped to the current polish-plan surfaces only: setup wizard quality, config persistence/reload behavior, LaunchAgent install/uninstall behavior, local-only `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+No new issue crossed the bar for implementation.
+
+What still feels right:
+- packaged/global install help now points to `idlewatch quickstart`, not repo-internal paths
+- the setup/reconfigure path still preserves saved identity and metric changes predictably
+- LaunchAgent install/uninstall copy stays short and tells an honest installed-vs-running story
+- one-off `npx` background guidance still fails fast and points to the durable path cleanly
+- local-only flows remain calm instead of warning-y
+
+## Verified in this cycle
+- Packed global install `idlewatch --help` ends with `Get started:  idlewatch quickstart`.
+- `install-agent` with no saved config still explains the exact next step without pretending setup is complete.
+- Global-install `install-agent` still keeps the durable path simple (`quickstart` → `run` → `install-agent` / `uninstall-agent`).
+- `uninstall-agent` still stays terse and safe when nothing is installed.
+- Source README still keeps the npm vs npx split understandable and low-noise.
+- No new wording drift showed up in the polish-plan areas.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+npm run smoke:help --silent
+npm pack --silent
+
+TMPDIR=$(mktemp -d)
+PREFIX="$TMPDIR/prefix"
+mkdir -p "$PREFIX"
+npm install -g --prefix "$PREFIX" ./idlewatch-0.2.0.tgz >/dev/null 2>&1
+"$PREFIX/bin/idlewatch" --help
+
+TMPDIR=$(mktemp -d)
+export HOME="$TMPDIR/home"
+mkdir -p "$HOME"
+IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.qa" \
+IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$TMPDIR/LaunchAgents" \
+IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$TMPDIR/logs" \
+IDLEWATCH_APP_PATH="/Applications/IdleWatch.app" \
+IDLEWATCH_APP_BIN="/bin/echo" \
+./scripts/install-macos-launch-agent.sh
+
+TMPDIR=$(mktemp -d)
+PREFIX="$TMPDIR/prefix"
+HOME="$TMPDIR/home"
+mkdir -p "$PREFIX" "$HOME"
+npm install -g --prefix "$PREFIX" ./idlewatch-0.2.0.tgz >/dev/null 2>&1
+PATH="$PREFIX/bin:$PATH" HOME="$HOME" idlewatch install-agent
+PATH="$PREFIX/bin:$PATH" HOME="$HOME" idlewatch uninstall-agent
+```
+
+## Acceptance criteria
+- [x] No new confusing, verbose, repetitive, visually noisy, or overly technical setup issue surfaced in the targeted polish-plan areas.
+- [x] LaunchAgent install/uninstall behavior remains clear and safe.
+- [x] One-off `npx` / durable install guidance remains honest.
+- [x] Install/help copy stays minimal and practical for end users.
+- [x] No auth, ingest, or major packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This was a verification-only cycle. No implementation changes were needed.
+
+---
+
 **Cycle:** R122 (installer/CLI polish QA — calmness verification sweep)
 
 ## Status: CLOSED — no new polish issue found
