@@ -1,35 +1,20 @@
-# IdleWatch QA Log 2026-03-25 (Cycle 77 - Post-Polish Review)
+# IdleWatch Installer QA Log 2026-03-25
 
-**Status:** ✅ COMPLETE — no action needed  
-**Cycle Goal:** Verify that all polish priorities remain stable after prior implementation rounds. Confirm v0.2.0 production readiness.
+**Cycle:** R76 (polish review of already-completed work) ✓
 
-## Findings
+## Status: COMPLETED - No new issues
 
-All items from previous cycles remain verified working:
+All polish priorities from prior cycles verified complete. v0.2.0 is production-ready with no pending fixes.
 
-- **H1/H2 (High):** Device name persistence & config reload - ✅ Verified  
-- **M1-M4 (Medium):** Status screen, test publish flow, confirmations/messages - ✅ Verified  
-- **L1-L3 (Low):** Settings preservation, launch-agent clarity, storage location - ✅ Verified
+### Cycle 76 Finding: Implementation satisfied
+This cycle found no new implementation needed — polish work completed in previous cycles. Repo is clean and committed.
 
-## Repo State Check
+### Summary
+- **H1/H2**: Device name persistence & config reload working ✓
+- **M1-M4**: Status screen, test publish flow, clear messages functional ✓  
+- **L1-L3**: As-designed behaviors confirmed ✓
 
-Current branch state shows only documentation changes staged:
-```
-bash
-Changes to be committed: 
-  - modified: docs/qa/mac-qa-log.md (this cycle's log)
-  - new file: memory/2026-03-25.md (cycle completion marker)
-```
-
-No code changes pending. All implemented polish is already committed and stable.
-
-## Conclusion
-
-**No implementation needed for Cycle 77.** 
-
-All prioritized polish items are complete, verified working, and production-ready in v0.2.0. The "neat, minimalistic, simple setup/reconfigure flows" are intact with no friction to reduce or steps to remove at this time.
-
-**Next polish cycle:** Will be triggered by new UX friction identified during active development or user feedback surface of issues.
+**Conclusion:** No new implementation needed for this cycle.
 
 ---
-*Status verified March 25, 2026 — 1:15 AM Toronto / 05:15 UTC*
+*Next polish cycle: When new UX friction identified or user feedback surfaces issues.*
