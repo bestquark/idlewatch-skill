@@ -26,5 +26,7 @@ if [[ -f "$PLIST_PATH" ]]; then
   rm -f "$PLIST_PATH"
 fi
 
-echo "Uninstalled LaunchAgent: $PLIST_ID"
-echo "Removed plist: $PLIST_PATH"
+echo "✅ LaunchAgent removed — background collection stopped."
+echo "   Removed plist: $PLIST_PATH"
+echo "   Your config and logs were kept in $HOME/.idlewatch"
+echo "   Re-enable: ./scripts/install-macos-launch-agent.sh"

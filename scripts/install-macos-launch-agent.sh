@@ -38,6 +38,10 @@ fi
 
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
 CONFIG_ENV_PATH="${IDLEWATCH_CONFIG_ENV_PATH:-$HOME/.idlewatch/idlewatch.env}"
+HAS_SAVED_CONFIG=0
+if [[ -f "$CONFIG_ENV_PATH" ]]; then
+  HAS_SAVED_CONFIG=1
+fi
 
 is_standard_app_path=0
 if [[ "$APP_PATH" == "$DEFAULT_APP_PATH" || "$APP_PATH" == "$USER_APP_PATH" ]]; then
@@ -92,9 +96,9 @@ cat > "$PLIST_PATH" <<'PLIST'
     <string>--run</string>
   </array>
   <key>RunAtLoad</key>
-  <true/>
+  {{RUN_AT_LOAD_VALUE}}
   <key>KeepAlive</key>
-  <true/>
+  {{KEEP_ALIVE_VALUE}}
   <key>ProcessType</key>
   <string>Background</string>
   <key>StandardOutPath</key>
@@ -103,14 +107,29 @@ cat > "$PLIST_PATH" <<'PLIST'
   <string>{{LOG_DIR}}/idlewatch.err.log</string>
   <key>StartInterval</key>
   <integer>{{START_INTERVAL_SEC}}</integer>
+  <key>Disabled</key>
+  {{DISABLED_VALUE}}
 </dict>
 </plist>
 PLIST
+
+if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
+  RUN_AT_LOAD_VALUE='<true/>'
+  KEEP_ALIVE_VALUE='<true/>'
+  DISABLED_VALUE='<false/>'
+else
+  RUN_AT_LOAD_VALUE='<false/>'
+  KEEP_ALIVE_VALUE='<false/>'
+  DISABLED_VALUE='<true/>'
+fi
 
 sed -i '' "s|{{PLIST_LABEL}}|$PLIST_LABEL|g" "$PLIST_PATH"
 sed -i '' "s|{{BIN_PATH}}|$BIN_PATH|g" "$PLIST_PATH"
 sed -i '' "s|{{LOG_DIR}}|$LOG_DIR|g" "$PLIST_PATH"
 sed -i '' "s|{{START_INTERVAL_SEC}}|$START_INTERVAL_SEC|g" "$PLIST_PATH"
+sed -i '' "s|{{RUN_AT_LOAD_VALUE}}|$RUN_AT_LOAD_VALUE|g" "$PLIST_PATH"
+sed -i '' "s|{{KEEP_ALIVE_VALUE}}|$KEEP_ALIVE_VALUE|g" "$PLIST_PATH"
+sed -i '' "s|{{DISABLED_VALUE}}|$DISABLED_VALUE|g" "$PLIST_PATH"
 
 USER_GUID="$(id -u)"
 PLIST_ID="gui/$USER_GUID/$PLIST_LABEL"
@@ -119,12 +138,15 @@ if launchctl print "$PLIST_ID" >/dev/null 2>&1; then
   launchctl bootout "$PLIST_ID" || true
 fi
 
-launchctl bootstrap "gui/$USER_GUID" "$PLIST_PATH"
-launchctl enable "$PLIST_ID"
+if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
+  launchctl bootstrap "gui/$USER_GUID" "$PLIST_PATH"
+  launchctl enable "$PLIST_ID"
+fi
+
 echo "Installed LaunchAgent: $PLIST_ID"
 echo "Plist: $PLIST_PATH"
 echo "Logs: $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
-if [[ -f "$CONFIG_ENV_PATH" ]]; then
+if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
   if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then
     echo "✓ Login startup will auto-load this config."
@@ -135,14 +157,14 @@ if [[ -f "$CONFIG_ENV_PATH" ]]; then
 else
   echo "No saved IdleWatch config yet at: $CONFIG_ENV_PATH"
   echo ""
-  echo "The LaunchAgent is already installed and will start at login."
-  echo "Finish setup to give it a saved config:"
+  echo "Setup is not finished yet, so background collection stays off for now."
+  echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
     echo "   idlewatch quickstart"
   fi
   echo "   $BIN_PATH quickstart"
   echo ""
-  echo "After setup, re-run this install script once to restart the background agent with the new config."
+  echo "Then re-run this install script to turn on login startup with the saved config."
   if command -v idlewatch >/dev/null 2>&1; then
     echo ""
     echo "💡 Quick status check:"

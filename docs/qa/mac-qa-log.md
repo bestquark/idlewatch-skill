@@ -1,19 +1,19 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:50 PM (America/Toronto)  
-**Status:** OPEN - two small polish issues logged from installer/CLI QA
+**Last updated:** Wednesday, March 25th, 2026 — 1:55 PM (America/Toronto)  
+**Status:** CLOSED - R106 polish fixes shipped
 
 ---
 
-## Cycle R106 Status: OPEN
+## Cycle R106 Status: CLOSED
 
 This pass stayed narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- Found two small but real polish issues worth fixing.
-- Both are UX/trust seams, not architecture problems.
-- Main theme: the app-installer LaunchAgent scripts and the CLI path no longer feel fully consistent.
+- Shipped two small, low-risk script-path polish fixes.
+- Both were UX/trust seams, not architecture problems.
+- Main theme: the app-installer LaunchAgent scripts now better match the calmer CLI mental model.
 
 ### R106 spot-check coverage
 - README install / npx guidance review
@@ -24,7 +24,7 @@ This pass stayed narrow and product-facing: setup wizard quality, config persist
 
 ### Prioritized findings
 
-#### [ ] M5 — Packaged app LaunchAgent script still auto-starts even when setup is not saved, unlike the calmer CLI path
+#### [x] M5 — Packaged app LaunchAgent script no longer auto-starts before setup is saved, matching the calmer CLI path
 **Why it matters:** This is the biggest remaining polish mismatch. The CLI `idlewatch install-agent` path is careful: if setup is not saved yet, it installs safely but keeps background collection off until the user finishes setup and re-runs install. The packaged app shell installer does the opposite mental model: it always writes `RunAtLoad=true` and `KeepAlive=true`, bootstraps immediately, and then says the agent is already installed and will start at login. That makes the app path feel less predictable and more technical than the CLI path.
 
 **Exact repro**
@@ -47,7 +47,7 @@ This pass stayed narrow and product-facing: setup wizard quality, config persist
 - Messaging should clearly say setup is not finished yet and background collection is not active until the saved config is present / reloaded.
 - App and CLI install paths should give materially the same next-step guidance.
 
-#### [ ] L17 — Shell-script uninstall messaging is much rougher than CLI uninstall and drops the reassuring “config/logs kept” explanation
+#### [x] L17 — Shell-script uninstall messaging now matches the calmer CLI uninstall reassurance
 **Why it matters:** The CLI uninstall path feels polished and safe: it says background collection stopped and explicitly reassures the user that config and logs were kept. The shell uninstall path is technically fine but emotionally harsher: `Uninstalled LaunchAgent` / `Removed plist` with no reassurance. That makes uninstall feel more destructive than it really is.
 
 **Exact repro**
@@ -66,6 +66,15 @@ This pass stayed narrow and product-facing: setup wizard quality, config persist
 - It should reassure the user that saved config and local logs are preserved.
 - It should include a clean re-enable hint, consistent with the install path in use.
 - App-script uninstall should feel as safe and reversible as the CLI uninstall path.
+
+### What shipped
+- `scripts/install-macos-launch-agent.sh` now writes a dormant plist when no saved config exists:
+  - `RunAtLoad=false`
+  - `KeepAlive=false`
+  - `Disabled=true`
+- The no-config installer path now keeps `launchctl bootstrap/enable` skipped until saved setup exists.
+- No-config copy now says setup is not finished yet and background collection stays off for now, then points to `quickstart` followed by re-running install.
+- `scripts/uninstall-macos-launch-agent.sh` now says background collection stopped, reassures that config/logs were kept, and gives a clean re-enable hint.
 
 ### Acceptance notes
 - Device-name persistence across reconfigure still looks intentional and stable.
