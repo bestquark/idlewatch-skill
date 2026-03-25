@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:53 AM (America/Toronto)  
-**Status:** CLOSED - no new polish fixes needed in this targeted pass
+**Last updated:** Wednesday, March 25th, 2026 — 12:01 PM (America/Toronto)  
+**Status:** CLOSED - tiny install-path polish shipped in this targeted pass
+
+---
+
+## Cycle R88 Status: CLOSED
+
+This pass stayed intentionally narrow: keep the setup/install mental model as calm and minimal as the already-polished setup/reconfigure/status flows.
+
+### Outcome
+- Shipped one tiny, low-risk copy polish improvement.
+- `install-agent` help and the `npx` refusal path now use the same shorter durable-install wording already used elsewhere:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Removed one extra explanatory line from the `npx` refusal path so the next step is faster to scan.
+- Telemetry behavior, LaunchAgent behavior, auth/ingest, and packaging were left untouched.
+
+### R88 spot-check coverage
+- `install-agent --help`
+- `install-agent` from an `npx`-like invocation
+- Existing targeted onboarding/install/status regression suite
+
+### Prioritized findings
+
+#### [x] L6 — `install-agent` now matches the calmer durable-install wording used by setup/reconfigure/status
+**Why it matters:** The product already had a nicer two-step mental model in setup/reconfigure/status, but `install-agent` still used older, more explanatory wording. This is tiny, but it is exactly the kind of seam users hit when they are deciding how to enable background mode.
+
+**What shipped**
+- `install-agent --help` now shows the durable path directly instead of only warning that one-off `npx`/`npm exec` installs are disposable.
+- The `npx` refusal path now says:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+  - `Run now: npx idlewatch run`
+- Removed the extra npm-cache explanation line to reduce friction and keep the action path obvious.
+
+### Acceptance notes
+- Foreground one-off usage still points to `npx idlewatch run`.
+- Background usage still points to the durable global install path, never `npx idlewatch install-agent`.
+- LaunchAgent behavior and the working telemetry path remain unchanged.
 
 ---
 

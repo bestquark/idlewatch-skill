@@ -917,7 +917,9 @@ Usage:  ${installAgentCommand}
 Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
 in the background. Saved config is optional on first install; you can
 run quickstart later and then reinstall to apply it.
-One-off npx/npm exec runs need a durable install first.`,
+For one-off npx/npm exec runs, install IdleWatch once first:
+  npm install -g idlewatch
+  idlewatch install-agent`,
     'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
 
 Usage:  ${uninstallAgentCommand}
@@ -998,13 +1000,11 @@ const subcommandPromise = (async () => {
     const invocation = detectCliInvocation()
     if (invocation.kind === 'npx') {
       console.error('Background install needs a durable IdleWatch install first.')
-      console.error('One-off npx/npm exec paths live in npm cache and can disappear later.')
       console.error('')
-      console.error('Do this instead:')
-      console.error('  npm install -g idlewatch')
-      console.error('  idlewatch install-agent')
+      console.error('Install once:  npm install -g idlewatch')
+      console.error('Then enable:   idlewatch install-agent')
       console.error('')
-      console.error(`For a one-off run right now: ${inferCliCommand('run')}`)
+      console.error(`Run now:       ${inferCliCommand('run')}`)
       process.exit(1)
     }
 

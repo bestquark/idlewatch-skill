@@ -797,6 +797,8 @@ test('install-agent help explains config is optional', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Saved config is optional on first install/)
+  assert.match(run.stdout, /npm install -g idlewatch/)
+  assert.match(run.stdout, /idlewatch install-agent/)
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
@@ -823,9 +825,10 @@ test('install-agent refuses disposable npm exec paths and explains the durable p
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Background install needs a durable IdleWatch install first/)
-    assert.match(run.stderr, /npm install -g idlewatch/)
-    assert.match(run.stderr, /idlewatch install-agent/)
-    assert.match(run.stderr, /For a one-off run right now: npx idlewatch run/)
+    assert.match(run.stderr, /Install once:\s+npm install -g idlewatch/)
+    assert.match(run.stderr, /Then enable:\s+idlewatch install-agent/)
+    assert.match(run.stderr, /Run now:\s+npx idlewatch run/)
+    assert.doesNotMatch(run.stderr, /npm cache and can disappear later/)
     assert.equal(fs.existsSync(path.join(tempDir, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')), false)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
