@@ -839,6 +839,8 @@ test('main help matches the current source-checkout invocation path', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /^node .*bin\/idlewatch-agent\.js\n\nUsage:\s+node .*bin\/idlewatch-agent\.js <command> \[options\]/)
+  assert.match(run.stdout, /quickstart\s+Set up this device \(name, metrics, optional cloud link\)/)
+  assert.doesNotMatch(run.stdout, /quickstart\s+Set up this device \(API key, name, metrics\)/)
   assert.doesNotMatch(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/)
 })
 

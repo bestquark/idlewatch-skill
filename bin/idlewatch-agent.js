@@ -252,7 +252,7 @@ function printHelp() {
 Usage:  ${cliBase} <command> [options]
 
 Commands:
-  quickstart   Set up this device (API key, name, metrics)
+  quickstart   Set up this device (name, metrics, optional cloud link)
   configure    Re-open setup to change settings — values auto-filled
   status       Show device config and background agent state
   run          Run the collector in the foreground

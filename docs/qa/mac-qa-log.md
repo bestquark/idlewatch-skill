@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:48 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R132 shipped one tiny help-path polish improvement; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 9:05 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R133 shipped one tiny top-level help wording polish; cron repo path still stale
+
+---
+
+## Cycle R133 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/help polish fix only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Main `--help` no longer frames `quickstart` as if an API key were always part of setup.
+- Top-level command help now matches the calmer real product shape:
+  - `quickstart   Set up this device (name, metrics, optional cloud link)`
+- This keeps local-only onboarding feeling first-class instead of like a cloud path missing a prerequisite.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R133 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|main help stays on the durable command in npx context'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L31 — Top-level `quickstart` help no longer implies setup always starts with an API key
+**Why it matters:** The local-only setup path is already polished and real, but the first command list people see still described setup as `API key, name, metrics`. That was small, but it subtly made the product feel more cloud-first and more technical than the actual onboarding flow.
+
+**What shipped**
+- Reworded the top-level help command summary from:
+  - `quickstart   Set up this device (API key, name, metrics)`
+- To:
+  - `quickstart   Set up this device (name, metrics, optional cloud link)`
+- Added regression coverage so main help keeps the local-first framing.
+
+### Acceptance notes
+- First-run help now better matches the actual local-only vs cloud choice in setup.
+- No setup semantics changed.
+- The working telemetry path remains untouched.
 
 ---
 
