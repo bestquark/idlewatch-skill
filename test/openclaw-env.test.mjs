@@ -835,6 +835,8 @@ test('configure success says to refresh an already-running background agent', ()
     })
 
     assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "QA Box"\./)
+    assert.doesNotMatch(configure.stdout, /✅ Setup complete — "QA Box" is live!/)
     assert.match(configure.stdout, /Background agent:\s+already running/)
     assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
     assert.doesNotMatch(configure.stdout, /To keep it running:/)

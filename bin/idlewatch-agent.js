@@ -1087,7 +1087,10 @@ const subcommandPromise = (async () => {
         const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
         const launchAgentState = probeOwnedLaunchAgentState()
         const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
-        console.log(`\n✅ Setup complete — "${result.deviceName}" is live!`)
+        const setupHeadline = isReconfigure
+          ? `\n✅ Settings saved for "${result.deviceName}".`
+          : `\n✅ Setup complete — "${result.deviceName}" is live!`
+        console.log(setupHeadline)
         console.log(`   Mode:   ${modeLabel}`)
         console.log(`   Config: ${result.outputEnvFile}`)
         if (result.temperatureHelper?.status === 'installed') {

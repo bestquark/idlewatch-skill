@@ -2,11 +2,11 @@
 
 **Cycle:** R90 (installer/CLI polish QA follow-up)
 
-## Status: OPEN — one small configure-copy mismatch remains
+## Status: CLOSED — configure success copy now matches reconfigure state
 
 The core pipeline still works and the setup flow is in good shape. Device identity persists, metric toggles save cleanly, LaunchAgent install/uninstall messaging is calm, `status` is state-aware, and install-path hints are clear.
 
-One small polish issue remains: after `configure`, the success headline still reads like a brand-new first run even when the device was already set up and the background agent still needs a refresh to pick up the saved config.
+The one small polish issue from this cycle is now fixed: `configure` uses reconfiguration-specific success copy, so the headline no longer overstates background state after saved settings change.
 
 ---
 
@@ -14,7 +14,7 @@ One small polish issue remains: after `configure`, the success headline still re
 
 ### M1. `configure` still ends with first-run “Setup complete … is live” copy even for an already-configured device
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 The footer copy was already improved and now correctly says:
@@ -63,10 +63,10 @@ So the footer is precise, but the headline still pulls in the opposite direction
    - apply hint: `re-run ... install-agent to refresh it with the saved config`
 
 **Acceptance criteria:**
-- [ ] `configure` / `reconfigure` use a reconfiguration-specific success headline when the device already has saved config.
-- [ ] The headline does not imply that background changes are already fully active when `install-agent` still needs to be re-run.
-- [ ] First-run `quickstart` can keep the existing simpler “Setup complete” success tone.
-- [ ] The success block reads as one coherent state, without the headline and footer subtly disagreeing.
+- [x] `configure` / `reconfigure` use a reconfiguration-specific success headline when the device already has saved config.
+- [x] The headline does not imply that background changes are already fully active when `install-agent` still needs to be re-run.
+- [x] First-run `quickstart` keeps the existing simpler “Setup complete” success tone.
+- [x] The success block now reads as one coherent state, without the headline and footer subtly disagreeing.
 
 ---
 
