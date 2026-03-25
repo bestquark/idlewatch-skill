@@ -1,42 +1,53 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R92 (installer/CLI polish QA — setup honesty pass)
+**Cycle:** R93 (installer/CLI polish QA — first-run status honesty pass)
 
-## Status: CLOSED — setup wording polished
+## Status: OPEN — one small setup-state polish issue
 
-The core installer/CLI flow is in good shape. Config persistence works, metric toggles save cleanly, LaunchAgent install/uninstall behavior stays calm, `--test-publish` wording is now aligned for sparse configs, device identity persists correctly, and install-path hints remain clear.
+The installer/CLI still feels mostly clean: quickstart saves config correctly, metric toggles persist, LaunchAgent install/uninstall messaging stays calm, `--test-publish` is concise, device identity persists, and npm/npx setup hints are easy to follow.
 
-This pass found one small but important product-taste issue in the first-run setup confirmation: a local-only quickstart says the device `is live` immediately after collecting a one-time sample, even when background collection has not been installed yet.
+This pass found one remaining product-taste issue in the first place many users will look after install: `idlewatch status` on a completely fresh home.
 
-That is not a pipeline failure, but it is a small trust wobble in the exact moment the product should feel simplest and most honest.
+Right now, the empty-state status screen prints a believable device name, a full default metric set, and `local-only` publish mode even when no config has ever been saved. Technically that is derived from defaults, but to an end user it reads more like "already configured" than "not set up yet."
+
+That is not a backend problem. It is just a small honesty issue in the setup surface, and it is worth tightening because first-run trust is built out of exactly these tiny details.
 
 ---
 
 ## Priority findings
 
-### M1. Fresh quickstart said the device `is live` before background collection was actually enabled
+### M1. Fresh `status` screen looks partially configured before setup has happened
 **Priority:** Medium  
-**Status:** Fixed in this cycle ✅
+**Status:** Open
 
 **Why this matters:**
-For end users, words like `live` imply ongoing collection is already active. In the current local quickstart flow, the product:
+On a totally fresh install, users often check `status` before running setup. The current output shows:
 
-- saves config
-- collects one verification sample
-- then tells the user:
-  - `✅ Setup complete — "QA Box" is live!`
-- while also saying the next step is:
-  - `node bin/idlewatch-agent.js install-agent   Auto-start in background (recommended)`
+- a concrete device name (`Leptons-Mini` in this environment)
+- a concrete publish mode (`local-only`)
+- a long enabled-metrics list (`CPU, Memory, GPU, Temperature, ...`)
+- plus `Config: (no saved config)`
 
-That combination is a little slippery. If background collection is not installed yet, the device is not really "live" in the everyday sense — it is configured and verified, but not continuously running.
+That mix sends two different messages at once.
 
-This is exactly the kind of tiny wording mismatch that makes setup feel more technical and less trustworthy than it needs to. A cleaner framing would acknowledge reality:
+The last line says "not configured," but most of the screen says "already configured." For a new user, that can raise needless questions:
 
-- setup is complete
-- telemetry was verified
-- background collection is optional but not yet enabled
+- Did IdleWatch already pick settings for me?
+- Is it already collecting?
+- Are these defaults actually live?
+- Do I need setup at all?
 
-The product already has the right behavior; it just deserves more precise copy.
+The product should feel calmer than that. A first-run status screen should read unmistakably as an empty state, not as a half-configured system.
+
+A cleaner direction would be to keep the useful facts while making the setup state explicit, for example by preferring language like:
+
+- setup not completed yet
+- config not saved yet
+- default values shown for preview only
+
+or by suppressing some fields entirely until config exists.
+
+No redesign needed — just a crisper empty-state presentation.
 
 **Exact repro:**
 1. Start with a fresh home:
@@ -44,32 +55,24 @@ The product already has the right behavior; it just deserves more precise copy.
    TMPHOME=$(mktemp -d)
    cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
    ```
-2. Run local quickstart without installing the LaunchAgent:
-   ```bash
-   HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-     IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
-     node bin/idlewatch-agent.js quickstart --no-tui
-   ```
-3. Observe the success copy:
-   - `✅ Setup complete — "QA Box" is live!`
-4. Confirm background collection is still not enabled:
+2. Run status before quickstart/configure:
    ```bash
    HOME="$TMPHOME" node bin/idlewatch-agent.js status
    ```
-5. Observe:
+3. Observe output similar to:
+   - `Device:       Leptons-Mini`
+   - `Publish mode: local-only`
+   - `Metrics:      CPU, Memory, GPU, Temperature, OpenClaw activity, OpenClaw tokens, OpenClaw runtime`
+   - `Config:       (no saved config)`
    - `Background:   LaunchAgent not installed`
 
 **Acceptance criteria:**
-- [x] First-run `quickstart` success copy does not imply continuous/background collection is already active when no LaunchAgent is installed.
-- [x] The confirmation language clearly distinguishes between:
-  - config saved
-  - sample verified
-  - background collection not yet enabled
-- [x] The updated copy stays short, calm, and non-technical.
-- [x] `configure` copy remains distinct from first-run setup copy.
-- [x] No auth, ingest, or packaging flow redesign is introduced.
+- [ ] On a fresh install with no saved config, `status` reads clearly as an unconfigured/empty state.
+- [ ] The screen does not imply that a device has already been meaningfully set up when `~/.idlewatch/idlewatch.env` does not exist.
+- [ ] If defaults are shown, they are explicitly labeled as defaults or preview values.
+- [ ] The output stays brief, calm, and non-technical.
+- [ ] Existing configured-device `status` output remains as-is or equivalently clear.
+- [ ] No auth, ingest, or major packaging flow redesign is introduced.
 
 ---
 
@@ -77,11 +80,11 @@ The product already has the right behavior; it just deserves more precise copy.
 - `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
 - Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
 - Reconfiguring metrics updates the saved env file correctly (`cpu,memory` → `agent_activity`).
-- Activity-only configs now report a real collected metric count in verification output.
-- `status` still shows installed vs not-installed LaunchAgent states and keeps the calmer re-enable hint after `uninstall-agent`.
+- `configure` still explains that saved changes apply on next start, and points users to `install-agent` to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
 - `install-agent` / `uninstall-agent` behavior remains concise and safe.
+- `--test-publish` stays short and understandable in local-only mode.
 - Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
-- `configure --help` still states that saved changes apply on next start and that reinstalling the agent refreshes the background process.
 
 ## Validation used
 ```bash
@@ -96,7 +99,6 @@ HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
-HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
   IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
@@ -113,6 +115,5 @@ node bin/idlewatch-agent.js configure --help
 
 ## Notes
 - No auth, ingest, or major packaging redesign recommended from this cycle.
-- Fixed: first-run setup now says setup is complete, keeps the verification line, and explicitly notes that background collection is not enabled yet when no LaunchAgent is installed.
-- `configure` success copy remains separate from first-run setup copy.
-- Product direction still looks right: minimal, low-friction setup with explicit background install when the user wants continuous collection.
+- Main UX nit left: first-run `status` should feel unmistakably like an empty state, not a preconfigured device.
+- Everything else in the requested polish lane looks solid.
