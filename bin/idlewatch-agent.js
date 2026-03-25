@@ -941,7 +941,7 @@ Usage:  ${statusCommand}
 Displays device config, publish mode, enabled metrics, last sample age,
 and background LaunchAgent state.
 Config changes saved by quickstart/configure apply on the next start.
-If the background agent is already running, re-run ${installAgentCommand} to restart it.`,
+If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
 Usage:  ${createCommand}
@@ -953,8 +953,8 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 
 Usage:  ${uninstallAgentCommand}
 
-Stops and removes the IdleWatch LaunchAgent. Telemetry collection stops
-until you manually run IdleWatch again.`,
+Stops and removes the IdleWatch LaunchAgent. Config and logs are kept in
+~/.idlewatch, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 
 Usage:  ${menubarCommand} [--launch] [--force]

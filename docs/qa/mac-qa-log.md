@@ -1,8 +1,42 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:12 PM (America/Toronto)  
-**Status:** CLOSED - R118 found no new polish issues worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 3:15 PM (America/Toronto)  
+**Status:** CLOSED - R119 shipped one tiny help-text consistency fix
+
+---
+
+## Cycle R119 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/help consistency fix only, with no setup-flow changes, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `status --help` now matches the calmer saved-config refresh wording already used by `configure --help` and setup completion.
+- `uninstall-agent --help` now reassures users that config and logs are kept in `~/.idlewatch`, so the background install feels as reversible in help as it already does in the command output.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R119 spot-check coverage
+- [x] `node bin/idlewatch-agent.js status --help`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='status help|uninstall-agent help|configure help'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L23 — Help text now stays aligned with the calmer saved-config / reversible-background mental model
+**Why it matters:** This was tiny, but real. The product behavior and main command output were already calm and trustworthy; a couple of subcommand help screens still used older, slightly harsher wording. Tightening that seam makes setup/reconfigure/status/uninstall feel like one product instead of a few slightly different voices.
+
+**What shipped**
+- Reworded `status --help` from a restart-oriented line to the same saved-config language used elsewhere:
+  - `If background mode is already enabled, re-run ... install-agent to refresh it with the saved config.`
+- Reworded `uninstall-agent --help` so it now says config and logs are kept in `~/.idlewatch` and background mode can be re-enabled later.
+- Left install, uninstall, setup, saved-config handling, and telemetry behavior unchanged.
+
+### Acceptance notes
+- Help now better matches the existing saved-config mental model.
+- Background removal feels explicitly reversible in help, not only in the actual command output.
+- The working telemetry path remains untouched.
 
 ---
 

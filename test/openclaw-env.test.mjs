@@ -843,6 +843,32 @@ test('configure help keeps saved-config reload wording short and consistent', ()
   assert.doesNotMatch(run.stdout, /restart it with the updated config\./)
 })
 
+test('status help matches the calmer saved-config refresh wording', () => {
+  const run = spawnSync(process.execPath, [BIN, 'status', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)
+  assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.doesNotMatch(run.stdout, /If the background agent is already running, re-run .* install-agent to restart it\./)
+})
+
+test('uninstall-agent help reassures that config and logs are kept', () => {
+  const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Config and logs are kept in/)
+  assert.match(run.stdout, /~\/\.idlewatch, so you can re-enable background mode later\./)
+  assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
+})
+
 test('install-agent refuses disposable npm exec paths and explains the durable path', () => {
   if (process.platform !== 'darwin') {
     return
