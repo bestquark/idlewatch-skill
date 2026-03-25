@@ -1,8 +1,83 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:33 PM (America/Toronto)  
-**Status:** CLOSED - install-before-setup next-step flow tightened
+**Last updated:** Wednesday, March 25th, 2026 — 1:48 PM (America/Toronto)  
+**Status:** OPEN - one npx/install-path help seam worth tightening
+
+---
+
+## Cycle R100 Status: OPEN
+
+This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, LaunchAgent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Most of the targeted polish seams still hold up well.
+- One small but real clarity issue remains in the `npx` background-install help path.
+- No auth, ingest, telemetry, or packaging redesign is recommended from this cycle.
+
+### R100 spot-check coverage
+- `node bin/idlewatch-agent.js install-agent --help`
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status` with LaunchAgent installed but not loaded
+- `uninstall-agent` messaging
+- `configure --no-tui` device rename + metric toggle persistence
+- `node bin/idlewatch-agent.js --help | sed -n '/test-publish/,+4p'`
+- `npx`-like `install-agent --help`
+- `npx`-like `quickstart --no-tui` in a clean HOME
+- `npx`-like `status`
+- `npx`-like `install-agent` refusal
+- `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [ ] L14 — `npx` help for `install-agent` still presents the wrong command as the usage line
+**Why it matters:** The real runtime behavior is already correct: background install is a durable-install feature, and `npx idlewatch install-agent` is refused. But the `--help` screen for that same path still headlines the invalid command as if it were usable. That tiny contradiction makes the setup story feel less crisp than the actual product behavior.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run:
+   ```bash
+   npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help
+   ```
+3. Compare with the real refusal path:
+   ```bash
+   npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent
+   ```
+
+**Observed**
+- Help currently starts with:
+  - `npx idlewatch install-agent — Install background LaunchAgent (macOS)`
+  - `Usage:  npx idlewatch install-agent`
+- But the actual command immediately refuses that route and says:
+  - `Background install needs a durable IdleWatch install first.`
+  - `Install once:  npm install -g idlewatch`
+  - `Then enable:   idlewatch install-agent`
+
+**Why this feels off**
+- The product behavior is neat; the help framing is the noisy part.
+- A cautious user checking help first gets shown the exact command they should not actually use.
+- This is a small trust seam in the npm/npx install-path guidance, which is one of the main polish targets for this lane.
+
+**Acceptance criteria**
+- When `install-agent --help` is invoked from an `npx`-like context, do not present `npx idlewatch install-agent` as the main usage line.
+- Prefer a calmer shape like:
+  - `Background mode needs a durable install.`
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Keep one-off foreground guidance on `npx` unchanged.
+- Do not change install semantics; this is copy/help-shape only.
+
+### Acceptance notes
+- First-run `status` still feels calm and minimal.
+- Install-before-setup still uses the right mental model.
+- Setup completion still distinguishes already-installed-needs-refresh vs not-enabled-yet.
+- Device rename still preserves the original device ID and log path while updating the visible device name.
+- Metric selection changes still persist cleanly into saved config and next `status` output.
+- LaunchAgent uninstall messaging remains clear and safe.
+- `--test-publish` remains present and discoverable.
+- The active repo/docs for this pass were again under `~/.openclaw/workspace.bak/idlewatch-skill`, not the stale path in the cron payload.
 
 ---
 
