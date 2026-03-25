@@ -161,11 +161,11 @@ Install once: npm install -g idlewatch
 Then enable: idlewatch install-agent`
   }
 
-  return `${installAgentCommand} — Install background LaunchAgent (macOS)
+  return `${installAgentCommand} — Enable background mode (macOS)
 
 Usage:  ${installAgentCommand}
 
-Installs the LaunchAgent for background mode.
+Enables the LaunchAgent for background mode.
 If setup is already saved, IdleWatch starts automatically.
 If not, it stays off until you save setup and re-run install-agent.`
 }
