@@ -940,6 +940,7 @@ if (args.has('--help') || args.has('-h')) {
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
+  const backgroundInstallCommand = backgroundInstallCommandForInvocation()
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = inferCliCommand('menubar')
   const reconfigureCommand = inferCliCommand('reconfigure')
@@ -961,7 +962,7 @@ Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
+If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     status: `${statusCommand} — Show device state
 
 Usage:  ${statusCommand}
@@ -969,7 +970,7 @@ Usage:  ${statusCommand}
 Displays device config, publish mode, enabled metrics, last sample age,
 and background LaunchAgent state.
 Config changes saved by quickstart/configure apply on the next start.
-If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
+If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
 Usage:  ${createCommand}
@@ -998,7 +999,7 @@ Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
+If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
 Usage:  ${dashboardCommand}

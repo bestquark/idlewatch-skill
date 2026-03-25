@@ -1,8 +1,44 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:00 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R138 spot-check found no new polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:14 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R139 shipped one tiny npx help-path fix; cron repo path still stale
+
+---
+
+## Cycle R139 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-path consistency fix only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `configure --help`, `reconfigure --help`, and `status --help` now keep the durable background-install path honest under `npx`/`npm exec`.
+- Those help screens now say:
+  - `If background mode is already enabled, re-run idlewatch install-agent to refresh it with the saved config.`
+- This removes one small but real contradiction in a cautious-user moment: foreground trial usage stays on `npx`, while LaunchAgent refresh guidance stays on the durable install path.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R139 spot-check coverage
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js configure --help`
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js status --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status help matches the calmer saved-config refresh wording'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L34 — `npx` configure/status/reconfigure help no longer suggest `npx idlewatch install-agent` for background refresh
+**Why it matters:** The product already treated durable background install as a separate path, and the runtime refusal/help around `install-agent` itself had already been polished. But these help screens still derived the refresh command from the current `npx` invocation, which quietly reintroduced the wrong mental model right where someone paused to read before changing settings.
+
+**What shipped**
+- Help-path refresh guidance for `configure`, `reconfigure`, and `status` now uses the durable background command helper instead of the current invocation path.
+- `npx` help now points to:
+  - `idlewatch install-agent`
+- Source-checkout and durable-install help still keep their existing invocation-aware wording.
+
+### Acceptance notes
+- Foreground `npx` usage still stays on `npx idlewatch ...`.
+- Background refresh guidance in help now matches the already-polished durable-install behavior.
+- The working telemetry path remains untouched.
 
 ---
 

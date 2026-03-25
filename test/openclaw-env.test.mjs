@@ -897,6 +897,21 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
   assert.doesNotMatch(run.stdout, /restart it with the updated config\./)
   assert.doesNotMatch(run.stdout, /Re-opens the setup wizard to change mode, API key, device name, or metrics\./)
+
+  const npxRun = spawnSync(process.execPath, [BIN, 'configure', '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/usr/local/lib/node_modules/npm/bin/npx-cli.js',
+      npm_command: 'exec'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(npxRun.status, 0, npxRun.stderr)
+  assert.match(npxRun.stdout, /If background mode is already enabled, re-run idlewatch install-agent to refresh it with the saved config\./)
+  assert.doesNotMatch(npxRun.stdout, /npx idlewatch install-agent/)
 })
 
 test('reconfigure help stays clean in non-TTY mode', () => {
