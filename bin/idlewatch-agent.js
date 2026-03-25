@@ -986,8 +986,8 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 
 Usage:  ${uninstallAgentCommand}
 
-Stops and removes the IdleWatch LaunchAgent. Config and logs are kept in
-~/.idlewatch, so you can re-enable background mode later.`,
+Stops and removes the IdleWatch LaunchAgent.
+Saved config and local logs stay in ~/.idlewatch, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 
 Usage:  ${menubarCommand} [--launch] [--force]

@@ -955,8 +955,7 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Config and logs are kept in/)
-  assert.match(run.stdout, /~\/\.idlewatch, so you can re-enable background mode later\./)
+  assert.match(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch, so you can re-enable background mode later\./)
   assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
 })
 

@@ -1,8 +1,48 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 7:13 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R153 spot-check pass found no new end-user polish issues
+**Last updated:** Wednesday, March 25th, 2026 — 7:33 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R154 shipped one tiny uninstall-help wording cleanup
+
+---
+
+## Cycle R154 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall-help wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `uninstall-agent --help` now uses a shorter, calmer reassurance line that scans more like the rest of the setup/install/reconfigure flow.
+- The help text now says:
+  - `Saved config and local logs stay in ~/.idlewatch, so you can re-enable background mode later.`
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R154 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent help reassures that config and logs are kept'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L42 — `uninstall-agent --help` reassurance now reads like one clean, low-noise retention promise
+**Why it matters:** This was tiny, but it sat in a cautious-user moment. The help text was accurate enough, yet the wrapped `Config and logs are kept in` line scanned a little clunkier than the rest of the polished setup/background copy.
+
+**What shipped**
+- Reworded `uninstall-agent --help` from:
+  - `Stops and removes the IdleWatch LaunchAgent. Config and logs are kept in ~/.idlewatch, so you can re-enable background mode later.`
+- To:
+  - `Stops and removes the IdleWatch LaunchAgent.`
+  - `Saved config and local logs stay in ~/.idlewatch, so you can re-enable background mode later.`
+- Added regression coverage so the calmer wording sticks.
+
+### Acceptance notes
+- Uninstall help still clearly says the action is reversible.
+- The saved-config / local-log retention story is now slightly easier to scan.
+- The working telemetry path remains untouched.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
