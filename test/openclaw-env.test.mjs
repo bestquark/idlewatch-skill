@@ -784,7 +784,7 @@ test('install-agent help explains config is optional', () => {
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
-test('install-agent follow-up preserves one-off command hints under npm exec env', () => {
+test('install-agent refuses disposable npm exec paths and explains the durable path', () => {
   if (process.platform !== 'darwin') {
     return
   }
@@ -805,17 +805,13 @@ test('install-agent follow-up preserves one-off command hints under npm exec env
       timeout: 15000
     })
 
-    assert.equal(run.status, 0, run.stderr)
-    assert.ok(run.stdout.includes('Next:         npx idlewatch quickstart'), 'should show one-off quickstart command')
-    assert.ok(run.stdout.includes('Then re-run:  npx idlewatch install-agent'), 'should show one-off reinstall command')
-    assert.ok(run.stdout.includes('Check:        npx idlewatch status'), 'should show one-off status command')
-    assert.ok(run.stdout.includes('Remove:       npx idlewatch uninstall-agent'), 'should show one-off uninstall command')
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Background install needs a durable IdleWatch install first/)
+    assert.match(run.stderr, /npm install -g idlewatch/)
+    assert.match(run.stderr, /idlewatch install-agent/)
+    assert.match(run.stderr, /For a one-off run right now: npx idlewatch run/)
+    assert.equal(fs.existsSync(path.join(tempDir, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')), false)
   } finally {
-    spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
-      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
-      encoding: 'utf8',
-      timeout: 15000
-    })
     rmSync(tempDir, { recursive: true, force: true })
   }
 })
@@ -844,7 +840,7 @@ test('install-agent follow-up uses source checkout command path', () => {
   }
 })
 
-test('quickstart and configure preserve one-off next steps under npm exec env', () => {
+test('quickstart and configure keep one-off runs honest about background install under npm exec env', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-npx-env-'))
   try {
     const baseEnv = {
@@ -868,9 +864,11 @@ test('quickstart and configure preserve one-off next steps under npm exec env', 
     })
 
     assert.equal(quickstart.status, 0, quickstart.stderr)
-    assert.match(quickstart.stdout, /npx idlewatch install-agent/)
     assert.match(quickstart.stdout, /npx idlewatch run/)
-    assert.doesNotMatch(quickstart.stdout, /idlewatch install-agent/)
+    assert.match(quickstart.stdout, /Background install needs a durable IdleWatch install first/)
+    assert.match(quickstart.stdout, /npm install -g idlewatch/)
+    assert.match(quickstart.stdout, /idlewatch install-agent/)
+    assert.doesNotMatch(quickstart.stdout, /npx idlewatch install-agent/)
 
     const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
       env: { ...baseEnv, IDLEWATCH_ENROLL_MONITOR_TARGETS: 'agent_activity' },
@@ -879,8 +877,11 @@ test('quickstart and configure preserve one-off next steps under npm exec env', 
     })
 
     assert.equal(configure.status, 0, configure.stderr)
-    assert.match(configure.stdout, /npx idlewatch install-agent/)
     assert.match(configure.stdout, /npx idlewatch run/)
+    assert.match(configure.stdout, /Background install needs a durable IdleWatch install first/)
+    assert.match(configure.stdout, /npm install -g idlewatch/)
+    assert.match(configure.stdout, /idlewatch install-agent/)
+    assert.doesNotMatch(configure.stdout, /npx idlewatch install-agent/)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

@@ -42,7 +42,7 @@ function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`
 }
 
-function inferCliCommand(command = '') {
+function detectCliInvocation() {
   const scriptArg = process.argv[1] || ''
   const scriptBase = path.basename(scriptArg)
   const execArgv = process.execArgv || []
@@ -54,21 +54,21 @@ function inferCliCommand(command = '') {
   const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
   const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || npmCommand === 'exec' || npmLifecycleEvent === 'npx' || (userAgent.includes('npm/') && execArgv.includes('exec'))
 
-  let base
-  if (looksLikeNpx) {
-    base = 'npx idlewatch'
-  } else if (looksLikeGlobalShim) {
-    base = 'idlewatch'
-  } else if (looksLikeRepoScript) {
+  if (looksLikeNpx) return { kind: 'npx', base: 'npx idlewatch' }
+  if (looksLikeGlobalShim) return { kind: 'global', base: 'idlewatch' }
+  if (looksLikeRepoScript) {
     const relativeScript = path.relative(process.cwd(), scriptArg)
     const displayScript = relativeScript && !relativeScript.startsWith('..') && !path.isAbsolute(relativeScript)
       ? relativeScript
       : scriptArg
-    base = `node ${shellQuote(displayScript)}`
-  } else {
-    base = 'idlewatch'
+    return { kind: 'source', base: `node ${shellQuote(displayScript)}` }
   }
 
+  return { kind: 'global', base: 'idlewatch' }
+}
+
+function inferCliCommand(command = '') {
+  const { base } = detectCliInvocation()
   return command ? `${base} ${command}` : base
 }
 
@@ -121,6 +121,7 @@ function launchctlOutput(result) {
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
+  const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
   const runCommand = inferCliCommand('run')
   const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
@@ -137,6 +138,14 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   }
 
   console.log('\n   To keep it running:')
+  if (invocation.kind === 'npx') {
+    console.log(`     ${runCommand}   Run in foreground`)
+    console.log('     Background install needs a durable IdleWatch install first.')
+    console.log('     Install it once:  npm install -g idlewatch')
+    console.log('     Then enable it:   idlewatch install-agent')
+    return
+  }
+
   console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
   console.log(`     ${runCommand}   Run in foreground`)
 }
@@ -861,7 +870,8 @@ Usage:  ${installAgentCommand}
 
 Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
 in the background. Saved config is optional on first install; you can
-run quickstart later and then reinstall to apply it.`,
+run quickstart later and then reinstall to apply it.
+One-off npx/npm exec runs need a durable install first.`,
     'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
 
 Usage:  ${uninstallAgentCommand}
@@ -938,6 +948,20 @@ const subcommandPromise = (async () => {
       console.error('LaunchAgent is only available on macOS.')
       process.exit(1)
     }
+
+    const invocation = detectCliInvocation()
+    if (invocation.kind === 'npx') {
+      console.error('Background install needs a durable IdleWatch install first.')
+      console.error('One-off npx/npm exec paths live in npm cache and can disappear later.')
+      console.error('')
+      console.error('Do this instead:')
+      console.error('  npm install -g idlewatch')
+      console.error('  idlewatch install-agent')
+      console.error('')
+      console.error(`For a one-off run right now: ${inferCliCommand('run')}`)
+      process.exit(1)
+    }
+
     const { svcLabel, uid, domain, domainTarget, plistPath } = launchAgentInfo()
     const plistDir = path.dirname(plistPath)
     const envFile = defaultPersistedEnvFilePath()
@@ -1524,12 +1548,19 @@ if (statusRequested) {
     console.log(`  Get started:  ${inferCliCommand('quickstart')}`)
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
-    console.log(`  Start:    ${inferCliCommand('run')}  or  ${inferCliCommand('install-agent')}`)
+    if (detectCliInvocation().kind === 'npx') {
+      console.log(`  Start:    ${inferCliCommand('run')}`)
+      console.log('  Background: install IdleWatch globally first, then run idlewatch install-agent')
+    } else {
+      console.log(`  Start:    ${inferCliCommand('run')}  or  ${inferCliCommand('install-agent')}`)
+    }
   } else if (!isPlaceholderName) {
     const installAgentCommand = inferCliCommand('install-agent')
     console.log(`  Change:   ${inferCliCommand('configure')}`)
 
-    if (process.platform === 'darwin') {
+    if (detectCliInvocation().kind === 'npx') {
+      console.log('  Background: install IdleWatch globally first, then run idlewatch install-agent')
+    } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
         console.log(`  Apply:    re-run ${installAgentCommand} after config changes to refresh the background agent`)
@@ -2519,7 +2550,11 @@ subcommandPromise
       const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
       accessSync(launchAgentPath, constants.F_OK)
     } catch {
-      runLog.write(`Tip: Run ${inferCliCommand('install-agent')} to run in the background, or ${inferCliCommand('menubar')} for the menu bar app.\n`)
+      if (detectCliInvocation().kind === 'npx') {
+        runLog.write(`Tip: One-off npx runs are great for testing. For background mode, install IdleWatch once and then run idlewatch install-agent.\n`)
+      } else {
+        runLog.write(`Tip: Run ${inferCliCommand('install-agent')} to run in the background, or ${inferCliCommand('menubar')} for the menu bar app.\n`)
+      }
     }
     loop()
   })

@@ -1,8 +1,24 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R97 (installer/CLI polish QA — one-off LaunchAgent durability fix)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle shipped the small fix that mattered most: one-off `npx` / `npm exec` runs no longer pretend they are a safe background-install path.
+
+Instead of writing a LaunchAgent against npm's disposable `_npx` cache, `install-agent` now stops early with a plain explanation and points users to the durable path:
+
+- install IdleWatch normally first
+- then run `idlewatch install-agent`
+- keep one-off `npx` runs for foreground testing
+
+That keeps setup honest, removes a haunted-after-lunch failure mode, and preserves the clean low-friction path for real installs.
+
+---
+
 **Cycle:** R96 (installer/CLI polish QA — one-off LaunchAgent durability pass)
 
-## Status: OPEN — action recommended
+## Status: CLOSED — shipped in this cycle
 
 Most of the installer/CLI still feels nicely restrained. But this pass found one setup-path bug that is too sharp to leave in the “paper-cut” bucket:
 
@@ -87,12 +103,12 @@ What should not happen is “success” copy for a background job wired to temp 
 7. Observe background startup fails with `MODULE_NOT_FOUND` because the cached one-off bin path is gone.
 
 **Acceptance criteria:**
-- [ ] One-off `npx` / `npm exec` usage does not install a LaunchAgent that depends on transient npm cache paths.
-- [ ] If background mode requires a durable install, the CLI says that plainly and does not present `npx idlewatch install-agent` as a recommended steady-state path.
-- [ ] Success copy for `install-agent` remains calm and low-friction, but honest about prerequisites.
-- [ ] Global installs still keep the clean `idlewatch install-agent` path.
-- [ ] Source-checkout usage can continue using `node bin/idlewatch-agent.js install-agent` if that path is intentional and durable.
-- [ ] No auth, ingest, or major packaging redesign is introduced.
+- [x] One-off `npx` / `npm exec` usage does not install a LaunchAgent that depends on transient npm cache paths.
+- [x] If background mode requires a durable install, the CLI says that plainly and does not present `npx idlewatch install-agent` as a recommended steady-state path.
+- [x] Success copy for `install-agent` remains calm and low-friction, but honest about prerequisites.
+- [x] Global installs still keep the clean `idlewatch install-agent` path.
+- [x] Source-checkout usage can continue using `node bin/idlewatch-agent.js install-agent` if that path is intentional and durable.
+- [x] No auth, ingest, or major packaging redesign is introduced.
 
 ---
 
