@@ -14,5 +14,8 @@ try {
 }
 
 console.log('')
-console.log('  Run "idlewatch quickstart" to set up this device.')
+console.log('  Set up this device:')
+console.log('    - global install:  idlewatch quickstart')
+console.log('    - one-off use:     npx idlewatch quickstart')
+console.log('    - packaged app:    use the bundled quickstart command inside IdleWatch.app docs')
 console.log('')

@@ -101,8 +101,14 @@ if [[ -f "$CONFIG_ENV_PATH" ]]; then
 else
   echo "No saved IdleWatch config yet at: $CONFIG_ENV_PATH"
   echo ""
-  echo "Run setup first (either 'quickstart' in Terminal, or '$BIN_PATH quickstart')"
-  echo "then enable the agent from System Settings → Users & Groups → Login Items."
+  echo "The LaunchAgent is already installed and will start at login."
+  echo "Finish setup to give it a saved config:"
+  if command -v idlewatch >/dev/null 2>&1; then
+    echo "   idlewatch quickstart"
+  fi
+  echo "   $BIN_PATH quickstart"
+  echo ""
+  echo "After setup, re-run this install script once to restart the background agent with the new config."
   if command -v idlewatch >/dev/null 2>&1; then
     echo ""
     echo "💡 Quick status check:"

@@ -216,6 +216,32 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.match(run.stdout, /quickstart/)
   assert.match(run.stdout, /--dry-run/)
   assert.match(run.stdout, /--once/)
+  assert.match(run.stdout, /--test-publish/)
+})
+
+test('--test-publish aliases to one-shot publish mode', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-test-publish-home-'))
+  const envDir = path.join(tempHome, '.idlewatch')
+  fs.mkdirSync(envDir, { recursive: true })
+  fs.writeFileSync(path.join(envDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Alias Box',
+    'IDLEWATCH_DEVICE_ID=alias-box',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    'IDLEWATCH_OPENCLAW_USAGE=off'
+  ].join('\n') + '\n')
+
+  const run = spawnSync(process.execPath, [BIN, '--test-publish'], {
+    env: {
+      ...process.env,
+      HOME: tempHome
+    },
+    encoding: 'utf8',
+    timeout: 15000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Sample collected/)
+  assert.match(run.stdout, /local-only mode/)
 })
 
 test('uses cloud publish label for once mode when cloud ingest config is active', () => {

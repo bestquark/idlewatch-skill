@@ -54,11 +54,11 @@ Commands:
   version      Show version
 
 Options:
-  --once       Collect and publish one sample, then exit
-  --dry-run    Collect and print one sample without publishing
-  --json       Output raw JSON instead of summary (with --once/--dry-run)
-  --help       Show this help
-  --help-env   Show all environment variables
+  --once, --test-publish  Collect and publish one sample, then exit
+  --dry-run               Collect and print one sample without publishing
+  --json                  Output raw JSON instead of summary (with --once/--dry-run)
+  --help                  Show this help
+  --help-env              Show all environment variables
 
 Get started:  idlewatch quickstart`)
 }
@@ -667,7 +667,6 @@ const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
-const reloadRequested = args.has('reload')
 
 // No args + non-TTY: print help instead of silently doing nothing
 if (argv.length === 0 && (!process.stdin.isTTY || !process.stdout.isTTY) && !statusRequested && !runRequested && !dashboardRequested) {
@@ -698,13 +697,17 @@ Use --no-tui for plain-text prompts (no Rust TUI).`,
 Usage:  idlewatch configure [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
-Existing values are pre-filled so you only change what you need.`,
+Existing values are pre-filled so you only change what you need.
+Saved changes apply the next time IdleWatch starts.
+If the background agent is already running, re-run idlewatch install-agent to restart it with the updated config.`,
     status: `idlewatch status — Show device state
 
 Usage:  idlewatch status
 
 Displays device config, publish mode, enabled metrics, last sample age,
-and background LaunchAgent state.`,
+and background LaunchAgent state.
+Config changes saved by quickstart/configure apply on the next start.
+If the background agent is already running, re-run idlewatch install-agent to restart it.`,
     create: `idlewatch create — Manage custom telemetry metrics
 
 Usage:  idlewatch create
@@ -735,7 +738,9 @@ Installs the macOS menu bar companion app.
 Usage:  idlewatch reconfigure [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
-Existing values are pre-filled so you only change what you need.`,
+Existing values are pre-filled so you only change what you need.
+Saved changes apply the next time IdleWatch starts.
+If the background agent is already running, re-run idlewatch install-agent to restart it with the updated config.`,
     dashboard: `idlewatch dashboard — Launch local telemetry dashboard
 
 Usage:  idlewatch dashboard
@@ -981,7 +986,7 @@ if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
 }
 
 const DRY_RUN = args.has('--dry-run')
-const ONCE = args.has('--once')
+const ONCE = args.has('--once') || args.has('--test-publish')
 const JSON_OUTPUT = args.has('--json')
 const DEVICE_NAME = (process.env.IDLEWATCH_DEVICE_NAME || process.env.IDLEWATCH_HOST || os.hostname()).trim()
 const DEVICE_ID = (process.env.IDLEWATCH_DEVICE_ID || DEVICE_NAME)
@@ -1357,10 +1362,11 @@ if (statusRequested) {
   if (!hasConfig) {
     console.log('  Get started:  idlewatch quickstart')
   } else if (!hasSamples) {
-    console.log('  Test:     idlewatch --once')
+    console.log('  Test:     idlewatch --once  (alias: --test-publish)')
     console.log('  Start:    idlewatch run  or  idlewatch install-agent')
   } else if (!isPlaceholderName) {
     console.log('  Change:   idlewatch configure')
+    console.log('  Apply:    restart IdleWatch after config changes')
   }
   process.exit(0)
 }

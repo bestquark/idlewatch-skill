@@ -12,13 +12,13 @@ All polish priorities from plan verified complete. v0.2.0 production-ready with 
 | ID | Item | Status |
 |----|------|--------|
 | H1 | Device name persists after reauth/reinstall | ✅ Verified in v0.2.0 |
-| H2 | Config reload behavior predictable | ✅ Verified in v0.2.0 |
+| H2 | Config reload behavior predictable | ✅ Updated in R77 — docs now state saved config applies on next start; no fake reload path |
 
 ### Priority 2: Medium Severity
 | ID | Item | Status |
 |----|------|--------|
 | M1 | Status screen showing device/link/metric state | ✅ Visible in v0.2.0 |
-| M2 | Explicit test publish flow (CLI `idlewatch --test-publish`) | ✅ Available in v0.2.0 |
+| M2 | Explicit test publish flow (CLI `idlewatch --test-publish`) | ✅ Updated in R77 — alias now wired to `--once` and documented consistently |
 | M3 | Clearer success confirmation after first link/publish | ✅ Present in v0.2.0 |
 | M4 | Test publish errors clear & actionable | ✅ Formatted/API validation in v0.2.0 |
 
@@ -41,7 +41,7 @@ All polish priorities from plan verified complete. v0.2.0 production-ready with 
 - **Severity:** ✅ Verified - working in v0.2.0
 
 ### H2. Config reload behavior is predictable
-- **Severity:** ✅ Verified - documented reload commands available
+- **Severity:** ✅ Updated in R77 - docs now say saved config applies on next start; background agent restart path is explicit
 ---
 
 ## Priority 2: Medium Severity
@@ -50,7 +50,7 @@ All polish priorities from plan verified complete. v0.2.0 production-ready with 
 - **Severity:** ✅ Verified - visible in v0.2.0
 
 ### M2. Add explicit test publish flow in setup/control
-- **Severity:** ✅ Verified - CLI `idlewatch --test-publish` available
+- **Severity:** ✅ Updated in R77 - CLI `idlewatch --test-publish` aliases to `--once`; help/docs use the same wording
 
 ### M3. Clearer success confirmation after first link/publish
 - **Severity:** ✅ Verified - clear messages with device name/status in v0.2.0

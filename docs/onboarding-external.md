@@ -2,6 +2,11 @@
 
 ## Paths for external users
 
+Command rule of thumb:
+- global install → `idlewatch ...`
+- one-off / no install → `npx idlewatch ...`
+- packaged app → use the app-bundled script path shown below
+
 ### 1) npx quickstart (fastest)
 
 ```bash

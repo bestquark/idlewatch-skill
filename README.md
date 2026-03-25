@@ -25,22 +25,23 @@ npx idlewatch quickstart
    ```
 3. Pick a device name and metrics — done!
 
-The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample so your device links right away. Config is auto-loaded on later runs.
+The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample so your device links right away. Config is auto-loaded when IdleWatch starts. If you change settings later, they apply on the next start.
 
 Use `--no-tui` for plain-text prompts if the TUI isn't available.
 
 ## Verify & run
 
 ```bash
-idlewatch --once       # one-shot publish check
-idlewatch --dry-run    # preview collected metrics without publishing
-idlewatch run          # start continuous collection
+idlewatch --once              # one-shot publish check
+idlewatch --test-publish      # alias for --once
+idlewatch --dry-run           # preview collected metrics without publishing
+idlewatch run                 # start continuous collection
 ```
 
 ## Background collection (macOS)
 
 ```bash
-idlewatch install-agent   # LaunchAgent for automatic startup
+idlewatch install-agent   # LaunchAgent for automatic startup (re-run after config changes)
 idlewatch menubar         # menu bar app for quick status
 ```
 
