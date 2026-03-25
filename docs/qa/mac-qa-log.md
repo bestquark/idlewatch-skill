@@ -2,7 +2,7 @@
 
 **Cycle:** R86 (installer/CLI polish follow-up)
 
-## Status: OPEN — one low-risk copy polish nit remains
+## Status: CLOSED — local-only setup copy polished
 
 Core setup/install behavior still feels solid. Reconfigure + LaunchAgent refresh now behave like a boring, dependable path, which is exactly what this product wants. This pass only found one small UX polish issue: the local-only quickstart success path still flashes a warning-style sample message right before declaring success.
 
@@ -12,7 +12,7 @@ Core setup/install behavior still feels solid. Reconfigure + LaunchAgent refresh
 
 ### L1. Local-only quickstart still uses warning-flavored sample copy inside an otherwise successful setup flow
 **Priority:** Low  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 The setup flow is almost there, but the emotional tone is slightly crossed. In local-only mode, the wizard says:
@@ -50,11 +50,11 @@ For a simple setup flow, local-only mode should feel intentional, calm, and comp
    ```
 
 **Acceptance criteria:**
-- [ ] Local-only quickstart success avoids warning-style framing for expected local behavior.
-- [ ] The one-shot verification message feels intentionally successful in local mode (for example: saved locally, verified locally, or similar calm wording).
-- [ ] Users can still clearly tell that local-only mode does not publish to the cloud.
-- [ ] Cloud mode keeps stronger publish confirmation language.
-- [ ] The setup completion block remains short and visually quiet.
+- [x] Local-only quickstart success avoids warning-style framing for expected local behavior.
+- [x] The one-shot verification message feels intentionally successful in local mode (uses calm “saved locally” wording).
+- [x] Users can still clearly tell that local-only mode does not publish to the cloud.
+- [x] Cloud mode keeps stronger publish confirmation language.
+- [x] The setup completion block remains short and visually quiet.
 
 ---
 
@@ -86,6 +86,10 @@ HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 node scripts/postinstall.mjs
 ```
+
+## Resolution
+- Local-only quickstart verification now prints `✅ Sample collected … and saved locally` instead of warning-style `⚠️ … (not published)` copy.
+- The existing stderr note still explains that local-only mode stays on disk until a cloud API key is added, so intent stays clear without making success feel broken.
 
 ## Notes
 - The live repo-level `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` still behaves more like a historical snapshot than an active checklist, so the practical source of truth for this cycle was the current CLI behavior.

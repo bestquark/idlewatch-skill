@@ -362,6 +362,8 @@ test('quickstart local mode does not leak stale cloud env into required once tes
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /✅ Sample collected .* and saved locally/)
+  assert.doesNotMatch(run.stdout, /⚠️ Sample collected/)
   assert.match(run.stdout, /✅ Setup complete/)
   assert.match(run.stdout, /Local telemetry verified/)
   assert.doesNotMatch(run.stdout, /Initial telemetry sample sent successfully\./)
@@ -472,6 +474,8 @@ test('quickstart success summarizes setup verification instead of dumping raw te
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /✅ Sample collected .* and saved locally/)
+  assert.doesNotMatch(run.stdout, /⚠️ Sample collected/)
   assert.match(run.stdout, /✅ Setup complete/)
   assert.match(run.stdout, /Local telemetry verified/)
   assert.doesNotMatch(run.stdout, /"schemaFamily":"idlewatch\.openclaw\.fleet"/)

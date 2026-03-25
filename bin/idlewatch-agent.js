@@ -1384,6 +1384,10 @@ function getPublishModeLabel() {
   return 'local-only'
 }
 
+function isExpectedLocalOnlyMode() {
+  return getPublishModeLabel() === 'local-only'
+}
+
 if (statusRequested) {
   const envFile = defaultPersistedEnvFilePath()
   const hasConfig = fs.existsSync(envFile)
@@ -2354,6 +2358,8 @@ async function tick() {
       console.log(`${summary} — nothing published (dry run)`)
     } else if (published) {
       console.log(summarizeSample(row) + ' and published')
+    } else if (isExpectedLocalOnlyMode()) {
+      console.log(summarizeSample(row) + ' and saved locally')
     } else {
       const base = summarizeSample(row).replace(/^✅/, '⚠️')
       console.log(base + ' (not published)')
