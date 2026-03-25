@@ -1,8 +1,50 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:28 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R157 no new polish regressions worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 8:45 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R158 shipped one tiny top-level help polish fix
+
+---
+
+## Cycle R158 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny top-level help-summary cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Standard top-level `--help` no longer leads with the more technical `Install background LaunchAgent (macOS)` phrasing for `install-agent`.
+- The main command list now says:
+  - `install-agent   Enable background mode (macOS)`
+- This keeps the scan-first command summary aligned with the calmer setup/install mental model already used elsewhere in the product, while leaving the detailed `install-agent --help` copy intact.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R158 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|main help stays on the durable command in npx context'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L44 — Standard top-level help now frames `install-agent` as enabling background mode, not as a LaunchAgent detail first
+**Why it matters:** This was tiny, but it sat in a scan-first moment. The rest of the polished setup/install flow already steers toward the calmer product story — enable background mode, then let the implementation details stay secondary. Main help for the normal durable/source-checkout path still surfaced the lower-level `LaunchAgent` wording first.
+
+**What shipped**
+- Reworded the standard main-help `install-agent` summary from:
+  - `install-agent   Install background LaunchAgent (macOS)`
+- To:
+  - `install-agent   Enable background mode (macOS)`
+- Left the `npx` summary unchanged:
+  - `install-agent   Enable background mode (requires durable install)`
+- Added regression coverage so both source-checkout and `npx` top-level help keep the intended command summaries.
+
+### Acceptance notes
+- This is copy-only; `install-agent` behavior, saved-config handling, and LaunchAgent semantics are unchanged.
+- `install-agent --help` still explains the macOS LaunchAgent behavior in detail when someone asks for it.
+- The working telemetry path remains untouched.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 

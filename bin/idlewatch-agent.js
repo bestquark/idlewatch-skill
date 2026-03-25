@@ -250,7 +250,7 @@ function printHelp() {
   const cliBase = inferCliCommand()
   const installAgentSummary = invocation.kind === 'npx'
     ? 'Enable background mode (requires durable install)'
-    : 'Install background LaunchAgent (macOS)'
+    : 'Enable background mode (macOS)'
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
