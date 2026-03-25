@@ -1192,11 +1192,27 @@ test('configure keeps the saved device id stable when renaming the device', () =
 
     assert.equal(configure.status, 0, configure.stderr)
     assert.match(configure.stdout, /✅ Settings saved for "Renamed Box"\./)
+    assert.match(configure.stdout, /Device ID: qa-box \(kept from original setup for continuity\)/)
 
     const updatedEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
     assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Box/)
     assert.match(updatedEnv, /IDLEWATCH_DEVICE_ID=qa-box/)
     assert.doesNotMatch(updatedEnv, /IDLEWATCH_DEVICE_ID=renamed-box/)
+
+    const status = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(status.status, 0, status.stderr)
+    assert.match(status.stdout, /Device:\s+Renamed Box/)
+    assert.match(status.stdout, /Device ID:\s+qa-box \(kept from original setup for continuity\)/)
+    assert.match(status.stdout, /Local log:\s+.*qa-box-metrics\.ndjson/)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

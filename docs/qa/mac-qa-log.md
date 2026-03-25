@@ -1,24 +1,24 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:05 PM (America/Toronto)  
-**Status:** OPEN - R114 found one real device-identity clarity seam
+**Last updated:** Wednesday, March 25th, 2026 — 3:15 PM (America/Toronto)  
+**Status:** COMPLETE - R114 rename/status clarity fix shipped
 
 ---
 
-## Cycle R114 Status: OPEN
+## Cycle R114 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- Reopened one medium-severity polish item in the device-identity lane.
-- Core behavior is still correct: reconfigure preserves the original device ID/log/cache identity on purpose.
-- The product seam is clarity, not correctness: after renaming a device, `status` can read like two different devices unless the CLI explains why the old ID/log stem stayed put.
-- No auth, ingest, packaging, or background-agent behavior changes are recommended from this pass.
+- Shipped one small, low-risk polish fix in the device-identity lane.
+- Core behavior stays the same: reconfigure still preserves the original device ID/log/cache identity on purpose.
+- The product seam is now explained directly in both reconfigure completion and `status`, so preserved identity reads as intentional continuity rather than partial drift.
+- No auth, ingest, packaging, or background-agent behavior changes were needed.
 
 ### Prioritized findings
 
-#### [ ] M6 — Device rename persistence is correct, but the status screen does not explain the preserved device identity clearly enough
+#### [x] M6 — Device rename persistence is correct, and the status/reconfigure UX now explains preserved identity clearly
 **Why it matters:** This is exactly the kind of subtle trust seam that makes a polished setup feel slightly off. The product intentionally keeps the original device identity stable across reconfigure, which is good for continuity. But after a rename, `status` shows the new visible name beside the old device ID and old log-file stem with no explanation. To an end user, that can look like partial config drift rather than an intentional identity-preservation rule.
 
 **Exact repro**
@@ -65,13 +65,18 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 - The wording is the seam: the CLI currently makes preserved identity look like a mismatch.
 - This is especially likely to confuse cautious users doing a rename specifically to clean up what they see in the product.
 
-**Acceptance criteria**
-- Keep the current persistence behavior unless product direction changes.
-- Make the status/reconfigure UX explicitly explain that the device name changed while the stable device identity was preserved.
-- A minimal acceptable shape would be one short clarifier when `DEVICE_ID` no longer matches the slugified visible name, e.g.:
+**What shipped**
+- Kept the current persistence behavior unchanged.
+- `configure` / `reconfigure` now add a short clarifier when the visible device name changed but the stable device identity was preserved.
+- `status` now shows the same calm clarification inline:
   - `Device ID: kitchen-mac (kept from original setup for continuity)`
-- If the local log/cache path is shown with the old stem, the surrounding copy should make that feel intentional rather than stale.
-- Do not add a long paragraph or extra setup branch; this should stay calm and low-noise.
+- This makes the old local-log stem feel intentional without adding any extra setup branch or long explanation.
+
+**Acceptance notes**
+- The stable device identity is still preserved across rename.
+- The wording now explains that preserved identity directly where users notice it.
+- The log/cache path remains unchanged and now reads as intentional continuity rather than stale config.
+- No auth, ingest, packaging, or telemetry-path behavior was touched.
 
 ### Spot-check coverage
 - Clean first-run `status` from a packaged/global install

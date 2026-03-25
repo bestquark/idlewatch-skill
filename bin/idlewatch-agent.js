@@ -133,6 +133,18 @@ function backgroundInstallCommandForInvocation(invocation = detectCliInvocation(
   return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
 }
 
+function slugifyVisibleDeviceName(name) {
+  return String(name || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
+  return Boolean(deviceId) && deviceId !== slugifyVisibleDeviceName(deviceName)
+}
+
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
@@ -1210,6 +1222,9 @@ const subcommandPromise = (async () => {
         console.log(setupHeadline)
         console.log(`   Mode:   ${modeLabel}`)
         console.log(`   Config: ${result.outputEnvFile}`)
+        if (deviceIdentityPreservedAcrossRename(result.deviceName, result.deviceId)) {
+          console.log(`   Device ID: ${result.deviceId} (kept from original setup for continuity)`)
+        }
         if (result.temperatureHelper?.status === 'installed') {
           console.log(`   Temp:   auto-installed via ${result.temperatureHelper.installer}`)
         } else if (result.temperatureHelper?.status === 'available') {
@@ -1536,8 +1551,8 @@ if (statusRequested) {
     console.log('  Setup:        not completed yet')
   }
   console.log(`  ${hasConfig ? 'Device:' : 'Device preview:'} ${DEVICE_NAME}`)
-  if (hasConfig && DEVICE_ID !== DEVICE_NAME.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '')) {
-    console.log(`  Device ID:    ${DEVICE_ID}`)
+  if (hasConfig && deviceIdentityPreservedAcrossRename(DEVICE_NAME, DEVICE_ID)) {
+    console.log(`  Device ID:    ${DEVICE_ID} (kept from original setup for continuity)`)
   }
   console.log(`  ${hasConfig ? 'Publish mode:' : 'Publish preview:'} ${publishMode}`)
   if (hasCloudConfig) {
