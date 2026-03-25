@@ -798,6 +798,7 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /You can install it before setup, then save config later/)
   assert.match(run.stdout, /and re-run install-agent when you're ready\./)
+  assert.match(run.stdout, /If you're using npx\/npm exec:/)
   assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.match(run.stdout, /Then enable:\s+idlewatch install-agent/)
   assert.doesNotMatch(run.stdout, /Saved config is optional on first install/)
@@ -1027,6 +1028,7 @@ test('quickstart rejects a fully invalid metric selection with a clear validatio
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /No valid metrics were selected\./)
+    assert.match(run.stderr, /Unknown: wat, not-real\./)
     assert.match(run.stderr, /Choose one or more of:/)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {

@@ -1,8 +1,53 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:30 PM (America/Toronto)  
-**Status:** CLOSED - no new polish issues worth opening in this targeted pass
+**Last updated:** Wednesday, March 25th, 2026 — 12:35 PM (America/Toronto)  
+**Status:** CLOSED - tiny polish improvements shipped in this targeted pass
+
+---
+
+## Cycle R94 Status: CLOSED
+
+This pass stayed intentionally narrow: improve one validation seam and one help-text seam without changing setup flow shape, background behavior, or telemetry.
+
+### Outcome
+- Shipped two tiny, low-risk polish improvements.
+- Invalid non-interactive metric selections now say which metric names were unknown instead of only saying nothing valid was selected.
+- `install-agent --help` now uses a slightly calmer `npx` lead-in while keeping the same durable-install guidance.
+- Telemetry behavior, LaunchAgent behavior, auth/ingest, and packaging were left untouched.
+
+### R94 spot-check coverage
+- `install-agent --help`
+- Non-interactive `quickstart --no-tui` with fully invalid `IDLEWATCH_ENROLL_MONITOR_TARGETS`
+- `npm run validate:onboarding --silent`
+- `npm run test:unit --silent` (144/144 passing)
+
+### Prioritized findings
+
+#### [x] L9 — Invalid metric selection now names the unknown entries
+**Why it matters:** Setup validation is already strict, but the old error made typo recovery slower than it needed to be. Naming the bad entries is a tiny but real friction reduction in scripted or copy-pasted setup flows.
+
+**What shipped**
+- Fully invalid metric selections now include the unknown names, e.g.:
+  - `No valid metrics were selected. Unknown: wat, not-real. Choose one or more of: ...`
+- Saved config behavior remains unchanged: setup still fails fast and does not write config when metric selection is invalid.
+
+#### [x] L10 — `install-agent --help` trims one more bit of wording around the `npx` path
+**Why it matters:** This is small, but help output is part of first-run confidence. The durable-install guidance was already correct; the intro line just read a little more explanatory than necessary.
+
+**What shipped**
+- Reworded:
+  - `For one-off npx/npm exec runs:`
+- To:
+  - `If you're using npx/npm exec:`
+- Durable next steps stay the same:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+
+### Acceptance notes
+- Invalid metric validation is clearer without adding more steps or relaxing validation.
+- `install-agent --help` remains durable-install oriented and still avoids suggesting `npx idlewatch install-agent`.
+- The working telemetry path remains untouched.
 
 ---
 

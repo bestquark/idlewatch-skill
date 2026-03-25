@@ -119,15 +119,19 @@ function ensureMonitorTargetsOrThrow(raw, available) {
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean)
 
-  const parsed = explicitlyRequested
-    .filter((item) => MONITOR_TARGET_CHOICES.includes(item))
+  const validRequested = explicitlyRequested.filter((item) => MONITOR_TARGET_CHOICES.includes(item))
+  const parsed = validRequested
     .flatMap((item) => (item === 'openclaw' ? OPENCLAW_DERIVED_TARGETS : [item]))
     .filter((item) => available.includes(item))
 
   if (parsed.length > 0) return [...new Set(parsed)]
 
+  const invalidRequested = explicitlyRequested.filter((item) => !MONITOR_TARGET_CHOICES.includes(item))
   const availableList = available.join(', ')
-  throw new Error(`No valid metrics were selected. Choose one or more of: ${availableList}.`)
+  const invalidHint = invalidRequested.length > 0
+    ? ` Unknown: ${invalidRequested.join(', ')}.`
+    : ''
+  throw new Error(`No valid metrics were selected.${invalidHint} Choose one or more of: ${availableList}.`)
 }
 
 function normalizeCloudApiKey(raw) {
