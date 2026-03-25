@@ -45,12 +45,18 @@ function shellQuote(value) {
 function inferCliCommand(command = '') {
   const scriptArg = process.argv[1] || ''
   const scriptBase = path.basename(scriptArg)
+  const execArgv = process.execArgv || []
+  const npmExecPath = String(process.env.npm_execpath || '').toLowerCase()
+  const userAgent = String(process.env.npm_config_user_agent || '').toLowerCase()
   const looksLikeRepoScript = scriptBase === 'idlewatch-agent.js' && /(?:^|\/)bin\/idlewatch-agent\.js$/.test(scriptArg)
   const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
+  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || (userAgent.includes('npm/') && execArgv.includes('exec'))
 
   let base
   if (looksLikeGlobalShim) {
     base = 'idlewatch'
+  } else if (looksLikeNpx) {
+    base = 'npx idlewatch'
   } else if (looksLikeRepoScript) {
     const relativeScript = path.relative(process.cwd(), scriptArg)
     const displayScript = relativeScript && !relativeScript.startsWith('..') && !path.isAbsolute(relativeScript)
@@ -62,6 +68,46 @@ function inferCliCommand(command = '') {
   }
 
   return command ? `${base} ${command}` : base
+}
+
+function launchAgentInfo() {
+  const svcLabel = 'com.idlewatch.agent'
+  const uid = process.getuid?.() ?? ''
+  const domainTarget = `gui/${uid}/${svcLabel}`
+  const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
+  return {
+    svcLabel,
+    uid,
+    domain: `gui/${uid}`,
+    domainTarget,
+    plistPath,
+    ownedByCurrentHome: fs.existsSync(plistPath)
+  }
+}
+
+function probeOwnedLaunchAgentState() {
+  if (process.platform !== 'darwin') {
+    return { supported: false, ownedByCurrentHome: false, state: 'unsupported', pid: null }
+  }
+
+  const info = launchAgentInfo()
+  if (!info.ownedByCurrentHome) {
+    return { supported: true, ...info, state: 'not-installed', pid: null }
+  }
+
+  const probe = spawnSync('launchctl', ['print', info.domainTarget], { timeout: 3000, stdio: ['ignore', 'pipe', 'pipe'] })
+  if (probe.status !== 0) {
+    return { supported: true, ...info, state: 'installed-not-loaded', pid: null }
+  }
+
+  const out = String(probe.stdout || '')
+  const pidMatch = out.match(/^\s*pid\s*=\s*(\d+)/m)
+  return {
+    supported: true,
+    ...info,
+    state: pidMatch ? 'running' : 'loaded',
+    pid: pidMatch ? pidMatch[1] : null
+  }
 }
 
 function printHelp() {
@@ -825,15 +871,15 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       console.error('LaunchAgent is only available on macOS.')
       process.exit(1)
     }
-    const svcLabel = 'com.idlewatch.agent'
-    const plistDir = path.join(os.homedir(), 'Library', 'LaunchAgents')
-    const plistPath = path.join(plistDir, `${svcLabel}.plist`)
+    const { svcLabel, uid, domain, domainTarget, plistPath } = launchAgentInfo()
+    const plistDir = path.dirname(plistPath)
     const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
 
     const hasSavedConfig = fs.existsSync(envFile)
     const quickstartCommand = inferCliCommand('quickstart')
     const installAgentCommand = inferCliCommand('install-agent')
     const statusCommand = inferCliCommand('status')
+    const runCommand = inferCliCommand('run')
     const uninstallAgentCommand = inferCliCommand('uninstall-agent')
 
     // Find the idlewatch binary
@@ -872,32 +918,36 @@ Use --once for a single sample or --dry-run to preview without publishing.`
     fs.mkdirSync(path.join(os.homedir(), '.idlewatch', 'logs'), { recursive: true })
     fs.writeFileSync(plistPath, plistContent, 'utf8')
 
-    const uid = process.getuid?.() ?? ''
-    const domain = `gui/${uid}`
-
-    // Check if already loaded — bootout first to allow clean re-bootstrap
-    const alreadyLoaded = spawnSync('launchctl', ['print', `${domain}/${svcLabel}`], { stdio: 'pipe' }).status === 0
+    // LaunchAgents are per-user, not per-HOME. If another IdleWatch agent is already
+    // loaded for this macOS user, replace it cleanly with this install.
+    const alreadyLoaded = spawnSync('launchctl', ['print', domainTarget], { stdio: 'pipe' }).status === 0
     if (alreadyLoaded) {
-      spawnSync('launchctl', ['bootout', `${domain}/${svcLabel}`], { stdio: 'ignore' })
+      spawnSync('launchctl', ['bootout', domainTarget], { stdio: 'ignore' })
     }
 
     const load = spawnSync('launchctl', ['bootstrap', domain, plistPath], { stdio: 'pipe' })
     if (load.status === 0) {
-      spawnSync('launchctl', ['enable', `${domain}/${svcLabel}`], { stdio: 'ignore' })
+      spawnSync('launchctl', ['enable', domainTarget], { stdio: 'ignore' })
       console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} — IdleWatch is running in the background.`)
+      if (alreadyLoaded) {
+        console.log('   Note: background install is shared per macOS user, so this replaced the previous IdleWatch LaunchAgent.')
+      }
       if (hasSavedConfig) {
         console.log(`   Saved config: ${envFile}`)
         console.log(`   Check:        ${statusCommand}`)
       } else {
         console.log(`   No saved config yet: ${envFile}`)
-        console.log(`   Next:             ${quickstartCommand}`)
-        console.log(`   Then re-run:      ${installAgentCommand}`)
-        console.log(`   Check anytime:    ${statusCommand}`)
+        console.log(`   Next:         ${quickstartCommand}`)
+        console.log(`   Or run now:   ${runCommand}`)
+        console.log(`   Then re-run:  ${installAgentCommand}`)
+        console.log(`   Check:        ${statusCommand}`)
       }
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
     } else {
-      console.error(`LaunchAgent install failed: ${String(load.stderr).trim() || 'unknown error'}`)
-      console.error(`Plist written to ${plistPath} — try: launchctl load ${plistPath}`)
+      const installError = String(load.stderr).trim() || 'unknown error'
+      console.error(`LaunchAgent install failed: ${installError}`)
+      console.error(`Plist written to ${plistPath}. IdleWatch background install is shared per macOS user, so only one can be loaded at a time.`)
+      console.error(`Try again: ${installAgentCommand}`)
       process.exit(1)
     }
     process.exit(0)
@@ -980,8 +1030,8 @@ Use --once for a single sample or --dry-run to preview without publishing.`
           console.log(`   Your device should appear on the dashboard within a few seconds.`)
         }
         console.log(`\n   To keep it running:`)
-        console.log(`     idlewatch install-agent   Auto-start in background (recommended)`)
-        console.log(`     idlewatch run             Run in foreground`)
+        console.log(`     ${inferCliCommand('install-agent')}   Auto-start in background (recommended)`)
+        console.log(`     ${inferCliCommand('run')}   Run in foreground`)
         process.exit(0)
       }
 
@@ -991,8 +1041,8 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       console.error(`\n   Common fixes:`)
       console.error(`     • Check your API key is valid at idlewatch.com/api`)
       console.error(`     • Verify internet connectivity`)
-      console.error(`\n   Retry:  idlewatch --once`)
-      console.error(`   Redo:   idlewatch quickstart`)
+      console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
+      console.error(`   Redo:   ${inferCliCommand('quickstart')}`)
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {
@@ -1318,25 +1368,15 @@ if (statusRequested) {
 
   // LaunchAgent state
   if (process.platform === 'darwin') {
-    const uid = process.getuid?.() ?? ''
-    const svcLabel = 'com.idlewatch.agent'
-    const probe = spawnSync('launchctl', ['print', `gui/${uid}/${svcLabel}`], { timeout: 3000, stdio: ['ignore', 'pipe', 'pipe'] })
-    if (probe.status === 0) {
-      const out = String(probe.stdout)
-      const pidMatch = out.match(/^\s*pid\s*=\s*(\d+)/m)
-      if (pidMatch) {
-        console.log(`  Background:   LaunchAgent loaded (running, pid ${pidMatch[1]})`)
-      } else {
-        console.log(`  Background:   LaunchAgent loaded (idle)`)
-      }
+    const launchAgent = probeOwnedLaunchAgentState()
+    if (launchAgent.state === 'running') {
+      console.log(`  Background:   LaunchAgent loaded (running, pid ${launchAgent.pid})`)
+    } else if (launchAgent.state === 'loaded') {
+      console.log('  Background:   LaunchAgent loaded (idle)')
+    } else if (launchAgent.state === 'installed-not-loaded') {
+      console.log('  Background:   LaunchAgent installed but not loaded')
     } else {
-      // Check if plist exists but isn't loaded
-      const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
-      if (fs.existsSync(plistPath)) {
-        console.log(`  Background:   LaunchAgent installed but not loaded`)
-      } else {
-        console.log(`  Background:   LaunchAgent not installed`)
-      }
+      console.log('  Background:   LaunchAgent not installed')
     }
   }
 
@@ -1394,18 +1434,18 @@ if (statusRequested) {
   const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
   const isPlaceholderName = hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())
   if (isPlaceholderName) {
-    console.log(`  ℹ️  Rename this device:  idlewatch configure`)
+    console.log(`  ℹ️  Rename this device:  ${inferCliCommand('configure')}`)
   }
 
   console.log('')
   if (!hasConfig) {
-    console.log('  Get started:  idlewatch quickstart')
+    console.log(`  Get started:  ${inferCliCommand('quickstart')}`)
   } else if (!hasSamples) {
-    console.log('  Test:     idlewatch --once  (alias: --test-publish)')
-    console.log('  Start:    idlewatch run  or  idlewatch install-agent')
+    console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
+    console.log(`  Start:    ${inferCliCommand('run')}  or  ${inferCliCommand('install-agent')}`)
   } else if (!isPlaceholderName) {
-    console.log('  Change:   idlewatch configure')
-    console.log('  Apply:    restart IdleWatch after config changes')
+    console.log(`  Change:   ${inferCliCommand('configure')}`)
+    console.log(`  Apply:    re-run ${inferCliCommand('install-agent')} after config changes if it's already running in the background`)
   }
   process.exit(0)
 }

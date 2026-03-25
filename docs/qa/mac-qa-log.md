@@ -2,7 +2,7 @@
 
 **Cycle:** R80 (installer/CLI polish follow-up)
 
-## Status: OPEN — two small-but-real polish issues remain
+## Status: CLOSED — implemented in this pass
 
 Core setup still works. This pass found two UX issues that are easy to miss in code review but noticeable in real setup/testing flows.
 
@@ -37,10 +37,10 @@ The CLI treats `com.idlewatch.agent` as a single global truth and checks `launch
 5. Observe install can fail with a label/bootstrap conflict instead of feeling like an isolated clean install test.
 
 **Acceptance criteria:**
-- [ ] `status` only reports background state for the install/config it actually owns.
-- [ ] `install-agent` behaves predictably during clean-home/source-checkout QA instead of colliding with another IdleWatch install under the same user.
-- [ ] If full isolation is intentionally unsupported, the CLI should say that plainly and calmly.
-- [ ] Messaging stays simple; no launchctl jargon dump.
+- [x] `status` only reports background state for the install/config it actually owns.
+- [x] `install-agent` behaves predictably during clean-home/source-checkout QA instead of colliding with another IdleWatch install under the same user.
+- [x] If full isolation is intentionally unsupported, the CLI should say that plainly and calmly.
+- [x] Messaging stays simple; no launchctl jargon dump.
 
 ---
 
@@ -77,10 +77,10 @@ The CLI treats `com.idlewatch.agent` as a single global truth and checks `launch
    even though the user entered via `node bin/idlewatch-agent.js ...`, not a guaranteed global `idlewatch` binary.
 
 **Acceptance criteria:**
-- [ ] Quickstart success copy uses the same command path style as the current invocation (`idlewatch`, `npx idlewatch`, repo script path, or bundled app path).
-- [ ] `status` follow-up hints do the same.
-- [ ] Keep the copy short and quiet — no install-mode lecture.
-- [ ] Global installs can continue to show `idlewatch ...`.
+- [x] Quickstart success copy uses the same command path style as the current invocation (`idlewatch`, `npx idlewatch`, repo script path, or bundled app path).
+- [x] `status` follow-up hints do the same.
+- [x] Keep the copy short and quiet — no install-mode lecture.
+- [x] Global installs can continue to show `idlewatch ...`.
 
 ---
 
@@ -91,10 +91,9 @@ The CLI treats `com.idlewatch.agent` as a single global truth and checks `launch
 - Device name and metric selections persist to `~/.idlewatch/idlewatch.env`.
 - `--test-publish` still behaves as the documented alias for `--once`.
 
-## Suggested next move
-Small UX-only cleanup pass:
-1. Reuse the existing command-path inference helper everywhere user-facing next-step commands are printed.
-2. Tighten LaunchAgent state detection so status/install messages describe the current install, not any agent with the shared label.
+## Implemented in this pass
+1. Reused command-path inference for quickstart/status follow-up commands so source-checkout flows keep showing the command the user actually entered.
+2. Tightened LaunchAgent ownership/state reporting so `status` only describes the plist/config in the current HOME, and `install-agent` now calmly explains that background install is shared per macOS user.
 
 ## Validation used
 ```bash
