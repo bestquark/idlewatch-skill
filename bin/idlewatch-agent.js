@@ -133,19 +133,24 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     return
   }
 
-  if (!backgroundAgentRunning) {
-    console.log('\n   Background collection is not enabled yet.')
-  }
-
-  console.log('\n   To keep it running:')
   if (invocation.kind === 'npx') {
+    if (!backgroundAgentRunning) {
+      console.log('\n   Background collection is not enabled yet.')
+    }
+    console.log('\n   Use it now:')
     console.log(`     ${runCommand}   Run in foreground`)
+    console.log('\n   For background mode:')
     console.log('     Background install needs a durable IdleWatch install first.')
     console.log('     Install it once:  npm install -g idlewatch')
     console.log('     Then enable it:   idlewatch install-agent')
     return
   }
 
+  if (!backgroundAgentRunning) {
+    console.log('\n   Background collection is not enabled yet.')
+  }
+
+  console.log('\n   To keep it running:')
   console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
   console.log(`     ${runCommand}   Run in foreground`)
 }

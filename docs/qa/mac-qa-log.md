@@ -1,5 +1,61 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R119 (installer/CLI polish QA — one-off setup heading calmness pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This pass stayed tiny and only tightened one setup/reconfigure wording seam in the one-off `npx` path.
+
+The success block previously said `To keep it running:` and then led with `npx idlewatch run`, which is a foreground command. Nothing was broken, but that heading made the one-off flow feel slightly muddled in exactly the moment users are choosing the next step.
+
+The output is now split more honestly:
+- `Use it now:` for the foreground `npx idlewatch run` path
+- `For background mode:` for the durable-install reminder and `idlewatch install-agent` follow-up
+
+That keeps setup calmer and more literal without changing auth, ingest, packaging, or the working telemetry path.
+
+## What shipped
+- One-off `quickstart` / `configure` success copy no longer frames foreground `npx idlewatch run` under a `To keep it running:` heading.
+- One-off follow-up copy now separates immediate foreground use from durable background setup.
+- Added regression coverage for the new headings in the `npm exec` / `npx` path.
+
+## Verified in this cycle
+- One-off `quickstart --no-tui` now prints `Use it now:` before `npx idlewatch run`.
+- The same flow now prints `For background mode:` before the durable-install reminder.
+- One-off `configure --no-tui` keeps the same split.
+- Source-checkout and normal installed-path setup copy remain unchanged.
+- Telemetry behavior remains unchanged.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test --test-name-pattern "quickstart and configure keep one-off runs honest about background install under npm exec env|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|configure success says to refresh an already-running background agent" test/openclaw-env.test.mjs
+
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  npm_execpath='/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js' \
+  npm_command='exec' \
+  npm_lifecycle_event='npx' \
+  npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+```
+
+## Acceptance criteria
+- [x] One-off setup/reconfigure copy no longer frames a foreground command as the way to "keep it running".
+- [x] Immediate foreground use and durable background setup are separated more clearly.
+- [x] Source-checkout and durable-install flows remain unchanged.
+- [x] No auth, ingest, telemetry-path, or packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This cycle stayed intentionally limited to wording/flow polish only.
+
+---
+
 **Cycle:** R118 (installer/CLI polish QA — setup calmness recheck after focused cron sweep)
 
 ## Status: CLOSED — no new polish issue found
