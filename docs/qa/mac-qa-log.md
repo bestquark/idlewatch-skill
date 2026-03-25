@@ -1,33 +1,42 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R91 (installer/CLI polish QA follow-up)
+**Cycle:** R92 (installer/CLI polish QA — setup honesty pass)
 
-## Status: CLOSED — verification summary now matches activity-only configs
+## Status: OPEN — one small setup-copy polish issue
 
-The core pipeline still works and the setup flow is mostly clean. Device identity persists, metric toggles save correctly, LaunchAgent install/uninstall behavior is calm, status remains state-aware, and install-path hints are easy to follow.
+The core installer/CLI flow is in good shape. Config persistence works, metric toggles save cleanly, LaunchAgent install/uninstall behavior stays calm, `--test-publish` wording is now aligned for sparse configs, device identity persists correctly, and install-path hints remain clear.
 
-This pass found one small but user-visible polish issue worth fixing: when a device is configured with only `OpenClaw activity`, the setup/test-publish verification line says `0 metrics` even though that metric is the whole point of the configuration.
+This pass found one small but important product-taste issue in the first-run setup confirmation: a local-only quickstart says the device `is live` immediately after collecting a one-time sample, even when background collection has not been installed yet.
+
+That is not a pipeline failure, but it is a small trust wobble in the exact moment the product should feel simplest and most honest.
 
 ---
 
 ## Priority findings
 
-### M1. Setup and `--test-publish` undercount activity-only configs as `0 metrics`
+### M1. Fresh quickstart says the device `is live` before background collection is actually enabled
 **Priority:** Medium  
-**Status:** Closed
+**Status:** Open
 
 **Why this matters:**
-This is a tiny trust issue, not a functional break. A user can intentionally choose a minimal config with only `OpenClaw activity`, finish setup successfully, and then immediately see:
+For end users, words like `live` imply ongoing collection is already active. In the current local quickstart flow, the product:
 
-- `✅ Sample collected (0 metrics) and saved locally`
+- saves config
+- collects one verification sample
+- then tells the user:
+  - `✅ Setup complete — "QA Box" is live!`
+- while also saying the next step is:
+  - `node bin/idlewatch-agent.js install-agent   Auto-start in background (recommended)`
 
-That reads like the test did nothing, even though:
+That combination is a little slippery. If background collection is not installed yet, the device is not really "live" in the everyday sense — it is configured and verified, but not continuously running.
 
-- setup succeeded
-- the saved config clearly shows `Metrics: OpenClaw activity`
-- the JSON sample contains the activity fields / activity source block for that mode
+This is exactly the kind of tiny wording mismatch that makes setup feel more technical and less trustworthy than it needs to. A cleaner framing would acknowledge reality:
 
-For a setup wizard, the first verification message should make the chosen setup feel valid, not accidentally empty. If someone picks one metric and gets told they collected zero, the product feels slightly unreliable even when the pipeline is working as designed.
+- setup is complete
+- telemetry was verified
+- background collection is optional but not yet enabled
+
+The product already has the right behavior; it just deserves more precise copy.
 
 **Exact repro:**
 1. Start with a fresh home:
@@ -35,33 +44,32 @@ For a setup wizard, the first verification message should make the chosen setup 
    TMPHOME=$(mktemp -d)
    cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
    ```
-2. Run local quickstart with only `agent_activity` enabled:
+2. Run local quickstart without installing the LaunchAgent:
    ```bash
    HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
      IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='Activity Only' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
      node bin/idlewatch-agent.js quickstart --no-tui
    ```
-3. Observe the verification line:
-   - `✅ Sample collected (0 metrics) and saved locally`
-4. Confirm the saved config/status disagrees with that wording:
+3. Observe the success copy:
+   - `✅ Setup complete — "QA Box" is live!`
+4. Confirm background collection is still not enabled:
    ```bash
    HOME="$TMPHOME" node bin/idlewatch-agent.js status
    ```
-   which shows:
-   - `Metrics: OpenClaw activity`
-5. Reproduce the same messaging problem with the explicit test flow:
-   ```bash
-   HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
-   ```
-   which again reports `0 metrics`.
+5. Observe:
+   - `Background:   LaunchAgent not installed`
 
 **Acceptance criteria:**
-- [x] `quickstart`, `--once`, and `--test-publish` count activity-only configurations as a real collected metric in the success summary.
-- [x] A config with only `agent_activity` no longer prints `Sample collected (0 metrics)`.
-- [x] The verification copy reflects the user’s selected telemetry set without implying nothing was collected.
-- [x] The fix stays small and does not redesign sampling, ingest, or status output.
+- [ ] First-run `quickstart` success copy does not imply continuous/background collection is already active when no LaunchAgent is installed.
+- [ ] The confirmation language clearly distinguishes between:
+  - config saved
+  - sample verified
+  - background collection not yet enabled
+- [ ] The updated copy stays short, calm, and non-technical.
+- [ ] `configure` copy remains distinct from first-run setup copy.
+- [ ] No auth, ingest, or packaging flow redesign is introduced.
 
 ---
 
@@ -69,25 +77,31 @@ For a setup wizard, the first verification message should make the chosen setup 
 - `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
 - Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
 - Reconfiguring metrics updates the saved env file correctly (`cpu,memory` → `agent_activity`).
-- `configure` success copy still matches reconfiguration state and no longer uses first-run “is live” wording.
+- Activity-only configs now report a real collected metric count in verification output.
 - `status` still shows installed vs not-installed LaunchAgent states and keeps the calmer re-enable hint after `uninstall-agent`.
 - `install-agent` / `uninstall-agent` behavior remains concise and safe.
 - Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
-- README quickstart framing still keeps local-only and cloud setup equally intentional.
+- `configure --help` still states that saved changes apply on next start and that reinstalling the agent refreshes the background process.
 
 ## Validation used
 ```bash
 cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
 TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
   node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
   IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
   node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
@@ -95,18 +109,9 @@ HOME="$TMPHOME" node bin/idlewatch-agent.js status
 node scripts/postinstall.mjs
 node bin/idlewatch-agent.js --help
 node bin/idlewatch-agent.js configure --help
-
-TMPHOME=$(mktemp -d)
-HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
-  IDLEWATCH_ENROLL_DEVICE_NAME='Activity Only' \
-  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
-  node bin/idlewatch-agent.js quickstart --no-tui
-HOME="$TMPHOME" node bin/idlewatch-agent.js status
-HOME="$TMPHOME" node bin/idlewatch-agent.js --once --json
-HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 ```
 
 ## Notes
-- No auth, ingest, or packaging redesign recommended from this cycle.
-- The issue was limited to verification/success summarization, not config persistence.
-- Fix shipped as a small summary-layer change: success copy now counts intentionally selected monitor targets such as `agent_activity`, so sparse-but-valid configs no longer read as empty.
+- No auth, ingest, or major packaging redesign recommended from this cycle.
+- The only issue found here is wording honesty in the first-run success state.
+- Product direction still looks right: minimal, low-friction setup with explicit background install when the user wants continuous collection.
