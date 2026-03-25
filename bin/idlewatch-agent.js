@@ -741,6 +741,7 @@ const uninstallAgentRequested = argv[0] === 'uninstall-agent'
 const versionRequested = args.has('--version') || args.has('-V')
 const interactiveDefaultRequested = argv.length === 0 && process.stdin.isTTY && process.stdout.isTTY
 const quickstartRequested = argv[0] === 'quickstart' || argv[0] === 'configure' || argv[0] === 'reconfigure' || argv.includes('--quickstart') || argv.includes('--configure') || (interactiveDefaultRequested && !dashboardRequested && !runRequested && !statusRequested && !createRequested && !menubarRequested)
+const subcommandOnlyRequested = quickstartRequested || createRequested || dashboardRequested || menubarRequested || installAgentRequested || uninstallAgentRequested
 
 // No args + non-TTY: print help instead of silently doing nothing
 if (argv.length === 0 && (!process.stdin.isTTY || !process.stdout.isTTY) && !statusRequested && !runRequested && !dashboardRequested) {
@@ -846,7 +847,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
   process.exit(0)
 }
 
-(async () => {
+const subcommandPromise = (async () => {
   if (menubarRequested) {
     if (process.platform !== 'darwin') {
       console.error('IdleWatch menubar is only available on macOS.')
@@ -1009,6 +1010,11 @@ Use --once for a single sample or --dry-run to preview without publishing.`
   // eslint-disable-next-line no-top-level-await - TUI flow needs async but runs in event loop context
   if (quickstartRequested) {
     try {
+      if (args.has('--no-tui') && !process.stdin.isTTY && !process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE) {
+        console.error('Setup cancelled. No changes saved.')
+        process.exit(0)
+      }
+
       const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
 
       if (!result?.outputEnvFile || !fs.existsSync(result.outputEnvFile)) {
@@ -1056,7 +1062,8 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {
-        console.error('Enrollment cancelled before saving config.')
+        console.error('Setup cancelled. No changes saved.')
+        process.exit(0)
       } else if (String(err?.message || '').startsWith('setup_did_not_write_env_file:')) {
         console.error(`Enrollment failed: setup did not save idlewatch.env (${String(err.message).split(':').slice(1).join(':')}).`)
       } else {
@@ -1065,16 +1072,9 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       process.exit(1)
     }
   }
-})()
 
-// Subcommands handled inside the async IIFE above call process.exit() when done.
-// Guard: don't let the synchronous collector code below run in parallel with them.
-const SUBCOMMAND_ONLY = new Set(['quickstart', 'configure', 'reconfigure', 'create', 'dashboard', 'menubar', 'install-agent', 'uninstall-agent'])
-if (SUBCOMMAND_ONLY.has(argv[0])) {
-  // The IIFE is handling this subcommand — wait for it to exit. Nothing below should run.
-  // (The IIFE calls process.exit() in all paths, so this file-level code is effectively dead.)
-  await new Promise(() => {}) // eslint-disable-line no-unreachable -- block forever; IIFE exits process
-}
+  return subcommandOnlyRequested
+})()
 
 // Reject unknown subcommands before entering the collector path
 const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent', 'version'])
@@ -1337,7 +1337,7 @@ if (firebaseConfigError) {
 
 const hasAnyFirebaseConfig = Boolean(PROJECT_ID || CREDS_FILE || CREDS_JSON || CREDS_B64 || FIRESTORE_EMULATOR_HOST)
 const hasCloudConfig = Boolean(CLOUD_INGEST_URL && CLOUD_API_KEY)
-const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !hasAnyFirebaseConfig
+const shouldWarnAboutMissingPublishConfig = !appReady && !hasCloudConfig && !DRY_RUN && !hasAnyFirebaseConfig && !subcommandOnlyRequested
 
 function getPublishModeLabel() {
   if (hasCloudConfig) return 'cloud'
@@ -2389,24 +2389,34 @@ async function gracefulShutdown(signal) {
 process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
 
-if (DRY_RUN || ONCE) {
-  const progressStream = JSON_OUTPUT ? process.stderr : process.stdout
-  progressStream.write(`${DRY_RUN ? 'Dry-run' : 'Collecting sample'} for "${DEVICE_NAME}" (${getPublishModeLabel()} mode)…\n`)
-  tick()
-    .then(() => process.exit(0))
-    .catch((e) => {
-      console.error(e.message)
-      process.exit(1)
-    })
-} else {
-  const runLog = JSON_OUTPUT ? process.stderr : process.stdout
-  runLog.write(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)\n`)
-  // Hint about background agent if LaunchAgent is not installed
-  try {
-    const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
-    accessSync(launchAgentPath, constants.F_OK)
-  } catch {
-    runLog.write('Tip: Run idlewatch install-agent to run in the background, or idlewatch menubar for the menu bar app.\n')
-  }
-  loop()
-}
+subcommandPromise
+  .then((subcommandHandled) => {
+    if (subcommandHandled) return
+
+    if (DRY_RUN || ONCE) {
+      const progressStream = JSON_OUTPUT ? process.stderr : process.stdout
+      progressStream.write(`${DRY_RUN ? 'Dry-run' : 'Collecting sample'} for "${DEVICE_NAME}" (${getPublishModeLabel()} mode)…\n`)
+      tick()
+        .then(() => process.exit(0))
+        .catch((e) => {
+          console.error(e.message)
+          process.exit(1)
+        })
+      return
+    }
+
+    const runLog = JSON_OUTPUT ? process.stderr : process.stdout
+    runLog.write(`idlewatch started — "${DEVICE_NAME}" (${getPublishModeLabel()} mode, every ${Math.round(INTERVAL_MS / 1000)}s)\n`)
+    // Hint about background agent if LaunchAgent is not installed
+    try {
+      const launchAgentPath = path.join(os.homedir(), 'Library/LaunchAgents/com.idlewatch.agent.plist')
+      accessSync(launchAgentPath, constants.F_OK)
+    } catch {
+      runLog.write('Tip: Run idlewatch install-agent to run in the background, or idlewatch menubar for the menu bar app.\n')
+    }
+    loop()
+  })
+  .catch((e) => {
+    console.error(e?.message || String(e))
+    process.exit(1)
+  })

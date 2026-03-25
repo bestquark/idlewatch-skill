@@ -2,6 +2,14 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline/promises'
+
+async function questionOrCancel(rl, prompt) {
+  const answer = await rl.question(prompt)
+  if (answer === '' && process.stdin.readableEnded) {
+    throw new Error('setup_cancelled')
+  }
+  return answer
+}
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -363,9 +371,9 @@ export async function runEnrollmentWizard(options = {}) {
     if (isReconfigure) {
       console.log(`Current device: ${existingConfig.deviceName} (${currentMode === 'production' ? 'cloud' : 'local-only'})`)
     }
-    const modeInput = (await rl.question(`\nMode [1/2] (default ${modeDefault}): `)).trim() || modeDefault
+    const modeInput = (await questionOrCancel(rl, `\nMode [1/2] (default ${modeDefault}): `)).trim() || modeDefault
     mode = modeInput === '2' ? 'local' : 'production'
-    const deviceNameInput = (await rl.question(`Device name [${deviceName}]: `)).trim()
+    const deviceNameInput = (await questionOrCancel(rl, `Device name [${deviceName}]: `)).trim()
     deviceName = normalizeDeviceName(deviceNameInput || deviceName)
   }
 
@@ -396,7 +404,7 @@ export async function runEnrollmentWizard(options = {}) {
       if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
       console.log('\nPaste the API key from idlewatch.com/api.')
       for (let attempt = 0; attempt < 3; attempt++) {
-        cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+        cloudApiKey = normalizeCloudApiKey(await questionOrCancel(rl, 'Cloud API key: '))
         if (looksLikeCloudApiKey(cloudApiKey)) break
         if (attempt < 2) console.log('That doesn\'t look right — API keys start with iwk_ (copy from idlewatch.com/api).')
         else cloudApiKey = ''
@@ -404,11 +412,11 @@ export async function runEnrollmentWizard(options = {}) {
     } else if (rl) {
       const masked = cloudApiKey.slice(0, 8) + '…' + cloudApiKey.slice(-4)
       console.log(`\nUsing saved API key: ${masked}`)
-      const changeKey = (await rl.question('Keep this key? [Y/n]: ')).trim().toLowerCase()
+      const changeKey = (await questionOrCancel(rl, 'Keep this key? [Y/n]: ')).trim().toLowerCase()
       if (changeKey === 'n' || changeKey === 'no') {
         console.log('Paste the new API key from idlewatch.com/api.')
         for (let attempt = 0; attempt < 3; attempt++) {
-          cloudApiKey = normalizeCloudApiKey(await rl.question('Cloud API key: '))
+          cloudApiKey = normalizeCloudApiKey(await questionOrCancel(rl, 'Cloud API key: '))
           if (looksLikeCloudApiKey(cloudApiKey)) break
           if (attempt < 2) console.log('That doesn\'t look right — API keys start with iwk_ (copy from idlewatch.com/api).')
           else cloudApiKey = ''
@@ -428,7 +436,7 @@ export async function runEnrollmentWizard(options = {}) {
     const suggested = monitorTargets.join(',')
     const friendlySuggested = monitorTargets.map(t => friendlyTargetLabels[t] || t).join(', ')
     console.log(`Selected: ${friendlySuggested}`)
-    const monitorInput = (await rl.question(`Metrics [${suggested}]: `)).trim()
+    const monitorInput = (await questionOrCancel(rl, `Metrics [${suggested}]: `)).trim()
     monitorTargets = normalizeMonitorTargets(monitorInput || suggested, availableMonitorTargets)
   }
 

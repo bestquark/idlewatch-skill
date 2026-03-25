@@ -2,7 +2,7 @@
 
 **Cycle:** R82 (installer/CLI polish follow-up)
 
-## Status: OPEN — one setup-flow polish issue remains
+## Status: CLOSED — setup-flow cancel path polished
 
 Core setup/install flow still works. This pass found one remaining UX wart in the plain-text setup path: EOF/cancel can leak a raw Node.js warning into the terminal.
 
@@ -12,7 +12,7 @@ Core setup/install flow still works. This pass found one remaining UX wart in th
 
 ### M1. Plain-text `configure --no-tui` can leak raw Node "unsettled top-level await" warning on EOF/cancel
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 This is small but ugly. The setup wizard should feel calm and low-friction; instead, an interrupted plain-text flow can end with a scary runtime warning that looks like a crash dump. End users should never have to parse Node internals just because stdin closed.
@@ -37,10 +37,10 @@ This is small but ugly. The setup wizard should feel calm and low-friction; inst
    ```
 
 **Acceptance criteria:**
-- [ ] EOF/cancel/closed-stdin exits the plain-text setup flow cleanly with a short human message.
-- [ ] No raw Node runtime warning, stack-ish snippet, or `top-level await` text is shown.
-- [ ] Exit code and copy distinguish a deliberate cancel from a real setup failure.
-- [ ] Behavior is consistent for both `quickstart --no-tui` and `configure --no-tui`.
+- [x] EOF/cancel/closed-stdin exits the plain-text setup flow cleanly with a short human message.
+- [x] No raw Node runtime warning, stack-ish snippet, or `top-level await` text is shown.
+- [x] Exit code and copy distinguish a deliberate cancel from a real setup failure.
+- [x] Behavior is consistent for both `quickstart --no-tui` and `configure --no-tui`.
 
 ---
 
@@ -68,6 +68,10 @@ node bin/idlewatch-agent.js configure --help
 node bin/idlewatch-agent.js status --help
 node --test test/openclaw-env.test.mjs
 ```
+
+## Fix applied
+- Removed the CLI's never-resolving top-level-await guard for subcommand-only flows and replaced it with a resolved `subcommandPromise` gate before collector startup.
+- Plain-text setup cancel/EOF now exits with `Setup cancelled. No changes saved.` and status code 0 instead of looking like a runtime failure.
 
 ## Notes
 - `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` currently mirrors older QA-log content more than a distinct plan, so I used `docs/qa/idlewatch-cron-polish-plan.md` plus live CLI behavior as the practical source of truth.
