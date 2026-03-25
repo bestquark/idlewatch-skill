@@ -2,17 +2,17 @@
 
 **Cycle:** R78 (installer/CLI polish verification pass)
 
-## Status: OPEN - 1 high-priority polish gap
+## Status: CLOSED - high-priority setup mismatch fixed
 
-Core flow still looks solid, but one user-facing setup path tells two different stories depending on which install surface they use.
+Core flow still looks solid, and the remaining setup-path mismatch from this pass is now fixed.
 
 ---
 
 ## Priority findings
 
-### H1. `idlewatch install-agent` still blocks on missing config, contradicting packaged script/docs
+### H1. `idlewatch install-agent` no longer blocks on missing config; CLI now matches packaged install flow
 **Priority:** High
-**Status:** ❌ Open
+**Status:** ✅ Fixed
 
 **Why this matters:**
 The packaged macOS install flow and docs now present a nice low-friction story:
@@ -33,20 +33,21 @@ But the main CLI command still says the opposite. That makes the same product fe
    No config found. Run idlewatch quickstart first.
    ```
 
-**Current conflicting surfaces:**
-- `bin/idlewatch-agent.js` hard-fails when config is missing.
-- `scripts/install-macos-launch-agent.sh` explicitly supports no-config install and explains the follow-up flow.
-- `README.md` / `docs/onboarding-external.md` / `docs/packaging/macos-launch-agent.md` imply install-first is valid.
-
-**Acceptance criteria:**
-- Pick one story and make every user-facing surface match it.
-- Preferred polish direction: make `idlewatch install-agent` behave like the packaged install script.
-- On a no-config machine, `idlewatch install-agent` should still install/load the LaunchAgent, then print a short next-step message:
+**What changed:**
+- `bin/idlewatch-agent.js` now installs/loads the LaunchAgent even when `~/.idlewatch/idlewatch.env` is missing.
+- The CLI success output now mirrors the packaged script's intended story:
   - LaunchAgent installed
   - run `idlewatch quickstart`
-  - re-run `idlewatch install-agent` once after setup to restart with saved config
-- `idlewatch status` should remain clear about “no saved config yet” vs “agent installed”.
-- No auth/ingest redesign; this is just setup-flow consistency.
+  - re-run `idlewatch install-agent` after setup to restart with saved config
+- Existing-config installs still stay concise and point users at `idlewatch status`.
+- Tiny QoL parity improvement: the CLI also issues `launchctl enable` after bootstrap, matching the packaged installer behavior more closely.
+
+**Acceptance criteria:**
+- [x] Pick one story and make every user-facing surface match it.
+- [x] Make `idlewatch install-agent` behave like the packaged install script.
+- [x] On a no-config machine, `idlewatch install-agent` still installs/loads the LaunchAgent, then prints the short next-step message.
+- [x] `idlewatch status` remains the place to check “no saved config yet” vs “agent installed”.
+- [x] No auth/ingest redesign; telemetry path preserved.
 
 ---
 
@@ -57,4 +58,4 @@ But the main CLI command still says the opposite. That makes the same product fe
 - NPM/global/NPX command-path wording is mostly aligned.
 
 ## Summary
-One important polish gap remains: the npm/CLI install path is stricter than the packaged app install path, even though docs now describe the relaxed path as the intended UX. Fix that mismatch and this lane is back to feeling simple.
+The main setup story is aligned again: npm/CLI and packaged installs now both allow install-first, quickstart-later background setup. This keeps reconfigure/startup guidance simple without touching auth, ingest, or the now-working telemetry path.

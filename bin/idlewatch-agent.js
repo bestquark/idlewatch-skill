@@ -801,10 +801,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
     const plistPath = path.join(plistDir, `${svcLabel}.plist`)
     const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
 
-    if (!fs.existsSync(envFile)) {
-      console.error('No config found. Run idlewatch quickstart first.')
-      process.exit(1)
-    }
+    const hasSavedConfig = fs.existsSync(envFile)
 
     // Find the idlewatch binary
     const binPath = process.argv[1]
@@ -853,9 +850,18 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 
     const load = spawnSync('launchctl', ['bootstrap', domain, plistPath], { stdio: 'pipe' })
     if (load.status === 0) {
+      spawnSync('launchctl', ['enable', `${domain}/${svcLabel}`], { stdio: 'ignore' })
       console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} — IdleWatch is running in the background.`)
-      console.log(`   Check:   idlewatch status`)
-      console.log(`   Remove:  idlewatch uninstall-agent  (safe — only stops background collection)`)
+      if (hasSavedConfig) {
+        console.log(`   Saved config: ${envFile}`)
+        console.log(`   Check:        idlewatch status`)
+      } else {
+        console.log(`   No saved config yet: ${envFile}`)
+        console.log(`   Next:             idlewatch quickstart`)
+        console.log(`   Then re-run:      idlewatch install-agent`)
+        console.log(`   Check anytime:    idlewatch status`)
+      }
+      console.log(`   Remove:       idlewatch uninstall-agent  (safe — only stops background collection)`)
     } else {
       console.error(`LaunchAgent install failed: ${String(load.stderr).trim() || 'unknown error'}`)
       console.error(`Plist written to ${plistPath} — try: launchctl load ${plistPath}`)
