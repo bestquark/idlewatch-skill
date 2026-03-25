@@ -36,6 +36,34 @@ import {
 import { installMenubarApp } from '../scripts/install-macos-menubar.mjs'
 import pkg from '../package.json' with { type: 'json' }
 
+function shellQuote(value) {
+  if (typeof value !== 'string' || value.length === 0) return "''"
+  if (/^[A-Za-z0-9_./:-]+$/.test(value)) return value
+  return `'${value.replace(/'/g, `'\\''`)}'`
+}
+
+function inferCliCommand(command = '') {
+  const scriptArg = process.argv[1] || ''
+  const scriptBase = path.basename(scriptArg)
+  const looksLikeRepoScript = scriptBase === 'idlewatch-agent.js' && /(?:^|\/)bin\/idlewatch-agent\.js$/.test(scriptArg)
+  const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
+
+  let base
+  if (looksLikeGlobalShim) {
+    base = 'idlewatch'
+  } else if (looksLikeRepoScript) {
+    const relativeScript = path.relative(process.cwd(), scriptArg)
+    const displayScript = relativeScript && !relativeScript.startsWith('..') && !path.isAbsolute(relativeScript)
+      ? relativeScript
+      : scriptArg
+    base = `node ${shellQuote(displayScript)}`
+  } else {
+    base = 'idlewatch'
+  }
+
+  return command ? `${base} ${command}` : base
+}
+
 function printHelp() {
   console.log(`idlewatch
 
@@ -719,7 +747,8 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 Usage:  idlewatch install-agent
 
 Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
-in the background. Uses the saved config from ~/.idlewatch/idlewatch.env.`,
+in the background. Saved config is optional on first install; you can
+run quickstart later and then reinstall to apply it.`,
     'uninstall-agent': `idlewatch uninstall-agent — Remove background LaunchAgent (macOS)
 
 Usage:  idlewatch uninstall-agent
@@ -802,6 +831,10 @@ Use --once for a single sample or --dry-run to preview without publishing.`
     const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
 
     const hasSavedConfig = fs.existsSync(envFile)
+    const quickstartCommand = inferCliCommand('quickstart')
+    const installAgentCommand = inferCliCommand('install-agent')
+    const statusCommand = inferCliCommand('status')
+    const uninstallAgentCommand = inferCliCommand('uninstall-agent')
 
     // Find the idlewatch binary
     const binPath = process.argv[1]
@@ -854,14 +887,14 @@ Use --once for a single sample or --dry-run to preview without publishing.`
       console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} — IdleWatch is running in the background.`)
       if (hasSavedConfig) {
         console.log(`   Saved config: ${envFile}`)
-        console.log(`   Check:        idlewatch status`)
+        console.log(`   Check:        ${statusCommand}`)
       } else {
         console.log(`   No saved config yet: ${envFile}`)
-        console.log(`   Next:             idlewatch quickstart`)
-        console.log(`   Then re-run:      idlewatch install-agent`)
-        console.log(`   Check anytime:    idlewatch status`)
+        console.log(`   Next:             ${quickstartCommand}`)
+        console.log(`   Then re-run:      ${installAgentCommand}`)
+        console.log(`   Check anytime:    ${statusCommand}`)
       }
-      console.log(`   Remove:       idlewatch uninstall-agent  (safe — only stops background collection)`)
+      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
     } else {
       console.error(`LaunchAgent install failed: ${String(load.stderr).trim() || 'unknown error'}`)
       console.error(`Plist written to ${plistPath} — try: launchctl load ${plistPath}`)

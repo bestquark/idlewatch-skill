@@ -749,6 +749,42 @@ test('status command shows cloud link info when cloud config is present', () => 
   }
 })
 
+test('install-agent help explains config is optional', () => {
+  const run = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Saved config is optional on first install/)
+  assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
+})
+
+test('install-agent follow-up uses source checkout command path', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-source-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Next:.*node bin\/idlewatch-agent\.js quickstart/)
+    assert.match(run.stdout, /Then re-run:.*node bin\/idlewatch-agent\.js install-agent/)
+    assert.match(run.stdout, /Check anytime:.*node bin\/idlewatch-agent\.js status/)
+    assert.match(run.stdout, /Remove:.*node bin\/idlewatch-agent\.js uninstall-agent/)
+    assert.doesNotMatch(run.stdout, /Next:.*idlewatch quickstart/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command hides cloud link info in local-only mode', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-local-'))
   try {
