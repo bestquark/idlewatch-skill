@@ -1,8 +1,55 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 6:25 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R150 shipped one tiny non-TTY reconfigure-hint polish fix
+**Last updated:** Wednesday, March 25th, 2026 — 6:45 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R151 spot-check found no new product-facing polish regressions
+
+---
+
+## Cycle R151 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new end-user polish regressions were worth opening from this cycle.
+- The current CLI still feels calm in the seams most likely to get noisy: first-run status, install-before-setup, already-installed-needs-refresh guidance, uninstall retention messaging, device identity continuity, metric toggle persistence, `--test-publish` discoverability, and `npx` vs durable-install guidance.
+- The only recurring seam in this lane remains external to the product itself: the cron payload still pointed at `~/.openclaw/workspace/idlewatch-skill`, while the active repo/docs available for this pass were again under `~/.openclaw/workspace.bak/idlewatch-skill`.
+
+### R151 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only `quickstart --no-tui` after pre-installing the LaunchAgent
+- [x] Post-setup `status` with LaunchAgent installed but not loaded
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `node bin/idlewatch-agent.js --test-publish`
+- [x] `node bin/idlewatch-agent.js uninstall-agent`
+- [x] `npx`-like main `--help`
+- [x] `npx`-like `quickstart --no-tui`
+- [x] `npx`-like `status`
+- [x] `npx`-like `install-agent` refusal
+- [x] Durable LaunchAgent preinstalled + `npx` `configure --no-tui`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status command keeps npx background hints short and durable-install oriented|status command shows contextual next-step hints|quickstart completion stays honest when a LaunchAgent was installed before setup|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|main help matches the current source-checkout invocation path|main help stays on the durable command in npx context|install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+- None. No confusing, verbose, repetitive, visually noisy, or unnecessarily technical user-facing issues were worth opening from this cycle.
+
+### Acceptance notes
+- First-run `status` still keeps the calmer default metric preview and keeps OpenClaw extras secondary.
+- Install-before-setup still preserves the right mental model: background install can happen early, but collection stays off until setup is saved.
+- Setup/reconfigure completion still clearly separates first-time background enable from already-installed-needs-refresh.
+- Device rename still preserves stable device identity and local-log continuity while explaining the preserved ID inline.
+- Metric selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish` remains discoverable and low-noise.
+- `npx` guidance still keeps foreground trial usage on `npx` while pointing background mode back to the durable install path.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
