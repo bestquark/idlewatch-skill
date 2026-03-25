@@ -1,5 +1,81 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R110 (installer/CLI polish QA — verification-only calmness sweep)
+
+## Status: CLOSED — no new polish issue found
+
+This cycle re-ran the narrow installer/CLI polish checklist with product-taste scrutiny and did not find a new issue worth implementation.
+
+The targeted surfaces still read cleanly and low-friction:
+- fresh-home `status` still reads as an honest empty state instead of a half-configured one
+- `quickstart` / `configure` still keep saved config, metric choices, and device identity behavior predictable
+- LaunchAgent install/uninstall still tells a simple installed vs running story
+- local-only `--test-publish` remains concise and non-alarming
+- one-off `npm exec` / `npx` behavior still refuses fragile background installs and explains the durable path plainly
+
+## Verified in this cycle
+- Fresh `status` shows preview labels and `Setup: not completed yet` before config exists.
+- `quickstart --no-tui` still saves a neutral generated config header and calm next-step copy.
+- Reconfigure still preserves `IDLEWATCH_DEVICE_ID` while updating the display name.
+- Metric-toggle persistence still works through the same reconfigure path.
+- Saved-config `install-agent` still starts background collection normally.
+- `uninstall-agent` still removes only the background job and keeps config/logs.
+- Local-only `--test-publish` remains short and stays out of warning-y territory.
+- One-off `npm exec ... idlewatch status` still keeps follow-up copy honest.
+- One-off `npm exec ... idlewatch install-agent` still fails fast and explains the durable install path clearly.
+- Focused installer/CLI regression coverage still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+
+node bin/idlewatch-agent.js --help
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+
+node --test test/openclaw-env.test.mjs
+```
+
+## Acceptance criteria
+- [x] No new confusing, verbose, repetitive, or overly technical setup issue surfaced in the targeted polish areas.
+- [x] Config persistence and reload/apply behavior still match user-facing messaging.
+- [x] Device name / device id persistence still behave predictably through reconfigure.
+- [x] Metric-toggle persistence still behaves predictably through reconfigure.
+- [x] LaunchAgent install/uninstall behavior remains clear and safe.
+- [x] One-off `npx` / `npm exec` install-path messaging remains honest.
+- [x] No auth, ingest, or major packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This was a verification-only cycle. No implementation changes were needed.
+
+---
+
 **Cycle:** R109 (installer/CLI polish QA — no-config install honesty shipped)
 
 ## Status: CLOSED — shipped in this cycle
