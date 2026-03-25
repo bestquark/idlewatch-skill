@@ -1,8 +1,8 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:11 AM (America/Toronto)  
-**Status:** CLOSED - targeted polish checks still passing
+**Last updated:** Wednesday, March 25th, 2026 — 11:24 AM (America/Toronto)  
+**Status:** CLOSED - tiny npx/background polish shipped
 
 ---
 
@@ -78,6 +78,18 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Priority 3 (Low)
 
+#### [x] L0 — `npx` setup/reconfigure no longer suggests `npx idlewatch install-agent` for background refresh
+**Why it matters:** `npx` is fine for trial setup and foreground checks, but the LaunchAgent belongs to a durable install. When a user reconfigures from `npx` after background mode was already installed, recommending `npx idlewatch install-agent` is subtly wrong and adds friction.
+
+**Observed before fix**
+- In `quickstart` / `configure` completion paths with an already-installed background agent, next-step copy was derived from the current invocation.
+- In an `npx` run, that could produce background refresh guidance like `npx idlewatch install-agent`, even though the product docs explicitly position durable installs as the right path for LaunchAgent management.
+
+**Acceptance criteria**
+- If setup/reconfigure is running via `npx` and background follow-up is needed, completion copy should point to `idlewatch install-agent`.
+- Keep foreground `npx` guidance intact.
+- Make it explicit, in one short line, that the `npx` run updated/saved config only.
+
 #### [x] L1 — First-run `status` is lighter and calmer
 **Why it matters:** The first `status` screen should reassure. Before setup exists, it currently leads with a long advanced metrics list that feels more internal than welcoming.
 
@@ -101,6 +113,8 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 ---
 
 ## Shipped in this pass
+- [x] `npx` quickstart/configure now points background refresh/start follow-ups to `idlewatch install-agent` instead of implying `npx idlewatch install-agent` is the right durable path.
+- [x] `npx` setup/reconfigure completion now adds a short note when it only updated the saved config and the existing background install still needs the normal durable refresh command.
 - [x] Quickstart/configure completion now distinguishes “not enabled yet” from “already installed, re-run install-agent to refresh/start with saved config”.
 - [x] First-run `status` now leads with a calmer default metric preview and moves OpenClaw extras into a secondary line.
 - [x] Post-setup `status` with no samples now keeps the background next step honest: first-time enable vs re-enable vs already enabled.

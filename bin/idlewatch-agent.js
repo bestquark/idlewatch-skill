@@ -123,20 +123,30 @@ function launchctlOutput(result) {
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
+  const durableInstallAgentCommand = 'idlewatch install-agent'
+  const backgroundInstallCommand = invocation.kind === 'npx' ? durableInstallAgentCommand : installAgentCommand
   const runCommand = inferCliCommand('run')
   const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
   const backgroundAgentInstalledNeedsRefresh = launchAgentState?.state === 'installed-not-loaded'
 
   if (isReconfigure && backgroundAgentRunning) {
     console.log('\n   Background agent: already running')
-    console.log(`   Apply changes:    re-run ${installAgentCommand} to refresh it with the saved config`)
+    if (invocation.kind === 'npx') {
+      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh the background agent with the saved config`)
+      console.log('   This npx run updated the saved config only.')
+    } else {
+      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh it with the saved config`)
+    }
     console.log(`   Or run now:       ${runCommand}   Run in foreground`)
     return
   }
 
   if (backgroundAgentInstalledNeedsRefresh) {
     console.log('\n   Background agent is already installed.')
-    console.log(`   Re-run ${installAgentCommand} to start it with the saved config.`)
+    console.log(`   Re-run ${backgroundInstallCommand} to start it with the saved config.`)
+    if (invocation.kind === 'npx') {
+      console.log('   This npx run saved the config, but background mode still uses the durable install.')
+    }
     console.log('\n   Use it now:')
     console.log(`     ${runCommand}   Run in foreground`)
     return
