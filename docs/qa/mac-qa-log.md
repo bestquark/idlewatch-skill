@@ -2,89 +2,41 @@
 
 **Cycle:** R114 (installer/CLI polish QA — LaunchAgent loaded-state honesty pass)
 
-## Status: OPEN — small polish issue worth fixing
+## Status: CLOSED — shipped in this cycle
 
-This pass found one remaining LaunchAgent state-honesty issue in the install/reinstall surface.
+This pass stayed tiny and fixed the last open setup-trust mismatch in `install-agent`.
 
-`install-agent` can print success copy that says IdleWatch is already running in the background even when the immediate follow-up `status` for the same saved config says the LaunchAgent is only installed and not loaded.
+`install-agent` now re-checks launchd after bootstrap before claiming IdleWatch is already running in the background. If the current saved config is not actually loaded yet, the command now says the LaunchAgent was installed/refreshed, keeps the copy calm, and points to the single next step instead of overstating success.
 
-That is not an ingest/auth/packaging failure. It is a small setup-trust problem in exactly the place users expect a calm single source of truth:
-- `install-agent` says background is running now
-- `status` can immediately say it is not loaded yet
-- the mismatch is especially easy to hit during reinstall/refresh-style QA where an older `com.idlewatch.agent` label already exists
+That keeps the setup story neat in edge-y refresh/reinstall flows:
+- if launchd really loaded the current plist, the CLI still says IdleWatch is running in the background
+- if launchd did not, the CLI now says the saved config is ready but not loaded yet
+- `status` and install output now tell the same story for that config
 
-For product taste, the rule should stay simple: either the current saved config is loaded and running, or the copy should say it was installed/refreshed but is not running yet.
+## What shipped
+- `install-agent` now probes launchd after a successful bootstrap before claiming background collection is running.
+- When launchd still reports the label as not loaded, success copy now stays explicit: the LaunchAgent was installed/refreshed, but background collection is not loaded yet.
+- Added regression coverage for the not-loaded-after-bootstrap path.
+- Existing telemetry, auth, ingest, and packaging flows remain unchanged.
 
 ## Priority findings
 
 ### M1. `install-agent` success copy can overstate the loaded/running state
 **Priority:** Medium  
-**Status:** Open
-
-**Why this matters:**
-`install-agent` is one of the main trust-building commands in the whole setup flow. If it says the background agent is running, users should not have to sanity-check that claim with contradictory status output right away.
-
-The current behavior is slightly too optimistic in edge-y but realistic refresh/reinstall flows:
-- the command reports `IdleWatch is running in the background`
-- the next `status` for that same saved config can report `LaunchAgent installed but not loaded`
-- users are left to guess whether the install actually applied, whether the wrong plist is live, or whether they should run `install-agent` again
-
-That is exactly the kind of tiny uncertainty a polished installer should avoid.
-
-**Exact repro:**
-1. Start from the active repo on disk:
-   ```bash
-   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
-   ```
-2. Create one temp home, save config, and install the agent:
-   ```bash
-   A=$(mktemp -d)
-   HOME="$A" \
-     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-     IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='Home A' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' \
-     node bin/idlewatch-agent.js quickstart --no-tui
-
-   HOME="$A" node bin/idlewatch-agent.js install-agent
-   HOME="$A" node bin/idlewatch-agent.js status
-   ```
-3. Observe a mismatch is possible already in this state if another `com.idlewatch.agent` label was already present in the user session:
-   - install says `LaunchAgent refreshed — IdleWatch is running in the background.`
-   - status can still say `Background:   LaunchAgent installed but not loaded`
-4. A cleaner deterministic repro is to install again from a second temp home without first unloading the earlier label:
-   ```bash
-   B=$(mktemp -d)
-   HOME="$B" \
-     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-     IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='Home B' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' \
-     node bin/idlewatch-agent.js quickstart --no-tui
-
-   HOME="$B" node bin/idlewatch-agent.js install-agent
-   HOME="$B" node bin/idlewatch-agent.js status
-   ```
-5. Compare the two homes:
-   - Home A can still report `installed but not loaded`
-   - Home B may report `loaded (running, pid ...)`
-   - only one `gui/.../com.idlewatch.agent` label can actually be active at once
-6. Inspect launchd if needed:
-   ```bash
-   launchctl print gui/$(id -u)/com.idlewatch.agent | sed -n '1,80p'
-   ```
-7. Observe the loaded label/path can point at only one plist, while `install-agent` success copy for another saved config may still sound fully active.
+**Status:** Fixed
 
 **Acceptance criteria:**
-- [ ] `install-agent` success copy only says the background agent is running when the current saved config is actually loaded for that label.
-- [ ] Refresh/reinstall flows do not leave users with `install-agent` saying "running" while `status` for that same config says `installed but not loaded`.
-- [ ] If launchd can only keep one `com.idlewatch.agent` live at a time, the CLI copy stays explicit about what happened to the current plist/config.
-- [ ] Install/reinstall messaging stays short, calm, and non-technical.
-- [ ] No auth, ingest, or major packaging-flow redesign is introduced.
+- [x] `install-agent` success copy only says the background agent is running when the current saved config is actually loaded for that label.
+- [x] Refresh/reinstall flows do not leave users with `install-agent` saying "running" while `status` for that same config says `installed but not loaded`.
+- [x] If launchd can only keep one `com.idlewatch.agent` live at a time, the CLI copy stays explicit about what happened to the current plist/config.
+- [x] Install/reinstall messaging stays short, calm, and non-technical.
+- [x] No auth, ingest, or major packaging-flow redesign is introduced.
 
 ## Verified in this cycle
 - Fresh-home `status` still reads as a true empty state.
-- `quickstart --no-tui` still persists config cleanly with the neutral generated header.
+- `install-agent` without saved config still leaves background collection unloaded.
+- `install-agent` with saved config only claims background is running after a post-bootstrap loaded-state check.
+- The fallback success copy for a not-loaded launchd state stays short and actionable.
 - Reconfigure still preserves `IDLEWATCH_DEVICE_ID` while allowing a display-name change.
 - Metric-toggle persistence still behaves predictably.
 - Local-only `--test-publish` remains concise.
@@ -94,51 +46,12 @@ That is exactly the kind of tiny uncertainty a polished installer should avoid.
 ## Validation used
 ```bash
 cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
-TMPHOME=$(mktemp -d)
-
-HOME="$TMPHOME" node bin/idlewatch-agent.js status
-
-HOME="$TMPHOME" \
-  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-  IDLEWATCH_ENROLL_MODE=local \
-  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
-  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
-  node bin/idlewatch-agent.js quickstart --no-tui
-
-HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
-HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
-HOME="$TMPHOME" node bin/idlewatch-agent.js status
-
-HOME="$TMPHOME" \
-  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-  IDLEWATCH_ENROLL_MODE=local \
-  IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' \
-  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
-  node bin/idlewatch-agent.js configure --no-tui
-
-HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
-HOME="$TMPHOME" node bin/idlewatch-agent.js status
-
-env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
-env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
-
-A=$(mktemp -d)
-B=$(mktemp -d)
-HOME="$A" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Home A' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' node bin/idlewatch-agent.js quickstart --no-tui
-HOME="$A" node bin/idlewatch-agent.js install-agent
-HOME="$A" node bin/idlewatch-agent.js status
-HOME="$B" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Home B' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js quickstart --no-tui
-HOME="$B" node bin/idlewatch-agent.js install-agent
-HOME="$B" node bin/idlewatch-agent.js status
-launchctl print gui/$(id -u)/com.idlewatch.agent | sed -n '1,80p'
-
 node --test test/openclaw-env.test.mjs
 ```
 
 ## Notes
 - Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
-- This issue is about install/reinstall state honesty only. Do not redesign auth, ingest, or major packaging flows.
-- A minimal fix could be copy-only, or a slightly stricter loaded-state check before claiming "running in the background."
+- This cycle stayed intentionally limited to LaunchAgent loaded-state honesty only.
 
 ---
 

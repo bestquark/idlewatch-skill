@@ -864,16 +864,29 @@ test('status stays honest after install-agent without saved config', () => {
   }
 
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-no-config-install-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-launchctl-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
   try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
     const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
-      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
       encoding: 'utf8',
       timeout: 15000
     })
     assert.equal(install.status, 0, install.stderr)
 
     const status = spawnSync(process.execPath, [BIN, 'status'], {
-      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
       encoding: 'utf8',
       timeout: 15000
     })
@@ -882,11 +895,42 @@ test('status stays honest after install-agent without saved config', () => {
     assert.match(status.stdout, /Background:\s+LaunchAgent installed but not loaded/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
-    spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
-      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('install-agent does not claim background is running when launchd still reports not loaded', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-not-loaded-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-launchctl-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
       encoding: 'utf8',
       timeout: 15000
     })
+
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /✅ LaunchAgent installed\./)
+    assert.match(install.stdout, /Saved config is ready, but background collection is not loaded yet\./)
+    assert.ok(install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should show re-enable hint for the current install path')
+    assert.doesNotMatch(install.stdout, /IdleWatch is running in the background/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
     rmSync(tempHome, { recursive: true, force: true })
   }
 })

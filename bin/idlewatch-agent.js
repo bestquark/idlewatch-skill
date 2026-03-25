@@ -1047,9 +1047,18 @@ const subcommandPromise = (async () => {
     const load = bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded })
     if (load.status === 0) {
       launchctlResult(['enable', domainTarget])
-      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
-      if (alreadyLoaded) {
-        console.log('   Existing background agent restarted with the latest config.')
+      const launchAgentState = probeOwnedLaunchAgentState()
+      const backgroundAgentRunning = launchAgentState.state === 'running' || launchAgentState.state === 'loaded'
+
+      if (backgroundAgentRunning) {
+        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
+        if (alreadyLoaded) {
+          console.log('   Existing background agent restarted with the latest config.')
+        }
+      } else {
+        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
+        console.log('   Saved config is ready, but background collection is not loaded yet.')
+        console.log(`   Re-enable:    ${installAgentCommand}`)
       }
       console.log(`   Saved config: ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
