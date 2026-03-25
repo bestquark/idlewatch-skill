@@ -43,15 +43,13 @@ idlewatch run                 # start continuous collection
 
 ## Background collection (macOS)
 
-Background mode needs a durable install.
-
-- `npx idlewatch quickstart` is great for one-off setup and foreground testing.
-- Install IdleWatch first before using `install-agent`.
+Use `npx idlewatch quickstart` for one-off setup or foreground testing.
+For background mode:
 
 ```bash
-npm install -g idlewatch
-idlewatch install-agent   # LaunchAgent for automatic startup
-idlewatch menubar         # menu bar app for quick status
+npm install -g idlewatch  # install once
+idlewatch install-agent   # then enable background startup
+idlewatch menubar         # optional menu bar app for quick status
 ```
 
 Run `idlewatch --help` for all commands and options.

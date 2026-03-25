@@ -788,7 +788,7 @@ test('status command shows cloud link info when cloud config is present', () => 
   }
 })
 
-test('install-agent help explains config is optional', () => {
+test('install-agent help keeps the durable setup path short and clear', () => {
   const run = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
     encoding: 'utf8',
@@ -796,10 +796,12 @@ test('install-agent help explains config is optional', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Saved config is optional on first install/)
-  assert.match(run.stdout, /run quickstart later, then re-run install-agent to apply it\./)
+  assert.match(run.stdout, /You can install it before setup, then save config later/)
+  assert.match(run.stdout, /and re-run install-agent when you're ready\./)
   assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.match(run.stdout, /Then enable:\s+idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /Saved config is optional on first install/)
+  assert.doesNotMatch(run.stdout, /run quickstart later, then re-run install-agent to apply it\./)
   assert.doesNotMatch(run.stdout, /For one-off npx\/npm exec runs, install IdleWatch once first:/)
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
@@ -851,7 +853,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Setup is not saved yet, so background collection will stay off for now\./)
+    assert.match(run.stdout, /Setup isn't saved yet, so background mode will stay off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Next:         ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
     assert.ok(run.stdout.includes(`When ready:   ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')

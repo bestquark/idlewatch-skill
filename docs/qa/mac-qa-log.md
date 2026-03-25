@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:24 PM (America/Toronto)  
-**Status:** CLOSED - no new polish issues found in this targeted pass
+**Last updated:** Wednesday, March 25th, 2026 — 12:25 PM (America/Toronto)  
+**Status:** CLOSED - one tiny copy polish shipped in this targeted pass
+
+---
+
+## Cycle R92 Status: CLOSED
+
+This pass stayed intentionally narrow: keep setup/install guidance calm and durable-install oriented without changing behavior, telemetry, or packaging.
+
+### Outcome
+- Shipped one tiny, low-risk copy polish improvement.
+- Tightened `install-agent --help`, the no-config install follow-up, and the README background section so they all use the same shorter mental model:
+  - install once
+  - enable background mode when ready
+- Added regression coverage for the calmer `install-agent --help` wording.
+- Telemetry behavior, LaunchAgent behavior, auth/ingest, and packaging were left untouched.
+
+### R92 spot-check coverage
+- `install-agent --help`
+- No-config `install-agent` follow-up copy
+- README durable-install wording
+- Targeted unit regression for `install-agent --help`
+
+### Prioritized findings
+
+#### [x] L8 — Durable-install guidance now reads like the rest of the product
+**Why it matters:** The product already had the right low-friction setup model, but `install-agent --help` and README still spent a little too much time explaining themselves. This is tiny, but it sits right on the setup/background seam where cleaner wording matters most.
+
+**What shipped**
+- `install-agent --help` now says you can install first, save config later, and re-run `install-agent` when ready.
+- The no-config install success message now says background mode stays off until setup is saved.
+- README background setup now uses the same two-step durable-install phrasing already used in the CLI.
+
+### Acceptance notes
+- Background mode still points to the durable global install path, never `npx idlewatch install-agent`.
+- Foreground one-off usage remains unchanged.
+- LaunchAgent behavior and the working telemetry path remain unchanged.
 
 ---
 

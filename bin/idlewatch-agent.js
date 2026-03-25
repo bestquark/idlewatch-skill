@@ -914,9 +914,9 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 
 Usage:  ${installAgentCommand}
 
-Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
-in the background. Saved config is optional on first install; you can
-run quickstart later, then re-run install-agent to apply it.
+Creates a LaunchAgent plist and loads it so IdleWatch starts automatically
+in the background. You can install it before setup, then save config later
+and re-run install-agent when you're ready.
 For one-off npx/npm exec runs:
   Install once: npm install -g idlewatch
   Then enable: idlewatch install-agent`,
@@ -1065,7 +1065,7 @@ const subcommandPromise = (async () => {
 
     if (!shouldStartImmediately) {
       console.log('✅ LaunchAgent installed.')
-      console.log('   Setup is not saved yet, so background collection will stay off for now.')
+      console.log("   Setup isn't saved yet, so background mode will stay off for now.")
       console.log(`   No saved config yet: ${envFile}`)
       console.log(`   Next:         ${quickstartCommand}`)
       console.log(`   Or run now:   ${runCommand}`)
