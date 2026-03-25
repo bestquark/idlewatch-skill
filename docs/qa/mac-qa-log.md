@@ -1,5 +1,138 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R99 (installer/CLI polish QA — source-checkout command copy pass)
+
+## Status: OPEN — small copy polish follow-up
+
+Most of the installer/CLI still feels solid: setup persists, metric toggles save cleanly, config reload expectations are clear, LaunchAgent install/uninstall works, `--test-publish` stays short, device identity persists, and the npx/global install split is now honest.
+
+This pass found one remaining product-taste issue in the source-checkout path.
+
+When IdleWatch is run from source (`node bin/idlewatch-agent.js ...`), some background/setup hints embed the full command inside prose like:
+
+- `Background: install node bin/idlewatch-agent.js install-agent to re-enable background collection`
+
+That is technically understandable, but it reads clunkier than the rest of the product and makes the key action slightly harder to scan/copy. The command itself is already long; wrapping it in extra prose makes the line feel more mechanical than helpful.
+
+The neat version is simpler:
+
+- keep the sentence short, then show the command cleanly, or
+- use a phrasing that does not produce `install <command> install-agent`
+
+No flow redesign needed — this is just copy polish in a setup surface users actually read.
+
+---
+
+## Priority findings
+
+### M1. Source-checkout background hints become awkward when the full `node ... install-agent` command is embedded inside prose
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+The global-install and one-off `npx` paths now read cleanly because the command style matches the setup path.
+
+The source-checkout path mostly does too — but a few lines still construct guidance as sentence fragments around the command. That creates phrasing like:
+
+- `install node bin/idlewatch-agent.js install-agent`
+
+Nothing is broken, but it is visually noisy in exactly the moment the user wants a calm next step. It also makes the action slightly less copyable-at-a-glance than it should be.
+
+This is the kind of tiny polish issue that makes a CLI feel either carefully composed or slightly stitched together.
+
+A cleaner bar would be one of these:
+
+- `Background: node bin/idlewatch-agent.js install-agent`
+- `To re-enable background collection:` followed by the command on the next line
+- `Run node bin/idlewatch-agent.js install-agent to re-enable background collection`
+
+Any of those is easier on the eyes than `install <command> install-agent`.
+
+**Exact repro:**
+1. Start with a fresh home and source checkout:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+   ```
+2. Run source-checkout quickstart:
+   ```bash
+   env HOME="$TMPHOME" \
+     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+3. Install then remove the LaunchAgent:
+   ```bash
+   env HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+   env HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+   ```
+4. Check status:
+   ```bash
+   env HOME="$TMPHOME" node bin/idlewatch-agent.js status
+   ```
+5. Observe the final hint reads:
+   - `Background: install node bin/idlewatch-agent.js install-agent to re-enable background collection`
+6. The same phrasing pattern also appears in configured source-checkout status/help copy where prose wraps the full command instead of presenting it cleanly.
+
+**Acceptance criteria:**
+- [ ] Source-checkout status/help/setup hints do not produce awkward phrasing like `install node ... install-agent`.
+- [ ] The next-step command remains explicit and copyable.
+- [ ] Global installs still keep the clean `idlewatch install-agent` phrasing.
+- [ ] One-off `npx` guidance remains unchanged and honest about durable install requirements.
+- [ ] No auth, ingest, or major packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Fresh-home `status` still presents an honest empty state (`Setup: not completed yet`) with preview labels.
+- `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
+- Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
+- Reconfiguring metrics still updates the saved env file correctly (`cpu,memory` → `agent_activity`).
+- `configure` still explains that saved changes apply on next start and points users to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
+- `install-agent` / `uninstall-agent` messaging remains concise.
+- `--test-publish` remains short and understandable in local-only mode.
+- One-off runtime hints still correctly keep `npx idlewatch ...` command forms where appropriate.
+- One-off `install-agent` still correctly refuses fragile npm-cache background installs.
+- README and external onboarding still clearly distinguish one-off `npx` usage from durable background-install paths.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+node bin/idlewatch-agent.js --help
+node bin/idlewatch-agent.js status --help
+node bin/idlewatch-agent.js install-agent --help
+```
+
+## Notes
+- This cycle used `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, which appears to be the active repo path on disk; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present.
+- The remaining issue is copy polish only: source-checkout command presentation should be as clean as the global/npx paths.
+- No auth, ingest, or major packaging flow changes are recommended.
+
+---
+
 **Cycle:** R98 (installer/CLI polish QA — docs install-path clarity pass)
 
 ## Status: CLOSED — shipped in this cycle
