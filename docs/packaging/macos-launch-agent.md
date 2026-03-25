@@ -22,9 +22,12 @@ For a source checkout / maintainer workflow:
 npm run install:macos-launch-agent
 ```
 
-This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist` and loads it immediately. If `~/.idlewatch/idlewatch.env` already exists from quickstart, the background agent reuses it automatically. If not, the agent is still installed but has nothing useful to publish yet.
+This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
 
-Config changes are picked up on the next start. After running quickstart or changing settings, re-run the install script once to restart the background agent with the saved config.
+- If `~/.idlewatch/idlewatch.env` already exists from quickstart, the install also loads the agent right away and background collection starts normally.
+- If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
+
+Config changes are picked up on the next start. After running quickstart or changing settings, re-run the install script once to load or refresh the background agent with the saved config.
 
 ### Configuration
 

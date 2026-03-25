@@ -1,5 +1,39 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R113 (installer/CLI polish QA — LaunchAgent doc honesty sync)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle stayed deliberately tiny.
+
+The CLI and runtime behavior already do the right thing after the earlier no-config LaunchAgent polish: `install-agent` installs the plist but leaves it unloaded until setup exists. One doc page still told the older story by saying the LaunchAgent "loads immediately" even when no saved config exists.
+
+That mismatch was small, but it landed in exactly the setup surface users copy from. Tightening it keeps install/reconfigure expectations calm and consistent without touching auth, ingest, packaging mechanics, or the working telemetry path.
+
+## What shipped
+- `docs/packaging/macos-launch-agent.md` now distinguishes the two install states plainly:
+  - saved config present → install also loads the agent immediately
+  - no saved config yet → plist is installed but left unloaded until setup is saved
+- Refresh wording now says re-running the install script will load or refresh the background agent with saved config.
+- Runtime behavior remains unchanged.
+
+## Verified in this cycle
+- The doc now matches the already-shipped no-config `install-agent` behavior.
+- Saved-config install behavior still reads as immediate background startup.
+- No auth, ingest, telemetry-path, or packaging-flow redesign was introduced.
+
+## Acceptance criteria
+- [x] LaunchAgent docs no longer claim a no-config install starts running immediately.
+- [x] Saved-config install behavior remains described accurately.
+- [x] Copy stays short, calm, and setup-focused.
+- [x] Runtime behavior and telemetry path remain unchanged.
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This was intentionally a docs-only honesty sync because the installer/CLI behavior itself was already correct.
+
+---
+
 **Cycle:** R112 (installer/CLI polish QA — calmness + persistence verification sweep)
 
 ## Status: CLOSED — no new polish issue found
