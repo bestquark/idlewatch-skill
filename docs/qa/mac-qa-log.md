@@ -1,8 +1,93 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 2:05 PM (America/Toronto)  
-**Status:** CLOSED - R108 tiny copy polish shipped
+**Last updated:** Wednesday, March 25th, 2026 — 2:10 PM (America/Toronto)  
+**Status:** CLOSED - R109 no new polish issues
+
+---
+
+## Cycle R109 Status: CLOSED
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new end-user polish regressions were worth opening from this cycle.
+- The current installer/CLI still feels calm in the seams most likely to get noisy: first-run status, install-before-setup, already-installed refresh guidance, uninstall retention messaging, device rename persistence, metric toggle persistence, and `npx` vs durable-install guidance.
+- The tiny R108 wording changes still hold up in real CLI output and keep the setup flow simpler rather than more narrated.
+
+### R109 spot-check coverage
+- `node bin/idlewatch-agent.js install-agent --help`
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status` with LaunchAgent installed but not loaded
+- `configure --no-tui` device rename + metric toggle persistence
+- `uninstall-agent` messaging
+- `node bin/idlewatch-agent.js --help | sed -n '/test-publish/,+6p'`
+- `npx`-like `install-agent --help`
+- `npx`-like `quickstart --no-tui` in a clean HOME
+- `npx`-like `status`
+- `npx`-like `install-agent` refusal
+- `npx`-like `configure --no-tui` after pre-installing the LaunchAgent
+- `npm run validate:onboarding --silent`
+
+### Prioritized findings
+- None. No confusing, verbose, repetitive, visually noisy, or unnecessarily technical user-facing issues were worth opening from this cycle.
+
+### Acceptance notes
+- First-run `status` remains light: default metrics lead, OpenClaw extras stay secondary.
+- Install-before-setup still keeps the right mental model: background install can happen early, but collection waits for saved setup.
+- Setup and reconfigure completion still clearly distinguish first-time background enable from already-installed-needs-refresh.
+- Device rename still preserves the original device ID and local log path while updating the visible device name.
+- Metric selection changes still persist cleanly into saved config and next `status` output.
+- LaunchAgent uninstall messaging remains clear, safe, and confirms config/log retention.
+- `--test-publish` remains present and discoverable.
+- `npx` guidance still keeps foreground trial usage on `npx` while pointing background mode to the durable global install path.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install/uninstall commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js install-agent --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+15. `node bin/idlewatch-agent.js --help | sed -n '/test-publish/,+6p'`
+16. `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+17. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+18. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js status`
+19. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent`
+20. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent >/dev/null`
+21. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='NPX Reconfig Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+22. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+23. `npm run validate:onboarding --silent`
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, or packaging redesign is recommended from this cycle.
 
 ---
 
