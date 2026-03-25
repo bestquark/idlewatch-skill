@@ -1,5 +1,133 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R98 (installer/CLI polish QA — docs install-path clarity pass)
+
+## Status: OPEN — small docs polish still worth shipping
+
+The product behavior now does the right thing: one-off `npx` / `npm exec` runs refuse to install a fragile LaunchAgent and point users to a durable install first.
+
+The remaining paper cut is simpler: the written install docs still frame `npx idlewatch quickstart` as a general first-class setup path without clearly saying that background mode is **not** part of that path.
+
+That mismatch is small, but it lands right where trust is built:
+
+- README says `npx idlewatch quickstart`
+- onboarding docs say `one-off / no install → npx idlewatch ...`
+- background section then shows `idlewatch install-agent`
+- only the runtime error explains the durable-install requirement
+
+So the CLI is now honest, but the docs still make users discover the rule one command too late.
+
+---
+
+## Priority findings
+
+### M1. README/onboarding still underspecify that background mode requires a durable install
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+This is no longer a behavior bug. It is a setup-quality issue.
+
+Right now the docs correctly present `npx` as the fastest no-install path, but they do not clearly separate:
+
+- **one-off foreground testing** → good fit for `npx`
+- **persistent background collection** → requires a durable install (`npm install -g idlewatch`, packaged app, or intentional source checkout path)
+
+That leaves an avoidable friction point:
+
+- users can reasonably read the docs as "start with npx, then continue normally"
+- the first place they learn otherwise is the `install-agent` refusal message
+- the product feels slightly more surprising than it needs to
+
+The neater path is to state the rule before users hit the guardrail.
+
+Minimal examples that would be clearer:
+
+- `npx idlewatch quickstart` → one-off setup / foreground testing
+- `npm install -g idlewatch` → required before `idlewatch install-agent`
+- packaged app or source checkout docs keep their existing durable-path instructions
+
+**Exact repro:**
+1. Open the main install docs:
+   ```bash
+   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+   sed -n '1,120p' README.md
+   ```
+2. Observe the install section says:
+   - `npm install -g idlewatch`
+   - or `npx idlewatch quickstart`
+3. Observe the later background section says:
+   - `idlewatch install-agent`
+   - but does not plainly say background mode requires a durable install and is not part of the one-off `npx` path.
+4. Open the external onboarding doc:
+   ```bash
+   sed -n '1,120p' docs/onboarding-external.md
+   ```
+5. Observe it says:
+   - `one-off / no install → npx idlewatch ...`
+   - but does not clearly carve out `install-agent` / background mode as durable-install-only.
+6. Compare with actual runtime behavior:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+   ```
+7. Observe the CLI correctly refuses and explains that one-off `npx` paths are not durable enough for background mode.
+
+**Acceptance criteria:**
+- [ ] README install + background sections explicitly distinguish one-off `npx` usage from durable background-install paths.
+- [ ] `docs/onboarding-external.md` says plainly that LaunchAgent/background mode requires a durable install.
+- [ ] Copy stays short, calm, and non-technical.
+- [ ] The fast `npx` path remains visible for foreground testing and quick setup.
+- [ ] No auth, ingest, or packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Fresh-home `status` still presents an honest empty state (`Setup: not completed yet`) with preview labels.
+- `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
+- Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
+- Reconfiguring metrics still updates the saved env file correctly (`cpu,memory` → `agent_activity`).
+- `configure` still explains that saved changes apply on next start and points users to `install-agent` to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
+- `install-agent` / `uninstall-agent` messaging remains concise.
+- `--test-publish` remains short and understandable in local-only mode.
+- One-off runtime hints are now honest: `status` says to install IdleWatch globally first before background mode.
+- One-off `install-agent` correctly stops early instead of writing a LaunchAgent against npm cache.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+sed -n '1,120p' README.md
+sed -n '1,120p' docs/onboarding-external.md
+```
+
+## Notes
+- This cycle did not find any need to redesign auth, ingest, or major packaging flows.
+- The remaining issue is documentation honesty/clarity, not a runtime correctness problem.
+- Product taste recommendation: explain the durable-install requirement one step earlier, in the docs users copy from.
+
+---
+
 **Cycle:** R97 (installer/CLI polish QA — one-off LaunchAgent durability fix)
 
 ## Status: CLOSED — shipped in this cycle
