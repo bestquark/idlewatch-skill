@@ -1,8 +1,47 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:40 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R144 spot-check found no new end-user polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:50 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R145 shipped one tiny configure/reconfigure help-heading polish; cron repo path still stale
+
+---
+
+## Cycle R145 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-heading cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `configure --help` and `reconfigure --help` now headline themselves as `Re-open setup` instead of the older, more generic `Change device settings`.
+- This keeps the help entrypoints aligned with the calmer local-first setup wording already used by main help and the help body (`name, metrics, optional cloud link`).
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R145 spot-check coverage
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L38 — `configure` / `reconfigure` help headings now match the calmer setup framing used elsewhere
+**Why it matters:** This was tiny, but it sat in a cautious-user moment. The body copy and top-level command list had already converged on the calmer `setup / name, metrics, optional cloud link` story, while these two help headings still used the older, more generic `Change device settings` wording.
+
+**What shipped**
+- Reworded the `configure --help` heading from:
+  - `configure — Change device settings`
+- To:
+  - `configure — Re-open setup`
+- Reworded the `reconfigure --help` heading from:
+  - `reconfigure — Change device settings (alias for configure)`
+- To:
+  - `reconfigure — Re-open setup (alias for configure)`
+- Added regression coverage so both help headings keep the calmer framing.
+
+### Acceptance notes
+- `configure` / `reconfigure` help now reads more like the rest of the setup/reconfigure story.
+- This is copy-only; setup semantics, saved-config reload wording, and background behavior are unchanged.
+- The working telemetry path remains untouched.
 
 ---
 

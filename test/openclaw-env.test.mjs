@@ -889,7 +889,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Usage:\s+.*configure --no-tui\n/)
+  assert.match(run.stdout, /configure — Re-open setup\n\nUsage:\s+.*configure --no-tui\n/)
   assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
@@ -924,7 +924,7 @@ test('reconfigure help stays clean in non-TTY mode', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Usage:\s+.*reconfigure --no-tui\n/)
+  assert.match(run.stdout, /reconfigure — Re-open setup \(alias for configure\)\n\nUsage:\s+.*reconfigure --no-tui\n/)
   assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*reconfigure \[--no-tui\]/)

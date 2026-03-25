@@ -954,7 +954,7 @@ Usage:  ${quickstartUsage}
 
 Walks you through device name, metrics, and an optional cloud link.
 ${quickstartPromptHint}`,
-    configure: `${configureCommand} — Change device settings
+    configure: `${configureCommand} — Re-open setup
 
 Usage:  ${configureUsage}
 
@@ -991,7 +991,7 @@ Usage:  ${menubarCommand} [--launch] [--force]
 Installs the macOS menu bar companion app.
   --launch   Open the app immediately after install
   --force    Reinstall even if already installed`,
-    reconfigure: `${reconfigureCommand} — Change device settings (alias for configure)
+    reconfigure: `${reconfigureCommand} — Re-open setup (alias for configure)
 
 Usage:  ${reconfigureUsage}
 
