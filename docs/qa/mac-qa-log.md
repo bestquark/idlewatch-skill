@@ -1,5 +1,148 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R95 (installer/CLI polish QA — npx follow-up command clarity pass)
+
+## Status: OPEN — small polish issue found
+
+Most of the installer/CLI still feels tight: setup works, config persists, metric toggles save cleanly, LaunchAgent install/uninstall remains calm, `--test-publish` is short, device identity persists, and the fresh-home `status` empty state remains honest.
+
+This pass found one new paper cut in the one-off install path: when IdleWatch is launched via `npx`/`npm exec`, several follow-up hints still tell the user to run bare `idlewatch ...` commands.
+
+That is easy to miss in implementation and annoyingly easy for a real user to trip over. If they chose one-off execution specifically to avoid a global install, the product should keep meeting them in that mode instead of suddenly assuming `idlewatch` now exists on their PATH.
+
+---
+
+## Priority findings
+
+### M1. One-off `npx` runs print follow-up commands as `idlewatch ...` instead of preserving the one-off path
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+The package already does a nice job in postinstall docs of distinguishing:
+
+- global install: `idlewatch ...`
+- one-off use: `npx idlewatch ...`
+
+But the live CLI flow does not stay consistent with that distinction.
+
+When a user runs IdleWatch one-off via `npx`/`npm exec`, successful output currently tells them things like:
+
+- `Get started:  idlewatch quickstart`
+- `idlewatch install-agent`
+- `idlewatch run`
+
+That is a subtle setup-quality bug:
+
+- it makes the one-off flow feel less trustworthy than the docs
+- it can turn the very next copy-paste step into `command not found`
+- it quietly nudges users toward a global install even when they intentionally chose not to do that
+- it makes the setup wizard feel a little sloppier than it actually is
+
+The product-taste fix is simple: if the current invocation is one-off, the next-step copy should stay one-off too.
+
+Minimal, calm examples:
+
+- `npx idlewatch quickstart`
+- `npx idlewatch install-agent`
+- `npx idlewatch run`
+
+**Exact repro:**
+1. Start from outside the repo with a fresh home:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /tmp
+   ```
+2. Check fresh status through one-off execution:
+   ```bash
+   env HOME="$TMPHOME" \
+     npm exec --yes --package /Users/luismantilla/.openclaw/workspace/idlewatch-skill \
+     idlewatch status
+   ```
+3. Observe the output ends with:
+   - `Get started:  idlewatch quickstart`
+   - not `npx idlewatch quickstart`
+4. Run one-off quickstart:
+   ```bash
+   env HOME="$TMPHOME" \
+     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     npm exec --yes --package /Users/luismantilla/.openclaw/workspace/idlewatch-skill \
+     idlewatch quickstart -- --no-tui
+   ```
+5. Observe the success block says:
+   - `idlewatch install-agent`
+   - `idlewatch run`
+   - not `npx idlewatch install-agent` / `npx idlewatch run`
+
+**Acceptance criteria:**
+- [ ] When invoked via `npx` or `npm exec`, next-step hints preserve a one-off command form instead of assuming a global install.
+- [ ] `status`, `quickstart`, `configure`, and LaunchAgent follow-up copy all stay consistent.
+- [ ] Global installs still show the cleaner `idlewatch ...` form.
+- [ ] Source-checkout runs can keep showing `node bin/idlewatch-agent.js ...` if that path is intentional.
+- [ ] No auth, ingest, or packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Fresh-home `status` still presents an honest empty state (`Setup: not completed yet`) with preview labels.
+- `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
+- Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
+- Reconfiguring metrics still updates the saved env file correctly (`cpu,memory` → `agent_activity`).
+- `configure` still explains that saved changes apply on next start and points users to `install-agent` to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
+- `install-agent` / `uninstall-agent` behavior remains concise and safe.
+- `--test-publish` remains short and understandable in local-only mode.
+- Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
+- New issue found: live runtime follow-up hints do not yet preserve one-off invocation style.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+node scripts/postinstall.mjs
+node bin/idlewatch-agent.js --help
+node bin/idlewatch-agent.js configure --help
+
+env HOME="$TMPHOME" \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace/idlewatch-skill \
+  idlewatch status
+
+env HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  npm exec --yes --package /Users/luismantilla/.openclaw/workspace/idlewatch-skill \
+  idlewatch quickstart -- --no-tui
+```
+
+## Notes
+- This cycle did not find any need to redesign auth, ingest, or major packaging flows.
+- Remaining issue is strictly install-path copy polish: one-off users should see one-off follow-up commands.
+- Previous fixes remain verified: fresh-home `status` stays honest, and local-only success paths stay quiet on stderr.
+
+---
+
 **Cycle:** R94 (installer/CLI polish QA — local-only messaging noise pass)
 
 ## Status: CLOSED — shipped in this cycle
