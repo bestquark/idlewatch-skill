@@ -1101,7 +1101,11 @@ const subcommandPromise = (async () => {
         process.exit(0)
       }
 
-      const result = await runEnrollmentWizard({ noTui: args.has('--no-tui') })
+      const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
+      const result = await runEnrollmentWizard({
+        noTui: args.has('--no-tui'),
+        preserveSavedDeviceId: isReconfigure
+      })
 
       if (!result?.outputEnvFile || !fs.existsSync(result.outputEnvFile)) {
         throw new Error(`setup_did_not_write_env_file:${result?.outputEnvFile || 'unknown'}`)
@@ -1116,7 +1120,6 @@ const subcommandPromise = (async () => {
       if (onceRun.status === 0) {
         const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
         const launchAgentState = probeOwnedLaunchAgentState()
-        const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
         const setupHeadline = isReconfigure
           ? `\n✅ Settings saved for "${result.deviceName}".`
           : `\n✅ Setup complete for "${result.deviceName}".`

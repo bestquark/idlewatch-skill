@@ -913,6 +913,54 @@ test('quickstart and configure keep one-off runs honest about background install
   }
 })
 
+test('configure keeps the saved device id stable when renaming the device', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-rename-home-'))
+  try {
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+
+    const initialEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(initialEnv, /IDLEWATCH_DEVICE_NAME=QA Box/)
+    assert.match(initialEnv, /IDLEWATCH_DEVICE_ID=qa-box/)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'agent_activity'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "Renamed Box"\./)
+
+    const updatedEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Box/)
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_ID=qa-box/)
+    assert.doesNotMatch(updatedEnv, /IDLEWATCH_DEVICE_ID=renamed-box/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure success says to refresh an already-running background agent', () => {
   if (process.platform !== 'darwin') {
     return

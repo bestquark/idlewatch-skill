@@ -1,5 +1,75 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R104 (installer/CLI polish QA — rename-safe saved identity pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle found one small but worthwhile saved-config polish issue in `configure`.
+
+Renaming a device during reconfigure could also regenerate `IDLEWATCH_DEVICE_ID` from the new display name. Nothing crashed, but it made a cosmetic rename behave more like a new device identity than a settings edit.
+
+That is the wrong feel for a tidy reconfigure flow. If someone just renames the box, the safer default is to keep the saved device identity stable unless they explicitly override it.
+
+This pass keeps setup simple and preserves the working telemetry path:
+- `configure` now reuses the saved `IDLEWATCH_DEVICE_ID` by default
+- changing `IDLEWATCH_DEVICE_NAME` no longer silently changes the device id
+- explicit device-id overrides still work as before
+- saved config format and publish/auth behavior stay unchanged
+
+## What shipped
+- Reconfigure now prefers the existing saved device id before deriving one from the current device name.
+- Renaming a device updates the human-facing name without silently minting a new device identity.
+- Added regression coverage for rename-with-stable-id behavior.
+
+## Priority findings
+
+### M1. Renaming a device during reconfigure could silently mint a new device id
+**Priority:** Medium  
+**Status:** Fixed
+
+**Why this matters:**
+For product taste, `configure` should feel like editing settings, not accidentally creating a new identity.
+
+Before this fix, a flow like:
+- first setup as `QA Box`
+- later reconfigure to `Renamed Box`
+
+could save:
+- `IDLEWATCH_DEVICE_NAME=Renamed Box`
+- `IDLEWATCH_DEVICE_ID=renamed-box`
+
+That is subtle, but it creates avoidable friction:
+- a display-name tweak can look like a brand-new device to downstream consumers
+- reconfigure feels less predictable than the rest of the setup flow
+- users lose the nice mental model that saved identity stays put unless they intentionally change it
+
+The neater rule is simple: keep the existing device id unless the user explicitly supplies a new one.
+
+**Acceptance criteria:**
+- [x] Reconfigure keeps the existing saved `IDLEWATCH_DEVICE_ID` by default.
+- [x] Changing `IDLEWATCH_DEVICE_NAME` alone does not silently change device identity.
+- [x] Explicit device-id overrides still take precedence.
+- [x] No auth, ingest, telemetry-path, or packaging redesign is introduced.
+
+## Verified in this cycle
+- Fresh local-only quickstart still writes the expected saved config.
+- Reconfigure with a renamed device now updates `IDLEWATCH_DEVICE_NAME` while preserving the saved `IDLEWATCH_DEVICE_ID`.
+- Existing metric-selection persistence still works during the same reconfigure path.
+- Focused installer/CLI regression coverage still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test test/openclaw-env.test.mjs
+```
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
+- This was intentionally kept to a tiny saved-config behavior fix only.
+- No auth, ingest, or packaging changes were made.
+
+---
+
 **Cycle:** R103 (installer/CLI polish QA — verification-only polish sweep)
 
 ## Status: CLOSED — no action required

@@ -469,7 +469,7 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   const safeDeviceId = sanitizeDeviceId(
-    options.deviceId || process.env.IDLEWATCH_ENROLL_DEVICE_ID || deviceName,
+    options.deviceId || process.env.IDLEWATCH_ENROLL_DEVICE_ID || (options.preserveSavedDeviceId ? existingConfig?.deviceId : null) || deviceName,
     machineName()
   )
   const localLogPath = path.join(configDir, 'logs', `${safeDeviceId}-metrics.ndjson`)
