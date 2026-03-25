@@ -1,8 +1,85 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:05 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R133 shipped one tiny top-level help wording polish; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 9:20 PM (America/Toronto)  
+**Status:** OPEN ⚠️ - R134 found one tiny quickstart-help wording mismatch; cron repo path still stale
+
+---
+
+## Cycle R134 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Found one small but real first-run polish seam worth fixing.
+- Top-level help already frames setup correctly as `name, metrics, optional cloud link`, but `quickstart --help` still says setup walks the user through `API key, device name, and metric selection`.
+- That wording is slightly more cloud-first and more technical than the actual product shape, especially in the cautious-user moment where someone asks for help before setup.
+- No auth, ingest, packaging, or telemetry behavior changes are recommended.
+
+### R134 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node bin/idlewatch-agent.js status --help`
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only `quickstart --no-tui` after pre-installing the LaunchAgent
+- [x] Post-setup `status` with LaunchAgent installed but not loaded
+- [x] `npx`-like `quickstart --help`
+- [x] `npx`-like main `--help`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [ ] L32 — `quickstart --help` still implies setup always starts with an API key
+**Why it matters:** The actual onboarding flow already treats local-only setup as first-class, and the top-level help was already polished to reflect that. But the quickstart help screen still says `Walks you through API key, device name, and metric selection.` That is tiny, but it reintroduces the exact cloud-first feel the rest of the CLI has been sanding away.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run:
+   ```bash
+   node bin/idlewatch-agent.js quickstart --help
+   ```
+3. Optionally compare with:
+   ```bash
+   node bin/idlewatch-agent.js --help
+   npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js quickstart --help
+   ```
+
+**Observed**
+- Main help already says:
+  - `quickstart   Set up this device (name, metrics, optional cloud link)`
+- But quickstart help still says:
+  - `Walks you through API key, device name, and metric selection.`
+- The same mismatch appears in `npx` quickstart help too.
+
+**Why this feels off**
+- Help should preserve the same product mental model across entrypoints.
+- Someone explicitly asking for `quickstart --help` is often deciding whether setup will be simple or fussy.
+- `API key` as the first noun makes local-only setup feel like a secondary exception instead of a normal path.
+
+**Acceptance criteria**
+- `quickstart --help` should match the calmer local-first framing already used in main help.
+- Preferred shape: describe setup as `name, metrics, optional cloud link` or equivalent.
+- Keep the wording short and non-technical.
+- Apply the same wording in `npx` quickstart help.
+- No setup behavior or auth flow changes; this is help/copy only.
+
+### Acceptance notes
+- First-run `status` still keeps the calmer default-metrics lead and secondary OpenClaw extras line.
+- Install-before-setup still preserves the right mental model: background install can happen early, but collection waits for saved setup.
+- Setup completion still clearly distinguishes first-time background enable from already-installed-needs-refresh.
+- Device rename still preserves the original device ID and local log path while updating the visible device name.
+- Metric selection changes still persist cleanly into saved config and next `status` output.
+- LaunchAgent uninstall messaging remains clear, safe, and confirms config/log retention.
+- `--test-publish` remains present and discoverable.
+- Main `npx` vs durable-install guidance still feels coherent; the mismatch found here is specifically inside `quickstart --help`.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- The repo polish plan file still says the cycle is complete/no implementation needed, but this pass found one small help-text seam worth addressing.
 
 ---
 
