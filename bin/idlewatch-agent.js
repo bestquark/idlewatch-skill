@@ -263,7 +263,7 @@ Commands:
   create       Create a custom telemetry metric
   dashboard    Launch local telemetry dashboard
   install-agent   ${installAgentSummary}
-  uninstall-agent Remove background LaunchAgent (macOS)
+  uninstall-agent Disable background mode (macOS)
   menubar      Install the macOS menu bar app
   version      Show version
 
@@ -982,11 +982,11 @@ Usage:  ${createCommand}
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
     'install-agent': installAgentHelpText(),
-    'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
+    'uninstall-agent': `${uninstallAgentCommand} — Disable background mode (macOS)
 
 Usage:  ${uninstallAgentCommand}
 
-Stops and removes the IdleWatch LaunchAgent.
+Stops and removes the LaunchAgent for background mode.
 Saved config and local logs stay in ~/.idlewatch, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 

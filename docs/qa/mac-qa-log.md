@@ -1,8 +1,60 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:45 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R161 shipped one tiny install-help wording polish fix
+**Last updated:** Wednesday, March 25th, 2026 — 7:55 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R162 shipped one tiny uninstall-help framing polish fix
+
+---
+
+## Cycle R162 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall-help framing cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Top-level help and `uninstall-agent --help` now use the same calmer product framing already used by the install side.
+- Main help now says:
+  - `uninstall-agent Disable background mode (macOS)`
+- The subcommand heading now says:
+  - `uninstall-agent — Disable background mode (macOS)`
+- The first body line now says:
+  - `Stops and removes the LaunchAgent for background mode.`
+- This keeps the uninstall path scan-first and aligned with the simpler `enable / disable background mode` story, while still keeping the LaunchAgent detail visible one line below.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R162 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|uninstall-agent help reassures that config and logs are kept'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L46 — uninstall help now leads with the calmer background-mode framing used elsewhere
+**Why it matters:** This was tiny, but it sat in another cautious-user moment. Install help and the broader setup story already frame background mode as a simple product behavior, while uninstall help still opened with the more implementation-first `Remove background LaunchAgent (macOS)` wording. That made the reversible off-ramp feel slightly more technical than the on-ramp.
+
+**What shipped**
+- Reworded the main-help `uninstall-agent` summary from:
+  - `uninstall-agent Remove background LaunchAgent (macOS)`
+- To:
+  - `uninstall-agent Disable background mode (macOS)`
+- Reworded the `uninstall-agent --help` heading from:
+  - `uninstall-agent — Remove background LaunchAgent (macOS)`
+- To:
+  - `uninstall-agent — Disable background mode (macOS)`
+- Reworded the first help sentence from:
+  - `Stops and removes the IdleWatch LaunchAgent.`
+- To:
+  - `Stops and removes the LaunchAgent for background mode.`
+- Added regression coverage so the calmer framing sticks.
+
+### Acceptance notes
+- The actual LaunchAgent uninstall behavior is unchanged.
+- The help still clearly says the action is reversible and that saved config/logs are kept.
+- The working telemetry path remains untouched.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 

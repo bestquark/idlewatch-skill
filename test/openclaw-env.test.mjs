@@ -843,6 +843,7 @@ test('main help matches the current source-checkout invocation path', () => {
   assert.match(run.stdout, /quickstart\s+Set up this device \(name, metrics, optional cloud link\)/)
   assert.match(run.stdout, /configure\s+Re-open setup \(name, metrics, optional cloud link\)/)
   assert.match(run.stdout, /install-agent\s+Enable background mode \(macOS\)/)
+  assert.match(run.stdout, /uninstall-agent\s+Disable background mode \(macOS\)/)
   assert.doesNotMatch(run.stdout, /quickstart\s+Set up this device \(API key, name, metrics\)/)
   assert.doesNotMatch(run.stdout, /configure\s+Re-open setup to change settings — values auto-filled/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
@@ -958,7 +959,11 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /uninstall-agent — Disable background mode \(macOS\)/)
+  assert.match(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
   assert.match(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch, so you can re-enable background mode later\./)
+  assert.doesNotMatch(run.stdout, /Remove background LaunchAgent \(macOS\)/)
+  assert.doesNotMatch(run.stdout, /Stops and removes the IdleWatch LaunchAgent\./)
   assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
 })
 
