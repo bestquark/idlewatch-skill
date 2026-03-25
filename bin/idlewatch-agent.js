@@ -1044,7 +1044,7 @@ const subcommandPromise = (async () => {
       console.log(`   No saved config yet: ${envFile}`)
       console.log(`   Next:         ${quickstartCommand}`)
       console.log(`   Or run now:   ${runCommand}`)
-      console.log(`   Then enable:  ${installAgentCommand}`)
+      console.log(`   When ready:   ${installAgentCommand}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
       process.exit(0)
@@ -1518,7 +1518,11 @@ if (statusRequested) {
     } else if (launchAgent.state === 'loaded') {
       console.log('  Background:   LaunchAgent loaded (idle)')
     } else if (launchAgent.state === 'installed-not-loaded') {
-      console.log('  Background:   LaunchAgent installed but not loaded')
+      if (hasConfig) {
+        console.log('  Background:   LaunchAgent installed but not loaded')
+      } else {
+        console.log('  Background:   LaunchAgent installed — waiting for setup')
+      }
     } else {
       console.log('  Background:   LaunchAgent not installed')
     }

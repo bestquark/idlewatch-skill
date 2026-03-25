@@ -50,7 +50,7 @@ Background mode needs a durable install.
 
 ```bash
 npm install -g idlewatch
-idlewatch install-agent   # LaunchAgent for automatic startup (re-run after config changes)
+idlewatch install-agent   # LaunchAgent for automatic startup
 idlewatch menubar         # menu bar app for quick status
 ```
 

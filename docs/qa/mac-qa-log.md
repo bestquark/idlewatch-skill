@@ -1,5 +1,42 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R124 (installer/CLI polish QA — pre-setup LaunchAgent wording calmness pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This pass stayed tiny and only tightened one remaining pre-setup wording seam.
+
+If someone installs the LaunchAgent before running setup, `status` used to say the technical launchd state:
+- `LaunchAgent installed but not loaded`
+
+That is accurate, but a little colder than the rest of the setup flow. For a user who has not finished setup yet, the more useful story is simply:
+- the background slot is installed
+- IdleWatch is waiting for setup
+
+What shipped:
+- Fresh/no-config `status` now says `LaunchAgent installed — waiting for setup` instead of the more technical `installed but not loaded`.
+- The no-config `install-agent` follow-up now says `When ready:` instead of `Then enable:` so the next step reads less like a required extra chore.
+- README background-install snippet now drops the blanket `re-run after config changes` aside, keeping the durable install step cleaner at first glance.
+- Telemetry, auth, ingest, packaging, and saved-config behavior remain unchanged.
+
+## Acceptance criteria
+- [x] Pre-setup background state reads more like setup guidance than launchd internals.
+- [x] No-config `install-agent` follow-up copy stays short and calmer.
+- [x] Existing configured-device background wording remains unchanged.
+- [x] No auth, ingest, telemetry-path, or packaging redesign was introduced.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test --test-name-pattern 'install-agent follow-up uses source checkout command path|status stays honest after install-agent without saved config' test/openclaw-env.test.mjs
+```
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This cycle stayed intentionally limited to wording/setup calmness only.
+
+---
+
 **Cycle:** R123 (installer/CLI polish QA — polish-plan recheck)
 
 ## Status: CLOSED — no new polish issue found

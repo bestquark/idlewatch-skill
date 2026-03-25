@@ -849,7 +849,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.match(run.stdout, /Setup is not saved yet, so background collection will stay off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Next:         ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
-    assert.ok(run.stdout.includes(`Then enable:  ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
+    assert.ok(run.stdout.includes(`When ready:   ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
     assert.doesNotMatch(run.stdout, /Next:.*idlewatch quickstart/)
@@ -892,7 +892,7 @@ test('status stays honest after install-agent without saved config', () => {
     })
     assert.equal(status.status, 0, status.stderr)
     assert.match(status.stdout, /Setup:\s+not completed yet/)
-    assert.match(status.stdout, /Background:\s+LaunchAgent installed but not loaded/)
+    assert.match(status.stdout, /Background:\s+LaunchAgent installed — waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
