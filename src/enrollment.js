@@ -84,8 +84,18 @@ function detectAvailableMonitorTargets() {
   return [...available]
 }
 
+function fallbackMonitorTargets(available) {
+  return [
+    'cpu',
+    'memory',
+    ...(available.includes('gpu') ? ['gpu'] : []),
+    ...(available.includes('temperature') ? ['temperature'] : []),
+    ...OPENCLAW_DERIVED_TARGETS.filter((target) => available.includes(target))
+  ]
+}
+
 function normalizeMonitorTargets(raw, available) {
-  const fallback = ['cpu', 'memory', ...(available.includes('gpu') ? ['gpu'] : []), ...(available.includes('temperature') ? ['temperature'] : []), ...OPENCLAW_DERIVED_TARGETS.filter((target) => available.includes(target))]
+  const fallback = fallbackMonitorTargets(available)
   if (!raw) return fallback
 
   const parsed = raw
@@ -98,6 +108,26 @@ function normalizeMonitorTargets(raw, available) {
 
   if (parsed.length === 0) return fallback
   return [...new Set(parsed)]
+}
+
+function ensureMonitorTargetsOrThrow(raw, available) {
+  const normalizedRaw = String(raw || '').trim()
+  if (!normalizedRaw) return fallbackMonitorTargets(available)
+
+  const explicitlyRequested = normalizedRaw
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+
+  const parsed = explicitlyRequested
+    .filter((item) => MONITOR_TARGET_CHOICES.includes(item))
+    .flatMap((item) => (item === 'openclaw' ? OPENCLAW_DERIVED_TARGETS : [item]))
+    .filter((item) => available.includes(item))
+
+  if (parsed.length > 0) return [...new Set(parsed)]
+
+  const availableList = available.join(', ')
+  throw new Error(`No valid metrics were selected. Choose one or more of: ${availableList}.`)
 }
 
 function normalizeCloudApiKey(raw) {
@@ -325,10 +355,8 @@ export async function runEnrollmentWizard(options = {}) {
   )
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
-  let monitorTargets = normalizeMonitorTargets(
-    options.monitorTargets || process.env.IDLEWATCH_ENROLL_MONITOR_TARGETS || process.env.IDLEWATCH_MONITOR_TARGETS || '',
-    availableMonitorTargets
-  )
+  const requestedMonitorTargets = options.monitorTargets || process.env.IDLEWATCH_ENROLL_MONITOR_TARGETS || process.env.IDLEWATCH_MONITOR_TARGETS || ''
+  let monitorTargets = ensureMonitorTargetsOrThrow(requestedMonitorTargets, availableMonitorTargets)
 
   if (!nonInteractive && !noTui) {
     const tuiResult = tryRustTui({ configDir, outputEnvFile })
@@ -437,7 +465,7 @@ export async function runEnrollmentWizard(options = {}) {
     const friendlySuggested = monitorTargets.map(t => friendlyTargetLabels[t] || t).join(', ')
     console.log(`Selected: ${friendlySuggested}`)
     const monitorInput = (await questionOrCancel(rl, `Metrics [${suggested}]: `)).trim()
-    monitorTargets = normalizeMonitorTargets(monitorInput || suggested, availableMonitorTargets)
+    monitorTargets = ensureMonitorTargetsOrThrow(monitorInput || suggested, availableMonitorTargets)
   }
 
   const safeDeviceId = sanitizeDeviceId(

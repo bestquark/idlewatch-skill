@@ -1,5 +1,90 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R102 (installer/CLI polish QA — metric-selection validation honesty pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This cycle found one small setup/reconfigure validation paper cut worth fixing.
+
+When metric selection was supplied entirely through env/non-interactive input, a fully invalid list could silently fall back to the default metric set. Nothing crashed, but it made setup feel slippery in exactly the moment users expect their explicit choices to stick.
+
+This pass tightens that behavior without touching auth, ingest, packaging, or the working telemetry path:
+
+- `quickstart` / `configure` now fail fast when the provided metric list contains no valid metrics at all.
+- The error is plain and actionable: it tells users to choose from the supported metric names.
+- No config file is written on that invalid-input path.
+- Partial/valid selections still work as before.
+
+---
+
+## What shipped
+- Setup/reconfigure no longer silently replace a fully invalid metric selection with defaults.
+- The validation error now says `No valid metrics were selected` and lists supported metric names.
+- Invalid non-interactive runs leave `~/.idlewatch/idlewatch.env` untouched.
+- Added regression coverage for invalid metric input.
+- Kept the existing telemetry pipeline and saved-config format unchanged.
+
+---
+
+## Priority findings
+
+### M1. Setup silently falls back to default metrics when the requested metric list is entirely invalid
+**Priority:** Medium  
+**Status:** Fixed
+
+**Why this matters:**
+For product taste, `configure` should feel dependable: if a user explicitly asks for a specific metric set, IdleWatch should either save that set or clearly say why it cannot.
+
+Before this fix, an all-invalid metric string such as:
+
+- `wat,not-real`
+
+could still complete setup by quietly saving the default metrics instead.
+
+That is subtle, but it creates exactly the wrong feeling:
+- the saved config does not reflect what the user asked for
+- a typo can look like it "worked"
+- reconfigure feels less trustworthy than the rest of the CLI
+
+The neater behavior is simple: when nothing in the requested list is valid, stop early and say so.
+
+**Acceptance criteria:**
+- [x] `quickstart` / `configure` fail clearly when the provided metric list contains no valid metrics.
+- [x] The validation message names the problem and points to supported metric names.
+- [x] No saved config file is written on the fully-invalid path.
+- [x] Valid metric selections continue to save normally.
+- [x] No auth, ingest, telemetry-path, or packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Invalid non-interactive metric input now fails with a clear validation error.
+- No `idlewatch.env` file is created when setup input is fully invalid.
+- Valid local-only setup and reconfigure flows still complete normally.
+- Background/install guidance remains unchanged.
+- Existing focused installer/CLI regression suite still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test test/openclaw-env.test.mjs
+
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='wat,not-real' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+```
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`.
+- This was intentionally kept to a tiny setup-validation fix only.
+- No auth, ingest, telemetry-path, or packaging changes were made.
+
+---
+
 **Cycle:** R101 (installer/CLI polish QA — status action-label honesty pass)
 
 ## Status: CLOSED — shipped in this cycle

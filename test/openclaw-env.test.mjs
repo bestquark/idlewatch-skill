@@ -840,6 +840,32 @@ test('install-agent follow-up uses source checkout command path', () => {
   }
 })
 
+test('quickstart rejects a fully invalid metric selection with a clear validation error', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-invalid-metrics-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'wat,not-real'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /No valid metrics were selected\./)
+    assert.match(run.stderr, /Choose one or more of:/)
+    assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart and configure keep one-off runs honest about background install under npm exec env', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-npx-env-'))
   try {
@@ -916,6 +942,13 @@ test('configure success says to refresh an already-running background agent', ()
     })
     assert.equal(install.status, 0, install.stderr)
 
+    const postInstallStatus = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(postInstallStatus.status, 0, postInstallStatus.stderr)
+
     const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
       env: {
         ...process.env,
@@ -933,9 +966,16 @@ test('configure success says to refresh an already-running background agent', ()
     assert.equal(configure.status, 0, configure.stderr)
     assert.match(configure.stdout, /✅ Settings saved for "QA Box"\./)
     assert.doesNotMatch(configure.stdout, /✅ Setup complete — "QA Box" is live!/)
-    assert.match(configure.stdout, /Background agent:\s+already running/)
-    assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
-    assert.doesNotMatch(configure.stdout, /To keep it running:/)
+
+    const launchAgentWasRunning = /Background:\s+LaunchAgent loaded/.test(postInstallStatus.stdout)
+    if (launchAgentWasRunning) {
+      assert.match(configure.stdout, /Background agent:\s+already running/)
+      assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
+      assert.doesNotMatch(configure.stdout, /To keep it running:/)
+    } else {
+      assert.match(configure.stdout, /Background collection is not enabled yet\./)
+      assert.match(configure.stdout, /To keep it running:/)
+    }
   } finally {
     spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
       env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
