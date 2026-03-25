@@ -1,5 +1,120 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R120 (installer/CLI polish QA — source-checkout setup heading honesty pass)
+
+## Status: OPEN — small polish issue worth fixing
+
+This pass stayed narrow and re-checked the same product-taste surfaces from the current polish plan against the active repo on disk.
+
+Most of the installer/CLI still feels tidy:
+- fresh-home `status` still reads as a true empty state
+- config/device-id/metric persistence still behave predictably through reconfigure
+- LaunchAgent install/uninstall still tell a clean installed-vs-running story
+- local-only `--test-publish` remains short
+- one-off `npx` background guidance remains honest
+
+But one small wording seam is still alive in the source-checkout path.
+
+After a normal source-checkout `quickstart --no-tui`, the success block still says:
+- `To keep it running:`
+
+and then lists both:
+- `node bin/idlewatch-agent.js install-agent`
+- `node bin/idlewatch-agent.js run`
+
+That heading is slightly misleading because `run` is the foreground collector. It is useful as an immediate next step, but it is not the way to *keep* IdleWatch running.
+
+This is not a behavior bug. It is the same tiny trust/polish issue that already got cleaned up in the one-off `npx` flow: the heading slightly blurs the difference between:
+- durable background collection
+- immediate foreground use
+
+For setup quality, that distinction should stay crisp in every install path, not just the one-off path.
+
+## Priority findings
+
+### M1. Source-checkout setup success still frames foreground `run` under `To keep it running`
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+Users tend to read the first success block literally. In the current source-checkout flow, the product says `To keep it running:` and then offers one background action plus one foreground action.
+
+Nothing breaks, but the heading makes the setup moment feel slightly sloppier than the rest of the CLI:
+- `install-agent` is the durable/background path
+- `run` is the immediate/foreground path
+- putting both under one “keep it running” label makes the foreground option sound more durable than it is
+
+The neater version is simple and already proven in the `npx` path:
+- split the foreground command under a heading like `Use it now:`
+- keep durable setup under a heading like `For background mode:` or equivalent
+
+That keeps the setup story calm, literal, and easier to scan.
+
+**Exact repro:**
+1. Start with a fresh home and source checkout:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+   ```
+2. Run non-interactive local quickstart:
+   ```bash
+   HOME="$TMPHOME" \
+     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+3. Observe the success block ends with:
+   - `To keep it running:`
+   - `node bin/idlewatch-agent.js install-agent   Auto-start in background (recommended)`
+   - `node bin/idlewatch-agent.js run   Run in foreground`
+4. Note that `run` is useful, but it does not match the heading literally because it is not the durable/background path.
+5. Re-run the same check through source-checkout `configure --no-tui` if needed to verify the same follow-up framing remains inconsistent with the already-cleaner one-off path.
+
+**Acceptance criteria:**
+- [ ] Source-checkout `quickstart` / `configure` success copy no longer frames the foreground `node ... run` command as the way to “keep it running”.
+- [ ] Immediate foreground use and durable background setup are separated more clearly.
+- [ ] One-off `npx` wording remains unchanged.
+- [ ] LaunchAgent behavior, config persistence, auth, ingest, and packaging flows remain unchanged.
+- [ ] Copy stays short, calm, and low-noise.
+
+## Verified in this cycle
+- Fresh `status` still shows `Setup: not completed yet` with preview-only labels.
+- `quickstart --no-tui` still saves config cleanly and verifies a local sample.
+- `install-agent` still reports a loaded LaunchAgent cleanly once saved config exists.
+- Reconfigure still preserves `IDLEWATCH_DEVICE_ID` while allowing a device-name change.
+- Metric-toggle persistence still works through the same reconfigure path.
+- `uninstall-agent` still removes only the background job and keeps config/logs.
+- Local-only `--test-publish` still stays short and calm.
+- One-off `npm exec ... idlewatch status` still keeps background guidance honest.
+- One-off `npm exec ... idlewatch install-agent` still fails fast and explains the durable install requirement clearly.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+```
+
+## Notes
+- Active repo path on disk still appears to be `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was not present during this pass.
+- This cycle stayed intentionally limited to wording/flow polish only.
+- The top open issue is now about source-checkout setup-heading honesty, not auth, ingest, or packaging design.
+
+---
+
 **Cycle:** R119 (installer/CLI polish QA — one-off setup heading calmness pass)
 
 ## Status: CLOSED — shipped in this cycle
