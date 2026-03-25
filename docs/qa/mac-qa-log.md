@@ -1,8 +1,41 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:20 PM (America/Toronto)  
-**Status:** CLOSED - R120 found no new polish issues worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 3:25 PM (America/Toronto)  
+**Status:** CLOSED - R121 shipped one tiny quickstart-help polish fix
+
+---
+
+## Cycle R121 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-path cleanup only, with no setup-flow changes, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Non-TTY `quickstart --help` no longer prints the awkward duplicated shape `quickstart --no-tui [--no-tui]`.
+- The same help path now says `Uses plain-text prompts` instead of telling the user to add `--no-tui` when that flag is already baked into the recommended command.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R121 spot-check coverage
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart help|configure help|status help|uninstall-agent help'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L24 — Non-TTY quickstart help now avoids the duplicated `--no-tui` shape
+**Why it matters:** This was tiny, but it sat right on first-run setup. In non-TTY contexts, the CLI already prefers `quickstart --no-tui`; the help screen was then adding another optional `[--no-tui]` and a hint telling the user to use the flag they were already using. That made an otherwise calm setup entrypoint feel slightly sloppy.
+
+**What shipped**
+- Non-TTY `quickstart --help` now shows a clean usage line with no duplicated flag.
+- The plain-text prompt note now matches the command already being shown:
+  - `Uses plain-text prompts (no Rust TUI).`
+- Interactive TTY help remains unchanged and still keeps the optional `--no-tui` hint.
+
+### Acceptance notes
+- First-run setup still points non-TTY users straight to the text-prompt path.
+- Interactive help still exposes `--no-tui` as the optional fallback.
+- The working telemetry path remains untouched.
 
 ---
 

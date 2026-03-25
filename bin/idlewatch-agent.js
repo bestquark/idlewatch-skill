@@ -910,6 +910,10 @@ if (args.has('--help-env')) {
 if (args.has('--help') || args.has('-h')) {
   const subCmd = argv.find(a => !a.startsWith('-'))
   const quickstartCommand = preferredSetupCommand('quickstart')
+  const quickstartUsage = process.stdin.isTTY ? `${quickstartCommand} [--no-tui]` : quickstartCommand
+  const quickstartPromptHint = process.stdin.isTTY
+    ? 'Use --no-tui for plain-text prompts (no Rust TUI).'
+    : 'Uses plain-text prompts (no Rust TUI).'
   const configureCommand = inferCliCommand('configure')
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
@@ -922,10 +926,10 @@ if (args.has('--help') || args.has('-h')) {
   const subHelp = {
     quickstart: `${quickstartCommand} — Set up this device
 
-Usage:  ${quickstartCommand} [--no-tui]
+Usage:  ${quickstartUsage}
 
 Walks you through API key, device name, and metric selection.
-Use --no-tui for plain-text prompts (no Rust TUI).`,
+${quickstartPromptHint}`,
     configure: `${configureCommand} — Change device settings
 
 Usage:  ${configureCommand} [--no-tui]

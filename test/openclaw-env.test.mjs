@@ -829,6 +829,20 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
+test('quickstart help stays clean in non-TTY mode', () => {
+  const run = spawnSync(process.execPath, [BIN, 'quickstart', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Usage:\s+.*quickstart --no-tui\n/)
+  assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
+  assert.doesNotMatch(run.stdout, /Usage:\s+.*quickstart --no-tui \[--no-tui\]/)
+  assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
+})
+
 test('configure help keeps saved-config reload wording short and consistent', () => {
   const run = spawnSync(process.execPath, [BIN, 'configure', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
