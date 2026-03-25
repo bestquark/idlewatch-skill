@@ -110,6 +110,26 @@ function probeOwnedLaunchAgentState() {
   }
 }
 
+function launchctlResult(args, options = {}) {
+  return spawnSync('launchctl', args, { stdio: 'pipe', ...options })
+}
+
+function launchctlOutput(result) {
+  return [String(result?.stderr || '').trim(), String(result?.stdout || '').trim()].filter(Boolean).join('\n').trim()
+}
+
+function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded }) {
+  const first = launchctlResult(['bootstrap', domain, plistPath])
+  if (first.status === 0 || !alreadyLoaded) return first
+
+  const output = launchctlOutput(first)
+  const looksLikeStillTearingDown = /bootstrap failed:\s*5\b|input\/output error/i.test(output)
+  if (!looksLikeStillTearingDown) return first
+
+  spawnSync('/bin/sleep', ['0.2'], { stdio: 'ignore' })
+  return launchctlResult(['bootstrap', domain, plistPath])
+}
+
 function printHelp() {
   console.log(`idlewatch
 
@@ -935,17 +955,17 @@ const subcommandPromise = (async () => {
 
     // LaunchAgents are per-user, not per-HOME. If another IdleWatch agent is already
     // loaded for this macOS user, replace it cleanly with this install.
-    const alreadyLoaded = spawnSync('launchctl', ['print', domainTarget], { stdio: 'pipe' }).status === 0
+    const alreadyLoaded = launchctlResult(['print', domainTarget]).status === 0
     if (alreadyLoaded) {
-      spawnSync('launchctl', ['bootout', domainTarget], { stdio: 'ignore' })
+      launchctlResult(['bootout', domainTarget])
     }
 
-    const load = spawnSync('launchctl', ['bootstrap', domain, plistPath], { stdio: 'pipe' })
+    const load = bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded })
     if (load.status === 0) {
-      spawnSync('launchctl', ['enable', domainTarget], { stdio: 'ignore' })
-      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'reinstalled' : 'installed'} — IdleWatch is running in the background.`)
+      launchctlResult(['enable', domainTarget])
+      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
       if (alreadyLoaded) {
-        console.log('   Note: background install is shared per macOS user, so this replaced the previous IdleWatch LaunchAgent.')
+        console.log('   Existing background agent restarted with the latest config.')
       }
       if (hasSavedConfig) {
         console.log(`   Saved config: ${envFile}`)
@@ -959,10 +979,15 @@ const subcommandPromise = (async () => {
       }
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
     } else {
-      const installError = String(load.stderr).trim() || 'unknown error'
-      console.error(`LaunchAgent install failed: ${installError}`)
+      const installError = launchctlOutput(load) || 'unknown error'
+      console.error('LaunchAgent install failed.')
+      if (alreadyLoaded && /bootstrap failed:\s*5\b|input\/output error/i.test(installError)) {
+        console.error('IdleWatch stopped the old background agent, but macOS did not finish reloading it in time.')
+        console.error(`Please wait a moment, then run: ${installAgentCommand}`)
+      } else {
+        console.error(installError)
+      }
       console.error(`Plist written to ${plistPath}. IdleWatch background install is shared per macOS user, so only one can be loaded at a time.`)
-      console.error(`Try again: ${installAgentCommand}`)
       process.exit(1)
     }
     process.exit(0)
