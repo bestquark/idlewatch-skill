@@ -1,8 +1,40 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 4:22 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R125 found no new product polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 4:55 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R126 shipped one tiny launchctl failure-message polish fix; cron repo path still stale
+
+---
+
+## Cycle R126 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny launch-agent install reliability/message seam only, with no auth, ingest, packaging, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent` no longer falls back to the vague `unknown error` when `launchctl` fails silently.
+- If `launchctl` exits without stderr/stdout, IdleWatch now shows the real exit status instead (for example: `launchctl exited with status 7`).
+- This keeps setup/re-enable failure recovery more trustworthy without changing install semantics or the now-working telemetry path.
+
+### R126 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent reports launchctl exit status when launchctl fails silently|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded'`
+
+### Prioritized findings
+
+#### [x] L27 — Silent `launchctl` failures now show the exit status instead of `unknown error`
+**Why it matters:** This sits in a cautious-user moment: install/re-enable already failed, so the CLI should be as concrete as possible. `unknown error` added friction right where people most need a calm next clue.
+
+**What shipped**
+- `launchctl` output formatting now falls back to:
+  - `launchctl exited with status N`
+  - or `launchctl terminated by signal SIGNAL`
+- The existing stderr/stdout/error-message path still wins when macOS gives a better message.
+- No install behavior, config behavior, or telemetry behavior changed.
+
+### Acceptance notes
+- Background install/re-enable failures are now slightly more actionable in the silent-failure edge case.
+- Existing install-before-setup, saved-config reuse, rename continuity, metric persistence, and `npx` vs durable-install behavior remain unchanged.
+- The cron payload path is still stale and still points at `~/.openclaw/workspace/idlewatch-skill`; the active repo/docs for this pass were again under `~/.openclaw/workspace.bak/idlewatch-skill`.
 
 ---
 

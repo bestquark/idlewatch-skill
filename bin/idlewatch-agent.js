@@ -122,11 +122,16 @@ function launchctlResult(args, options = {}) {
 }
 
 function launchctlOutput(result) {
-  return [
+  const output = [
     result?.error?.message ? String(result.error.message).trim() : '',
     String(result?.stderr || '').trim(),
     String(result?.stdout || '').trim()
   ].filter(Boolean).join('\n').trim()
+
+  if (output) return output
+  if (typeof result?.status === 'number') return `launchctl exited with status ${result.status}`
+  if (result?.signal) return `launchctl terminated by signal ${result.signal}`
+  return ''
 }
 
 function backgroundInstallCommandForInvocation(invocation = detectCliInvocation()) {

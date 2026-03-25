@@ -1647,3 +1647,42 @@ exit 0
     rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('install-agent reports launchctl exit status when launchctl fails silently', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-launchctl-status-'))
+  const fakeBin = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-launchctl-status-bin-'))
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Status Box',
+      'IDLEWATCH_DEVICE_ID=status-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  exit 1
+fi
+exit 7
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: `${fakeBin}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.notEqual(run.status, 0, 'install should fail when launchctl bootstrap fails')
+    assert.match(run.stderr, /LaunchAgent install failed\./)
+    assert.match(run.stderr, /launchctl exited with status 7/)
+    assert.doesNotMatch(run.stderr, /unknown error/)
+  } finally {
+    rmSync(fakeBin, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
