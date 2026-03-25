@@ -951,7 +951,7 @@ if (args.has('--help') || args.has('-h')) {
 
 Usage:  ${quickstartUsage}
 
-Walks you through API key, device name, and metric selection.
+Walks you through device name, metrics, and an optional cloud link.
 ${quickstartPromptHint}`,
     configure: `${configureCommand} — Change device settings
 

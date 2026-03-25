@@ -872,7 +872,9 @@ test('quickstart help stays clean in non-TTY mode', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Usage:\s+.*quickstart --no-tui\n/)
+  assert.match(run.stdout, /Walks you through device name, metrics, and an optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
+  assert.doesNotMatch(run.stdout, /Walks you through API key, device name, and metric selection\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*quickstart --no-tui \[--no-tui\]/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
 })

@@ -1,12 +1,47 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:20 PM (America/Toronto)  
-**Status:** OPEN ⚠️ - R134 found one tiny quickstart-help wording mismatch; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 9:31 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R135 shipped the quickstart-help wording fix; cron repo path still stale
 
 ---
 
-## Cycle R134 Status: OPEN ⚠️
+## Cycle R135 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-text polish fix only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `quickstart --help` now matches the calmer local-first framing already used in main help.
+- The quickstart help line now says:
+  - `Walks you through device name, metrics, and an optional cloud link.`
+- This keeps first-run help aligned with the actual product shape and avoids making local-only setup feel like a secondary path.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R135 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart help stays clean in non-TTY mode|main help matches the current source-checkout invocation path|main help stays on the durable command in npx context'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L32 — `quickstart --help` no longer implies setup always starts with an API key
+**Why it matters:** The actual onboarding flow already treats local-only setup as first-class, and the top-level help was already polished to reflect that. Tightening the quickstart help screen removes one small but real cloud-first seam in a cautious-user moment.
+
+**What shipped**
+- Reworded quickstart help from:
+  - `Walks you through API key, device name, and metric selection.`
+- To:
+  - `Walks you through device name, metrics, and an optional cloud link.`
+- Added regression coverage so non-TTY `quickstart --help` keeps the calmer wording.
+
+### Acceptance notes
+- Main help and quickstart help now present the same local-first product shape.
+- `npx` quickstart help inherits the same calmer wording.
+- The working telemetry path remains untouched.
+
+---
+
+## Cycle R134 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
