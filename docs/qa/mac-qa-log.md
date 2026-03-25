@@ -1,8 +1,42 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 6:45 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R151 spot-check found no new product-facing polish regressions
+**Last updated:** Wednesday, March 25th, 2026 — 7:00 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R152 shipped one tiny npx main-help polish fix
+
+---
+
+## Cycle R152 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `npx` main-help polish fix only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Main `--help` in an `npx` context no longer lists `install-agent` as if it were the normal command shape for background mode.
+- The command list now keeps the durable-install mental model visible right where people scan first:
+  - `install-agent   Enable background mode (requires durable install)`
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R152 spot-check coverage
+- [x] `npx`-like main `--help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help stays on the durable command in npx context|install-agent help in npx context points straight to the durable path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L41 — Main `npx` help no longer advertises `install-agent` like a normal one-off subcommand
+**Why it matters:** The dedicated `install-agent --help` and the actual runtime refusal were already polished, but the top-level `npx` command list still said `Install background LaunchAgent (macOS)`. That was tiny, but it reintroduced the wrong mental model in the exact scan-first moment where someone is deciding whether `npx` is enough.
+
+**What shipped**
+- Main help now detects `npx` context before rendering the `install-agent` summary.
+- `npx` command list now says:
+  - `install-agent   Enable background mode (requires durable install)`
+- Source-checkout and durable-install main help keep the existing LaunchAgent summary unchanged.
+
+### Acceptance notes
+- `npx` foreground usage still stays on `npx idlewatch ...`.
+- Durable background guidance still points people back to `npm install -g idlewatch` and `idlewatch install-agent`.
+- The working telemetry path remains untouched.
 
 ---
 

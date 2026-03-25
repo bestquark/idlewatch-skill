@@ -863,6 +863,8 @@ test('main help stays on the durable command in npx context', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /^npx idlewatch\n\nUsage:\s+npx idlewatch <command> \[options\]/)
   assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
+  assert.match(run.stdout, /install-agent\s+Enable background mode \(requires durable install\)/)
+  assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
 })
 
 test('quickstart help stays clean in non-TTY mode', () => {

@@ -246,7 +246,11 @@ function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alread
 }
 
 function printHelp() {
+  const invocation = detectCliInvocation()
   const cliBase = inferCliCommand()
+  const installAgentSummary = invocation.kind === 'npx'
+    ? 'Enable background mode (requires durable install)'
+    : 'Install background LaunchAgent (macOS)'
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
@@ -258,7 +262,7 @@ Commands:
   run          Run the collector in the foreground
   create       Create a custom telemetry metric
   dashboard    Launch local telemetry dashboard
-  install-agent   Install background LaunchAgent (macOS)
+  install-agent   ${installAgentSummary}
   uninstall-agent Remove background LaunchAgent (macOS)
   menubar      Install the macOS menu bar app
   version      Show version
