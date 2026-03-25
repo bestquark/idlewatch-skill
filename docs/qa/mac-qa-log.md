@@ -1,8 +1,44 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:14 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R139 shipped one tiny npx help-path fix; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:15 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R140 shipped one tiny top-level configure help-summary cleanup; cron repo path still stale
+
+---
+
+## Cycle R140 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny top-level help-summary cleanup only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Top-level `--help` now describes `configure` with the same calmer local-first shape already used elsewhere in the product.
+- The command list now says:
+  - `configure    Re-open setup (name, metrics, optional cloud link)`
+- This removes one small but real summary-level mismatch in a cautious-user moment: `quickstart`, `configure --help`, and `reconfigure --help` already framed setup around visible device settings plus an optional cloud link, but the main command list still used a more generic `change settings` summary.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R140 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L35 — Top-level `configure` help summary now matches the calmer local-first setup wording used elsewhere
+**Why it matters:** The rest of the onboarding/reconfigure surface had already been sanded down to a neat, local-first product shape. But the main command list still described `configure` generically as `change settings — values auto-filled`, which was accurate enough yet less specific and slightly more abstract than the actual product shape.
+
+**What shipped**
+- Reworded the top-level help command summary from:
+  - `configure    Re-open setup to change settings — values auto-filled`
+- To:
+  - `configure    Re-open setup (name, metrics, optional cloud link)`
+- Added regression coverage so source-checkout main help keeps the calmer summary.
+
+### Acceptance notes
+- Main help now presents `quickstart` and `configure` as one coherent setup/reconfigure story.
+- No setup semantics changed.
+- The working telemetry path remains untouched.
 
 ---
 

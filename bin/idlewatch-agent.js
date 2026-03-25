@@ -253,7 +253,7 @@ Usage:  ${cliBase} <command> [options]
 
 Commands:
   quickstart   Set up this device (name, metrics, optional cloud link)
-  configure    Re-open setup to change settings — values auto-filled
+  configure    Re-open setup (name, metrics, optional cloud link)
   status       Show device config and background agent state
   run          Run the collector in the foreground
   create       Create a custom telemetry metric
