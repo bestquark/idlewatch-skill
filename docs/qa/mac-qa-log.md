@@ -1,24 +1,24 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:33 PM (America/Toronto)  
-**Status:** ACTION NEEDED - R115 non-interactive reconfigure mode persistence bug logged
+**Last updated:** Wednesday, March 25th, 2026 — 3:55 PM (America/Toronto)  
+**Status:** CLOSED - R115 non-interactive reconfigure mode persistence fix shipped
 
 ---
 
-## Cycle R115 Status: OPEN ⚠️
+## Cycle R115 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- Found one real polish bug in the saved-config / reconfigure lane.
-- Interactive setup still feels calm, but scripted/non-interactive `configure --no-tui` currently drops the existing publish-mode default instead of preserving it.
-- That makes local-only devices feel unexpectedly "half reset" during a simple reconfigure because the command starts asking for cloud credentials again.
-- No auth, ingest, packaging, or background-agent redesign is recommended.
+- Shipped one small, low-risk polish fix in the saved-config / reconfigure lane.
+- Non-interactive `configure --no-tui` now keeps the existing saved publish mode when the caller only changes visible settings.
+- Local-only devices stay local-only unless the user explicitly switches modes, so reconfigure no longer feels like a partial reset.
+- No auth, ingest, packaging, or background-agent redesign was needed.
 
 ### Prioritized findings
 
-#### [ ] H3 — Non-interactive `configure --no-tui` does not preserve the saved mode
+#### [x] H3 — Non-interactive `configure --no-tui` now preserves the saved mode
 **Why it matters:** This is exactly the kind of subtle setup seam that makes a polished CLI feel unreliable in automation, cron, CI-ish, or copy-pasted terminal flows. Reconfigure is supposed to preserve existing choices unless the user changes them. Right now, a saved local-only device silently falls back to production/cloud mode semantics in non-interactive reconfigure, which then fails asking for an API key the user never intended to add.
 
 **Exact repro**
@@ -42,7 +42,7 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
    node bin/idlewatch-agent.js configure --no-tui
    ```
 
-**Observed**
+**Observed before fix**
 - First-time setup succeeds in local-only mode.
 - Non-interactive reconfigure exits with:
   - `Enrollment failed: Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).`
@@ -54,24 +54,28 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 - Non-interactive reconfigure breaking that expectation makes automation feel brittle and more technical than it should.
 - This is especially confusing because the failure happens after a perfectly valid local-only setup.
 
-**Acceptance criteria**
-- Non-interactive `configure --no-tui` should preserve the saved mode when `IDLEWATCH_ENROLL_MODE` is omitted.
-- A previously local-only device should stay local-only unless the user explicitly asks to switch to cloud mode.
-- A previously cloud-linked device should stay cloud-linked unless the user explicitly asks to switch modes.
-- Reconfigure should still allow an explicit mode override when provided.
-- Existing saved API-key reuse behavior for production mode should remain unchanged.
+**What shipped**
+- Non-interactive enrollment now reuses the saved mode as the default when `IDLEWATCH_ENROLL_MODE` is omitted during reconfigure.
+- Explicit mode overrides still win when the caller provides one.
+- Existing saved API-key reuse behavior for production mode remains unchanged.
+
+**Acceptance notes**
+- Non-interactive `configure --no-tui` now preserves the saved mode when `IDLEWATCH_ENROLL_MODE` is omitted.
+- A previously local-only device stays local-only unless the user explicitly switches to cloud mode.
+- A previously cloud-linked device stays cloud-linked unless the user explicitly switches modes.
+- Reconfigure still allows an explicit mode override when provided.
+- The working telemetry path remains untouched.
 
 ### Spot-check coverage
-- Clean first-run `status` from a source checkout
 - Non-interactive local-only `quickstart --no-tui`
 - Non-interactive local-only `configure --no-tui` with only device-name/metric changes
-- Post-failure `status` to confirm prior saved config remains intact
-- Help + dry-run sanity spot-checks
+- Targeted regression in `test/openclaw-env.test.mjs`
+- Narrow config-persistence regression slice in `node --test test/openclaw-env.test.mjs`
 
 ### Notes
 - The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
 - Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
-- This finding is narrow and user-facing; it does not require auth, ingest, or packaging redesign.
+- This fix is narrow and user-facing; it does not require auth, ingest, packaging, or background-agent redesign.
 
 ---
 

@@ -1154,6 +1154,53 @@ test('quickstart and configure keep one-off runs honest about background install
   }
 })
 
+test('configure --no-tui preserves the saved local/cloud mode when mode is omitted', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-preserve-mode-home-'))
+  try {
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "Renamed Box"\./)
+    assert.match(configure.stdout, /✓ Local telemetry verified\./)
+    assert.doesNotMatch(configure.stderr, /Missing cloud API key/)
+
+    const updatedEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+    assert.doesNotMatch(updatedEnv, /IDLEWATCH_CLOUD_API_KEY=/)
+    assert.doesNotMatch(updatedEnv, /IDLEWATCH_REQUIRE_CLOUD_WRITES=1/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure keeps the saved device id stable when renaming the device', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-rename-home-'))
   try {

@@ -348,6 +348,9 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
+  if (!mode && nonInteractive && existingConfig?.mode) {
+    mode = existingConfig.mode
+  }
   let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
   
