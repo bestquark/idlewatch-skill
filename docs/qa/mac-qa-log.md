@@ -1,86 +1,108 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R79 (installer/CLI polish follow-up)
+**Cycle:** R80 (installer/CLI polish follow-up)
 
-## Status: CLOSED - setup-path polish shipped
+## Status: OPEN — two small-but-real polish issues remain
 
-The core installer/CLI flow is still good. This pass found two small-but-real UX mismatches, and both are now fixed with low-risk copy/path polish.
+Core setup still works. This pass found two UX issues that are easy to miss in code review but noticeable in real setup/testing flows.
 
 ---
 
 ## Priority findings
 
-### M1. `install-agent --help` still describes the old config-first story
+### M1. LaunchAgent status/install logic leaks across HOMEs and can report the wrong background state
 **Priority:** Medium
-**Status:** Fixed
+**Status:** Open
 
 **Why this matters:**
-The command behavior is now pleasantly install-first: users can install the LaunchAgent before quickstart, then finish setup later. But the built-in help text still says the command "Uses the saved config from ~/.idlewatch/idlewatch.env," which reads like config is required up front. That's a tiny trust leak right at the moment the user asks for guidance.
+The CLI treats `com.idlewatch.agent` as a single global truth and checks `launchctl print gui/$UID/com.idlewatch.agent` without tying that result back to the plist path or current config home. In practice, a clean temp HOME can show `LaunchAgent loaded` even when this install has no plist/config there, and `install-agent` can fail because some other IdleWatch agent with the same label is already loaded. That makes installer QA and multi-install testing feel confusing and a little haunted.
 
 **Exact repro:**
-1. From the repo root, run:
+1. Ensure an IdleWatch LaunchAgent is already installed in your normal home.
+2. From a source checkout, run with a clean temp HOME:
    ```bash
-   node bin/idlewatch-agent.js install-agent --help
+   cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   TMPHOME=$(mktemp -d)
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
    ```
-2. Observe the help text says:
+3. Observe status can report:
    ```text
-   Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
-   in the background. Uses the saved config from ~/.idlewatch/idlewatch.env.
+   Background:   LaunchAgent loaded (running, pid ...)
    ```
-3. Compare that with the actual no-config behavior:
+   even though `HOME="$TMPHOME"` has no saved config and no temp-home plist installed.
+4. In the same temp HOME, run:
    ```bash
-   HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent
+   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
    ```
-4. Observe the command now installs successfully even without saved config and prints the install-first / quickstart-later next steps.
+5. Observe install can fail with a label/bootstrap conflict instead of feeling like an isolated clean install test.
 
 **Acceptance criteria:**
-- [x] `idlewatch install-agent --help` matches the real behavior.
-- [x] Help text makes it clear saved config is optional on first install.
-- [x] The short description stays simple and non-technical.
-- [x] No behavior change required; docs/help copy only.
+- [ ] `status` only reports background state for the install/config it actually owns.
+- [ ] `install-agent` behaves predictably during clean-home/source-checkout QA instead of colliding with another IdleWatch install under the same user.
+- [ ] If full isolation is intentionally unsupported, the CLI should say that plainly and calmly.
+- [ ] Messaging stays simple; no launchctl jargon dump.
 
 ---
 
-### M2. Setup follow-up commands assume a global `idlewatch` binary even in non-global flows
+### M2. Quickstart/status still assume a global `idlewatch` binary in source and `npx` flows
 **Priority:** Medium
-**Status:** Fixed
+**Status:** Open
 
 **Why this matters:**
-Docs now do a decent job distinguishing global install vs `npx` vs packaged app. The runtime UX is less careful. Several success/error messages tell users to run `idlewatch ...` unconditionally, even when they arrived through `node bin/idlewatch-agent.js ...`, `npx idlewatch ...`, or app-bundled paths. That creates a low-grade "wait, which command am I actually supposed to use?" moment exactly where the product should feel frictionless.
+`install-agent` got nicer about matching the current invocation path, but other success/status surfaces still hard-code `idlewatch ...`. In source-checkout or `npx` usage, that leaves users with a subtle “wait, do I actually have that command?” moment right after setup succeeds. The product should feel low-friction exactly there.
 
 **Exact repro:**
-1. From a source checkout, run:
+1. From a source checkout, run quickstart in non-interactive local mode:
    ```bash
-   HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent
+   cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   TMPHOME=$(mktemp -d)
+   HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+     node bin/idlewatch-agent.js quickstart --no-tui
    ```
-2. Observe the follow-up copy says:
+2. Observe the success block ends with:
    ```text
-   Next:             idlewatch quickstart
-   Then re-run:      idlewatch install-agent
-   Check anytime:    idlewatch status
+   To keep it running:
+     idlewatch install-agent   Auto-start in background (recommended)
+     idlewatch run             Run in foreground
    ```
-3. In the same source-checkout context, note that the command the user actually invoked was `node bin/idlewatch-agent.js ...`, not a guaranteed global `idlewatch` binary.
-4. The packaged install script already handles this more gracefully by showing the app-bundled command path when `idlewatch` is not available on PATH.
+3. Then run:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
+   ```
+4. Observe the footer still says:
+   ```text
+   Change:   idlewatch configure
+   Apply:    restart IdleWatch after config changes
+   ```
+   even though the user entered via `node bin/idlewatch-agent.js ...`, not a guaranteed global `idlewatch` binary.
 
 **Acceptance criteria:**
-- [x] User-facing next-step messages prefer the command path that matches the current install path.
-- [x] Global installs can keep showing `idlewatch ...`.
-- [x] Source / local / app-bundled flows should avoid implying a global binary exists when it may not.
-- [x] Output remains short and calm — no big install-mode explainer blocks.
+- [ ] Quickstart success copy uses the same command path style as the current invocation (`idlewatch`, `npx idlewatch`, repo script path, or bundled app path).
+- [ ] `status` follow-up hints do the same.
+- [ ] Keep the copy short and quiet — no install-mode lecture.
+- [ ] Global installs can continue to show `idlewatch ...`.
 
 ---
 
 ## Verified areas in this cycle
-- `install-agent` still succeeds on a clean HOME with no saved config.
-- `uninstall-agent` remains safe and non-destructive.
-- `status` correctly shows `(no saved config)` and the LaunchAgent state after install-first setup.
-- Docs continue to point new users to `idlewatch` / `npx idlewatch` rather than the old `idlewatch-skill` package name.
-- `--test-publish` remains documented as an alias for `--once`.
+- `install-agent --help` now correctly says saved config is optional on first install.
+- Source-checkout `install-agent` follow-up copy now derives command paths better than before.
+- Local-mode quickstart still saves config and runs a first verification sample.
+- Device name and metric selections persist to `~/.idlewatch/idlewatch.env`.
+- `--test-publish` still behaves as the documented alias for `--once`.
 
-## Summary
-Nothing scary here — just two last-mile setup guidance mismatches. This cycle fixed both without changing the working telemetry path:
-- `install-agent --help` now matches the install-first reality and says saved config is optional.
-- `install-agent` follow-up commands now prefer the command path that matches how the user launched the CLI, so source-checkout flows no longer imply a global binary exists.
+## Suggested next move
+Small UX-only cleanup pass:
+1. Reuse the existing command-path inference helper everywhere user-facing next-step commands are printed.
+2. Tighten LaunchAgent state detection so status/install messages describe the current install, not any agent with the shared label.
 
-Validation:
-- `node --test test/openclaw-env.test.mjs`
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+```
