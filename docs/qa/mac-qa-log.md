@@ -2,7 +2,7 @@
 
 **Cycle:** R92 (installer/CLI polish QA — setup honesty pass)
 
-## Status: OPEN — one small setup-copy polish issue
+## Status: CLOSED — setup wording polished
 
 The core installer/CLI flow is in good shape. Config persistence works, metric toggles save cleanly, LaunchAgent install/uninstall behavior stays calm, `--test-publish` wording is now aligned for sparse configs, device identity persists correctly, and install-path hints remain clear.
 
@@ -14,9 +14,9 @@ That is not a pipeline failure, but it is a small trust wobble in the exact mome
 
 ## Priority findings
 
-### M1. Fresh quickstart says the device `is live` before background collection is actually enabled
+### M1. Fresh quickstart said the device `is live` before background collection was actually enabled
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed in this cycle ✅
 
 **Why this matters:**
 For end users, words like `live` imply ongoing collection is already active. In the current local quickstart flow, the product:
@@ -62,14 +62,14 @@ The product already has the right behavior; it just deserves more precise copy.
    - `Background:   LaunchAgent not installed`
 
 **Acceptance criteria:**
-- [ ] First-run `quickstart` success copy does not imply continuous/background collection is already active when no LaunchAgent is installed.
-- [ ] The confirmation language clearly distinguishes between:
+- [x] First-run `quickstart` success copy does not imply continuous/background collection is already active when no LaunchAgent is installed.
+- [x] The confirmation language clearly distinguishes between:
   - config saved
   - sample verified
   - background collection not yet enabled
-- [ ] The updated copy stays short, calm, and non-technical.
-- [ ] `configure` copy remains distinct from first-run setup copy.
-- [ ] No auth, ingest, or packaging flow redesign is introduced.
+- [x] The updated copy stays short, calm, and non-technical.
+- [x] `configure` copy remains distinct from first-run setup copy.
+- [x] No auth, ingest, or packaging flow redesign is introduced.
 
 ---
 
@@ -113,5 +113,6 @@ node bin/idlewatch-agent.js configure --help
 
 ## Notes
 - No auth, ingest, or major packaging redesign recommended from this cycle.
-- The only issue found here is wording honesty in the first-run success state.
+- Fixed: first-run setup now says setup is complete, keeps the verification line, and explicitly notes that background collection is not enabled yet when no LaunchAgent is installed.
+- `configure` success copy remains separate from first-run setup copy.
 - Product direction still looks right: minimal, low-friction setup with explicit background install when the user wants continuous collection.

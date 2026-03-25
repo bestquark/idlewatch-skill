@@ -99,7 +99,7 @@ try {
     }
   }
 
-  if (!run.stdout.includes('✅ Setup complete.')) {
+  if (!run.stdout.includes('✅ Setup complete')) {
     throw new Error('quickstart success output did not include setup completion summary')
   }
 

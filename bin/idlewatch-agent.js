@@ -130,6 +130,10 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     return
   }
 
+  if (!backgroundAgentRunning) {
+    console.log('\n   Background collection is not enabled yet.')
+  }
+
   console.log('\n   To keep it running:')
   console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
   console.log(`     ${runCommand}   Run in foreground`)
@@ -1089,7 +1093,7 @@ const subcommandPromise = (async () => {
         const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
         const setupHeadline = isReconfigure
           ? `\n✅ Settings saved for "${result.deviceName}".`
-          : `\n✅ Setup complete — "${result.deviceName}" is live!`
+          : `\n✅ Setup complete for "${result.deviceName}".`
         console.log(setupHeadline)
         console.log(`   Mode:   ${modeLabel}`)
         console.log(`   Config: ${result.outputEnvFile}`)
