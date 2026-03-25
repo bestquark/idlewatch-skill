@@ -759,71 +759,81 @@ if (args.has('--help-env')) {
 }
 if (args.has('--help') || args.has('-h')) {
   const subCmd = argv.find(a => !a.startsWith('-'))
+  const quickstartCommand = inferCliCommand('quickstart')
+  const configureCommand = inferCliCommand('configure')
+  const statusCommand = inferCliCommand('status')
+  const createCommand = inferCliCommand('create')
+  const installAgentCommand = inferCliCommand('install-agent')
+  const uninstallAgentCommand = inferCliCommand('uninstall-agent')
+  const menubarCommand = inferCliCommand('menubar')
+  const reconfigureCommand = inferCliCommand('reconfigure')
+  const dashboardCommand = inferCliCommand('dashboard')
+  const runCommand = inferCliCommand('run')
   const subHelp = {
-    quickstart: `idlewatch quickstart — Set up this device
+    quickstart: `${quickstartCommand} — Set up this device
 
-Usage:  idlewatch quickstart [--no-tui]
+Usage:  ${quickstartCommand} [--no-tui]
 
 Walks you through API key, device name, and metric selection.
 Use --no-tui for plain-text prompts (no Rust TUI).`,
-    configure: `idlewatch configure — Change device settings
+    configure: `${configureCommand} — Change device settings
 
-Usage:  idlewatch configure [--no-tui]
+Usage:  ${configureCommand} [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
 Saved changes apply the next time IdleWatch starts.
-If the background agent is already running, re-run idlewatch install-agent to restart it with the updated config.`,
-    status: `idlewatch status — Show device state
+If the background agent is already running, re-run ${installAgentCommand} to restart it with the updated config.`,
+    status: `${statusCommand} — Show device state
 
-Usage:  idlewatch status
+Usage:  ${statusCommand}
 
 Displays device config, publish mode, enabled metrics, last sample age,
 and background LaunchAgent state.
 Config changes saved by quickstart/configure apply on the next start.
-If the background agent is already running, re-run idlewatch install-agent to restart it.`,
-    create: `idlewatch create — Manage custom telemetry metrics
+If the background agent is already running, re-run ${installAgentCommand} to restart it.`,
+    create: `${createCommand} — Manage custom telemetry metrics
 
-Usage:  idlewatch create
+Usage:  ${createCommand}
 
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
-    'install-agent': `idlewatch install-agent — Install background LaunchAgent (macOS)
+    'install-agent': `${installAgentCommand} — Install background LaunchAgent (macOS)
 
-Usage:  idlewatch install-agent
+Usage:  ${installAgentCommand}
 
 Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
 in the background. Saved config is optional on first install; you can
 run quickstart later and then reinstall to apply it.`,
-    'uninstall-agent': `idlewatch uninstall-agent — Remove background LaunchAgent (macOS)
+    'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
 
-Usage:  idlewatch uninstall-agent
+Usage:  ${uninstallAgentCommand}
 
 Stops and removes the IdleWatch LaunchAgent. Telemetry collection stops
-until you manually run idlewatch again.`,
-    menubar: `idlewatch menubar — Install macOS menu bar app
+until you manually run IdleWatch again.`,
+    menubar: `${menubarCommand} — Install macOS menu bar app
 
-Usage:  idlewatch menubar [--launch] [--force]
+Usage:  ${menubarCommand} [--launch] [--force]
 
 Installs the macOS menu bar companion app.
   --launch   Open the app immediately after install
   --force    Reinstall even if already installed`,
-    reconfigure: `idlewatch reconfigure — Change device settings (alias for configure)
+    reconfigure: `${reconfigureCommand} — Change device settings (alias for configure)
 
-Usage:  idlewatch reconfigure [--no-tui]
+Usage:  ${reconfigureCommand} [--no-tui]
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
 Saved changes apply the next time IdleWatch starts.
-If the background agent is already running, re-run idlewatch install-agent to restart it with the updated config.`,
-    dashboard: `idlewatch dashboard — Launch local telemetry dashboard
+If the background agent is already running, re-run ${installAgentCommand} to restart it with the updated config.`,
+    dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
-Usage:  idlewatch dashboard
+Usage:  ${dashboardCommand}
 
 Starts a local web server showing recent telemetry samples.`,
-    run: `idlewatch run — Start the background collector
+    run: `${runCommand} — Start the background collector
 
-Usage:  idlewatch run
+Usage:  ${runCommand}
 
 Begins continuous metric collection at the configured interval.
 Use --once for a single sample or --dry-run to preview without publishing.`
@@ -977,7 +987,7 @@ Use --once for a single sample or --dry-run to preview without publishing.`
 
     console.log('✅ LaunchAgent removed — background collection stopped.')
     console.log('   Your config and logs are still in ~/.idlewatch/')
-    console.log('   Re-enable:  idlewatch install-agent')
+    console.log(`   Re-enable:  ${inferCliCommand('install-agent')}`)
     process.exit(0)
   }
 
@@ -1452,7 +1462,7 @@ if (statusRequested) {
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    'Running in local-only mode — telemetry is saved to disk but not published. Run idlewatch configure to add a cloud API key.'
+    `Running in local-only mode — telemetry is saved to disk but not published. Run ${inferCliCommand('configure')} to add a cloud API key.`
   )
 }
 
@@ -2328,7 +2338,7 @@ async function tick() {
     cloudIngestKickoutNotified = true
     if (!(REQUIRE_CLOUD_WRITES && ONCE)) {
       console.error(`Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}).`)
-      console.error(`  Fix: idlewatch configure  (to update API key)`)
+      console.error(`  Fix: ${inferCliCommand('configure')}  (to update API key)`)
     }
   }
 
@@ -2339,7 +2349,7 @@ async function tick() {
   if (!DRY_RUN && REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run idlewatch configure to update your API key.`
+        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run ${inferCliCommand('configure')} to update your API key.`
       )
     }
     throw new Error(`❌ Cloud publish failed for "${DEVICE_NAME}": check API key and connectivity.`)

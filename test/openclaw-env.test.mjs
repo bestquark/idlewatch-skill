@@ -10,6 +10,8 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const BIN = path.resolve(__dirname, '../bin/idlewatch-agent.js')
+const BIN_DISPLAY = path.relative(process.cwd(), BIN) || BIN
+const SOURCE_CMD = `node ${BIN_DISPLAY}`
 
 function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
@@ -520,8 +522,8 @@ test('quickstart failure keeps idlewatch --once as the primary retry only for th
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
-    assert.match(run.stderr, /Retry:.*idlewatch --once/)
-    assert.match(run.stderr, /Redo:.*idlewatch quickstart/)
+    assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should show source-checkout retry command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart redo command')
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -574,8 +576,8 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
-    assert.match(run.stderr, /Retry:.*idlewatch --once/)
-    assert.match(run.stderr, /Redo:.*idlewatch quickstart/)
+    assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should show source-checkout retry command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart redo command')
   } finally {
     serverProc.kill('SIGTERM')
     rmSync(tempHome, { recursive: true, force: true })
@@ -775,10 +777,10 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Next:.*node bin\/idlewatch-agent\.js quickstart/)
-    assert.match(run.stdout, /Then re-run:.*node bin\/idlewatch-agent\.js install-agent/)
-    assert.match(run.stdout, /Check anytime:.*node bin\/idlewatch-agent\.js status/)
-    assert.match(run.stdout, /Remove:.*node bin\/idlewatch-agent\.js uninstall-agent/)
+    assert.ok(run.stdout.includes(`Next:         ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
+    assert.ok(run.stdout.includes(`Then re-run:  ${SOURCE_CMD} install-agent`), 'should show source-checkout reinstall command')
+    assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
+    assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
     assert.doesNotMatch(run.stdout, /Next:.*idlewatch quickstart/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
@@ -798,7 +800,7 @@ test('status command hides cloud link info in local-only mode', () => {
     assert.ok(!run.stdout.includes('Cloud link:'), 'should not show cloud link in local-only')
     assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
     assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
-    assert.ok(run.stdout.includes('idlewatch quickstart'), 'should hint at quickstart when no config')
+    assert.ok(run.stdout.includes(`${SOURCE_CMD} quickstart`), 'should hint at quickstart when no config')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
@@ -824,8 +826,8 @@ test('status command shows contextual next-step hints', () => {
     })
     assert.equal(noSamples.status, 0, noSamples.stderr)
     assert.ok(noSamples.stdout.includes('(none yet)'), 'should show no samples yet')
-    assert.ok(noSamples.stdout.includes('idlewatch --once'), 'should hint at --once for test sample')
-    assert.ok(noSamples.stdout.includes('idlewatch run'), 'should hint at run for continuous monitoring')
+    assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} --once`), 'should hint at --once for test sample')
+    assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} run`), 'should hint at run for continuous monitoring')
 
     // With config and samples: should hint at configure
     const logDir = path.join(configDir, 'logs')
@@ -838,7 +840,7 @@ test('status command shows contextual next-step hints', () => {
       timeout: 10000
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.ok(withSamples.stdout.includes('idlewatch configure'), 'should hint at configure when samples exist')
+    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} configure`), 'should hint at configure when samples exist')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
