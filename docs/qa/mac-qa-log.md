@@ -1,5 +1,162 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R94 (installer/CLI polish QA — local-only messaging noise pass)
+
+## Status: OPEN — one small polish fix worth shipping
+
+Most of the installer/CLI remains in good shape.
+
+This pass re-checked the setup wizard, config persistence/reload cues, LaunchAgent install/uninstall flow, `--test-publish`, device identity persistence, metric toggle persistence, and npm/npx install-path clarity in a fresh home. Those surfaces still mostly feel clean and low-friction.
+
+The only new issue worth carrying forward is a small but user-visible messaging problem in local-only mode: setup commands already explain local mode clearly in their main success output, but they also emit a second warning to stderr. The result is repetitive, slightly noisier than necessary, and easy to misread as a partial problem even when setup succeeded.
+
+That is classic product-taste polish territory: not broken, just more talkative than the experience needs to be.
+
+---
+
+## Priority findings
+
+### M1. Local-only setup commands repeat themselves with an extra stderr warning
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+For a local-only user, `quickstart`, `configure`, and `--test-publish` already say the important thing in their normal output:
+
+- local-only mode is active
+- samples are saved locally
+- setup succeeded
+- `configure` can be used later to add a cloud key
+
+But those commands also emit an extra stderr line:
+
+- `Running in local-only mode — telemetry is saved to disk but not published. Run ... configure to add a cloud API key.`
+
+That makes the flow feel more verbose than necessary.
+
+On a successful setup path, repeating the same idea in stderr adds friction without adding clarity:
+
+- it makes a clean success command look a little warning-y
+- it creates duplicate copy in logs and wrappers that capture stderr separately
+- it raises the risk that users read local-only mode as a problem instead of a supported choice
+
+The product already has the right idea. It just needs to say it once, calmly, in the place users are already looking.
+
+A good polish bar here would be:
+
+- no duplicate local-only warning on successful setup/test flows, or
+- if stderr is kept for some reason, the main success copy should not repeat the same message again
+
+Minimal is better.
+
+**Exact repro:**
+1. Start with a fresh home:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   ```
+2. Run local-only quickstart with stdout/stderr split:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_ENROLL_MODE=local \
+   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+   node bin/idlewatch-agent.js quickstart --no-tui \
+     >/tmp/iw-quick.out 2>/tmp/iw-quick.err
+   ```
+3. Observe:
+   - `/tmp/iw-quick.out` already explains local-only mode and reports successful setup
+   - `/tmp/iw-quick.err` also contains:
+     - `Running in local-only mode — telemetry is saved to disk but not published. Run node bin/idlewatch-agent.js configure to add a cloud API key.`
+4. Repeat with configure:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_ENROLL_MODE=local \
+   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+   node bin/idlewatch-agent.js configure --no-tui \
+     >/tmp/iw-config.out 2>/tmp/iw-config.err
+   ```
+5. Observe the same duplicate stderr warning despite successful output.
+
+**Acceptance criteria:**
+- [ ] Successful local-only `quickstart` does not emit redundant warning-style stderr copy when the main success output already explains local-only mode.
+- [ ] Successful local-only `configure` follows the same rule.
+- [ ] Successful local-only `--test-publish` is similarly calm and non-repetitive.
+- [ ] Local-only mode still remains obvious to users.
+- [ ] Real errors still use stderr normally.
+- [ ] No auth, ingest, or packaging redesign is introduced.
+
+---
+
+## Verified in this cycle
+- Fresh-home `status` still presents an honest empty state (`Setup: not completed yet`) with preview labels.
+- `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
+- Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
+- Reconfiguring metrics still updates the saved env file correctly (`cpu,memory` → `agent_activity`).
+- `configure` still explains that saved changes apply on next start and points users to `install-agent` to refresh a running background agent.
+- `status` still distinguishes installed vs not-installed LaunchAgent states.
+- `install-agent` / `uninstall-agent` behavior remains concise and safe.
+- `--test-publish` still stays short and understandable in local-only mode aside from the duplicate stderr warning.
+- Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+node scripts/postinstall.mjs
+node bin/idlewatch-agent.js --help
+node bin/idlewatch-agent.js configure --help
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui \
+    >/tmp/iw-quick.out 2>/tmp/iw-quick.err
+cat /tmp/iw-quick.out
+cat /tmp/iw-quick.err
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui \
+    >/tmp/iw-config.out 2>/tmp/iw-config.err
+cat /tmp/iw-config.out
+cat /tmp/iw-config.err
+```
+
+## Notes
+- This cycle did not find any need to redesign auth, ingest, or packaging flows.
+- The remaining issue is strictly copy/noise polish: local-only success paths should feel quieter and more intentional.
+- Previous fix remains verified: fresh `idlewatch status` no longer looks half-configured before setup.
+
+---
+
+# IdleWatch Installer QA Log 2026-03-25
+
 **Cycle:** R93 (installer/CLI polish QA — first-run status honesty pass)
 
 ## Status: CLOSED — shipped in this cycle
