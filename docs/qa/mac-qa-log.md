@@ -1,25 +1,29 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:55 AM (America/Toronto)  
-**Status:** CLOSED - small polish fixes shipped
+**Last updated:** Wednesday, March 25th, 2026 — 11:11 AM (America/Toronto)  
+**Status:** CLOSED - targeted polish checks still passing
 
 ---
 
-## Cycle R81 Status: CLOSED
+## Cycle R82 Status: CLOSED
 
 This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
 
 ### Outcome
-- No new user-facing polish regressions found in the targeted R81 spot-checks.
-- Existing R80 polish fixes still read well in first-run and post-setup flows.
-- README install-path guidance still matches current CLI behavior: `npx` is fine for setup/foreground use, while background mode requires a durable install.
+- No new user-facing polish regressions found in the targeted R82 spot-checks.
+- Existing R80/R81 polish fixes still read cleanly in first-run, install-before-setup, and post-setup flows.
+- The current copy keeps the right product shape: simple first-run guidance, honest next-start/re-enable language, and a clear split between `npx` trial usage and durable background installs.
 
-### R81 spot-check coverage
+### R82 spot-check coverage
 - First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
 - Local-only `quickstart --no-tui` in a clean HOME
 - Post-setup `status`
+- `configure --no-tui` device rename + metric change persistence
+- `install-agent` messaging from an `npx`-like invocation
 - `--test-publish` alias behavior
+- `uninstall-agent` messaging
 
 ## Prioritized findings
 
@@ -102,9 +106,10 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 - [x] Post-setup `status` with no samples now keeps the background next step honest: first-time enable vs re-enable vs already enabled.
 
 ## Verified good in this pass
-- Device identity persistence after reconfigure still looks correct.
+- Device identity persistence after reconfigure still looks correct: renaming the device preserves the original device ID and log path while updating the visible device name.
 - Metric toggle persistence works: changing selected metrics is reflected in saved config and next `status` output.
 - Config persistence / next-start behavior remains coherent.
+- Install-before-setup flow now has the right mental model: setup completion acknowledges an already-installed LaunchAgent and tells the user to re-run `install-agent` to refresh/start it.
 - Launch-agent uninstall messaging is clear, safe, and preserves config/logs.
 - `--once` / `--test-publish` behavior is understandable and the alias works.
 - README guidance on `npm install -g` vs `npx` is directionally good and does not suggest fragile one-off installs for background mode.
