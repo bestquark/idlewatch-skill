@@ -18,14 +18,15 @@ npx idlewatch quickstart
 
 ## Quickstart
 
-1. Create an API key at [idlewatch.com/api](https://idlewatch.com/api)
-2. Run the setup wizard:
-   ```bash
-   idlewatch quickstart
-   ```
-3. Pick a device name and metrics — done!
+```bash
+idlewatch quickstart
+```
 
-The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample so your device links right away. Config is auto-loaded when IdleWatch starts. If you change settings later, they apply on the next start.
+Pick a device name, choose local-only or cloud, and you’re done.
+
+The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample right away. Local-only mode works without an API key. If you want cloud publishing, the wizard will ask for an API key from [idlewatch.com/api](https://idlewatch.com/api).
+
+Config is auto-loaded when IdleWatch starts. If you change settings later, they apply on the next start.
 
 Use `--no-tui` for plain-text prompts if the TUI isn't available.
 

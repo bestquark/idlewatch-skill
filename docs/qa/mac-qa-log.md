@@ -2,9 +2,9 @@
 
 **Cycle:** R87 (installer/CLI polish follow-up)
 
-## Status: OPEN — one docs-level setup-friction issue found
+## Status: CLOSED — README quickstart framing polished
 
-The core flow still feels solid: config persists, local verification copy is calmer now, status stays readable, and LaunchAgent install/uninstall remains simple. This pass found one remaining polish issue in the first-run docs path: README quickstart still implies a cloud API key is required before setup, even though local-only mode exists and already works well.
+The core flow still feels solid: config persists, local verification copy is calmer now, status stays readable, and LaunchAgent install/uninstall remains simple. The remaining first-run docs friction is now fixed: README quickstart presents local-only and cloud setup as equally intentional, without making cloud auth feel mandatory up front.
 
 ---
 
@@ -12,7 +12,7 @@ The core flow still feels solid: config persists, local verification copy is cal
 
 ### M1. README quickstart still frames cloud setup as mandatory even though local-only setup is a valid low-friction path
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 This is a small docs issue, but it lands right on the product’s first impression. The CLI now supports a neat local-first setup path, yet the README still starts with:
@@ -46,11 +46,11 @@ This is especially relevant for:
    - Actual product supports a successful local-only setup with no API key.
 
 **Acceptance criteria:**
-- [ ] README quickstart makes local-only vs cloud setup feel equally intentional.
-- [ ] Top-level setup instructions do not imply a cloud API key is mandatory for first use.
-- [ ] `npm install -g` and `npx` paths still stay short and obvious.
-- [ ] The docs keep the setup story minimalistic rather than branching into a long decision tree.
-- [ ] Cloud users can still easily find the API-key step when they want publishing.
+- [x] README quickstart makes local-only vs cloud setup feel equally intentional.
+- [x] Top-level setup instructions do not imply a cloud API key is mandatory for first use.
+- [x] `npm install -g` and `npx` paths still stay short and obvious.
+- [x] The docs keep the setup story minimalistic rather than branching into a long decision tree.
+- [x] Cloud users can still easily find the API-key step when they want publishing.
 
 ---
 
@@ -61,7 +61,7 @@ This is especially relevant for:
 - `--test-publish` still behaves as the documented alias for `--once`.
 - `install-agent` / `uninstall-agent` messaging is still concise and safe.
 - Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
-- README install path is short, but the first-run cloud-vs-local framing still needs polish.
+- README install path stays short, and the first-run cloud-vs-local framing is now aligned with the actual product flow.
 
 ## Validation used
 ```bash
