@@ -1,7 +1,7 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:08 AM (America/Toronto)  
+**Last updated:** Wednesday, March 25th, 2026 — 10:55 AM (America/Toronto)  
 **Status:** CLOSED - small polish fixes shipped
 
 ---
@@ -99,6 +99,7 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 ## Shipped in this pass
 - [x] Quickstart/configure completion now distinguishes “not enabled yet” from “already installed, re-run install-agent to refresh/start with saved config”.
 - [x] First-run `status` now leads with a calmer default metric preview and moves OpenClaw extras into a secondary line.
+- [x] Post-setup `status` with no samples now keeps the background next step honest: first-time enable vs re-enable vs already enabled.
 
 ## Verified good in this pass
 - Device identity persistence after reconfigure still looks correct.

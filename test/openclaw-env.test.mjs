@@ -1275,6 +1275,12 @@ test('status command shows contextual next-step hints', () => {
     assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} --once`), 'should hint at --once for test sample')
     assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} run`), 'should hint at run for continuous monitoring')
 
+    if (process.platform === 'darwin') {
+      assert.ok(noSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should show enable hint when no samples exist and LaunchAgent is not installed')
+      assert.ok(!noSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
+      assert.ok(!noSamples.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when LaunchAgent is not installed')
+    }
+
     // With config and samples: should hint at configure
     const logDir = path.join(configDir, 'logs')
     fs.mkdirSync(logDir, { recursive: true })
@@ -1296,5 +1302,48 @@ test('status command shows contextual next-step hints', () => {
     }
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-installed-not-loaded-'))
+  const fakeBin = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-installed-not-loaded-bin-'))
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.mkdirSync(path.join(tempHome, 'Library', 'LaunchAgents'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Hint Box',
+      'IDLEWATCH_DEVICE_ID=hint-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  exit 1
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempHome, PATH: `${fakeBin}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('(none yet)'), 'should still show no samples yet')
+    assert.ok(run.stdout.includes('Background:   LaunchAgent installed but not loaded'), 'should report the installed-not-loaded state')
+    assert.ok(run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should suggest re-enabling the saved background agent')
+    assert.ok(!run.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not look like a first-time install path')
+    assert.ok(!run.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when launchd reports otherwise')
+  } finally {
+    rmSync(fakeBin, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
   }
 })

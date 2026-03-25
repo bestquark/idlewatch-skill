@@ -1613,7 +1613,20 @@ if (statusRequested) {
       console.log(`  Start:    ${inferCliCommand('run')}`)
       console.log('  Background: install IdleWatch globally first, then run idlewatch install-agent')
     } else {
-      console.log(`  Start:    ${inferCliCommand('run')}  or  ${inferCliCommand('install-agent')}`)
+      console.log(`  Start:    ${inferCliCommand('run')}`)
+      if (process.platform === 'darwin') {
+        const launchAgent = probeOwnedLaunchAgentState()
+        const installAgentCommand = inferCliCommand('install-agent')
+        if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
+          console.log('  Background: already enabled')
+        } else if (launchAgent.state === 'installed-not-loaded') {
+          console.log(`  Re-enable:  ${installAgentCommand}`)
+        } else {
+          console.log(`  Enable:   ${installAgentCommand}`)
+        }
+      } else {
+        console.log(`  Enable:   ${inferCliCommand('install-agent')}  (background on macOS)`)
+      }
     }
   } else if (!isPlaceholderName) {
     const installAgentCommand = inferCliCommand('install-agent')
