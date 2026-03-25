@@ -977,6 +977,7 @@ const subcommandPromise = (async () => {
     const binPath = process.argv[1]
     const nodePath = process.execPath
 
+    const shouldStartImmediately = hasSavedConfig
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -990,9 +991,9 @@ const subcommandPromise = (async () => {
     <string>run</string>
   </array>
   <key>RunAtLoad</key>
-  <true/>
+  <${shouldStartImmediately ? 'true' : 'false'}/>
   <key>KeepAlive</key>
-  <true/>
+  <${shouldStartImmediately ? 'true' : 'false'}/>
   <key>StandardOutPath</key>
   <string>${path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stdout.log')}</string>
   <key>StandardErrorPath</key>
@@ -1011,33 +1012,32 @@ const subcommandPromise = (async () => {
 
     // LaunchAgents are per-user, not per-HOME. If another IdleWatch agent is already
     // loaded for this macOS user, replace it cleanly with this install.
-    const alreadyLoaded = launchctlResult(['print', domainTarget]).status === 0
+    const alreadyLoaded = shouldStartImmediately && launchctlResult(['print', domainTarget]).status === 0
     if (alreadyLoaded) {
       launchctlResult(['bootout', domainTarget])
+    }
+
+    if (!shouldStartImmediately) {
+      console.log('✅ LaunchAgent installed.')
+      console.log('   Setup is not saved yet, so background collection will stay off for now.')
+      console.log(`   No saved config yet: ${envFile}`)
+      console.log(`   Next:         ${quickstartCommand}`)
+      console.log(`   Or run now:   ${runCommand}`)
+      console.log(`   Then enable:  ${installAgentCommand}`)
+      console.log(`   Check:        ${statusCommand}`)
+      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
+      process.exit(0)
     }
 
     const load = bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded })
     if (load.status === 0) {
       launchctlResult(['enable', domainTarget])
-      if (hasSavedConfig) {
-        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
-      } else {
-        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
-        console.log('   Background mode is ready, but setup is not saved yet.')
-      }
+      console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
       if (alreadyLoaded) {
         console.log('   Existing background agent restarted with the latest config.')
       }
-      if (hasSavedConfig) {
-        console.log(`   Saved config: ${envFile}`)
-        console.log(`   Check:        ${statusCommand}`)
-      } else {
-        console.log(`   No saved config yet: ${envFile}`)
-        console.log(`   Next:         ${quickstartCommand}`)
-        console.log(`   Or run now:   ${runCommand}`)
-        console.log(`   Then re-run:  ${installAgentCommand}`)
-        console.log(`   Check:        ${statusCommand}`)
-      }
+      console.log(`   Saved config: ${envFile}`)
+      console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
     } else {
       const installError = launchctlOutput(load) || 'unknown error'

@@ -1,73 +1,58 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R108 (installer/CLI polish QA — no-config install honesty recheck)
+**Cycle:** R109 (installer/CLI polish QA — no-config install honesty shipped)
 
-## Status: OPEN — still worth fixing
+## Status: CLOSED — shipped in this cycle
 
-This cycle re-ran the narrow polish checklist against the active repo and found the same setup-honesty issue still present.
+This cycle kept scope deliberately tiny and fixed the one remaining setup/install honesty issue.
 
-`install-agent` without saved config still writes and loads a live LaunchAgent immediately. The success copy sounds calmer than before, but the product story is still split across two surfaces:
-- install output says background mode is merely "ready"
-- `status` still says setup is not completed yet
-- but background is already loaded and running
+`install-agent` without saved config no longer starts background collection immediately. Instead, it installs the LaunchAgent calmly, keeps it unloaded until setup exists, and tells the same story that `status` now tells.
 
-That is not a pipeline problem. It is small UX honesty debt in the setup moment that should feel simplest.
+That keeps first-run setup simpler:
+- no saved setup means background stays off
+- install output says that plainly
+- `status` now matches by reporting `LaunchAgent installed but not loaded`
+
+## What shipped
+- No-config `install-agent` now writes the LaunchAgent without `RunAtLoad` / `KeepAlive` enabled.
+- The no-config path no longer bootstraps a live background agent.
+- Success copy now says background collection stays off until setup is saved.
+- Added regression coverage to keep `status` and install behavior aligned.
+- Saved-config install behavior remains unchanged and still starts/restarts the background agent normally.
 
 ## Priority findings
 
 ### M1. No-config `install-agent` still starts a live background agent while sounding only "ready"
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
-**Why this matters:**
+**Why this mattered:**
 For a clean first-run setup flow, users should not have to reconcile all of these at once:
 - setup is not completed yet
 - background mode is ready
 - LaunchAgent is already loaded and running
 
-The current wording is less noisy than older versions, but it still undersells the fact that a real background process is already active.
+That was not a pipeline failure. It was a small product-taste issue in the setup moment.
 
-**Exact repro:**
-1. Start with a fresh home and source checkout:
-   ```bash
-   TMPHOME=$(mktemp -d)
-   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
-   ```
-2. Install background mode before running setup:
-   ```bash
-   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
-   ```
-3. Observe the success copy says setup is not saved yet and background mode is only "ready":
-   - `✅ LaunchAgent refreshed.`
-   - `Background mode is ready, but setup is not saved yet.`
-4. Check status immediately:
-   ```bash
-   HOME="$TMPHOME" node bin/idlewatch-agent.js status
-   ```
-5. Observe status still says:
-   - `Setup: not completed yet`
-   - but also says:
-   - `Background:   LaunchAgent loaded (running, pid ...)`
-6. Inspect the generated plist if needed:
-   ```bash
-   plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
-   ```
-7. Observe the LaunchAgent still uses `RunAtLoad => true`, so background collection starts right away before setup is saved.
+The cleaner rule is now simple:
+- if setup is not saved yet, install the LaunchAgent but do not start it
+- once setup is saved, re-run `install-agent` and background collection starts normally
 
 **Acceptance criteria:**
-- [ ] The no-config `install-agent` path does not feel half-enabled or misleading.
-- [ ] If setup is not saved yet, install success copy does not imply a merely passive/ready state while a live LaunchAgent is already running.
-- [ ] `status` and install success copy tell the same story about installed vs active background state.
-- [ ] Saved-config install/uninstall behavior remains unchanged.
-- [ ] No auth, ingest, or major packaging-flow redesign is introduced.
+- [x] The no-config `install-agent` path does not feel half-enabled or misleading.
+- [x] If setup is not saved yet, install success copy does not imply a merely passive/ready state while a live LaunchAgent is already running.
+- [x] `status` and install success copy tell the same story about installed vs active background state.
+- [x] Saved-config install/uninstall behavior remains unchanged.
+- [x] No auth, ingest, or major packaging-flow redesign is introduced.
 
 ## Verified in this cycle
 - Fresh `status` still reads cleanly as an empty-state preview before setup.
-- `quickstart --no-tui` still saves config cleanly with the neutral generated header.
+- No-config `install-agent` now leaves background collection unloaded.
+- Immediate `status` after that install now reports `LaunchAgent installed but not loaded`.
+- Saved-config `install-agent` / `uninstall-agent` behavior remains calm and predictable.
 - Reconfigure still preserves saved device identity while updating the display name.
 - Metric-toggle persistence still works through reconfigure.
 - `--test-publish` remains concise in local-only mode.
-- Saved-config `install-agent` / `uninstall-agent` behavior remains calm and predictable.
 - One-off `npm exec` / `npx` paths still refuse fragile background installs and explain the durable path plainly.
 - Focused installer/CLI regression coverage still passes.
 
@@ -84,8 +69,8 @@ plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
 
 ## Notes
 - Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
-- This cycle stayed intentionally limited to small setup/install honesty polish only.
-- Recommendation scope remains tiny: either delay loading until config exists, or make the active background state unmistakably explicit.
+- This cycle stayed intentionally limited to a tiny setup/install honesty fix only.
+- The working telemetry path was preserved by leaving saved-config startup behavior unchanged.
 
 ---
 

@@ -832,15 +832,48 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Background mode is ready, but setup is not saved yet\./)
+    assert.match(run.stdout, /Setup is not saved yet, so background collection will stay off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Next:         ${SOURCE_CMD} quickstart`), 'should show source-checkout quickstart command')
-    assert.ok(run.stdout.includes(`Then re-run:  ${SOURCE_CMD} install-agent`), 'should show source-checkout reinstall command')
+    assert.ok(run.stdout.includes(`Then enable:  ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
     assert.doesNotMatch(run.stdout, /Next:.*idlewatch quickstart/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status stays honest after install-agent without saved config', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-no-config-install-'))
+  try {
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(install.status, 0, install.stderr)
+
+    const status = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(status.status, 0, status.stderr)
+    assert.match(status.stdout, /Setup:\s+not completed yet/)
+    assert.match(status.stdout, /Background:\s+LaunchAgent installed but not loaded/)
+    assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
+  } finally {
+    spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    rmSync(tempHome, { recursive: true, force: true })
   }
 })
 
