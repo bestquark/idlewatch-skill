@@ -1,19 +1,22 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:00 PM (America/Toronto)  
-**Status:** OPEN - one real install-path polish issue worth fixing
+**Last updated:** Wednesday, March 25th, 2026 — 1:10 PM (America/Toronto)  
+**Status:** CLOSED - install-path polish shipped
 
 ---
 
-## Cycle R97 Status: OPEN
+## Cycle R97 Status: CLOSED
 
 This pass stayed intentionally narrow: setup/install clarity, config persistence/reload behavior, LaunchAgent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- One real user-facing polish issue is worth opening from this pass.
-- The LaunchAgent installer still assumes `/Applications/IdleWatch.app`, which creates avoidable friction on Macs where IdleWatch is installed in the user Applications folder (`~/Applications/IdleWatch.app`).
-- No auth, ingest, telemetry, or major packaging redesign is recommended.
+- Shipped one small install-path polish improvement.
+- The LaunchAgent installer now auto-detects IdleWatch in both standard Mac app locations:
+  - `/Applications/IdleWatch.app`
+  - `~/Applications/IdleWatch.app`
+- The missing-app failure message now points to those same locations before suggesting an override.
+- No auth, ingest, telemetry, or major packaging redesign was touched.
 
 ### R97 spot-check coverage
 - `./scripts/install-macos-launch-agent.sh` on a Mac with IdleWatch installed at `~/Applications/IdleWatch.app`
@@ -22,7 +25,7 @@ This pass stayed intentionally narrow: setup/install clarity, config persistence
 
 ### Prioritized findings
 
-#### [ ] M2 — LaunchAgent installer is too rigid about the app path
+#### [x] M2 — LaunchAgent installer is too rigid about the app path
 **Why it matters:** This is exactly the kind of small setup seam that makes a polished product feel fiddly. On a normal single-user Mac, dragging the app into `~/Applications` is common and reasonable. The installer currently fails as if IdleWatch is missing, even when the app is already installed and ready.
 
 **Exact repro**
@@ -46,17 +49,17 @@ This pass stayed intentionally narrow: setup/install clarity, config persistence
 - It makes a valid install location feel like an error state.
 - It also pushes the user into path plumbing during what should be the calmest part of setup.
 
-**Acceptance criteria**
-- The installer should feel low-friction when IdleWatch is in either standard app location:
+**What shipped**
+- The installer now auto-detects both standard app locations before failing:
   - `/Applications/IdleWatch.app`
   - `~/Applications/IdleWatch.app`
-- Preferred fix: auto-detect both locations before failing.
-- Good fallback if auto-detect is intentionally avoided: error text should explicitly mention both supported locations and the exact override to use.
-- Keep the message short, non-technical, and action-first.
+- Reusing the default LaunchAgent label is now allowed for either standard app location, so a normal single-user install in `~/Applications` no longer looks like a side-by-side custom path.
+- If neither app location exists, the failure message now mentions both supported locations first and only then suggests `IDLEWATCH_APP_BIN` for non-standard installs.
 
 ### Acceptance notes
-- Current setup/status/config copy still reads cleanly overall.
-- This pass did not surface a reason to reopen device identity persistence, metric toggle persistence, or test-publish messaging.
+- Setup stays low-friction on Macs where IdleWatch lives in the user Applications folder.
+- The telemetry path was left untouched.
+- This pass still did not surface a reason to reopen device identity persistence, metric toggle persistence, or test-publish messaging.
 - The cron payload path was stale again; the active repo/docs for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
 
 ---

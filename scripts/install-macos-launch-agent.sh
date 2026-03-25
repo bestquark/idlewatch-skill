@@ -1,7 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_PATH="${IDLEWATCH_APP_PATH:-/Applications/IdleWatch.app}"
+DEFAULT_APP_PATH="/Applications/IdleWatch.app"
+USER_APP_PATH="$HOME/Applications/IdleWatch.app"
+DEFAULT_PLIST_ROOT="$HOME/Library/LaunchAgents"
+DEFAULT_PLIST_LABEL="com.idlewatch.agent"
+
+resolve_app_path() {
+  if [[ -n "${IDLEWATCH_APP_PATH:-}" ]]; then
+    printf '%s\n' "$IDLEWATCH_APP_PATH"
+    return 0
+  fi
+
+  if [[ -d "$DEFAULT_APP_PATH" ]]; then
+    printf '%s\n' "$DEFAULT_APP_PATH"
+    return 0
+  fi
+
+  if [[ -d "$USER_APP_PATH" ]]; then
+    printf '%s\n' "$USER_APP_PATH"
+    return 0
+  fi
+
+  printf '%s\n' "$DEFAULT_APP_PATH"
+}
+
+APP_PATH="$(resolve_app_path)"
 BIN_PATH="${IDLEWATCH_APP_BIN:-$APP_PATH/Contents/MacOS/IdleWatch}"
 PLIST_LABEL="${IDLEWATCH_LAUNCH_AGENT_LABEL:-com.idlewatch.agent}"
 PLIST_ROOT="${IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT:-$HOME/Library/LaunchAgents}"
@@ -14,12 +38,14 @@ fi
 
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
 CONFIG_ENV_PATH="${IDLEWATCH_CONFIG_ENV_PATH:-$HOME/.idlewatch/idlewatch.env}"
-DEFAULT_APP_PATH="/Applications/IdleWatch.app"
-DEFAULT_PLIST_ROOT="$HOME/Library/LaunchAgents"
-DEFAULT_PLIST_LABEL="com.idlewatch.agent"
+
+is_standard_app_path=0
+if [[ "$APP_PATH" == "$DEFAULT_APP_PATH" || "$APP_PATH" == "$USER_APP_PATH" ]]; then
+  is_standard_app_path=1
+fi
 
 if [[ "$PLIST_LABEL" == "$DEFAULT_PLIST_LABEL" ]] && \
-   [[ "$PLIST_ROOT" != "$DEFAULT_PLIST_ROOT" || "$APP_PATH" != "$DEFAULT_APP_PATH" ]]; then
+   [[ "$PLIST_ROOT" != "$DEFAULT_PLIST_ROOT" || $is_standard_app_path -ne 1 ]]; then
   echo "Refusing to reuse the default LaunchAgent label ($DEFAULT_PLIST_LABEL) with a custom app path or plist root." >&2
   echo "launchd uses the label as the real identity, so this could replace your already-loaded IdleWatch agent." >&2
   echo "Use IDLEWATCH_LAUNCH_AGENT_LABEL to pick a different label for side-by-side QA/dev installs." >&2
@@ -40,8 +66,12 @@ if ! command -v launchctl >/dev/null 2>&1; then
 fi
 
 if [[ ! -x "$BIN_PATH" ]]; then
-  echo "IdleWatch launcher executable not found or not executable: $BIN_PATH" >&2
-  echo "Set IDLEWATCH_APP_BIN to the correct binary path before running this script." >&2
+  echo "IdleWatch app not found at either standard location:" >&2
+  echo "  /Applications/IdleWatch.app" >&2
+  echo "  ~/Applications/IdleWatch.app" >&2
+  echo "" >&2
+  echo "Looked for: $BIN_PATH" >&2
+  echo "If your app is somewhere else, set IDLEWATCH_APP_BIN before running this script." >&2
   exit 1
 fi
 
