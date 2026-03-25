@@ -1,8 +1,102 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:25 PM (America/Toronto)  
-**Status:** CLOSED - R121 shipped one tiny quickstart-help polish fix
+**Last updated:** Wednesday, March 25th, 2026 — 3:30 PM (America/Toronto)  
+**Status:** OPEN - R122 packaged LaunchAgent uninstall copy still has two small trust seams
+
+---
+
+## Cycle R122 Status: OPEN
+
+This pass stayed intentionally narrow and product-facing: setup/install polish only, with focus on launch-agent install/uninstall behavior, config persistence mental model, and keeping the packaged-app path as calm as the CLI path.
+
+### Outcome
+- Core setup/reconfigure/status behavior still looks solid.
+- I did find two small but real packaged-script polish issues in the uninstall lane.
+- Both are copy/path trust seams, not architecture problems.
+- No auth, ingest, packaging redesign, or telemetry changes are recommended.
+
+### R122 spot-check coverage
+- [x] `scripts/install-macos-launch-agent.sh` log/output path review
+- [x] `scripts/uninstall-macos-launch-agent.sh` retention/re-enable copy review
+- [x] `docs/packaging/macos-launch-agent.md` log-path expectations cross-check
+- [x] `README.md` / main CLI copy cross-check for background mental-model consistency
+
+### Prioritized findings
+
+#### [ ] M7 — Packaged-app uninstall says logs were kept in `~/.idlewatch`, but that install path writes LaunchAgent logs to `~/Library/Logs/IdleWatch`
+**Why it matters:** This is small, but it sits right in the “safe to uninstall” reassurance moment. The script is trying to calm the user down, so it needs to be exactly right. Right now it says config **and logs** were kept in `~/.idlewatch`, which is only half true for the packaged LaunchAgent path.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Inspect the packaged-app LaunchAgent install script:
+   ```bash
+   grep -n "LOG_DIR\|idlewatch.out.log\|idlewatch.err.log" scripts/install-macos-launch-agent.sh
+   ```
+3. Note that it writes LaunchAgent stdout/stderr to:
+   - `~/Library/Logs/IdleWatch/idlewatch.out.log`
+   - `~/Library/Logs/IdleWatch/idlewatch.err.log`
+4. Inspect the uninstall success copy:
+   ```bash
+   grep -n "kept in" scripts/uninstall-macos-launch-agent.sh
+   ```
+5. Observe the current line:
+   - `Your config and logs were kept in $HOME/.idlewatch`
+
+**Observed**
+- Config really is kept in `~/.idlewatch`.
+- But the packaged LaunchAgent logs live in `~/Library/Logs/IdleWatch` by default, not in `~/.idlewatch`.
+- The reassurance line therefore reads cleaner than the actual file layout.
+
+**Why this feels off**
+- Uninstall copy is supposed to reduce anxiety.
+- Slightly-wrong reassurance is worse than a slightly-shorter message.
+- This is exactly the kind of tiny trust seam careful Mac users notice when they go looking for logs after stopping background mode.
+
+**Acceptance criteria**
+- Uninstall success copy should name the retained locations accurately.
+- Preferred shape: keep config and log retention separate, e.g.:
+  - `Your config was kept in ~/.idlewatch`
+  - `LaunchAgent logs were kept in ~/Library/Logs/IdleWatch`
+- If `IDLEWATCH_LAUNCH_AGENT_LOG_DIR` is customized, echo that resolved path instead of the default.
+- Keep the tone short, calm, and reversible.
+
+#### [ ] L25 — Packaged-app uninstall still suggests `./scripts/install-macos-launch-agent.sh`, which is the wrong re-enable command for bundled-app users
+**Why it matters:** This is another tiny but real polish seam. The packaged uninstall script may be run from an absolute path inside the app bundle, but its recovery hint still points to a repo-relative command. That is fine for maintainers in a checkout and subtly wrong for normal app users.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Inspect the uninstall success copy:
+   ```bash
+   grep -n "Re-enable:" scripts/uninstall-macos-launch-agent.sh
+   ```
+3. Observe the current line:
+   - `Re-enable: ./scripts/install-macos-launch-agent.sh`
+4. Compare with the packaged-app docs, which tell users to run the bundled script from inside `IdleWatch.app`, e.g.:
+   - `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh`
+
+**Observed**
+- The uninstall script always prints a source-checkout relative path.
+- That hint is only correct when the current working directory happens to be the repo root.
+- It is not the clean recovery command for a packaged-app user invoking the bundled uninstall script directly.
+
+**Why this feels off**
+- The command output should preserve the path the user is already on.
+- A relative repo-only re-enable hint adds avoidable friction right after a supposedly safe/reversible action.
+- This makes the bundled app path feel slightly more technical than the main CLI path.
+
+**Acceptance criteria**
+- When the uninstall script is run from inside the bundled app, the re-enable hint should point to the sibling bundled install script, not a repo-relative path.
+- In a source checkout, it is fine to keep the relative repo script hint.
+- If auto-detecting context is annoying, a neutral fallback is acceptable, e.g.:
+  - `Re-enable: re-run the matching install-macos-launch-agent.sh script you used for install`
+- Keep the message one line and low-noise.
+
+### Acceptance notes
+- Main CLI `install-agent` / `uninstall-agent` messaging still feels calmer and more trustworthy than the packaged script path.
+- Saved-config / next-start behavior still reads predictably.
+- Device identity persistence, metric toggle persistence, test-publish aliasing, and `npx` vs durable-install guidance still look good from this pass.
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
 
 ---
 
