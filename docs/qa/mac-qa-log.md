@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:27 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R131 found no new product-facing polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 8:48 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R132 shipped one tiny help-path polish improvement; cron repo path still stale
+
+---
+
+## Cycle R132 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/help polish fix only, with no setup-flow changes, saved-config behavior changes, LaunchAgent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Main `--help` now reflects the command path the user is actually on instead of always pretending the entrypoint is the durable global `idlewatch` shim.
+- Source-checkout help now stays honest for local/dev usage:
+  - `node bin/idlewatch-agent.js`
+  - `Usage: node bin/idlewatch-agent.js <command> [options]`
+- `npx` help still keeps the `npx idlewatch` path.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R132 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|main help stays on the durable command in npx context|install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L30 — Main help now matches the actual invocation path
+**Why it matters:** Help is a cautious-user moment. Almost every other next-step hint in the CLI was already invocation-aware, but the main `--help` screen still hard-coded `idlewatch`, even when the user was running directly from a source checkout. That was tiny, but it made local/dev setup feel one notch sloppier than the rest of the product.
+
+**What shipped**
+- Main help header now uses the inferred current command base.
+- Source-checkout help now shows `node .../bin/idlewatch-agent.js` instead of `idlewatch`.
+- `npx` help still shows `npx idlewatch`.
+- Command semantics and all follow-up hints remain unchanged.
+
+### Acceptance notes
+- Source-checkout users now see the command they can actually copy-paste from `--help`.
+- Durable/global and `npx` help paths still keep their current command shapes.
+- The working telemetry path remains untouched.
 
 ---
 

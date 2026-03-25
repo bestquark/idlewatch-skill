@@ -830,6 +830,37 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
+test('main help matches the current source-checkout invocation path', () => {
+  const run = spawnSync(process.execPath, [BIN, '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^node .*bin\/idlewatch-agent\.js\n\nUsage:\s+node .*bin\/idlewatch-agent\.js <command> \[options\]/)
+  assert.doesNotMatch(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/)
+})
+
+test('main help stays on the durable command in npx context', () => {
+  const run = spawnSync(process.execPath, [BIN, '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^npx idlewatch\n\nUsage:\s+npx idlewatch <command> \[options\]/)
+  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
+})
+
 test('quickstart help stays clean in non-TTY mode', () => {
   const run = spawnSync(process.execPath, [BIN, 'quickstart', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },

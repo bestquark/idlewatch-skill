@@ -246,9 +246,10 @@ function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alread
 }
 
 function printHelp() {
-  console.log(`idlewatch
+  const cliBase = inferCliCommand()
+  console.log(`${cliBase}
 
-Usage:  idlewatch <command> [options]
+Usage:  ${cliBase} <command> [options]
 
 Commands:
   quickstart   Set up this device (API key, name, metrics)
