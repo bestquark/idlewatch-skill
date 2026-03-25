@@ -1,10 +1,40 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:10 PM (America/Toronto)  
-**Status:** CLOSED - no new polish regressions in targeted QA pass
+**Last updated:** Wednesday, March 25th, 2026 — 11:48 AM (America/Toronto)  
+**Status:** CLOSED - one small setup/reconfigure copy polish shipped in targeted QA pass
 
 ---
+
+## Cycle R85 Status: CLOSED
+
+This pass stayed intentionally narrow: setup/reconfigure completion copy, saved-config mental model, and keeping `npx` guidance minimal without changing the durable-install recommendation.
+
+### Outcome
+- Shipped one tiny, low-risk polish improvement.
+- `npx` quickstart/configure completion now says the durable background path in a shorter, cleaner two-line shape instead of a more verbose three-line explanation.
+- Telemetry behavior and install semantics were left untouched.
+
+### R85 spot-check coverage
+- `npx`-style `quickstart --no-tui` completion copy
+- `npx`-style `configure --no-tui` completion copy
+- Existing installer/setup/reconfigure messaging regression test suite
+
+### Prioritized findings
+
+#### [x] L4 — `npx` setup/reconfigure background follow-up copy is shorter and less fussy
+**Why it matters:** The existing `npx` completion copy was correct, but it spent an extra line explaining the durable-install mental model. For a setup flow that is already doing the right thing, shorter is nicer.
+
+**What shipped**
+- `npx` quickstart/configure now says:
+  - `Install IdleWatch once, then run idlewatch install-agent`
+  - `npm install -g idlewatch`
+- This keeps the durable-install guidance intact while reducing friction and visual noise.
+
+### Acceptance notes
+- `npx` setup/reconfigure still keeps foreground guidance on `npx`.
+- Background guidance still points to durable `idlewatch install-agent`, not `npx idlewatch install-agent`.
+- The copy is shorter without changing behavior.
 
 ## Cycle R84 Status: CLOSED
 
@@ -161,6 +191,7 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 ---
 
 ## Shipped in this pass
+- [x] `npx` quickstart/configure background follow-up is now shorter: install once, then run `idlewatch install-agent`.
 - [x] `npx` quickstart/configure now points background refresh/start follow-ups to `idlewatch install-agent` instead of implying `npx idlewatch install-agent` is the right durable path.
 - [x] `npx` setup/reconfigure completion now adds a short note when it only updated the saved config and the existing background install still needs the normal durable refresh command.
 - [x] Quickstart/configure completion now distinguishes “not enabled yet” from “already installed, re-run install-agent to refresh/start with saved config”.

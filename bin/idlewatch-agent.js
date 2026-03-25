@@ -166,9 +166,8 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     console.log('\n   Use it now:')
     console.log(`     ${runCommand}   Run in foreground`)
     console.log('\n   For background mode:')
-    console.log('     Background install needs a durable IdleWatch install first.')
-    console.log('     Install it once:  npm install -g idlewatch')
-    console.log('     Then enable it:   idlewatch install-agent')
+    console.log('     Install IdleWatch once, then run idlewatch install-agent')
+    console.log('     npm install -g idlewatch')
     return
   }
 
