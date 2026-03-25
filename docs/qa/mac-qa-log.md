@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:25 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R142 shipped one tiny status-copy consistency fix; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:35 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R143 shipped one tiny npx running-agent copy consistency fix; cron repo path still stale
+
+---
+
+## Cycle R143 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `npx` reconfigure completion copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- The `npx` setup/reconfigure completion path for an already-running durable background agent now uses the same calmer saved-config wording already used elsewhere.
+- The running-agent follow-up now says:
+  - `Apply changes:    re-run idlewatch install-agent to refresh it with the saved config`
+- This removes one last little wording seam where the `npx` running-agent path had still been saying the older, more narrated `refresh the background agent with the saved config` shape.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R143 spot-check coverage
+- [x] `quickstart` / `configure` under `npx`-like env in the normal no-background-install path
+- [x] `configure` under `npx`-like env with a durable LaunchAgent already installed and reported as running
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart and configure keep one-off runs honest about background install under npm exec env|configure completion keeps the right post-setup background hint when install-agent ran before setup|status command uses the calmer running-agent apply hint'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L37 — `npx` running-agent apply hint now matches the calmer saved-config wording used elsewhere
+**Why it matters:** This was tiny, but it sat in a careful reconfigure moment. Most setup/help/status surfaces had already converged on the shorter saved-config mental model, while the `npx` completion path for an already-running durable background agent still used one older, more narrated sentence.
+
+**What shipped**
+- Reworded the `npx` running-agent completion hint from:
+  - `Apply changes:    re-run idlewatch install-agent to refresh the background agent with the saved config`
+- To:
+  - `Apply changes:    re-run idlewatch install-agent to refresh it with the saved config`
+- Added regression coverage for the `npx` + durable-running-agent case so the shorter wording sticks.
+
+### Acceptance notes
+- `npx` setup/reconfigure now reads more like the rest of the setup/reconfigure/background story.
+- The change is copy-only; LaunchAgent state detection, saved-config behavior, and durable-install guidance are unchanged.
+- The working telemetry path remains untouched.
 
 ---
 

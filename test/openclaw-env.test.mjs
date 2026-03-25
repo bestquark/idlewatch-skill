@@ -1264,6 +1264,49 @@ test('quickstart and configure keep one-off runs honest about background install
     assert.match(configure.stdout, /idlewatch install-agent/)
     assert.doesNotMatch(configure.stdout, /To keep it running:/)
     assert.doesNotMatch(configure.stdout, /npx idlewatch install-agent/)
+
+    if (process.platform === 'darwin') {
+      const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-npx-running-launchctl-bin-'))
+      try {
+        fs.writeFileSync(path.join(fakeBinDir, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  exit 0
+fi
+if [[ "\$cmd" == "bootstrap" || "\$cmd" == "enable" || "\$cmd" == "bootout" || "\$cmd" == "disable" || "\$cmd" == "kickstart" ]]; then
+  exit 0
+fi
+exit 0
+`)
+        fs.chmodSync(path.join(fakeBinDir, 'launchctl'), 0o755)
+
+        const durableInstall = spawnSync(process.execPath, [BIN, 'install-agent'], {
+          env: { ...process.env, HOME: tempHome, PATH: `${fakeBinDir}:${process.env.PATH}` },
+          encoding: 'utf8',
+          timeout: 15000
+        })
+        assert.equal(durableInstall.status, 0, durableInstall.stderr)
+
+        const npxConfigureWithRunningAgent = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+          env: {
+            ...baseEnv,
+            PATH: `${fakeBinDir}:${process.env.PATH}`,
+            IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+          },
+          encoding: 'utf8',
+          timeout: 20000
+        })
+
+        assert.equal(npxConfigureWithRunningAgent.status, 0, npxConfigureWithRunningAgent.stderr)
+        assert.match(npxConfigureWithRunningAgent.stdout, /Background agent:\s+already running/)
+        assert.match(npxConfigureWithRunningAgent.stdout, /Apply changes:\s+re-run idlewatch install-agent to refresh it with the saved config/)
+        assert.match(npxConfigureWithRunningAgent.stdout, /This npx run updated the saved config only\./)
+        assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /refresh the background agent with the saved config/)
+      } finally {
+        rmSync(fakeBinDir, { recursive: true, force: true })
+      }
+    }
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

@@ -181,7 +181,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   if (isReconfigure && backgroundAgentRunning) {
     console.log('\n   Background agent: already running')
     if (invocation.kind === 'npx') {
-      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh the background agent with the saved config`)
+      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh it with the saved config`)
       console.log('   This npx run updated the saved config only.')
     } else {
       console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh it with the saved config`)
