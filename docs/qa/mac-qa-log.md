@@ -2,7 +2,7 @@
 
 **Cycle:** R91 (installer/CLI polish QA follow-up)
 
-## Status: OPEN — one small verification-message mismatch remains
+## Status: CLOSED — verification summary now matches activity-only configs
 
 The core pipeline still works and the setup flow is mostly clean. Device identity persists, metric toggles save correctly, LaunchAgent install/uninstall behavior is calm, status remains state-aware, and install-path hints are easy to follow.
 
@@ -14,7 +14,7 @@ This pass found one small but user-visible polish issue worth fixing: when a dev
 
 ### M1. Setup and `--test-publish` undercount activity-only configs as `0 metrics`
 **Priority:** Medium  
-**Status:** Open
+**Status:** Closed
 
 **Why this matters:**
 This is a tiny trust issue, not a functional break. A user can intentionally choose a minimal config with only `OpenClaw activity`, finish setup successfully, and then immediately see:
@@ -58,10 +58,10 @@ For a setup wizard, the first verification message should make the chosen setup 
    which again reports `0 metrics`.
 
 **Acceptance criteria:**
-- [ ] `quickstart`, `--once`, and `--test-publish` count activity-only configurations as a real collected metric in the success summary.
-- [ ] A config with only `agent_activity` no longer prints `Sample collected (0 metrics)`.
-- [ ] The verification copy reflects the user’s selected telemetry set without implying nothing was collected.
-- [ ] The fix stays small and does not redesign sampling, ingest, or status output.
+- [x] `quickstart`, `--once`, and `--test-publish` count activity-only configurations as a real collected metric in the success summary.
+- [x] A config with only `agent_activity` no longer prints `Sample collected (0 metrics)`.
+- [x] The verification copy reflects the user’s selected telemetry set without implying nothing was collected.
+- [x] The fix stays small and does not redesign sampling, ingest, or status output.
 
 ---
 
@@ -108,5 +108,5 @@ HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 
 ## Notes
 - No auth, ingest, or packaging redesign recommended from this cycle.
-- The issue is limited to verification/success summarization, not config persistence.
-- Keep the fix product-small: make the confirmation line feel correct for sparse but intentional configs.
+- The issue was limited to verification/success summarization, not config persistence.
+- Fix shipped as a small summary-layer change: success copy now counts intentionally selected monitor targets such as `agent_activity`, so sparse-but-valid configs no longer read as empty.

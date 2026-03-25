@@ -2331,17 +2331,39 @@ async function collectSample() {
 }
 
 function summarizeSample(row, { verbose = false } = {}) {
-  const metrics = []
-  if (row.cpuPct !== null && row.cpuPct !== undefined) metrics.push('cpu')
-  if (row.memPct !== null && row.memPct !== undefined) metrics.push('memory')
-  if (row.gpuPct !== null && row.gpuPct !== undefined) metrics.push('gpu')
-  if (row.tokensPerMin !== null && row.tokensPerMin !== undefined) metrics.push('openclaw')
-  if ((Array.isArray(row.providerQuotas) && row.providerQuotas.length > 0) || (Array.isArray(row.providerConnections) && row.providerConnections.length > 0)) {
-    metrics.push('provider-quota')
-  }
-  if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.push('custom')
+  const metrics = new Set()
+  const hasValue = (value) => value !== null && value !== undefined
+  const selectedMonitorTargets = Array.isArray(row?.source?.monitorTargets) ? row.source.monitorTargets : []
+  const hasTemperatureMetric = hasValue(row.deviceTempC)
+    || (row.thermalState && row.thermalState !== 'disabled' && row.thermalState !== 'unavailable')
+  const hasRuntimeMetric = hasValue(row.openclawModel)
+    || hasValue(row.openclawProvider)
+    || hasValue(row.openclawUsageTs)
+    || hasValue(row.openclawBudgetKind)
+    || hasValue(row.openclawSessionId)
+    || hasValue(row.openclawAgentId)
+  const hasActivityMetric = hasValue(row.activityWindowMs)
+    || hasValue(row.activityActiveSeconds)
+    || hasValue(row.activityIdleSeconds)
+    || (Array.isArray(row.activityJobs) && row.activityJobs.length > 0)
 
-  const headline = `✅ Sample collected (${metrics.length} metric${metrics.length === 1 ? '' : 's'})`
+  if (hasValue(row.cpuPct) || selectedMonitorTargets.includes('cpu')) metrics.add('cpu')
+  if (hasValue(row.memPct) || selectedMonitorTargets.includes('memory')) metrics.add('memory')
+  if (hasValue(row.gpuPct) || selectedMonitorTargets.includes('gpu')) metrics.add('gpu')
+  if (hasTemperatureMetric || selectedMonitorTargets.includes('temperature')) metrics.add('temperature')
+  if (hasActivityMetric || selectedMonitorTargets.includes('agent_activity')) metrics.add('agent-activity')
+  if (hasValue(row.tokensPerMin) || selectedMonitorTargets.includes('token_usage')) metrics.add('openclaw-usage')
+  if (hasRuntimeMetric || selectedMonitorTargets.includes('runtime_state')) metrics.add('openclaw-runtime')
+  if (
+    (Array.isArray(row.providerQuotas) && row.providerQuotas.length > 0)
+    || (Array.isArray(row.providerConnections) && row.providerConnections.length > 0)
+    || selectedMonitorTargets.includes('provider_quota')
+  ) {
+    metrics.add('provider-quota')
+  }
+  if (Array.isArray(row.customMetrics) && row.customMetrics.length > 0) metrics.add('custom')
+
+  const headline = `✅ Sample collected (${metrics.size} metric${metrics.size === 1 ? '' : 's'})`
   if (!verbose) return headline
 
   const details = []
