@@ -1,8 +1,39 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:50 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R123 no new polish regressions opened
+**Last updated:** Wednesday, March 25th, 2026 — 4:15 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R124 shipped one small saved-config polish fix
+
+---
+
+## Cycle R124 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config reliability improvement only, aimed at keeping setup/reconfigure/status calm when someone hand-edits `~/.idlewatch/idlewatch.env`.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Saved config parsing now accepts normal quoted env values like `IDLEWATCH_DEVICE_NAME="Mac mini"` instead of treating the quotes as part of the value.
+- This keeps hand-edited config friendlier in the exact seams users touch during setup/reconfigure/status: device name, metrics, paths, and cloud key reuse.
+- No auth, ingest, packaging, or telemetry-path behavior was redesigned or expanded.
+
+### R124 spot-check coverage
+- [x] Quoted `idlewatch.env` values round-trip cleanly through `status`
+- [x] `node --test test/openclaw-env.test.mjs`
+
+### Prioritized findings
+
+#### [x] L26 — Quoted saved `idlewatch.env` values were treated too literally
+**Why it matters:** People hand-edit env files. Wrapping values in quotes is normal muscle memory. Before this fix, quoted values could leak into the visible device name or make saved config feel brittle.
+
+**What shipped**
+- Saved env parsing now strips one matching pair of surrounding quotes when present.
+- The same normalization now applies both in the main CLI env loader and in enrollment/reconfigure's saved-config reader.
+- Added regression coverage so `status` shows normal values again when the saved env file contains quoted strings.
+
+### Acceptance notes
+- This keeps the UX quieter without adding any new options.
+- The change is intentionally conservative: only a single surrounding matching quote pair is removed.
+- First-run, install, reconfigure, and telemetry flows remain otherwise unchanged.
 
 ---
 

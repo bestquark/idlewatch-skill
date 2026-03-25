@@ -316,6 +316,18 @@ Firebase / emulator:
 
 const require = createRequire(import.meta.url)
 
+function parseEnvValue(rawValue) {
+  const value = String(rawValue || '').trim()
+  if (!value) return ''
+
+  const quote = value[0]
+  if ((quote === '"' || quote === "'") && value.endsWith(quote) && value.length >= 2) {
+    return value.slice(1, -1)
+  }
+
+  return value
+}
+
 function parseEnvFileToObject(envFilePath) {
   const raw = fs.readFileSync(envFilePath, 'utf8')
   const env = {}
@@ -325,7 +337,7 @@ function parseEnvFileToObject(envFilePath) {
     const idx = trimmed.indexOf('=')
     if (idx <= 0) continue
     const key = trimmed.slice(0, idx).trim()
-    const value = trimmed.slice(idx + 1).trim()
+    const value = parseEnvValue(trimmed.slice(idx + 1))
     if (key) env[key] = value
   }
   return env

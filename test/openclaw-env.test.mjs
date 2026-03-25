@@ -1520,6 +1520,38 @@ exit 0
   }
 })
 
+test('status command treats quoted saved config values like normal values', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-quoted-env-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(path.join(configDir, 'logs'), { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME="Quoted Box"',
+      "IDLEWATCH_DEVICE_ID='quoted-box'",
+      'IDLEWATCH_MONITOR_TARGETS="cpu,memory"',
+      'IDLEWATCH_OPENCLAW_USAGE="off"',
+      'IDLEWATCH_CLOUD_API_KEY="iwk_abcdefghijklmnopqrstuvwxyz123456"',
+      `IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'quoted-box-metrics.ndjson')}"`
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(configDir, 'logs', 'quoted-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Device:\s+Quoted Box/)
+    assert.match(run.stdout, /Publish mode:\s+local-only/)
+    assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
+    assert.doesNotMatch(run.stdout, /"Quoted Box"|'Quoted Box'/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command shows contextual next-step hints', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-hints-'))
   try {
