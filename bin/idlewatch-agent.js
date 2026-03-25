@@ -916,10 +916,10 @@ Usage:  ${installAgentCommand}
 
 Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
 in the background. Saved config is optional on first install; you can
-run quickstart later and then reinstall to apply it.
-For one-off npx/npm exec runs, install IdleWatch once first:
-  npm install -g idlewatch
-  idlewatch install-agent`,
+run quickstart later, then re-run install-agent to apply it.
+For one-off npx/npm exec runs:
+  Install once: npm install -g idlewatch
+  Then enable: idlewatch install-agent`,
     'uninstall-agent': `${uninstallAgentCommand} — Remove background LaunchAgent (macOS)
 
 Usage:  ${uninstallAgentCommand}

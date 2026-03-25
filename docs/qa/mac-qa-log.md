@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:01 PM (America/Toronto)  
-**Status:** CLOSED - tiny install-path polish shipped in this targeted pass
+**Last updated:** Wednesday, March 25th, 2026 — 12:05 PM (America/Toronto)  
+**Status:** CLOSED - tiny install-help polish shipped in this targeted pass
+
+---
+
+## Cycle R89 Status: CLOSED
+
+This pass stayed intentionally narrow: make `install-agent --help` match the calmer durable-install wording already used in the refusal path and setup/status follow-ups.
+
+### Outcome
+- Shipped one tiny, low-risk copy polish improvement.
+- `install-agent --help` now uses the same shorter durable-install wording already used elsewhere:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Tightened one sentence so the saved-config follow-up reads a bit more naturally:
+  - `run quickstart later, then re-run install-agent to apply it`
+- Telemetry behavior, LaunchAgent behavior, auth/ingest, and packaging were left untouched.
+
+### R89 spot-check coverage
+- `install-agent --help`
+- Existing targeted onboarding/install/status regression suite slice for install-path messaging
+
+### Prioritized findings
+
+#### [x] L7 — `install-agent --help` now matches the calmer durable-install wording used by the refusal path
+**Why it matters:** Help output is where cautious users pause to decide whether background mode is simple or fiddly. The command already behaved correctly, but the help text still had older wording and a slightly fussier explanation than the rest of the product.
+
+**What shipped**
+- `install-agent --help` now says:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- Reworded the optional-config sentence slightly so the refresh path reads faster.
+
+### Acceptance notes
+- Background usage still points to the durable global install path, never `npx idlewatch install-agent`.
+- Foreground one-off usage remains unchanged.
+- LaunchAgent behavior and the working telemetry path remain unchanged.
 
 ---
 

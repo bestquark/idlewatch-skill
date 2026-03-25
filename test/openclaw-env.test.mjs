@@ -797,8 +797,10 @@ test('install-agent help explains config is optional', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Saved config is optional on first install/)
-  assert.match(run.stdout, /npm install -g idlewatch/)
-  assert.match(run.stdout, /idlewatch install-agent/)
+  assert.match(run.stdout, /run quickstart later, then re-run install-agent to apply it\./)
+  assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.match(run.stdout, /Then enable:\s+idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /For one-off npx\/npm exec runs, install IdleWatch once first:/)
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
