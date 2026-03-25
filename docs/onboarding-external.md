@@ -13,6 +13,8 @@ Command rule of thumb:
 npx idlewatch quickstart
 ```
 
+Use this path for one-off setup and foreground testing.
+
 `idlewatch` is the default package/command name. `idlewatch-skill` remains available as a compatibility alias, but it should not be the main path shown to new users.
 
 Wizard output:
@@ -32,6 +34,8 @@ Wizard output:
 4. On first run, user executes quickstart from packaged app terminal context to link the device with an API key.
 
 ### Optional: background startup on macOS
+
+Background mode needs a durable install. `npx idlewatch ...` is for one-off runs, not LaunchAgent setup.
 
 For a normal packaged-app install, register IdleWatch for background startup with the script bundled inside the app:
 

@@ -2,7 +2,7 @@
 
 **Cycle:** R98 (installer/CLI polish QA — docs install-path clarity pass)
 
-## Status: OPEN — small docs polish still worth shipping
+## Status: CLOSED — shipped in this cycle
 
 The product behavior now does the right thing: one-off `npx` / `npm exec` runs refuse to install a fragile LaunchAgent and point users to a durable install first.
 
@@ -19,11 +19,17 @@ So the CLI is now honest, but the docs still make users discover the rule one co
 
 ---
 
+## What shipped
+- README now frames `npx idlewatch quickstart` as the fast one-off / foreground-testing path.
+- README background section now says plainly that LaunchAgent/background mode needs a durable install first.
+- `docs/onboarding-external.md` now makes the same distinction before the background setup steps.
+- Copy stays short and non-technical; no runtime, auth, ingest, or packaging behavior changed.
+
 ## Priority findings
 
 ### M1. README/onboarding still underspecify that background mode requires a durable install
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 This is no longer a behavior bug. It is a setup-quality issue.
@@ -74,11 +80,11 @@ Minimal examples that would be clearer:
 7. Observe the CLI correctly refuses and explains that one-off `npx` paths are not durable enough for background mode.
 
 **Acceptance criteria:**
-- [ ] README install + background sections explicitly distinguish one-off `npx` usage from durable background-install paths.
-- [ ] `docs/onboarding-external.md` says plainly that LaunchAgent/background mode requires a durable install.
-- [ ] Copy stays short, calm, and non-technical.
-- [ ] The fast `npx` path remains visible for foreground testing and quick setup.
-- [ ] No auth, ingest, or packaging redesign is introduced.
+- [x] README install + background sections explicitly distinguish one-off `npx` usage from durable background-install paths.
+- [x] `docs/onboarding-external.md` says plainly that LaunchAgent/background mode requires a durable install.
+- [x] Copy stays short, calm, and non-technical.
+- [x] The fast `npx` path remains visible for foreground testing and quick setup.
+- [x] No auth, ingest, or packaging redesign is introduced.
 
 ---
 

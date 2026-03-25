@@ -8,11 +8,13 @@ Telemetry collector for IdleWatch.
 npm install -g idlewatch
 ```
 
-Or run directly with npx:
+Or run directly with npx for one-off setup or foreground testing:
 
 ```bash
 npx idlewatch quickstart
 ```
+
+Use the `npx` path when you want to try IdleWatch without installing it first.
 
 > **Note:** On platforms without a bundled TUI binary, add `--no-tui` to go straight to text prompts.
 
@@ -41,7 +43,13 @@ idlewatch run                 # start continuous collection
 
 ## Background collection (macOS)
 
+Background mode needs a durable install.
+
+- `npx idlewatch quickstart` is great for one-off setup and foreground testing.
+- Install IdleWatch first before using `install-agent`.
+
 ```bash
+npm install -g idlewatch
 idlewatch install-agent   # LaunchAgent for automatic startup (re-run after config changes)
 idlewatch menubar         # menu bar app for quick status
 ```
