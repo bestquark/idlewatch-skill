@@ -117,14 +117,21 @@ function launchctlResult(args, options = {}) {
 }
 
 function launchctlOutput(result) {
-  return [String(result?.stderr || '').trim(), String(result?.stdout || '').trim()].filter(Boolean).join('\n').trim()
+  return [
+    result?.error?.message ? String(result.error.message).trim() : '',
+    String(result?.stderr || '').trim(),
+    String(result?.stdout || '').trim()
+  ].filter(Boolean).join('\n').trim()
+}
+
+function backgroundInstallCommandForInvocation(invocation = detectCliInvocation()) {
+  return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
-  const durableInstallAgentCommand = 'idlewatch install-agent'
-  const backgroundInstallCommand = invocation.kind === 'npx' ? durableInstallAgentCommand : installAgentCommand
+  const backgroundInstallCommand = backgroundInstallCommandForInvocation(invocation)
   const runCommand = inferCliCommand('run')
   const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
   const backgroundAgentInstalledNeedsRefresh = launchAgentState?.state === 'installed-not-loaded'
@@ -1126,9 +1133,13 @@ const subcommandPromise = (async () => {
       fs.unlinkSync(plistPath)
     } catch { /* ignore */ }
 
+    const invocation = detectCliInvocation()
     console.log('✅ LaunchAgent removed — background collection stopped.')
     console.log(`   Your config and logs were kept in ${dataDir}`)
-    console.log(`   Re-enable:  ${inferCliCommand('install-agent')}`)
+    console.log(`   Re-enable:  ${backgroundInstallCommandForInvocation(invocation)}`)
+    if (invocation.kind === 'npx') {
+      console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
+    }
     process.exit(0)
   }
 

@@ -1,7 +1,7 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:24 AM (America/Toronto)  
+**Last updated:** Wednesday, March 25th, 2026 — 11:36 AM (America/Toronto)  
 **Status:** CLOSED - tiny npx/background polish shipped
 
 ---
@@ -124,7 +124,8 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 - Metric toggle persistence works: changing selected metrics is reflected in saved config and next `status` output.
 - Config persistence / next-start behavior remains coherent.
 - Install-before-setup flow now has the right mental model: setup completion acknowledges an already-installed LaunchAgent and tells the user to re-run `install-agent` to refresh/start it.
-- Launch-agent uninstall messaging is clear, safe, and preserves config/logs.
+- [x] Launch-agent uninstall messaging is clear, safe, preserves config/logs, and now keeps `npx` follow-up guidance honest by pointing re-enable copy to `idlewatch install-agent`.
+- [x] `launchctl` bootstrap/bootout failures now surface spawn-level error text instead of collapsing to `unknown error`, improving tiny install/reload reliability without touching telemetry behavior.
 - `--once` / `--test-publish` behavior is understandable and the alias works.
 - README guidance on `npm install -g` vs `npx` is directionally good and does not suggest fragile one-off installs for background mode.
 
