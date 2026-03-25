@@ -162,10 +162,7 @@ Usage:  ${installAgentCommand}
 
 Creates a LaunchAgent plist and loads it so IdleWatch starts automatically
 in the background. You can install it before setup, then save config later
-and re-run install-agent when you're ready.
-If you're using npx/npm exec:
-  Install once: npm install -g idlewatch
-  Then enable: idlewatch install-agent`
+and re-run install-agent when you're ready.`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {

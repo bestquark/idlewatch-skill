@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 4:15 PM (America/Toronto)  
-**Status:** CLOSED - R116 polish spot-check pass found no new end-user issues
+**Last updated:** Wednesday, March 25th, 2026 — 4:28 PM (America/Toronto)  
+**Status:** CLOSED - R117 shipped one tiny install-help simplification
+
+---
+
+## Cycle R117 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/help polish fix only, with no setup-flow changes, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Regular `install-agent --help` no longer carries the extra `npx`/durable-install block when the user is not actually running under `npx`.
+- The normal durable/source-checkout help path now stays focused on the command the user already asked about, while `npx` help still keeps the durable-install guidance intact.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R117 spot-check coverage
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L22 — Regular `install-agent --help` now stays on the current path instead of explaining the `npx` path too
+**Why it matters:** This was a very small but real scan-friction seam. The normal help path already had the right install mental model, but it still spent two extra lines talking about `npx` even when the user was not using `npx`. That made the main setup path feel a little more narrated than necessary.
+
+**What shipped**
+- Kept the existing `npx`-specific help behavior unchanged.
+- Removed the extra `If you're using npx/npm exec:` block from the normal `install-agent --help` output.
+- Left the actual install semantics untouched.
+
+### Acceptance notes
+- Standard/source-checkout help now stays tighter and easier to scan.
+- `npx` help still points directly to the durable install path:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+- The working telemetry path remains untouched.
 
 ---
 
