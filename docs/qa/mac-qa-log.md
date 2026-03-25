@@ -1,5 +1,84 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R105 (installer/CLI polish QA — verification-only setup calmness sweep)
+
+## Status: CLOSED — no action required
+
+This cycle re-ran the small-polish checklist against the active repo on disk and stayed intentionally narrow.
+
+The core setup surfaces still feel tidy:
+- first-run `status` reads as an honest empty state
+- `quickstart` still saves config cleanly
+- reconfigure still preserves device identity while updating the display name
+- metric selection persists cleanly
+- reload/apply guidance still matches actual background-agent behavior
+- `install-agent` / `uninstall-agent` messaging stays calm and non-alarming
+- local-only `--test-publish` remains short
+- one-off `npx` usage still refuses fragile background installs and explains the durable path plainly
+
+No new confusing, repetitive, or overly technical UX issue stood out strongly enough to justify implementation.
+
+## What was verified
+- `status` on a fresh home still opens with `Setup: not completed yet` and preview-only labels.
+- `quickstart --no-tui` still writes `~/.idlewatch/idlewatch.env` with the neutral generated header.
+- Re-running `configure --no-tui` with a renamed device still preserves the saved `IDLEWATCH_DEVICE_ID`.
+- Metric-toggle persistence still works during the same reconfigure path.
+- Saved-config wording still matches reload behavior: foreground runs pick up changes on next start; a running LaunchAgent is refreshed by re-running `install-agent`.
+- `install-agent` / `uninstall-agent` keep retention and removal messaging clear and safe.
+- Local-only `--test-publish` still stays concise and quiet on stderr.
+- `npm exec` / `npx` status hints remain honest about one-off foreground use and durable background-install requirements.
+- `npm exec` / `npx` `install-agent` still fails fast instead of writing a LaunchAgent against npm cache.
+
+## Repro / validation
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+TMPHOME=$(mktemp -d)
+
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+HOME="$TMPHOME" \
+  IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+  IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js configure --no-tui
+
+HOME="$TMPHOME" cat "$TMPHOME/.idlewatch/idlewatch.env"
+HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch status
+env HOME="$TMPHOME" npm exec --yes --package /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill idlewatch install-agent
+```
+
+## Acceptance criteria
+- [x] No new confusing, repetitive, or overly technical setup copy surfaced in the targeted polish areas.
+- [x] Config persistence and reload/apply behavior still match the user-facing messaging.
+- [x] Device name / device id persistence still behave predictably through reconfigure.
+- [x] Metric toggle persistence still behaves predictably through reconfigure.
+- [x] LaunchAgent install/uninstall behavior remains clear and safe.
+- [x] One-off `npx` install-path messaging remains honest.
+- [x] No auth, ingest, or major packaging redesign was introduced.
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
+- This was a verification-only QA cycle. No implementation changes were needed.
+
+---
+
 **Cycle:** R104 (installer/CLI polish QA — rename-safe saved identity pass)
 
 ## Status: CLOSED — shipped in this cycle
