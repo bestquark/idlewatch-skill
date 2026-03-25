@@ -1,5 +1,94 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R108 (installer/CLI polish QA — no-config install honesty recheck)
+
+## Status: OPEN — still worth fixing
+
+This cycle re-ran the narrow polish checklist against the active repo and found the same setup-honesty issue still present.
+
+`install-agent` without saved config still writes and loads a live LaunchAgent immediately. The success copy sounds calmer than before, but the product story is still split across two surfaces:
+- install output says background mode is merely "ready"
+- `status` still says setup is not completed yet
+- but background is already loaded and running
+
+That is not a pipeline problem. It is small UX honesty debt in the setup moment that should feel simplest.
+
+## Priority findings
+
+### M1. No-config `install-agent` still starts a live background agent while sounding only "ready"
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+For a clean first-run setup flow, users should not have to reconcile all of these at once:
+- setup is not completed yet
+- background mode is ready
+- LaunchAgent is already loaded and running
+
+The current wording is less noisy than older versions, but it still undersells the fact that a real background process is already active.
+
+**Exact repro:**
+1. Start with a fresh home and source checkout:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+   ```
+2. Install background mode before running setup:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+   ```
+3. Observe the success copy says setup is not saved yet and background mode is only "ready":
+   - `✅ LaunchAgent refreshed.`
+   - `Background mode is ready, but setup is not saved yet.`
+4. Check status immediately:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
+   ```
+5. Observe status still says:
+   - `Setup: not completed yet`
+   - but also says:
+   - `Background:   LaunchAgent loaded (running, pid ...)`
+6. Inspect the generated plist if needed:
+   ```bash
+   plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
+   ```
+7. Observe the LaunchAgent still uses `RunAtLoad => true`, so background collection starts right away before setup is saved.
+
+**Acceptance criteria:**
+- [ ] The no-config `install-agent` path does not feel half-enabled or misleading.
+- [ ] If setup is not saved yet, install success copy does not imply a merely passive/ready state while a live LaunchAgent is already running.
+- [ ] `status` and install success copy tell the same story about installed vs active background state.
+- [ ] Saved-config install/uninstall behavior remains unchanged.
+- [ ] No auth, ingest, or major packaging-flow redesign is introduced.
+
+## Verified in this cycle
+- Fresh `status` still reads cleanly as an empty-state preview before setup.
+- `quickstart --no-tui` still saves config cleanly with the neutral generated header.
+- Reconfigure still preserves saved device identity while updating the display name.
+- Metric-toggle persistence still works through reconfigure.
+- `--test-publish` remains concise in local-only mode.
+- Saved-config `install-agent` / `uninstall-agent` behavior remains calm and predictable.
+- One-off `npm exec` / `npx` paths still refuse fragile background installs and explain the durable path plainly.
+- Focused installer/CLI regression coverage still passes.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test test/openclaw-env.test.mjs
+
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+plutil -p "$TMPHOME/Library/LaunchAgents/com.idlewatch.agent.plist"
+```
+
+## Notes
+- Active repo path on disk remains `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`; the cron payload path `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` was still not present during this pass.
+- This cycle stayed intentionally limited to small setup/install honesty polish only.
+- Recommendation scope remains tiny: either delay loading until config exists, or make the active background state unmistakably explicit.
+
+---
+
 **Cycle:** R107 (installer/CLI polish QA — no-config LaunchAgent honesty pass)
 
 ## Status: OPEN — small polish issue worth fixing
