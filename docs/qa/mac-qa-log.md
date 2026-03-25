@@ -1,42 +1,35 @@
-# IdleWatch Installer Polish Cycle 76
+# IdleWatch QA Log 2026-03-25 (Cycle 77 - Post-Polish Review)
 
-**Date:** Tuesday, March 24th, 2026 — 11:20 PM (America/Toronto)
+**Status:** ✅ COMPLETE — no action needed  
+**Cycle Goal:** Verify that all polish priorities remain stable after prior implementation rounds. Confirm v0.2.0 production readiness.
 
-## Status: ✅ COMPLETE
+## Findings
 
-### Summary
-All prioritized polish items from the previous cycle were already verified complete in Round 71 QA pass. The v0.2.0 release is ready for production deployment.
+All items from previous cycles remain verified working:
 
-### Repository State
-- Branch: main
-- Ahead of origin/main by 1 commit (QA log update only)
-- Working tree: clean
+- **H1/H2 (High):** Device name persistence & config reload - ✅ Verified  
+- **M1-M4 (Medium):** Status screen, test publish flow, confirmations/messages - ✅ Verified  
+- **L1-L3 (Low):** Settings preservation, launch-agent clarity, storage location - ✅ Verified
 
-### Verified Priority Items (Cycle 75 → Cycle 76)
-All items were already verified and documented as complete:
+## Repo State Check
 
-**Priority 1: High Severity** ✅
-- **H1. Device name persists correctly after reauth/reinstall** - Verified working in v0.2.0
-- **H2. Config reload behavior is predictable** - Verified with documented reload commands
+Current branch state shows only documentation changes staged:
+```
+bash
+Changes to be committed: 
+  - modified: docs/qa/mac-qa-log.md (this cycle's log)
+  - new file: memory/2026-03-25.md (cycle completion marker)
+```
 
-**Priority 2: Medium Severity** ✅
-- **M1. Status screen showing device/link/metric state** - Visible in v0.2.0
-- **M2. Explicit test publish flow** - CLI `idlewatch --test-publish` available
-- **M3. Clearer success confirmation after first link/publish** - Messages with device name/status confirmed
-- **M4. Test publish errors are clear and actionable** - Formatted/API key validation provided
+No code changes pending. All implemented polish is already committed and stable.
 
-**Priority 3: Low Severity** ✅
-- **L1. Settings/edit flow without re-entering unchanged values** - As-designed behavior
-- **L2. Launch-agent install/uninstall clarity** - Polished messaging confirmed Round 75 QA
-- **L3. Local storage location clarity** - Config path printed at startup
+## Conclusion
 
-### Next Steps (Optional)
+**No implementation needed for Cycle 77.** 
 
-Run another polish cycle when:
-- New UX friction points emerge from user feedback
-- Quality issues are identified in monitoring
-- Users request improvements to specific flows
+All prioritized polish items are complete, verified working, and production-ready in v0.2.0. The "neat, minimalistic, simple setup/reconfigure flows" are intact with no friction to reduce or steps to remove at this time.
+
+**Next polish cycle:** Will be triggered by new UX friction identified during active development or user feedback surface of issues.
 
 ---
-
-*This log was updated automatically by the IdleWatch QA system.*
+*Status verified March 25, 2026 — 1:15 AM Toronto / 05:15 UTC*
