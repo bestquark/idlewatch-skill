@@ -590,14 +590,30 @@ function buildTokenDailyEstimate(rows) {
     .map(([day, tokens]) => ({ day: day.slice(5), tokens: Math.round(tokens) }))
 }
 
-function buildStatusPayload() {
+function safeParsePersistedEnvFile() {
   const envFile = defaultPersistedEnvFilePath()
-  const parsed = parseEnvFileToObject(envFile)
-  
+  if (!fs.existsSync(envFile)) {
+    return { envFile, parsed: {} }
+  }
+
+  try {
+    return { envFile, parsed: parseEnvFileToObject(envFile) }
+  } catch {
+    return { envFile, parsed: {} }
+  }
+}
+
+function buildStatusPayload() {
+  const { parsed } = safeParsePersistedEnvFile()
+  const metricsEnabled = String(parsed.IDLEWATCH_MONITOR_TARGETS || parsed.IDLEWATCH_METRICS || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
   return {
     deviceName: String(parsed.IDLEWATCH_DEVICE_NAME || os.hostname()).trim(),
     linkStatus: String(parsed.IDLEWATCH_CLOUD_API_KEY ? 'linked' : 'pending'),
-    metricsEnabled: [parsed.IDLEWATCH_METRICS?.split(',')].filter(Boolean),
+    metricsEnabled,
     lastPublishResult: {
       status: parsed.IDLEWATCH_LAST_GOOD_STATUS || 'unknown',
       message: parsed.IDLEWATCH_LAST_GOOD_MESSAGE || 'no recent sample found'
@@ -606,12 +622,11 @@ function buildStatusPayload() {
 }
 
 function buildLastPublishPayload() {
-  const envFile = defaultPersistedEnvFilePath()
-  const parsed = parseEnvFileToObject(envFile)
-  
+  const { parsed } = safeParsePersistedEnvFile()
+
   return {
-    lastPublishStatus: String(parsed.IDLEWATCH_LAST_GOOD_STATUS) || 'unknown',
-    lastPublishMessage: String(parsed.IDLEWATCH_LAST_GOOD_MESSAGE) || ''
+    lastPublishStatus: parsed.IDLEWATCH_LAST_GOOD_STATUS || 'unknown',
+    lastPublishMessage: parsed.IDLEWATCH_LAST_GOOD_MESSAGE || ''
   }
 }
 
@@ -1269,7 +1284,7 @@ if (!Number.isFinite(PROVIDER_QUOTA_TIMEOUT_MS) || PROVIDER_QUOTA_TIMEOUT_MS <= 
 
 if (!Number.isFinite(OPENCLAW_PROBE_MAX_OUTPUT_BYTES) || OPENCLAW_PROBE_MAX_OUTPUT_BYTES <= 0) {
   console.error(
-    `Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: undefined. Expected a positive number.`
+    `Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: ${process.env.IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES}. Expected a positive number.`
   )
   process.exit(1)
 }

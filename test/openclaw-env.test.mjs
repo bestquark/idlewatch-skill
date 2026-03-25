@@ -73,6 +73,20 @@ test('rejects invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES', () => {
   assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_PROBE_RETRIES/)
 })
 
+test('rejects invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES with the provided value', () => {
+  const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
+    env: {
+      ...process.env,
+      IDLEWATCH_OPENCLAW_USAGE: 'off',
+      IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: 'abc'
+    },
+    encoding: 'utf8'
+  })
+
+  assert.notEqual(run.status, 0)
+  assert.match(run.stderr, /Invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES: abc/)
+})
+
 test('accepts explicit IDLEWATCH_USAGE_REFRESH_REPROBES in dry-run', () => {
   const run = spawnSync(process.execPath, [BIN, '--dry-run'], {
     env: {

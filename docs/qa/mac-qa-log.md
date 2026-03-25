@@ -1,5 +1,45 @@
 # IdleWatch Installer QA Log 2026-03-25
 
+**Cycle:** R111 (installer/CLI polish QA — tiny validation + saved-config resilience pass)
+
+## Status: CLOSED — shipped in this cycle
+
+This pass stayed deliberately small and only touched low-risk polish with direct setup/debug payoff.
+
+### What shipped
+- Validation for `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` now prints the actual bad value instead of the misleading literal `undefined`.
+- Saved-config status payload helpers now tolerate a missing/unreadable `~/.idlewatch/idlewatch.env` instead of assuming it exists.
+- Metrics parsing in the saved-config payload helper is now flattened correctly (`['cpu','memory']` instead of a nested array shape).
+- Telemetry collection / ingest behavior was left unchanged.
+
+### Why this was worth doing
+These are tiny changes, but they remove friction in exactly the moments users get annoyed:
+- when a setup/env tweak fails and the validation message should point at the real bad value immediately
+- when a UI/helper path asks for saved config before the config file exists yet
+
+No flow redesign, no auth/ingest changes, no packaging work.
+
+## Verified in this cycle
+- Invalid `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` now echoes the provided value in the validation error.
+- Fresh-home `status` still keeps the same honest empty-state copy.
+- No telemetry-path behavior changed.
+
+## Validation used
+```bash
+cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill
+node --test --test-name-pattern "rejects invalid IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES with the provided value" test/openclaw-env.test.mjs
+env HOME="$(mktemp -d)" node bin/idlewatch-agent.js status
+```
+
+## Acceptance criteria
+- [x] Validation copy is more actionable when `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES` is wrong.
+- [x] Saved-config helper paths no longer assume the env file already exists.
+- [x] Metrics parsing stays sensible in saved-config helper payloads.
+- [x] No auth, ingest, or packaging redesign was introduced.
+- [x] Telemetry path remains unchanged.
+
+---
+
 **Cycle:** R110 (installer/CLI polish QA — verification-only calmness sweep)
 
 ## Status: CLOSED — no new polish issue found
