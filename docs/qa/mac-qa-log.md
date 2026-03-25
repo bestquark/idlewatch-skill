@@ -1,8 +1,46 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:40 PM (America/Toronto)  
-**Status:** CLOSED - no new polish issues worth opening in this pass
+**Last updated:** Wednesday, March 25th, 2026 — 1:45 PM (America/Toronto)  
+**Status:** CLOSED - shipped one tiny npx status polish fix in this pass
+
+---
+
+## Cycle R105 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny status follow-up fix only, with no setup-flow reshaping, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk status polish improvement.
+- `status` from an `npx`-like run now stays honest when a durable LaunchAgent is already present:
+  - if background mode is already installed but not loaded, it now says `Re-enable: idlewatch install-agent`
+  - if background mode is already loaded, it now says `Background: already enabled via the durable install`
+  - only the truly-not-installed path still says:
+    - `Install once: npm install -g idlewatch`
+    - `Then enable: idlewatch install-agent`
+- No auth, ingest, telemetry, or packaging redesign was touched.
+
+### R105 spot-check coverage
+- `npx`-like `status` with saved config and no durable background install
+- `npx`-like `status` with saved config and a durable LaunchAgent already installed but not loaded
+- `node --test test/openclaw-env.test.mjs`
+- `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L16 — `npx` status no longer tells users to install again when the durable background agent already exists
+**Why it matters:** This was a tiny but real trust seam in a place cautious users check often. After a durable install already existed, `status` from an `npx` invocation still repeated the generic `Install once` guidance instead of acknowledging the actual saved-config/background state.
+
+**What shipped**
+- `status` now reuses the real LaunchAgent state before picking the `npx` next-step hint.
+- Installed-but-not-loaded now shows `Re-enable: idlewatch install-agent`.
+- Already-loaded now shows `Background: already enabled via the durable install`.
+- Fresh `npx` setups still keep the calmer durable-install guidance unchanged.
+
+### Acceptance notes
+- `npx` foreground guidance still stays on `npx idlewatch run` / `npx idlewatch configure`.
+- Durable background guidance still points to `idlewatch install-agent`, never `npx idlewatch install-agent`.
+- The working telemetry path remains untouched.
 
 ---
 

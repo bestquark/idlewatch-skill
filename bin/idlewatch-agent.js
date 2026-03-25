@@ -1645,8 +1645,15 @@ if (statusRequested) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Start:    ${inferCliCommand('run')}`)
-      console.log('  Install once: npm install -g idlewatch')
-      console.log('  Then enable:  idlewatch install-agent')
+      const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
+      if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
+        console.log('  Background: already enabled via the durable install')
+      } else if (launchAgent?.state === 'installed-not-loaded') {
+        console.log('  Re-enable:  idlewatch install-agent')
+      } else {
+        console.log('  Install once: npm install -g idlewatch')
+        console.log('  Then enable:  idlewatch install-agent')
+      }
     } else {
       console.log(`  Start:    ${inferCliCommand('run')}`)
       if (process.platform === 'darwin') {
@@ -1668,8 +1675,15 @@ if (statusRequested) {
     console.log(`  Change:   ${inferCliCommand('configure')}`)
 
     if (detectCliInvocation().kind === 'npx') {
-      console.log('  Install once: npm install -g idlewatch')
-      console.log('  Then enable:  idlewatch install-agent')
+      const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
+      if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
+        console.log('  Background: already enabled via the durable install')
+      } else if (launchAgent?.state === 'installed-not-loaded') {
+        console.log('  Re-enable:  idlewatch install-agent')
+      } else {
+        console.log('  Install once: npm install -g idlewatch')
+        console.log('  Then enable:  idlewatch install-agent')
+      }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {

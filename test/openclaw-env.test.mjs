@@ -1323,16 +1323,18 @@ test('status command keeps npx background hints short and durable-install orient
       'IDLEWATCH_OPENCLAW_USAGE=off'
     ].join('\n') + '\n')
 
+    const npxEnv = {
+      ...process.env,
+      HOME: tempDir,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    }
+
     const noSamples = spawnSync(process.execPath, [BIN, 'status'], {
-      env: {
-        ...process.env,
-        HOME: tempDir,
-        PATH: process.env.PATH,
-        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
-        npm_command: 'exec',
-        npm_lifecycle_event: 'npx',
-        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
-      },
+      env: npxEnv,
       encoding: 'utf8',
       timeout: 10000
     })
@@ -1346,15 +1348,7 @@ test('status command keeps npx background hints short and durable-install orient
     fs.writeFileSync(path.join(configDir, 'logs', 'hint-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
 
     const withSamples = spawnSync(process.execPath, [BIN, 'status'], {
-      env: {
-        ...process.env,
-        HOME: tempDir,
-        PATH: process.env.PATH,
-        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
-        npm_command: 'exec',
-        npm_lifecycle_event: 'npx',
-        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
-      },
+      env: npxEnv,
       encoding: 'utf8',
       timeout: 10000
     })
@@ -1364,6 +1358,45 @@ test('status command keeps npx background hints short and durable-install orient
     assert.match(withSamples.stdout, /Install once:\s+npm install -g idlewatch/)
     assert.match(withSamples.stdout, /Then enable:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
+
+    if (process.platform === 'darwin') {
+      const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-npx-launchctl-bin-'))
+      try {
+        fs.writeFileSync(path.join(fakeBinDir, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  exit 1
+fi
+if [[ "\$cmd" == "bootstrap" || "\$cmd" == "enable" || "\$cmd" == "bootout" || "\$cmd" == "disable" || "\$cmd" == "kickstart" ]]; then
+  exit 0
+fi
+exit 0
+`)
+        fs.chmodSync(path.join(fakeBinDir, 'launchctl'), 0o755)
+
+        const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+          env: { ...process.env, HOME: tempDir, PATH: `${fakeBinDir}:${process.env.PATH}` },
+          encoding: 'utf8',
+          timeout: 15000
+        })
+        assert.equal(install.status, 0, install.stderr)
+
+        const withInstalledAgent = spawnSync(process.execPath, [BIN, 'status'], {
+          env: { ...npxEnv, PATH: `${fakeBinDir}:${process.env.PATH}` },
+          encoding: 'utf8',
+          timeout: 10000
+        })
+
+        assert.equal(withInstalledAgent.status, 0, withInstalledAgent.stderr)
+        assert.match(withInstalledAgent.stdout, /Background:\s+LaunchAgent installed but not loaded/)
+        assert.match(withInstalledAgent.stdout, /Re-enable:\s+idlewatch install-agent/)
+        assert.doesNotMatch(withInstalledAgent.stdout, /Install once:\s+npm install -g idlewatch/)
+        assert.doesNotMatch(withInstalledAgent.stdout, /Then enable:\s+idlewatch install-agent/)
+      } finally {
+        rmSync(fakeBinDir, { recursive: true, force: true })
+      }
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
