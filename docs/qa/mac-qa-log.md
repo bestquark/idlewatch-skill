@@ -1,8 +1,42 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:10 PM (America/Toronto)  
-**Status:** CLOSED - install-path polish shipped
+**Last updated:** Wednesday, March 25th, 2026 — 1:18 PM (America/Toronto)  
+**Status:** CLOSED - launch-agent override hint polish shipped
+
+---
+
+## Cycle R98 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny LaunchAgent installer recovery hint only, with no setup-flow reshaping, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk install-path polish improvement.
+- The missing-app failure path now mentions both override routes:
+  - `IDLEWATCH_APP_PATH` for the app bundle
+  - `IDLEWATCH_APP_BIN` for the launcher binary
+- If `IDLEWATCH_APP_PATH` was already set, the failure output now echoes that exact app-bundle path too, so recovery is more obvious.
+- No auth, ingest, telemetry, or packaging behavior was touched.
+
+### R98 spot-check coverage
+- `./scripts/install-macos-launch-agent.sh` with neither standard app location present
+- `./scripts/install-macos-launch-agent.sh` with a wrong custom `IDLEWATCH_APP_PATH`
+
+### Prioritized findings
+
+#### [x] L12 — Missing-app installer hint now names the calmer override path first
+**Why it matters:** The installer already supports both `IDLEWATCH_APP_PATH` and `IDLEWATCH_APP_BIN`, but the failure path only suggested the binary override. That works, but it pushes users toward the fussier knob first when most non-standard installs are really just “my app lives in a different folder.”
+
+**What shipped**
+- Reworded the missing-app failure guidance so it now says:
+  - set `IDLEWATCH_APP_PATH` to the app bundle, or
+  - set `IDLEWATCH_APP_BIN` to the launcher binary
+- If `IDLEWATCH_APP_PATH` is already set, the failure output now prints that bundle path before the derived binary path.
+
+### Acceptance notes
+- Recovery is faster for non-standard app installs.
+- Standard `/Applications` and `~/Applications` auto-detection remains unchanged.
+- Saved config behavior, LaunchAgent behavior, and the working telemetry path remain unchanged.
 
 ---
 

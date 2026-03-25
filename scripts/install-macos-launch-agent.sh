@@ -70,8 +70,12 @@ if [[ ! -x "$BIN_PATH" ]]; then
   echo "  /Applications/IdleWatch.app" >&2
   echo "  ~/Applications/IdleWatch.app" >&2
   echo "" >&2
-  echo "Looked for: $BIN_PATH" >&2
-  echo "If your app is somewhere else, set IDLEWATCH_APP_BIN before running this script." >&2
+  if [[ -n "${IDLEWATCH_APP_PATH:-}" ]]; then
+    echo "Looked for app bundle from IDLEWATCH_APP_PATH: $IDLEWATCH_APP_PATH" >&2
+  fi
+  echo "Looked for launcher binary: $BIN_PATH" >&2
+  echo "If your app is somewhere else, set IDLEWATCH_APP_PATH to the app bundle" >&2
+  echo "or IDLEWATCH_APP_BIN to the launcher binary before running this script." >&2
   exit 1
 fi
 
