@@ -1,8 +1,49 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 1:18 PM (America/Toronto)  
-**Status:** CLOSED - launch-agent override hint polish shipped
+**Last updated:** Wednesday, March 25th, 2026 — 1:33 PM (America/Toronto)  
+**Status:** CLOSED - install-before-setup next-step flow tightened
+
+---
+
+## Cycle R99 Status: CLOSED
+
+This pass stayed intentionally narrow: one tiny install-before-setup copy polish only, with no setup-flow reshaping, no saved-config behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk install-path polish improvement.
+- The `install-agent` success path without saved setup now reads like a cleaner three-step flow:
+  - `Save setup`
+  - `Run now`
+  - `Then enable`
+- The saved config path is still shown, just demoted behind the action steps.
+- No auth, ingest, telemetry, packaging, or LaunchAgent behavior was touched.
+
+### R99 spot-check coverage
+- `node bin/idlewatch-agent.js install-agent` in a clean HOME with no saved setup
+- `node --test test/openclaw-env.test.mjs` (46/46 passing)
+- `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L13 — Install-before-setup success copy now reads like a calmer next-step flow
+**Why it matters:** This path already behaved correctly, but the message shape still felt slightly more narrated than guided. In a product that is otherwise getting nicely minimal, this was one of the remaining tiny seams where the right answer took an extra beat to scan.
+
+**What shipped**
+- Reworded the install-without-saved-setup success block from a looser sequence:
+  - `Next`
+  - `Or run now`
+  - `When ready`
+- To a cleaner action-first flow:
+  - `Save setup`
+  - `Run now`
+  - `Then enable`
+- Kept the saved config path visible, but moved it below the main action steps.
+
+### Acceptance notes
+- Install-before-setup still keeps background collection off until setup is saved.
+- The saved config path is still visible for users who want it.
+- Telemetry behavior, LaunchAgent behavior, and the working telemetry path remain unchanged.
 
 ---
 

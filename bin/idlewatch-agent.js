@@ -1065,11 +1065,11 @@ const subcommandPromise = (async () => {
 
     if (!shouldStartImmediately) {
       console.log('✅ LaunchAgent installed.')
-      console.log("   Setup isn't saved yet, so background mode will stay off for now.")
-      console.log(`   No saved config yet: ${envFile}`)
-      console.log(`   Next:         ${quickstartCommand}`)
-      console.log(`   Or run now:   ${runCommand}`)
-      console.log(`   When ready:   ${installAgentCommand}`)
+      console.log("   Setup isn't saved yet, so background mode stays off for now.")
+      console.log(`   Save setup:   ${quickstartCommand}`)
+      console.log(`   Run now:      ${runCommand}`)
+      console.log(`   Then enable:  ${installAgentCommand}`)
+      console.log(`   Saved config: ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
       process.exit(0)
