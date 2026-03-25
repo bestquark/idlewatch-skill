@@ -932,12 +932,17 @@ if (args.has('--help') || args.has('-h')) {
     ? 'Use --no-tui for plain-text prompts (no Rust TUI).'
     : 'Uses plain-text prompts (no Rust TUI).'
   const configureCommand = inferCliCommand('configure')
+  const configureUsage = process.stdin.isTTY ? `${configureCommand} [--no-tui]` : `${configureCommand} --no-tui`
+  const configurePromptHint = process.stdin.isTTY
+    ? 'Use --no-tui for plain-text prompts (no Rust TUI).'
+    : 'Uses plain-text prompts (no Rust TUI).'
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = inferCliCommand('menubar')
   const reconfigureCommand = inferCliCommand('reconfigure')
+  const reconfigureUsage = process.stdin.isTTY ? `${reconfigureCommand} [--no-tui]` : `${reconfigureCommand} --no-tui`
   const dashboardCommand = inferCliCommand('dashboard')
   const runCommand = inferCliCommand('run')
   const subHelp = {
@@ -949,10 +954,11 @@ Walks you through API key, device name, and metric selection.
 ${quickstartPromptHint}`,
     configure: `${configureCommand} — Change device settings
 
-Usage:  ${configureCommand} [--no-tui]
+Usage:  ${configureUsage}
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
+${configurePromptHint}
 Saved changes apply on the next start.
 If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
     status: `${statusCommand} — Show device state
@@ -985,10 +991,11 @@ Installs the macOS menu bar companion app.
   --force    Reinstall even if already installed`,
     reconfigure: `${reconfigureCommand} — Change device settings (alias for configure)
 
-Usage:  ${reconfigureCommand} [--no-tui]
+Usage:  ${reconfigureUsage}
 
 Re-opens the setup wizard to change mode, API key, device name, or metrics.
 Existing values are pre-filled so you only change what you need.
+${configurePromptHint}
 Saved changes apply on the next start.
 If background mode is already enabled, re-run ${installAgentCommand} to refresh it with the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard

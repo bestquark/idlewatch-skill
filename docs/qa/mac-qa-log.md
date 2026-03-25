@@ -1,8 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 5:20 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R127 spot-check found no new product-facing polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 5:32 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R128 shipped one tiny non-TTY reconfigure-help polish fix; cron repo path still stale
+
+---
+
+## Cycle R128 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny reconfigure/help-path cleanup only, with no setup behavior, saved-config semantics, launch-agent behavior, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `configure --help` and `reconfigure --help` now match the calmer non-TTY shape already used by `quickstart --help`.
+- In non-interactive contexts, both commands now show the plain-text path directly:
+  - `Usage: ... configure --no-tui`
+  - `Usage: ... reconfigure --no-tui`
+  - `Uses plain-text prompts (no Rust TUI).`
+- This removes one tiny scan-speed bump in SSH/paste/headless contexts without adding new options or changing setup behavior.
+
+### R128 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart help|configure help|reconfigure help|status help|uninstall-agent help'`
+
+### Prioritized findings
+
+#### [x] L28 — Non-TTY `configure` / `reconfigure` help now points straight to the plain-text path
+**Why it matters:** `quickstart --help` was already polished for non-TTY use, but `configure` and `reconfigure` still described the interactive/optional `--no-tui` shape even when no TTY was available. That was tiny, but it added one unnecessary interpretation step right in the reconfigure lane.
+
+**What shipped**
+- Non-TTY `configure --help` now shows `Usage: ... configure --no-tui`.
+- Non-TTY `reconfigure --help` now shows `Usage: ... reconfigure --no-tui`.
+- Both help screens now say `Uses plain-text prompts (no Rust TUI).` in non-TTY mode.
+- Interactive TTY help remains unchanged and still keeps optional `--no-tui` guidance.
+
+### Acceptance notes
+- Setup/reconfigure semantics are unchanged.
+- Saved-config reload wording remains the same.
+- The working telemetry path remains untouched.
+- The cron payload path is still stale and still points at `~/.openclaw/workspace/idlewatch-skill`; the active repo/docs for this pass were again under `~/.openclaw/workspace.bak/idlewatch-skill`.
 
 ---
 

@@ -843,7 +843,7 @@ test('quickstart help stays clean in non-TTY mode', () => {
   assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
 })
 
-test('configure help keeps saved-config reload wording short and consistent', () => {
+test('configure help stays clean in non-TTY mode and keeps saved-config reload wording short', () => {
   const run = spawnSync(process.execPath, [BIN, 'configure', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
     encoding: 'utf8',
@@ -851,10 +851,28 @@ test('configure help keeps saved-config reload wording short and consistent', ()
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Usage:\s+.*configure --no-tui\n/)
+  assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
   assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.doesNotMatch(run.stdout, /Usage:\s+.*configure \[--no-tui\]/)
+  assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
   assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
   assert.doesNotMatch(run.stdout, /restart it with the updated config\./)
+})
+
+test('reconfigure help stays clean in non-TTY mode', () => {
+  const run = spawnSync(process.execPath, [BIN, 'reconfigure', '--help'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Usage:\s+.*reconfigure --no-tui\n/)
+  assert.match(run.stdout, /Uses plain-text prompts \(no Rust TUI\)\./)
+  assert.doesNotMatch(run.stdout, /Usage:\s+.*reconfigure \[--no-tui\]/)
+  assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts \(no Rust TUI\)\./)
 })
 
 test('status help matches the calmer saved-config refresh wording', () => {
