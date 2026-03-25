@@ -1,72 +1,67 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R90 (installer/CLI polish QA follow-up)
+**Cycle:** R91 (installer/CLI polish QA follow-up)
 
-## Status: CLOSED — configure success copy now matches reconfigure state
+## Status: OPEN — one small verification-message mismatch remains
 
-The core pipeline still works and the setup flow is in good shape. Device identity persists, metric toggles save cleanly, LaunchAgent install/uninstall messaging is calm, `status` is state-aware, and install-path hints are clear.
+The core pipeline still works and the setup flow is mostly clean. Device identity persists, metric toggles save correctly, LaunchAgent install/uninstall behavior is calm, status remains state-aware, and install-path hints are easy to follow.
 
-The one small polish issue from this cycle is now fixed: `configure` uses reconfiguration-specific success copy, so the headline no longer overstates background state after saved settings change.
+This pass found one small but user-visible polish issue worth fixing: when a device is configured with only `OpenClaw activity`, the setup/test-publish verification line says `0 metrics` even though that metric is the whole point of the configuration.
 
 ---
 
 ## Priority findings
 
-### M1. `configure` still ends with first-run “Setup complete … is live” copy even for an already-configured device
+### M1. Setup and `--test-publish` undercount activity-only configs as `0 metrics`
 **Priority:** Medium  
-**Status:** Fixed
+**Status:** Open
 
 **Why this matters:**
-The footer copy was already improved and now correctly says:
+This is a tiny trust issue, not a functional break. A user can intentionally choose a minimal config with only `OpenClaw activity`, finish setup successfully, and then immediately see:
 
-- `Background agent: already running`
-- `Apply changes: re-run node bin/idlewatch-agent.js install-agent to refresh it with the saved config`
+- `✅ Sample collected (0 metrics) and saved locally`
 
-That part is good. The remaining mismatch is the headline directly above it:
+That reads like the test did nothing, even though:
 
-- `✅ Setup complete — "QA Box" is live!`
+- setup succeeded
+- the saved config clearly shows `Metrics: OpenClaw activity`
+- the JSON sample contains the activity fields / activity source block for that mode
 
-On a reconfiguration path, that headline still sounds like first-run onboarding. It is a little too triumphant and a little too final for the actual state:
-
-- the device was already set up
-- the user just edited settings
-- if a LaunchAgent is already loaded, the saved config is not fully applied to background collection until `install-agent` is re-run
-
-So the footer is precise, but the headline still pulls in the opposite direction. For a minimal utility, that is exactly the kind of tiny copy contradiction people feel as “slightly off” even when they cannot name it.
+For a setup wizard, the first verification message should make the chosen setup feel valid, not accidentally empty. If someone picks one metric and gets told they collected zero, the product feels slightly unreliable even when the pipeline is working as designed.
 
 **Exact repro:**
-1. Start with a fresh home and complete local setup:
+1. Start with a fresh home:
    ```bash
    TMPHOME=$(mktemp -d)
    cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   ```
+2. Run local quickstart with only `agent_activity` enabled:
+   ```bash
    HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
      IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     IDLEWATCH_ENROLL_DEVICE_NAME='Activity Only' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
      node bin/idlewatch-agent.js quickstart --no-tui
    ```
-2. Install the LaunchAgent:
+3. Observe the verification line:
+   - `✅ Sample collected (0 metrics) and saved locally`
+4. Confirm the saved config/status disagrees with that wording:
    ```bash
-   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
    ```
-3. Reconfigure metrics:
+   which shows:
+   - `Metrics: OpenClaw activity`
+5. Reproduce the same messaging problem with the explicit test flow:
    ```bash
-   HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
-     IDLEWATCH_ENROLL_MODE=local \
-     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
-     IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
-     node bin/idlewatch-agent.js configure --no-tui
+   HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
    ```
-4. Observe the mixed message in the success block:
-   - headline: `✅ Setup complete — "QA Box" is live!`
-   - follow-up: `Background agent: already running`
-   - apply hint: `re-run ... install-agent to refresh it with the saved config`
+   which again reports `0 metrics`.
 
 **Acceptance criteria:**
-- [x] `configure` / `reconfigure` use a reconfiguration-specific success headline when the device already has saved config.
-- [x] The headline does not imply that background changes are already fully active when `install-agent` still needs to be re-run.
-- [x] First-run `quickstart` keeps the existing simpler “Setup complete” success tone.
-- [x] The success block now reads as one coherent state, without the headline and footer subtly disagreeing.
+- [ ] `quickstart`, `--once`, and `--test-publish` count activity-only configurations as a real collected metric in the success summary.
+- [ ] A config with only `agent_activity` no longer prints `Sample collected (0 metrics)`.
+- [ ] The verification copy reflects the user’s selected telemetry set without implying nothing was collected.
+- [ ] The fix stays small and does not redesign sampling, ingest, or status output.
 
 ---
 
@@ -74,11 +69,11 @@ So the footer is precise, but the headline still pulls in the opposite direction
 - `quickstart --no-tui` still persists device name and selected monitor targets into `~/.idlewatch/idlewatch.env`.
 - Device identity still persists cleanly (`IDLEWATCH_DEVICE_NAME=QA Box`, `IDLEWATCH_DEVICE_ID=qa-box`).
 - Reconfiguring metrics updates the saved env file correctly (`cpu,memory` → `agent_activity`).
-- `status` correctly shows installed vs not-installed LaunchAgent states and uses the calmer not-installed re-enable hint after `uninstall-agent`.
+- `configure` success copy still matches reconfiguration state and no longer uses first-run “is live” wording.
+- `status` still shows installed vs not-installed LaunchAgent states and keeps the calmer re-enable hint after `uninstall-agent`.
 - `install-agent` / `uninstall-agent` behavior remains concise and safe.
-- `--test-publish` still behaves as the documented alias for `--once`.
-- README quickstart framing still keeps local-only and cloud setup equally intentional.
 - Postinstall install-path hints still clearly distinguish global install vs one-off `npx` use.
+- README quickstart framing still keeps local-only and cloud setup equally intentional.
 
 ## Validation used
 ```bash
@@ -98,10 +93,20 @@ HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 node scripts/postinstall.mjs
-sed -n '1,120p' README.md
+node bin/idlewatch-agent.js --help
+node bin/idlewatch-agent.js configure --help
+
+TMPHOME=$(mktemp -d)
+HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
+  IDLEWATCH_ENROLL_DEVICE_NAME='Activity Only' \
+  IDLEWATCH_ENROLL_MONITOR_TARGETS='agent_activity' \
+  node bin/idlewatch-agent.js quickstart --no-tui
+HOME="$TMPHOME" node bin/idlewatch-agent.js status
+HOME="$TMPHOME" node bin/idlewatch-agent.js --once --json
+HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 ```
 
 ## Notes
 - No auth, ingest, or packaging redesign recommended from this cycle.
-- This is a copy/state-alignment issue only; config persistence and background refresh guidance are already working.
-- The remaining work is small and should stay small: just make the success wording feel as deliberate as the rest of the flow.
+- The issue is limited to verification/success summarization, not config persistence.
+- Keep the fix product-small: make the confirmation line feel correct for sparse but intentional configs.
