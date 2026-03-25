@@ -1,8 +1,41 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 12:55 PM (America/Toronto)  
-**Status:** CLOSED - no new end-user polish issues found in this pass
+**Last updated:** Wednesday, March 25th, 2026 — 1:13 PM (America/Toronto)  
+**Status:** CLOSED - one tiny validation polish fix shipped in this pass
+
+---
+
+## Cycle R96 Status: CLOSED
+
+This pass stayed intentionally narrow: one setup validation seam only, with no setup-flow reshaping, no background behavior changes, and no telemetry changes.
+
+### Outcome
+- Shipped one tiny, low-risk validation polish improvement.
+- Invalid non-interactive enrollment mode errors now name the accepted values instead of stopping at the invalid value alone.
+- Telemetry behavior, LaunchAgent behavior, auth/ingest, and packaging were left untouched.
+
+### R96 spot-check coverage
+- Non-interactive `quickstart --no-tui` with invalid `IDLEWATCH_ENROLL_MODE`
+- `npm run validate:onboarding --silent`
+- `npm run test:unit --silent` (145/145 passing)
+
+### Prioritized findings
+
+#### [x] L11 — Invalid enrollment mode now tells you the valid choices
+**Why it matters:** This only shows up in scripted or env-driven setup, but when it does, recovery should be immediate. Saying the bad value without naming the accepted ones adds one unnecessary lookup step.
+
+**What shipped**
+- Reworded invalid mode errors from:
+  - `Invalid enrollment mode: cloudy`
+- To:
+  - `Invalid enrollment mode: cloudy. Choose "production" (cloud) or "local".`
+- Saved config behavior remains unchanged: setup still fails fast and does not write config when the mode is invalid.
+
+### Acceptance notes
+- Error recovery is faster in non-interactive setup flows.
+- No new options, no behavior changes, no telemetry-path changes.
+- The rest of the installer/setup wording remains unchanged.
 
 ---
 
