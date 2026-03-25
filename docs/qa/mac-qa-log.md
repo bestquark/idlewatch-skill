@@ -1,10 +1,39 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:55 AM (America/Toronto)  
+**Last updated:** Wednesday, March 25th, 2026 — 12:10 PM (America/Toronto)  
 **Status:** CLOSED - no new polish regressions in targeted QA pass
 
 ---
+
+## Cycle R84 Status: CLOSED
+
+This pass stayed intentionally narrow: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install path clarity.
+
+### Outcome
+- No new user-facing polish regressions found in the targeted R84 checks.
+- The current CLI still feels appropriately low-friction: calm first status output, clear durable-install guidance for background mode, and honest copy when saved config exists but the LaunchAgent still needs a refresh/start.
+- The cron prompt pointed at `~/.openclaw/workspace/idlewatch-skill`, but the active repo for this pass was still `~/.openclaw/workspace.bak/idlewatch-skill`.
+
+### R84 spot-check coverage
+- First-run `status` in a clean HOME
+- `install-agent` before setup in a clean HOME
+- Local-only `quickstart --no-tui` after pre-installing the LaunchAgent
+- Post-setup `status`
+- `configure --no-tui` device rename + metric change persistence
+- `--test-publish` alias behavior
+- `uninstall-agent` messaging
+- `npx`-style quickstart / configure / status / install-agent messaging
+
+### Prioritized findings
+- None. No new polish issues worth opening from this cycle.
+
+### Acceptance notes
+- Setup completion correctly distinguishes first-time background enable vs already-installed-but-needs-refresh.
+- Device rename preserves the original device ID and log file path while updating the visible device name.
+- Metric selection changes persist cleanly into saved config and the next `status` output.
+- `npx` flows keep foreground guidance on `npx` while pointing background setup back to durable `idlewatch install-agent`.
+- `uninstall-agent` messaging stays calm and confirms config/log retention.
 
 ## Cycle R83 Status: CLOSED
 
