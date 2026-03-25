@@ -1,61 +1,81 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R78 (installer/CLI polish verification pass)
+**Cycle:** R79 (installer/CLI polish follow-up)
 
-## Status: CLOSED - high-priority setup mismatch fixed
+## Status: OPEN - small setup-path polish remains
 
-Core flow still looks solid, and the remaining setup-path mismatch from this pass is now fixed.
+The core installer/CLI flow is still good. This pass only found two small-but-real UX mismatches: one misleading help description and one command-path clarity gap for non-global installs.
 
 ---
 
 ## Priority findings
 
-### H1. `idlewatch install-agent` no longer blocks on missing config; CLI now matches packaged install flow
-**Priority:** High
-**Status:** ✅ Fixed
+### M1. `install-agent --help` still describes the old config-first story
+**Priority:** Medium
+**Status:** Open
 
 **Why this matters:**
-The packaged macOS install flow and docs now present a nice low-friction story:
-- install the LaunchAgent first,
-- run quickstart when ready,
-- then re-run install once to restart with saved config.
-
-But the main CLI command still says the opposite. That makes the same product feel inconsistent depending on whether the user arrived via npm/npx vs the packaged app.
+The command behavior is now pleasantly install-first: users can install the LaunchAgent before quickstart, then finish setup later. But the built-in help text still says the command "Uses the saved config from ~/.idlewatch/idlewatch.env," which reads like config is required up front. That's a tiny trust leak right at the moment the user asks for guidance.
 
 **Exact repro:**
-1. Use a clean HOME with no `~/.idlewatch/idlewatch.env` present.
-2. Run:
+1. From the repo root, run:
+   ```bash
+   node bin/idlewatch-agent.js install-agent --help
+   ```
+2. Observe the help text says:
+   ```text
+   Creates a LaunchAgent plist and loads it so IdleWatch runs automatically
+   in the background. Uses the saved config from ~/.idlewatch/idlewatch.env.
+   ```
+3. Compare that with the actual no-config behavior:
    ```bash
    HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent
    ```
-3. Observe the command exits with:
-   ```text
-   No config found. Run idlewatch quickstart first.
-   ```
-
-**What changed:**
-- `bin/idlewatch-agent.js` now installs/loads the LaunchAgent even when `~/.idlewatch/idlewatch.env` is missing.
-- The CLI success output now mirrors the packaged script's intended story:
-  - LaunchAgent installed
-  - run `idlewatch quickstart`
-  - re-run `idlewatch install-agent` after setup to restart with saved config
-- Existing-config installs still stay concise and point users at `idlewatch status`.
-- Tiny QoL parity improvement: the CLI also issues `launchctl enable` after bootstrap, matching the packaged installer behavior more closely.
+4. Observe the command now installs successfully even without saved config and prints the install-first / quickstart-later next steps.
 
 **Acceptance criteria:**
-- [x] Pick one story and make every user-facing surface match it.
-- [x] Make `idlewatch install-agent` behave like the packaged install script.
-- [x] On a no-config machine, `idlewatch install-agent` still installs/loads the LaunchAgent, then prints the short next-step message.
-- [x] `idlewatch status` remains the place to check “no saved config yet” vs “agent installed”.
-- [x] No auth/ingest redesign; telemetry path preserved.
+- [ ] `idlewatch install-agent --help` matches the real behavior.
+- [ ] Help text makes it clear saved config is optional on first install.
+- [ ] The short description stays simple and non-technical.
+- [ ] No behavior change required; docs/help copy only.
+
+---
+
+### M2. Setup follow-up commands assume a global `idlewatch` binary even in non-global flows
+**Priority:** Medium
+**Status:** Open
+
+**Why this matters:**
+Docs now do a decent job distinguishing global install vs `npx` vs packaged app. The runtime UX is less careful. Several success/error messages tell users to run `idlewatch ...` unconditionally, even when they arrived through `node bin/idlewatch-agent.js ...`, `npx idlewatch ...`, or app-bundled paths. That creates a low-grade "wait, which command am I actually supposed to use?" moment exactly where the product should feel frictionless.
+
+**Exact repro:**
+1. From a source checkout, run:
+   ```bash
+   HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent
+   ```
+2. Observe the follow-up copy says:
+   ```text
+   Next:             idlewatch quickstart
+   Then re-run:      idlewatch install-agent
+   Check anytime:    idlewatch status
+   ```
+3. In the same source-checkout context, note that the command the user actually invoked was `node bin/idlewatch-agent.js ...`, not a guaranteed global `idlewatch` binary.
+4. The packaged install script already handles this more gracefully by showing the app-bundled command path when `idlewatch` is not available on PATH.
+
+**Acceptance criteria:**
+- [ ] User-facing next-step messages prefer the command path that matches the current install path.
+- [ ] Global installs can keep showing `idlewatch ...`.
+- [ ] Source / local / app-bundled flows should avoid implying a global binary exists when it may not.
+- [ ] Output remains short and calm — no big install-mode explainer blocks.
 
 ---
 
 ## Verified areas in this cycle
-- Config next-start/restart messaging still reads clean.
-- `--test-publish` alias remains wired and documented.
-- Packaged LaunchAgent script messaging is cleaner than older rounds.
-- NPM/global/NPX command-path wording is mostly aligned.
+- `install-agent` still succeeds on a clean HOME with no saved config.
+- `uninstall-agent` remains safe and non-destructive.
+- `status` correctly shows `(no saved config)` and the LaunchAgent state after install-first setup.
+- Docs continue to point new users to `idlewatch` / `npx idlewatch` rather than the old `idlewatch-skill` package name.
+- `--test-publish` remains documented as an alias for `--once`.
 
 ## Summary
-The main setup story is aligned again: npm/CLI and packaged installs now both allow install-first, quickstart-later background setup. This keeps reconfigure/startup guidance simple without touching auth, ingest, or the now-working telemetry path.
+Nothing scary here — just two polish mismatches in the last mile of setup guidance. The product behavior is already nicer than the help/runtime copy in a couple spots; the remaining work is mostly about making the words feel as clean as the flow.
