@@ -1683,7 +1683,7 @@ if (statusRequested) {
   const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
   const isPlaceholderName = hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())
   if (isPlaceholderName) {
-    console.log(`  ℹ️  Rename this device:  ${inferCliCommand('configure')}`)
+    console.log(`  ℹ️  Rename this device:  ${preferredSetupCommand('configure')}`)
   }
 
   console.log('')
@@ -1720,7 +1720,7 @@ if (statusRequested) {
     }
   } else if (!isPlaceholderName) {
     const installAgentCommand = inferCliCommand('install-agent')
-    console.log(`  Change:   ${inferCliCommand('configure')}`)
+    console.log(`  Change:   ${preferredSetupCommand('configure')}`)
 
     if (detectCliInvocation().kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
@@ -1750,7 +1750,7 @@ if (statusRequested) {
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    `Running in local-only mode — telemetry is saved to disk but not published. Run ${inferCliCommand('configure')} to add a cloud API key.`
+    `Running in local-only mode — telemetry is saved to disk but not published. Run ${preferredSetupCommand('configure')} to add a cloud API key.`
   )
 }
 
@@ -2650,7 +2650,7 @@ async function tick() {
     cloudIngestKickoutNotified = true
     if (!(REQUIRE_CLOUD_WRITES && ONCE)) {
       console.error(`Cloud ingest disabled: API key rejected (${cloudIngestKickoutReason || 'unauthorized'}).`)
-      console.error(`  Fix: ${inferCliCommand('configure')}  (to update API key)`)
+      console.error(`  Fix: ${preferredSetupCommand('configure')}  (to update API key)`)
     }
   }
 
@@ -2661,7 +2661,7 @@ async function tick() {
   if (!DRY_RUN && REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run ${inferCliCommand('configure')} to update your API key.`
+        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run ${preferredSetupCommand('configure')} to update your API key.`
       )
     }
     throw new Error(`❌ Cloud publish failed for "${DEVICE_NAME}": check API key and connectivity.`)

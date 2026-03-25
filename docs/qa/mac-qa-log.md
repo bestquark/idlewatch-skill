@@ -1,8 +1,46 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 6:21 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R149 found no new product-facing polish regressions; cron repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 6:25 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R150 shipped one tiny non-TTY reconfigure-hint polish fix
+
+---
+
+## Cycle R150 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny non-TTY setup/reconfigure hint cleanup only, with no setup-flow changes, no saved-config behavior changes, no LaunchAgent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Non-TTY follow-up hints that point people back into setup/reconfigure now prefer `configure --no-tui` instead of plain `configure`.
+- This keeps headless, paste-into-terminal, cron, and CI-ish flows on the path most likely to work on the first try, without adding any new branch or option.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R150 spot-check coverage
+- [x] `status` with saved config + samples in source-checkout non-TTY mode
+- [x] `status` with saved config + samples in `npx`-like non-TTY mode
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status command keeps npx background hints short and durable-install oriented|status command shows contextual next-step hints'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L40 — Non-TTY status/recovery hints now point straight to `configure --no-tui`
+**Why it matters:** This was tiny, but it sat in a real recovery moment. The product already prefers `--no-tui` for first-step setup hints when no TTY is present, but some later status/error follow-ups still fell back to plain `configure`. That worked in many cases, yet it added one unnecessary interpretation step in exactly the headless flows where copy-paste reliability matters most.
+
+**What shipped**
+- Status follow-up hints now use `configure --no-tui` in non-TTY contexts:
+  - `Change: ...`
+  - placeholder-device rename nudges
+- Cloud-link recovery messages now use the same non-TTY-aware configure command:
+  - local-only reminder to add a cloud key
+  - API-key-rejected fix hint
+  - one-shot cloud publish failure hint
+- Added regression coverage for both source-checkout and `npx` non-TTY status hints so the calmer path sticks.
+
+### Acceptance notes
+- Interactive TTY flows still keep the normal `configure` path.
+- Non-TTY setup/reconfigure hints now match the already-polished `quickstart --no-tui` behavior.
+- The working telemetry path remains untouched.
 
 ---
 

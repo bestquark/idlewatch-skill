@@ -1590,7 +1590,8 @@ test('status command keeps npx background hints short and durable-install orient
     })
 
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure/)
+    assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure --no-tui/)
+    assert.doesNotMatch(withSamples.stdout, /Change:\s+npx idlewatch configure(?! --no-tui)(?:\s|$)/)
     assert.match(withSamples.stdout, /Install once:\s+npm install -g idlewatch/)
     assert.match(withSamples.stdout, /Then enable:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
@@ -1710,7 +1711,8 @@ test('status command shows contextual next-step hints', () => {
       timeout: 10000
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} configure`), 'should hint at configure when samples exist')
+    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} configure --no-tui`), 'should hint at non-TTY configure when samples exist')
+    assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?! --no-tui)(?:\s|$)/, 'should not fall back to plain configure in non-TTY status hints')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 
     if (process.platform === 'darwin') {
