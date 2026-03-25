@@ -1,8 +1,77 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 3:15 PM (America/Toronto)  
-**Status:** COMPLETE - R114 rename/status clarity fix shipped
+**Last updated:** Wednesday, March 25th, 2026 — 3:33 PM (America/Toronto)  
+**Status:** ACTION NEEDED - R115 non-interactive reconfigure mode persistence bug logged
+
+---
+
+## Cycle R115 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Found one real polish bug in the saved-config / reconfigure lane.
+- Interactive setup still feels calm, but scripted/non-interactive `configure --no-tui` currently drops the existing publish-mode default instead of preserving it.
+- That makes local-only devices feel unexpectedly "half reset" during a simple reconfigure because the command starts asking for cloud credentials again.
+- No auth, ingest, packaging, or background-agent redesign is recommended.
+
+### Prioritized findings
+
+#### [ ] H3 — Non-interactive `configure --no-tui` does not preserve the saved mode
+**Why it matters:** This is exactly the kind of subtle setup seam that makes a polished CLI feel unreliable in automation, cron, CI-ish, or copy-pasted terminal flows. Reconfigure is supposed to preserve existing choices unless the user changes them. Right now, a saved local-only device silently falls back to production/cloud mode semantics in non-interactive reconfigure, which then fails asking for an API key the user never intended to add.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. First-time local-only setup:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_ENROLL_MODE=local \
+   IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+   node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+4. Reconfigure without explicitly restating the mode, only changing visible settings:
+   ```bash
+   HOME="$TMPHOME" \
+   IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+   IDLEWATCH_ENROLL_DEVICE_NAME='Renamed Box' \
+   IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' \
+   node bin/idlewatch-agent.js configure --no-tui
+   ```
+
+**Observed**
+- First-time setup succeeds in local-only mode.
+- Non-interactive reconfigure exits with:
+  - `Enrollment failed: Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).`
+- The command behaves as if mode silently reverted to cloud/production instead of inheriting the already-saved local-only choice.
+
+**Why this feels off**
+- The product’s current mental model everywhere else is: saved config is reused unless you intentionally change it.
+- Interactive reconfigure effectively follows that model.
+- Non-interactive reconfigure breaking that expectation makes automation feel brittle and more technical than it should.
+- This is especially confusing because the failure happens after a perfectly valid local-only setup.
+
+**Acceptance criteria**
+- Non-interactive `configure --no-tui` should preserve the saved mode when `IDLEWATCH_ENROLL_MODE` is omitted.
+- A previously local-only device should stay local-only unless the user explicitly asks to switch to cloud mode.
+- A previously cloud-linked device should stay cloud-linked unless the user explicitly asks to switch modes.
+- Reconfigure should still allow an explicit mode override when provided.
+- Existing saved API-key reuse behavior for production mode should remain unchanged.
+
+### Spot-check coverage
+- Clean first-run `status` from a source checkout
+- Non-interactive local-only `quickstart --no-tui`
+- Non-interactive local-only `configure --no-tui` with only device-name/metric changes
+- Post-failure `status` to confirm prior saved config remains intact
+- Help + dry-run sanity spot-checks
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- This finding is narrow and user-facing; it does not require auth, ingest, or packaging redesign.
 
 ---
 
