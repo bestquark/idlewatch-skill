@@ -118,6 +118,23 @@ function launchctlOutput(result) {
   return [String(result?.stderr || '').trim(), String(result?.stdout || '').trim()].filter(Boolean).join('\n').trim()
 }
 
+function printSetupNextSteps({ isReconfigure, launchAgentState }) {
+  const installAgentCommand = inferCliCommand('install-agent')
+  const runCommand = inferCliCommand('run')
+  const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
+
+  if (isReconfigure && backgroundAgentRunning) {
+    console.log('\n   Background agent: already running')
+    console.log(`   Apply changes:    re-run ${installAgentCommand} to refresh it with the saved config`)
+    console.log(`   Or run now:       ${runCommand}   Run in foreground`)
+    return
+  }
+
+  console.log('\n   To keep it running:')
+  console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
+  console.log(`     ${runCommand}   Run in foreground`)
+}
+
 function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded }) {
   const first = launchctlResult(['bootstrap', domain, plistPath])
   if (first.status === 0 || !alreadyLoaded) return first
@@ -1068,6 +1085,8 @@ const subcommandPromise = (async () => {
 
       if (onceRun.status === 0) {
         const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
+        const launchAgentState = probeOwnedLaunchAgentState()
+        const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
         console.log(`\n✅ Setup complete — "${result.deviceName}" is live!`)
         console.log(`   Mode:   ${modeLabel}`)
         console.log(`   Config: ${result.outputEnvFile}`)
@@ -1084,9 +1103,7 @@ const subcommandPromise = (async () => {
           console.log(`\n   ✓ First sample published to idlewatch.com.`)
           console.log(`   Your device should appear on the dashboard within a few seconds.`)
         }
-        console.log(`\n   To keep it running:`)
-        console.log(`     ${inferCliCommand('install-agent')}   Auto-start in background (recommended)`)
-        console.log(`     ${inferCliCommand('run')}   Run in foreground`)
+        printSetupNextSteps({ isReconfigure, launchAgentState })
         process.exit(0)
       }
 

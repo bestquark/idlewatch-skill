@@ -791,6 +791,63 @@ test('install-agent follow-up uses source checkout command path', () => {
   }
 })
 
+test('configure success says to refresh an already-running background agent', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-refresh-home-'))
+  try {
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(install.status, 0, install.stderr)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'agent_activity'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /Background agent:\s+already running/)
+    assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
+    assert.doesNotMatch(configure.stdout, /To keep it running:/)
+  } finally {
+    spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('status command hides cloud link info in local-only mode', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-local-'))
   try {

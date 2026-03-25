@@ -2,11 +2,11 @@
 
 **Cycle:** R88 (installer/CLI polish follow-up)
 
-## Status: OPEN — one small setup-copy mismatch remains
+## Status: CLOSED — configure/setup copy now matches the running-agent flow
 
-The core flow still works, but there is one real polish issue left in the setup/control loop: after changing settings while the LaunchAgent is already installed, the setup-complete screen still sounds like a first-run path instead of explicitly telling the user to refresh the background agent.
+The core flow still works, and this last setup/control-loop mismatch is now fixed: after changing settings while the LaunchAgent is already installed, the setup-complete screen now explicitly says the background agent is already running and tells the user to refresh it.
 
-That is not a functional breakage. It is a small product-friction issue: the saved config updates correctly, `status` explains the refresh correctly, but the immediate post-configure success copy is slightly misleading and less calm than the rest of the product.
+This keeps the product feeling calm and deliberate: saved config still updates correctly, and now the immediate post-configure success copy matches what `status` already explains.
 
 ---
 
@@ -14,7 +14,7 @@ That is not a functional breakage. It is a small product-friction issue: the sav
 
 ### M1. `configure` success copy is misleading when the background LaunchAgent is already installed
 **Priority:** Medium  
-**Status:** Open
+**Status:** Fixed
 
 **Why this matters:**
 This is exactly the kind of tiny setup wrinkle people feel more than they describe. The current `configure` flow correctly saves the new config, and `status` correctly says to re-run `install-agent` if the background agent is already running. But the success screen shown immediately after `configure` still uses generic first-run wording:
@@ -66,11 +66,11 @@ Right now the user has to mentally reconcile the setup-complete screen with the 
    - The just-finished `configure` flow did not say that clearly.
 
 **Acceptance criteria:**
-- [ ] After `configure`, if a LaunchAgent is already installed/loaded, the success copy explicitly says the background agent is already running.
-- [ ] The post-configure copy tells the user to refresh/re-run `install-agent` so the saved config is applied.
-- [ ] First-run setup copy stays simple for users who have not installed the LaunchAgent yet.
-- [ ] `quickstart`, `configure`, `status`, and `install-agent` all use consistent language about when config changes take effect.
-- [ ] The result feels calmer and less ambiguous, without adding extra technical detail.
+- [x] After `configure`, if a LaunchAgent is already installed/loaded, the success copy explicitly says the background agent is already running.
+- [x] The post-configure copy tells the user to refresh/re-run `install-agent` so the saved config is applied.
+- [x] First-run setup copy stays simple for users who have not installed the LaunchAgent yet.
+- [x] `quickstart`, `configure`, `status`, and `install-agent` all use consistent language about when config changes take effect.
+- [x] The result feels calmer and less ambiguous, without adding extra technical detail.
 
 ---
 
@@ -103,7 +103,13 @@ node scripts/postinstall.mjs
 sed -n '1,120p' README.md
 ```
 
+## Resolution
+- `configure` / `reconfigure` now detect when the owned LaunchAgent is already loaded and swap the generic first-run footer for a direct refresh hint.
+- First-run setup still keeps the old minimal "To keep it running" guidance.
+- The change is copy-only around the success footer; saved config behavior and the telemetry path remain unchanged.
+- Added a targeted macOS CLI test covering `quickstart` → `install-agent` → `configure` and asserting the new refresh wording.
+
 ## Notes
-- The issue here is copy consistency, not persistence correctness: config saves correctly and `status` already communicates the right behavior.
+- The issue here was copy consistency, not persistence correctness: config already saved correctly and `status` already communicated the right behavior.
 - No auth, ingest, or packaging redesign recommended from this cycle.
-- This is the kind of polish that makes the setup flow feel deliberate rather than merely functional.
+- This is exactly the kind of tiny polish that makes the setup flow feel deliberate instead of merely functional.
