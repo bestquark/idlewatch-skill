@@ -1,16 +1,66 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R88 (installer/CLI polish follow-up)
+**Cycle:** R89 (installer/CLI polish follow-up)
 
-## Status: CLOSED — configure/setup copy now matches the running-agent flow
+## Status: OPEN — one remaining status-copy mismatch after uninstall
 
-The core flow still works, and this last setup/control-loop mismatch is now fixed: after changing settings while the LaunchAgent is already installed, the setup-complete screen now explicitly says the background agent is already running and tells the user to refresh it.
+The core pipeline still works and the setup/configure flow feels clean overall. One small polish issue remains: `status` still prints the “re-run install-agent after config changes if it's already running in the background” apply hint even when the LaunchAgent is not installed.
 
-This keeps the product feeling calm and deliberate: saved config still updates correctly, and now the immediate post-configure success copy matches what `status` already explains.
+This is not a functional bug, but it does add a tiny bit of avoidable cognitive noise right after `uninstall-agent`. For a minimal utility, the control copy should match the current state exactly.
 
 ---
 
 ## Priority findings
+
+### M1. `status` shows restart/apply guidance that assumes a running LaunchAgent even after uninstall
+**Priority:** Medium  
+**Status:** Open
+
+**Why this matters:**
+After `uninstall-agent`, the status screen correctly says `Background: LaunchAgent not installed`, but the follow-up `Apply:` hint still says:
+
+- `re-run node bin/idlewatch-agent.js install-agent after config changes if it's already running in the background`
+
+That copy is technically true in the abstract, but it is awkward in the exact state the user is currently in. Right after uninstalling, the calmer and clearer guidance is simply to install the agent again if they want background collection back. The current wording makes the user mentally parse a conditional that no longer applies.
+
+This is tiny, but it is exactly the sort of thing that makes a polished setup utility feel either deliberate or slightly generic.
+
+**Exact repro:**
+1. Start with a fresh home and complete local setup:
+   ```bash
+   TMPHOME=$(mktemp -d)
+   cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
+   HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+2. Install the LaunchAgent:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
+   ```
+3. Uninstall it:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+   ```
+4. Check status:
+   ```bash
+   HOME="$TMPHOME" node bin/idlewatch-agent.js status
+   ```
+5. Observe the mismatch:
+   - `Background: LaunchAgent not installed`
+   - `Apply:` still references the special case for when it is already running in the background.
+
+**Acceptance criteria:**
+- [ ] When no LaunchAgent is installed, `status` does not show apply/restart wording that assumes a running background agent.
+- [ ] The no-agent state uses simpler next-step guidance, e.g. install the agent to re-enable background collection.
+- [ ] The loaded/running state can keep the existing “re-run install-agent after config changes” guidance.
+- [ ] The status footer feels state-aware and visually calm, without adding more lines than necessary.
+
+---
+
+## Previous cycle carried forward
 
 ### M1. `configure` success copy is misleading when the background LaunchAgent is already installed
 **Priority:** Medium  
