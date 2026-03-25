@@ -122,12 +122,21 @@ function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alread
   const first = launchctlResult(['bootstrap', domain, plistPath])
   if (first.status === 0 || !alreadyLoaded) return first
 
-  const output = launchctlOutput(first)
-  const looksLikeStillTearingDown = /bootstrap failed:\s*5\b|input\/output error/i.test(output)
-  if (!looksLikeStillTearingDown) return first
+  let last = first
+  for (const delaySeconds of ['0.15', '0.3', '0.5', '0.75', '1']) {
+    const output = launchctlOutput(last)
+    const looksLikeStillTearingDown = /bootstrap failed:\s*5\b|input\/output error/i.test(output)
+    if (!looksLikeStillTearingDown) return last
 
-  spawnSync('/bin/sleep', ['0.2'], { stdio: 'ignore' })
-  return launchctlResult(['bootstrap', domain, plistPath])
+    const probe = launchctlResult(['print', domainTarget])
+    if (probe.status === 0) return probe
+
+    spawnSync('/bin/sleep', [delaySeconds], { stdio: 'ignore' })
+    last = launchctlResult(['bootstrap', domain, plistPath])
+    if (last.status === 0) return last
+  }
+
+  return last
 }
 
 function printHelp() {

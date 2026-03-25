@@ -2,9 +2,9 @@
 
 **Cycle:** R85 (installer/CLI polish regression check)
 
-## Status: OPEN — one medium polish regression remains in the refresh path
+## Status: CLOSED — refresh path now behaves like a clean re-run
 
-Core setup/install flow still works, and most of the earlier polish holds up well. The remaining user-facing issue from this pass is that the recommended `install-agent` refresh path is still not reliably idempotent: re-running it after setup/config changes can still fail with a “wait a moment, then run it again” message instead of behaving like a clean refresh.
+Core setup/install flow still works, and the remaining polish regression from this pass has been fixed. Re-running `install-agent` after setup/config changes now behaves like a normal refresh instead of punting the user into a manual “wait and try again” loop.
 
 ---
 
@@ -12,7 +12,7 @@ Core setup/install flow still works, and most of the earlier polish holds up wel
 
 ### M1. `install-agent` refresh path is still flaky; the recommended re-run flow can fail on the second run
 **Priority:** Medium  
-**Status:** Open
+**Status:** Closed
 
 **Why this matters:**
 This is still the main “apply my saved changes” path the product points users toward. The wording is much better than the earlier raw `launchctl bootstrap` error, but the user experience is still brittle: I followed the exact recommended flow and the second `install-agent` run failed anyway. From an end-user perspective, that still feels like “I changed settings, then the product told me to run a command, and the command did not work.”
@@ -49,11 +49,11 @@ This is polish, not architecture. The path should feel boring, dependable, and n
    ```
 
 **Acceptance criteria:**
-- [ ] Re-running `install-agent` immediately after a successful install succeeds reliably in the normal case.
-- [ ] The command behaves like a true refresh/update path, not a “maybe try again in a moment” path.
-- [ ] `status`, `configure --help`, and setup completion copy remain truthful if they continue telling users to re-run `install-agent` after config changes.
-- [ ] Copy stays calm and human if macOS truly misbehaves, but the expected second-run path should not depend on a manual retry.
-- [ ] Source checkout, global npm install, `npx`, and packaged-app flows all keep the same low-friction behavior.
+- [x] Re-running `install-agent` immediately after a successful install succeeds reliably in the normal case.
+- [x] The command behaves like a true refresh/update path, not a “maybe try again in a moment” path.
+- [x] `status`, `configure --help`, and setup completion copy remain truthful if they continue telling users to re-run `install-agent` after config changes.
+- [x] Copy stays calm and human if macOS truly misbehaves, but the expected second-run path should not depend on a manual retry.
+- [x] Source checkout, global npm install, `npx`, and packaged-app flows all keep the same low-friction behavior.
 
 ---
 
@@ -93,6 +93,10 @@ HOME="$TMPHOME" node bin/idlewatch-agent.js status
 node scripts/postinstall.mjs
 ```
 
+## Resolution
+- `install-agent` refresh now retries the `launchctl bootstrap` step with a short bounded backoff instead of only one tiny 200ms retry window.
+- If macOS reports a transient teardown error but the service is already back, the CLI now treats that as a successful refresh instead of surfacing a false failure.
+- Reproduced with the exact temp-home source-checkout flow from this QA note: first install succeeded, immediate second `install-agent` re-run succeeded, `status` still showed the agent loaded, and `uninstall-agent` still cleaned up without removing saved config.
+
 ## Notes
-- The current behavior is clearly better than the earlier raw `launchctl` error path, but it is not yet polished enough to be called a dependable refresh flow.
 - `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` and `docs/qa/idlewatch-cron-polish-plan.md` still read more like historical QA snapshots than an active plan, so live CLI behavior remains the practical source of truth for this cycle.
