@@ -1,67 +1,56 @@
 # IdleWatch Installer QA Log 2026-03-25
 
-**Cycle:** R81 (installer/CLI polish follow-up)
+**Cycle:** R82 (installer/CLI polish follow-up)
 
-## Status: CLOSED — copy consistency polish landed
+## Status: OPEN — one setup-flow polish issue remains
 
-Core setup still works. The remaining source-checkout/local-mode copy inconsistency was fixed in this pass.
+Core setup/install flow still works. This pass found one remaining UX wart in the plain-text setup path: EOF/cancel can leak a raw Node.js warning into the terminal.
 
 ---
 
 ## Priority findings
 
-### M1. A few follow-up messages still hard-code `idlewatch ...` after source-checkout invocation
-**Priority:** Medium
-**Status:** Fixed
+### M1. Plain-text `configure --no-tui` can leak raw Node "unsettled top-level await" warning on EOF/cancel
+**Priority:** Medium  
+**Status:** Open
 
 **Why this matters:**
-The main quickstart success block and `status` footer now correctly mirror the current invocation path, which feels much better. But a few adjacent messages still fall back to plain `idlewatch ...`, so the experience still has a tiny "wait, is that command actually installed here?" wobble right after setup. It is small, but it lands at exactly the moment where the product should feel cleanest.
+This is small but ugly. The setup wizard should feel calm and low-friction; instead, an interrupted plain-text flow can end with a scary runtime warning that looks like a crash dump. End users should never have to parse Node internals just because stdin closed.
 
 **Exact repro:**
-1. From a source checkout, run a local-mode setup flow with a clean temp home:
+1. From a source checkout, run local setup in a clean temp home:
    ```bash
    cd /Users/luismantilla/.openclaw/workspace/idlewatch-skill
    TMPHOME=$(mktemp -d)
-   HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent
    HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
      node bin/idlewatch-agent.js quickstart --no-tui
-   HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
-   HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
    ```
-2. Observe the main success/status guidance uses the correct repo-script command path.
-3. Observe nearby follow-up copy still hard-codes global-binary wording, for example:
-   ```text
-   Running in local-only mode — telemetry is saved to disk but not published. Run idlewatch configure to add a cloud API key.
-   ```
-   and
-   ```text
-   Re-enable:  idlewatch install-agent
-   ```
-4. Also inspect subcommand help:
+2. Start plain-text reconfigure without supplying answers:
    ```bash
-   node bin/idlewatch-agent.js configure --help
-   node bin/idlewatch-agent.js status --help
+   HOME="$TMPHOME" node bin/idlewatch-agent.js configure --no-tui
    ```
-5. Observe help text still says `re-run idlewatch install-agent ...` even when the current invocation path is `node bin/idlewatch-agent.js ...`.
+3. At the first prompt, send EOF (Ctrl-D), or run from a stdin source that closes immediately.
+4. Observe a raw warning like:
+   ```text
+   Warning: Detected unsettled top-level await at file:///.../bin/idlewatch-agent.js:1076
+     await new Promise(() => {})
+   ```
 
 **Acceptance criteria:**
-- [x] Source-checkout and `npx` flows use the same inferred command-path style across all user-facing follow-up copy, not just the main success/status blocks.
-- [x] At minimum, align local-only warning text, uninstall follow-up text, and subcommand help text.
-- [x] Keep the copy short and boring in a good way — no install-mode explanation dump.
-- [x] Global installs can continue to show `idlewatch ...`.
+- [ ] EOF/cancel/closed-stdin exits the plain-text setup flow cleanly with a short human message.
+- [ ] No raw Node runtime warning, stack-ish snippet, or `top-level await` text is shown.
+- [ ] Exit code and copy distinguish a deliberate cancel from a real setup failure.
+- [ ] Behavior is consistent for both `quickstart --no-tui` and `configure --no-tui`.
 
 ---
 
-## Verified areas in this cycle
-- `install-agent` in a clean temp HOME still behaves as expected for this host and no longer reports haunted cross-HOME state.
-- Quickstart success copy uses the current invocation path in source checkout.
-- Local-only warning now uses the current invocation path in source checkout.
-- `uninstall-agent` follow-up now uses the current invocation path in source checkout.
-- `configure --help` and `status --help` now use the current invocation path in source checkout.
-- `status` footer uses the current invocation path in source checkout.
-- Device name and metric selections persist to `~/.idlewatch/idlewatch.env`.
+## Verified in this cycle
+- Source-checkout command hints remain consistent in quickstart/status/help copy.
+- Local-only warning uses the current invocation path in source checkout.
 - `--test-publish` still behaves as the documented alias for `--once`.
-- Telemetry-path regression suite still passes (`node --test test/openclaw-env.test.mjs`).
+- Device name and metric selections still persist to `~/.idlewatch/idlewatch.env`.
+- `status` still shows persisted config plus LaunchAgent state clearly.
+- `install-agent` / `uninstall-agent` still preserve config and logs as expected.
 
 ## Validation used
 ```bash
@@ -74,9 +63,11 @@ HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local \
 HOME="$TMPHOME" node bin/idlewatch-agent.js status
 HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish
 HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+HOME="$TMPHOME" node bin/idlewatch-agent.js configure --no-tui
 node bin/idlewatch-agent.js configure --help
 node bin/idlewatch-agent.js status --help
+node --test test/openclaw-env.test.mjs
 ```
 
 ## Notes
-- The top-level polish-plan file at `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` currently contains old QA-log content rather than a distinct plan. I treated `docs/qa/idlewatch-cron-polish-plan.md` plus live CLI behavior as the source of truth for this pass.
+- `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md` currently mirrors older QA-log content more than a distinct plan, so I used `docs/qa/idlewatch-cron-polish-plan.md` plus live CLI behavior as the practical source of truth.
