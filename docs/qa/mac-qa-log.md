@@ -1,8 +1,103 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:55 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R246 shipped one small reconfigure recovery-copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 5:11 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - R247 found one small postinstall-path messaging seam worth fixing
+
+## Cycle R247 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Core setup, status, install-before-setup, reconfigure persistence, device-ID continuity, `--test-publish`, uninstall behavior, and `npm exec` durable-install guidance still read like one calm product.
+- One small postinstall seam is still more technical/noisy than the rest of the CLI: after a global npm install, the final `Other install paths` block advertises an env-var-driven menubar install command.
+- That line is technically valid, but it feels more like an implementation escape hatch than a clean next-step option for end users in a scan-first moment right after install.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [L82] Global npm `postinstall` still advertises an env-var-driven menubar install path in the main install-success output
+- **Priority:** Low
+- **Why this matters:** Right after `npm install -g idlewatch`, the product mostly does the right thing: it ends with one obvious next step (`idlewatch quickstart`) and keeps the one-off `npx` path available. But the final line in `Other install paths` still says `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch`. That is accurate, yet it reads like a developer toggle, adds visual noise, and makes the install-success moment feel more technical than the actual user task. A person choosing the CLI path usually needs either the setup command they should run now or a short human sentence about the optional menubar app — not a raw env-var install incantation.
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `TMP_PREFIX=$(mktemp -d)`
+  3. `TMP_CACHE=$(mktemp -d)`
+  4. `TMP_HOME=$(mktemp -d)`
+  5. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+  6. Observe postinstall output:
+     - `Set up this device:`
+     - `  idlewatch quickstart`
+     - `Other install paths:`
+     - `  npx idlewatch quickstart --no-tui`
+     - `  IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch`
+- **Expected behavior:**
+  - Global npm postinstall should stay minimal and product-shaped in the moment immediately after install succeeds.
+  - The output should keep the main CLI next step obvious.
+  - Optional menubar guidance, if shown there at all, should read like a user-facing option rather than exposing an env-var-driven install toggle.
+- **Acceptance criteria:**
+  - Global npm postinstall no longer advertises `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch` as one of the main install-success lines.
+  - The install-success output keeps `idlewatch quickstart` as the obvious primary next step.
+  - If menubar guidance remains, it is reworded into a calmer user-facing path or moved out of the default postinstall success block.
+  - Regression coverage exists for postinstall output so this copy does not drift back.
+
+### Spot-check coverage for R247
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `uninstall-agent --help`
+- [x] `uninstall-agent` when nothing is installed
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] Global `npm install -g . --foreground-scripts` postinstall copy
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `node bin/idlewatch-agent.js --help`
+6. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+8. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+13. `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+14. `node bin/idlewatch-agent.js uninstall-agent --help`
+15. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+16. `npm exec --yes -- idlewatch --help`
+17. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+18. `TMP_PREFIX=$(mktemp -d)`
+19. `TMP_CACHE=$(mktemp -d)`
+20. `TMP_HOME=$(mktemp -d)`
+21. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+
+### Acceptance notes
+- Setup wizard, status, install-before-setup behavior, saved-config reconfigure, device-ID continuity, metric-toggle persistence, `--test-publish`, invalid cloud-key recovery, uninstall behavior, and `npm exec` durable-install guidance still feel coherent and low-friction.
+- The remaining seam is small and copy-only: global npm postinstall still exposes a developer-flavored menubar install toggle in a user-facing success moment.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R246 Status: COMPLETE ✅
 
