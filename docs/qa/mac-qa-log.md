@@ -2,6 +2,82 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R339 Status: COMPLETE ✅
+
+This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only keeping something if it still felt confusing, repetitive, visually noisy, or more technical than a normal setup/install user should have to parse.
+
+### Outcome
+- Targeted installer/CLI regression coverage still passes cleanly: **85 passed, 0 failed**.
+- Fresh runtime spot checks still read like one calm product across main `--help`, first-run `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-configure `status`, runtime `uninstall-agent`, clean-home `--test-publish`, and `npm exec --yes -- idlewatch --help`.
+- The requested polish lanes still hold up in the live checkout: setup wizard quality, saved-config persistence/reload wording, launch-agent install/uninstall behavior, explicit test-publish messaging, device identity continuity, metric-toggle persistence, and the npm/npx one-off-vs-durable-install split.
+- No new small, low-risk product-facing issue in the requested lane cleared the bar for a worthwhile change in this cycle.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** This surface is already on the right side of simple. Forcing another tweak here would be more likely to add noise than remove it.
+
+**Verified**
+- Main help still keeps the happy path short and scannable
+- First-run `status` still previews setup without implementation-detail sprawl
+- Install-before-setup still frames background mode as reversible and not yet running
+- `quickstart --no-tui` / `configure --no-tui` still keep the next step short and honest
+- Runtime `uninstall-agent` still stays calm about kept config/logs and the recovery command
+- `--test-publish` still stays short and explicit on the happy path
+- Saved device identity and metric selection still persist the way users expect
+- `npx` help still keeps one-off use explicit while reserving durable-install guidance for background mode
+
+### Spot-check coverage for R339
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-configure `status`
+- [x] Runtime `uninstall-agent` success output
+- [x] `--test-publish` in a clean HOME
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] Targeted `openclaw-env` regression subset
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+4. `TMPHOME=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install/uninstall commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+8. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+12. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+13. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+14. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help)'`
+
+### Acceptance notes
+- No confusing, repetitive, visually noisy, or unnecessarily technical new copy surfaced in this pass.
+- No auth, ingest, packaging, launch-agent, or telemetry-path redesign is justified by current evidence.
+- The main remaining seam in this cron lane is operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:31 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new worthwhile polish issue found in this pass
+
 ## Cycle R338 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and only shipped one wording fix that still cleared the bar in the installer/CLI polish lane.
