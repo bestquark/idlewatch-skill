@@ -1,8 +1,39 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:49 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R211 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 12:38 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R212 shipped one tiny background-mode wording alignment
+
+## Cycle R212 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure success-copy alignment only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Setup/reconfigure success no longer falls back to the older `Background agent ...` phrasing in the exact moments where the rest of the CLI already says `background mode`.
+- The two success-state labels now say:
+  - `Background mode: already running`
+  - `Background mode is already installed.`
+- This keeps first-run setup, saved-config reconfigure, and install-before-setup recovery reading like one calmer product without changing any behavior.
+- No auth, ingest, packaging, launch-agent behavior, or telemetry behavior was touched.
+
+### R212 implementation
+#### [x] L66 — setup/reconfigure success now says `background mode`, not `background agent`
+- Reworded the running-background summary label from `Background agent: already running` to `Background mode: already running`.
+- Reworded the installed-but-not-loaded summary line from `Background agent is already installed.` to `Background mode is already installed.`
+- Kept the actual next steps unchanged (`Apply changes`, `Start it`, `It will use the saved config`).
+- Added regression coverage for both the already-running reconfigure path and the installed-before-setup completion path.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart completion stays honest when a LaunchAgent was installed before setup|quickstart and configure keep one-off runs honest about background install under npm exec env|configure success says to refresh an already-running background agent'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- Setup/reconfigure success now matches the calmer `background mode` framing already used by help and status.
+- Saved-config handling, background install/reconfigure behavior, and the working telemetry path remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+---
 
 ## Cycle R211 Status: CLOSED ✅
 

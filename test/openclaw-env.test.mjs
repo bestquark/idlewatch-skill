@@ -1278,7 +1278,8 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Background agent is already installed\./)
+    assert.match(run.stdout, /Background mode is already installed\./)
+    assert.doesNotMatch(run.stdout, /Background agent is already installed\./)
     assert.match(run.stdout, /Start it: .*install-agent/)
     assert.match(run.stdout, /It will use the saved config\./)
     assert.doesNotMatch(run.stdout, /Background collection is not enabled yet\./)
@@ -1473,7 +1474,8 @@ exit 0
         })
 
         assert.equal(npxConfigureWithRunningAgent.status, 0, npxConfigureWithRunningAgent.stderr)
-        assert.match(npxConfigureWithRunningAgent.stdout, /Background agent:\s+already running/)
+        assert.match(npxConfigureWithRunningAgent.stdout, /Background mode:\s+already running/)
+        assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /Background agent:\s+already running/)
         assert.match(npxConfigureWithRunningAgent.stdout, /Apply changes:\s+re-run idlewatch install-agent to refresh it with the saved config/)
         assert.match(npxConfigureWithRunningAgent.stdout, /This npx run updated the saved config only\./)
         assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /refresh the background agent with the saved config/)
@@ -1742,7 +1744,8 @@ test('configure success says to refresh an already-running background agent', ()
 
     const launchAgentWasRunning = /Background:\s+LaunchAgent loaded/.test(postInstallStatus.stdout)
     if (launchAgentWasRunning) {
-      assert.match(configure.stdout, /Background agent:\s+already running/)
+      assert.match(configure.stdout, /Background mode:\s+already running/)
+      assert.doesNotMatch(configure.stdout, /Background agent:\s+already running/)
       assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
       assert.doesNotMatch(configure.stdout, /To keep it running:/)
     } else {
