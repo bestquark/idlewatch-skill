@@ -1,10 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:37 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R253 found one remaining external `npx` onboarding copy mismatch
+**Last updated:** Thursday, March 26th, 2026 — 5:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R254 closed the last external `npx` onboarding copy mismatch
 
-## Cycle R253 Status: OPEN ⚠️
+## Cycle R254 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny external onboarding copy alignment only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the remaining external onboarding seam.
+- `docs/onboarding-external.md` no longer leads the one-off path with the older bare `npx idlewatch quickstart` command.
+- The external quickstart path now matches the calmer copy-paste path already used across README, postinstall, QA guidance, and the CLI:
+  - `npx idlewatch quickstart --no-tui`
+- Tightened the surrounding line so it frames this as the simplest one-off setup path instead of making users infer whether TUI vs text setup is the intended default.
+- Kept install behavior, setup/reconfigure flow shape, saved-config handling, launch-agent behavior, and the working telemetry path unchanged.
+
+### R254 implementation
+#### [x] L84 — external onboarding now defaults to the calmer `npx idlewatch quickstart --no-tui` path
+- Reworded the one-off `npx` example in `docs/onboarding-external.md` to `npx idlewatch quickstart --no-tui`.
+- Shortened the follow-up sentence so it clearly frames this as the simplest one-off setup/foreground-test path.
+- Left durable install and packaged-app guidance unchanged.
+
+### Spot-check coverage for R254
+- [x] `docs/onboarding-external.md`
+- [x] Manual doc consistency check: `README.md` vs `docs/onboarding-external.md`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- External onboarding now tells the same one-off setup story as the rest of the product.
+- This is copy-only; setup behavior, saved config, launch-agent behavior, packaging behavior, and the working telemetry path remain unchanged.
+
+## Cycle R253 Status: COMPLETE ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 

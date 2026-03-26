@@ -10,10 +10,10 @@ Command rule of thumb:
 ### 1) npx quickstart (fastest)
 
 ```bash
-npx idlewatch quickstart
+npx idlewatch quickstart --no-tui
 ```
 
-Use this path for one-off setup and foreground testing.
+Use this path for the simplest one-off setup and foreground testing.
 
 `idlewatch` is the default package/command name. `idlewatch-skill` remains available as a compatibility alias, but it should not be the main path shown to new users.
 
