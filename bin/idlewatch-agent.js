@@ -1274,7 +1274,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     } else {
       console.log(`   Local logs stay in ${path.join(dataDir, 'logs')}`)
     }
-    console.log(`   Re-enable:  ${backgroundInstallCommandForInvocation(invocation)}`)
+    console.log(`   Turn it back on: ${backgroundInstallCommandForInvocation(invocation)}`)
     if (invocation.kind === 'npx') {
       console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
     }

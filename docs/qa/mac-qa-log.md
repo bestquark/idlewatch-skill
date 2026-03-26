@@ -1,8 +1,46 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 5:58 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R251 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 6:08 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R252 shipped one tiny uninstall off-ramp wording polish
+
+## Cycle R252 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall off-ramp wording cleanup only, with no setup-flow reshaping, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the reversible background-mode off-ramp.
+- CLI `uninstall-agent` success output no longer ends with the slightly more mechanical `Re-enable:` label.
+- Packaged `scripts/uninstall-macos-launch-agent.sh` success output now matches the same calmer product framing.
+- Both paths now say:
+  - `Turn it back on: ...`
+- This keeps the uninstall moment aligned with the already-polished `Background mode turned off.` wording and makes the next step feel a touch more human without changing behavior.
+
+### Prioritized findings
+
+#### [x] L72 — uninstall success now says `Turn it back on`, not `Re-enable`
+**Why it matters:** This is tiny, but it lands in a high-trust moment. The product already frames uninstall as reversible and non-destructive: background mode turned off, config kept, logs kept. Ending that same flow with `Re-enable:` nudged the tone back toward implementation language for no real gain.
+
+**Fix shipped:**
+- Reworded the final recovery hint in CLI `uninstall-agent` success output from `Re-enable:` to `Turn it back on:`.
+- Reworded the same recovery hint in `scripts/uninstall-macos-launch-agent.sh`.
+- Added/updated regression coverage for both paths.
+
+### Spot-check coverage for R252
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent removes plist and keeps config and local logs'`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent removes plist and keeps config and local logs'`
+3. `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Acceptance notes
+- Uninstall still stays clearly reversible and safe.
+- Saved-config retention wording is unchanged.
+- Log-retention wording is unchanged.
+- LaunchAgent install/uninstall behavior is unchanged.
+- Telemetry behavior and the working telemetry path remain unchanged.
 
 ## Cycle R251 Status: COMPLETE ✅
 

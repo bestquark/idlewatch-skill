@@ -77,6 +77,8 @@ exit 0
     assert.equal(uninstall.status, 0, uninstall.stderr)
     assert.match(uninstall.stdout, /✅ Background mode turned off\./)
     assert.match(uninstall.stdout, /Logs stay in /)
+    assert.match(uninstall.stdout, /Turn it back on: /)
+    assert.doesNotMatch(uninstall.stdout, /Re-enable: /)
     assert.doesNotMatch(uninstall.stdout, /LaunchAgent logs were kept/)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
