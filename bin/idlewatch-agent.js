@@ -1109,7 +1109,7 @@ Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     status: `${statusCommand} — Show device config and background mode state
 
 Usage:  ${statusCommand}
@@ -1117,7 +1117,7 @@ Usage:  ${statusCommand}
 Displays device config, publish mode, enabled metrics, last sample age,
 and background mode state.
 Config changes saved by quickstart/configure apply on the next start.
-If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
 Usage:  ${createCommand}
@@ -1147,7 +1147,7 @@ Re-opens setup to change device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
 Usage:  ${dashboardCommand}

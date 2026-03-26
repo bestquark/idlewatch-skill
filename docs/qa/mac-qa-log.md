@@ -1,8 +1,33 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:30 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R269 closed with no new product-facing polish regression
+**Last updated:** Thursday, March 26th, 2026 — 7:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R270 shipped one tiny help-copy polish fix
+
+## Cycle R270 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config refresh-copy polish fix only, with no setup-flow reshaping, no saved-config behavior changes, no startup/install behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in scan-first help text only.
+- `configure --help`, `reconfigure --help`, and `status --help` no longer say the slightly more toggle-ish `If background mode is already enabled...` in their saved-config refresh hint.
+- Those help paths now keep the same calmer product wording already used elsewhere in runtime/status output:
+  - `If background mode is already on, re-run ... install-agent to refresh it with the saved config.`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Outcome checklist
+- [x] `configure --help` now says `already on`
+- [x] `reconfigure --help` now says `already on`
+- [x] `status --help` now says `already on`
+- [x] Regression coverage updated for all three help surfaces
+
+### Spot-check coverage for R270
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status help keeps the calmer background-mode wording and saved-config refresh hint'`
+
+### Acceptance notes
+- This keeps the help surfaces a touch more consistent with the calmer `already on` background wording already used across recent status polish.
+- This is help-copy only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R269 Status: COMPLETE ✅
 

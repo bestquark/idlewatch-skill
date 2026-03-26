@@ -1027,7 +1027,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
-  assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.match(run.stdout, /If background mode is already on, re-run .* install-agent to refresh it with the saved config\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*configure \[--no-tui\]/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for plain-text prompts\./)
   assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
@@ -1046,7 +1046,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   })
 
   assert.equal(npxRun.status, 0, npxRun.stderr)
-  assert.match(npxRun.stdout, /If background mode is already enabled, re-run idlewatch install-agent to refresh it with the saved config\./)
+  assert.match(npxRun.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)
   assert.doesNotMatch(npxRun.stdout, /npx idlewatch install-agent/)
 })
 
@@ -1077,7 +1077,7 @@ test('status help keeps the calmer background-mode wording and saved-config refr
   assert.match(run.stdout, /status — Show device config and background mode state/)
   assert.match(run.stdout, /Displays device config, publish mode, enabled metrics, last sample age,\nand background mode state\./)
   assert.match(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)
-  assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.match(run.stdout, /If background mode is already on, re-run .* install-agent to refresh it with the saved config\./)
   assert.doesNotMatch(run.stdout, /background LaunchAgent state\./)
   assert.doesNotMatch(run.stdout, /If the background agent is already running, re-run .* install-agent to restart it\./)
 })
