@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:03 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R224 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 3:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R225 shipped one tiny uninstall no-op reassurance improvement
+
+## Cycle R225 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall no-op messaging improvement only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `uninstall-agent` no longer stops at the more mechanical `LaunchAgent is not installed. Nothing to remove.` line when background mode is already off.
+- In that no-op path, the CLI now keeps the same calmer retention/reassurance shape used by the normal uninstall path:
+  - `Background mode is already off.`
+  - `Saved config stays in ...`
+  - `Local logs stay in ...`
+- This removes one tiny trust wobble in a cautious cleanup moment by confirming that nothing was lost, not just that nothing happened.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R225 implementation
+#### [x] L70 — `uninstall-agent` now reassures about kept config/logs even when nothing is installed
+- Reworded the no-op uninstall path from `LaunchAgent is not installed. Nothing to remove.` to a calmer `Background mode is already off.`
+- Added the same saved-config and local-log retention lines used by the normal uninstall path.
+- Kept behavior unchanged: this is output polish only.
+- Added regression coverage for the clean-HOME no-op uninstall case.
+
+### Spot-check coverage for R225
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent when nothing is installed still reassures that config and logs are kept|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent runtime output names a custom retained local log path'`
+
+### Acceptance notes
+- `uninstall-agent` now keeps the reversible off-ramp calm and reassuring even when background mode was already off.
+- Saved-config handling, local-log handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R224 Status: CLOSED ✅
 

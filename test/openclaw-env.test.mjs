@@ -1030,6 +1030,30 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
   }
 })
 
+test('uninstall-agent when nothing is installed still reassures that config and logs are kept', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-not-installed-'))
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background mode is already off\./)
+    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
+    assert.doesNotMatch(run.stdout, /LaunchAgent is not installed\. Nothing to remove\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent runtime output names a custom retained local log path', () => {
   if (process.platform !== 'darwin') {
     return

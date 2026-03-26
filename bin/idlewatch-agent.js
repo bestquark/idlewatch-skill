@@ -1208,7 +1208,14 @@ const subcommandPromise = (async () => {
     const dataDir = idlewatchDataDir()
 
     if (!fs.existsSync(plistPath)) {
-      console.log('LaunchAgent is not installed. Nothing to remove.')
+      const localLogPath = resolvePersistedLocalLogPath()
+      console.log('Background mode is already off.')
+      console.log(`   Saved config stays in ${dataDir}`)
+      if (localLogPath) {
+        console.log(`   Local log stays at ${localLogPath}`)
+      } else {
+        console.log(`   Local logs stay in ${path.join(dataDir, 'logs')}`)
+      }
       process.exit(0)
     }
 
