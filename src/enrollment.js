@@ -56,6 +56,17 @@ const OPENCLAW_AGENT_TARGETS = ['agent_activity', 'token_usage', 'runtime_state'
 const PROVIDER_TARGETS = ['provider_quota']
 const OPENCLAW_DERIVED_TARGETS = [...OPENCLAW_AGENT_TARGETS]
 const MONITOR_TARGET_CHOICES = ['cpu', 'memory', 'gpu', 'temperature', 'openclaw', ...OPENCLAW_DERIVED_TARGETS, ...PROVIDER_TARGETS]
+const FRIENDLY_MONITOR_TARGET_LABELS = {
+  cpu: 'CPU',
+  memory: 'Memory',
+  gpu: 'GPU',
+  temperature: 'Temperature',
+  openclaw: 'OpenClaw',
+  agent_activity: 'OpenClaw activity',
+  token_usage: 'OpenClaw tokens',
+  runtime_state: 'OpenClaw runtime',
+  provider_quota: 'Provider quota'
+}
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = path.resolve(MODULE_DIR, '..')
 
@@ -110,6 +121,24 @@ function normalizeMonitorTargets(raw, available) {
   return [...new Set(parsed)]
 }
 
+function preferredMonitorTargetChoices(available) {
+  const preferred = [
+    'cpu',
+    'memory',
+    ...(available.includes('gpu') ? ['gpu'] : []),
+    ...(available.includes('temperature') ? ['temperature'] : []),
+    ...(OPENCLAW_DERIVED_TARGETS.some((target) => available.includes(target)) ? ['openclaw'] : []),
+    ...(available.includes('provider_quota') ? ['provider_quota'] : [])
+  ]
+
+  return [...new Set(preferred)]
+}
+
+function formatMonitorTargetChoice(choice) {
+  const label = FRIENDLY_MONITOR_TARGET_LABELS[choice] || choice
+  return label.toLowerCase() === choice.toLowerCase() ? choice : `${choice} (${label})`
+}
+
 function ensureMonitorTargetsOrThrow(raw, available) {
   const normalizedRaw = String(raw || '').trim()
   if (!normalizedRaw) return fallbackMonitorTargets(available)
@@ -127,7 +156,9 @@ function ensureMonitorTargetsOrThrow(raw, available) {
   if (parsed.length > 0) return [...new Set(parsed)]
 
   const invalidRequested = explicitlyRequested.filter((item) => !MONITOR_TARGET_CHOICES.includes(item))
-  const availableList = available.join(', ')
+  const availableList = preferredMonitorTargetChoices(available)
+    .map((item) => formatMonitorTargetChoice(item))
+    .join(', ')
   const invalidHint = invalidRequested.length > 0
     ? ` Unknown: ${invalidRequested.join(', ')}.`
     : ''
@@ -481,15 +512,10 @@ export async function runEnrollmentWizard(options = {}) {
   }
 
   if (!nonInteractive && rl) {
-    const friendlyTargetLabels = {
-      cpu: 'CPU', memory: 'Memory', gpu: 'GPU', temperature: 'Temperature',
-      agent_activity: 'OpenClaw activity', token_usage: 'OpenClaw tokens',
-      runtime_state: 'OpenClaw runtime', provider_quota: 'Provider quota'
-    }
-    const friendlyAvailable = availableMonitorTargets.map(t => friendlyTargetLabels[t] || t)
+    const friendlyAvailable = availableMonitorTargets.map(t => FRIENDLY_MONITOR_TARGET_LABELS[t] || t)
     console.log(`\nAvailable metrics: ${friendlyAvailable.join(', ')}`)
     const suggested = monitorTargets.join(',')
-    const friendlySuggested = monitorTargets.map(t => friendlyTargetLabels[t] || t).join(', ')
+    const friendlySuggested = monitorTargets.map(t => FRIENDLY_MONITOR_TARGET_LABELS[t] || t).join(', ')
     console.log(`Selected: ${friendlySuggested}`)
     const monitorInput = (await questionOrCancel(rl, `Metrics [${suggested}]: `)).trim()
     monitorTargets = ensureMonitorTargetsOrThrow(monitorInput || suggested, availableMonitorTargets)

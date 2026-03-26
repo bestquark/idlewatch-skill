@@ -1317,6 +1317,9 @@ test('quickstart rejects a fully invalid metric selection with a clear validatio
     assert.match(run.stderr, /No valid metrics were selected\./)
     assert.match(run.stderr, /Unknown: wat, not-real\./)
     assert.match(run.stderr, /Choose one or more of:/)
+    assert.match(run.stderr, /cpu, memory/)
+    assert.match(run.stderr, /openclaw/)
+    assert.doesNotMatch(run.stderr, /agent_activity|token_usage|runtime_state/)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })

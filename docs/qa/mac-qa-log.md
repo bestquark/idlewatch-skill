@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:24 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R186 found no new user-facing polish issue worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 10:47 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R187 shipped one tiny setup-validation wording cleanup
+
+---
+
+## Cycle R187 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup-validation wording cleanup only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Fully invalid non-interactive metric selection errors no longer dump the OpenClaw derived metric internals (`agent_activity`, `token_usage`, `runtime_state`) in the main recovery hint.
+- The setup-time validation message now keeps the suggested choices calmer and more product-shaped:
+  - `cpu, memory, gpu, temperature, openclaw`
+  - plus `provider_quota (Provider quota)` when that optional metric is available
+- This keeps a headless setup/reconfigure failure a little easier to scan and copy-fix without changing what the CLI actually accepts.
+
+### R187 implementation
+#### [x] L56 — invalid metric selection errors now suggest calmer user-facing metric choices
+- Kept support for the existing input tokens, including the lower-level OpenClaw-derived metric names.
+- Changed the recovery hint to prefer the shorter user-facing choice list instead of exposing the derived internals by default.
+- Reused the shared metric label mapping so setup copy stays more consistent.
+- Added regression coverage to keep the validation output free of the derived OpenClaw metric names.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart rejects a fully invalid metric selection with a clear validation error'`
+- [x] `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='bogus' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is small, but it lands in a real setup/recovery moment. When someone pastes `IDLEWATCH_ENROLL_MONITOR_TARGETS` wrong in a shell, cron job, or SSH session, the fix hint should read like the product, not like the internal metric expansion logic.
 
 ---
 
