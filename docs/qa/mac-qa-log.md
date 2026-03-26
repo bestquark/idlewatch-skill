@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:02 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R188 found no new polish issue worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 10:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R189 shipped one tiny setup-completion wording cleanup
+
+---
+
+## Cycle R189 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup-completion wording cleanup only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Fresh local-only setup completion no longer labels background mode as `(recommended)`.
+- The next-step now simply says:
+  - `Auto-start in background`
+- This keeps the post-setup path a little calmer and more consistent with the rest of the polished CLI, which has already been trimming avoidable recommendation framing in careful setup moments.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R189 implementation
+#### [x] L57 — local-only setup completion no longer frames background auto-start as recommended
+- Reworded the normal post-setup background hint from `Auto-start in background (recommended)` to `Auto-start in background`.
+- Kept the underlying flow unchanged: foreground use is still available immediately, and background mode is still one command away.
+- Added regression coverage so the calmer setup-completion wording sticks.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart success summarizes setup verification instead of dumping raw telemetry JSON'`
+- [x] `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Metric Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it lands right after setup succeeds. The command itself is useful, but the extra `(recommended)` label was doing more nudging than helping. The calmer version keeps the flow copy-pasteable and obvious without sounding pushy.
 
 ---
 

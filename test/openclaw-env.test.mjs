@@ -530,6 +530,8 @@ test('quickstart success summarizes setup verification instead of dumping raw te
   assert.doesNotMatch(run.stdout, /⚠️ Sample collected/)
   assert.match(run.stdout, /✅ Setup complete/)
   assert.match(run.stdout, /Local telemetry verified/)
+  assert.match(run.stdout, /For background mode:\n\s+.*install-agent\s+Auto-start in background/)
+  assert.doesNotMatch(run.stdout, /Auto-start in background \(recommended\)/)
   assert.doesNotMatch(run.stdout, /"schemaFamily":"idlewatch\.openclaw\.fleet"/)
   assert.doesNotMatch(run.stdout, /"usageProbeSweeps":/)
 })

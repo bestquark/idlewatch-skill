@@ -221,7 +221,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   console.log('\n   Use it now:')
   console.log(`     ${runCommand}   Run in foreground`)
   console.log('\n   For background mode:')
-  console.log(`     ${installAgentCommand}   Auto-start in background (recommended)`)
+  console.log(`     ${installAgentCommand}   Auto-start in background`)
 }
 
 function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alreadyLoaded }) {
