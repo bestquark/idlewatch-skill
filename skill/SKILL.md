@@ -1,29 +1,45 @@
 ---
 name: idlewatch
-description: Collect host CPU/memory/GPU and token telemetry and stream to Firebase Firestore.
+description: Collect host CPU/memory/GPU and optional OpenClaw usage telemetry, keep a local log, and optionally publish to IdleWatch cloud.
 ---
 
 # IdleWatch Skill
 
-Install (npm package):
+## Try it once
 
 ```bash
-npx idlewatch-skill --help
+npx idlewatch quickstart
 ```
 
-Run collector:
+Use `npx` for one-off setup, foreground testing, or a quick local-only run.
+
+## Install it
 
 ```bash
-idlewatch-agent
+npm install -g idlewatch
 ```
 
-Dry-run once (no Firestore write):
+## Common commands
 
 ```bash
-idlewatch-agent --dry-run
+idlewatch quickstart      # guided setup
+idlewatch --once          # one-shot publish check
+idlewatch --test-publish  # alias for --once
+idlewatch --dry-run       # preview metrics without publishing
+idlewatch run             # continuous foreground collection
+idlewatch install-agent   # enable background mode on macOS
 ```
 
-Environment:
+`idlewatch` is the main command. `idlewatch-agent` is still available as a compatibility alias.
+
+## Setup notes
+
+- Setup saves config to `~/.idlewatch/idlewatch.env`
+- Local-only mode works without any cloud key
+- Cloud publishing is optional
+- If you change settings later, saved changes apply on the next start
+
+## Environment
 
 - `IDLEWATCH_HOST` optional custom host label
 - `IDLEWATCH_INTERVAL_MS` sampling interval (default 10000)
@@ -33,7 +49,7 @@ Environment:
 - `FIREBASE_SERVICE_ACCOUNT_JSON` (preferred)
 - `FIREBASE_SERVICE_ACCOUNT_B64` (legacy)
 
-Output fields:
+## Output fields
 
 - `cpuPct`
 - `memPct`

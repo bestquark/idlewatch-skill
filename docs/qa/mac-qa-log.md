@@ -1,8 +1,48 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:58 PM (America/Toronto)  
-**Status:** OPEN ⚠️ - R169 found one docs-path clarity issue worth fixing
+**Last updated:** Wednesday, March 25th, 2026 — 9:20 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R170 shipped the one open docs-path polish fix
+
+---
+
+## Cycle R170 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one copy-only docs-path polish fix in `skill/SKILL.md`, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `skill/SKILL.md` now matches the current package/help path instead of advertising the stale `idlewatch-skill` package name.
+- The skill doc now tells the same calmer story as the CLI and README: `npx idlewatch ...` for one-off use, `npm install -g idlewatch` for durable install, `idlewatch install-agent` for macOS background mode, and local-first setup with optional cloud publishing.
+- `idlewatch-agent` is still mentioned only as a compatibility alias.
+- No auth, ingest, packaging, or background-agent redesign was needed.
+
+### R170 spot-check coverage
+- [x] `sed -n '1,120p' skill/SKILL.md`
+- [x] `sed -n '1,80p' README.md`
+- [x] `cat package.json | sed -n '1,80p'`
+- [x] Prior R169 runtime/path validation remains applicable
+
+### Prioritized findings
+
+#### [x] M8 — `skill/SKILL.md` now matches the current install/run path and local-first product story
+**Why it matters:** This was the only open seam from R169. The stale skill doc quietly reintroduced install-path confusion and a more technical Firestore-first framing in a repo whose actual product path had already been polished.
+
+**What shipped**
+- Replaced `npx idlewatch-skill --help` with `npx idlewatch quickstart`.
+- Added the durable install path: `npm install -g idlewatch`.
+- Promoted `idlewatch` as the primary command and kept `idlewatch-agent` as a compatibility alias only.
+- Replaced Firestore-first copy with a shorter local-first / optional cloud-publishing description.
+- Kept the doc short, copy-paste correct, and aligned with `README.md` and runtime help.
+
+### Acceptance notes
+- Main help, README install guidance, `npx` refusal for background mode, install-before-setup behavior, rename continuity, and metric persistence still look good from this lane.
+- This fix is docs/copy only; runtime behavior and the working telemetry path remain untouched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Notes
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
