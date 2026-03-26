@@ -1010,7 +1010,7 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 
 Usage:  ${uninstallAgentCommand}
 
-Stops and removes the LaunchAgent for background mode.
+Disables background mode on macOS.
 Saved config stays in ~/.idlewatch.
 Local logs stay where they're already being written, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app

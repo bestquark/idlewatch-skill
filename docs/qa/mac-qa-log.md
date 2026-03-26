@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 2:20 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R222 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 2:39 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R223 shipped one tiny uninstall-help wording cleanup
+
+## Cycle R223 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `uninstall-agent --help` wording alignment only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `uninstall-agent --help` no longer opens with the more implementation-first `Stops and removes the LaunchAgent...` line.
+- The help now says:
+  - `Disables background mode on macOS.`
+- This keeps uninstall help aligned with the calmer product framing already used by `install-agent --help`, main help, and the rest of the setup/reconfigure flow.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R223 implementation
+#### [x] L69 — `uninstall-agent --help` body now leads with background-mode wording instead of LaunchAgent wording
+- Reworded the first `uninstall-agent --help` body line from `Stops and removes the LaunchAgent for background mode.` to `Disables background mode on macOS.`
+- Kept the retention/reversibility lines unchanged.
+- Added regression coverage so the calmer wording sticks and the older implementation-first phrase does not drift back.
+
+### Spot-check coverage for R223
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent help reassures that config and logs are kept'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- `uninstall-agent --help` still keeps config retention and local-log retention clear without overpromising a single path.
+- This is output polish only; uninstall behavior, saved-config handling, and the working telemetry path remain unchanged.
 
 ## Cycle R222 Status: CLOSED ✅
 

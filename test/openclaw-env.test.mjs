@@ -989,7 +989,8 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /uninstall-agent — Disable background mode \(macOS\)/)
-  assert.match(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
+  assert.match(run.stdout, /Disables background mode on macOS\./)
+  assert.doesNotMatch(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
   assert.match(run.stdout, /Saved config stays in ~\/\.idlewatch\./)
   assert.match(run.stdout, /Local logs stay where they're already being written, so you can re-enable background mode later\./)
   assert.doesNotMatch(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch/)
