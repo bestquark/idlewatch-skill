@@ -1,8 +1,51 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:20 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R176 shipped one tiny help-copy simplification
+**Last updated:** Wednesday, March 25th, 2026 — 9:33 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R177 spot-check found no new product-facing polish issue
+
+---
+
+## Cycle R177 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
+- The current CLI still reads like one calm product across first-run setup, reconfigure, status, and durable-install guidance.
+- Device-name rename continuity still preserves the original device ID cleanly.
+- Metric persistence and saved-config reuse still behaved predictably in the spot-check flows run this cycle.
+- The only mismatch found was outside the product itself: the cron payload still referenced `~/.openclaw/workspace/idlewatch-skill`, while the active repo for this pass was under `~/.openclaw/workspace.bak/idlewatch-skill`.
+
+### R177 spot-check coverage
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename with saved device-ID continuity
+- [x] `install-agent` before setup in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] README install-path wording review
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMP_HOME=$(mktemp -d)`
+3. `HOME="$TMP_HOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Studio Mac' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+4. `HOME="$TMP_HOME" node bin/idlewatch-agent.js status`
+5. `HOME="$TMP_HOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Studio Mac Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' node bin/idlewatch-agent.js configure --no-tui`
+6. `HOME="$TMP_HOME" node bin/idlewatch-agent.js status`
+7. `TMP_HOME2=$(mktemp -d) && HOME="$TMP_HOME2" node bin/idlewatch-agent.js install-agent`
+8. `TMP_HOME3=$(mktemp -d) && HOME="$TMP_HOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+9. `sed -n '1,80p' README.md`
+
+### Acceptance notes
+- Local-only setup still completes in a low-noise way, immediately verifies telemetry, and points to clear next steps.
+- Reconfigure still preserves the original device ID when the visible device name changes.
+- `status` still surfaces the saved config, enabled metrics, local log path, sample freshness, and background-mode hint clearly.
+- `install-agent` before setup still behaves safely and calmly: it installs the LaunchAgent but keeps background mode off until setup exists.
+- Invalid cloud-key setup still fails with a short, actionable message that tells the user exactly what to fix.
+- The stale cron payload path remains external to the product itself.
 
 ---
 
