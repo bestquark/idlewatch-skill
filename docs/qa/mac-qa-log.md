@@ -2,6 +2,55 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R326 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and honest: the top remaining runtime uninstall seam from older open notes was re-checked in the live checkout and is already fixed, so no product code change was needed.
+
+### Outcome
+- Re-ran the highest-priority still-open tiny polish item from the QA log against the live checkout.
+- Confirmed successful runtime `uninstall-agent` output already keeps the calmer recovery hint:
+  - `Turn it back on: idlewatch install-agent`
+- Confirmed the targeted regression coverage for that copy seam already exists and still matches the shipped behavior.
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, launch-agent behavior, and the working telemetry path unchanged.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No new small, low-risk implementation fix was still needed in this cycle.
+
+### Spot-check coverage for R326
+- [x] Runtime `uninstall-agent` success output keeps `Turn it back on: idlewatch install-agent`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output names a custom retained local log path'`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves launchd unloaded while allowing install/uninstall succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+8. Confirm the final recovery hint stays on:
+   - `Turn it back on: idlewatch install-agent`
+
+### Acceptance notes
+- The highest-priority tiny uninstall off-ramp seam named in older open notes is already closed in the live checkout.
+- No auth, ingest, packaging, launch-agent, or telemetry-path change was required in this cycle.
+
 ## Cycle R325 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and low-risk: one runtime uninstall off-ramp copy polish fix only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
