@@ -1695,17 +1695,17 @@ if (statusRequested) {
   if (process.platform === 'darwin') {
     const launchAgent = probeOwnedLaunchAgentState()
     if (launchAgent.state === 'running') {
-      console.log(`  Background:   LaunchAgent loaded (running, pid ${launchAgent.pid})`)
+      console.log(`  Background:   running in background (pid ${launchAgent.pid})`)
     } else if (launchAgent.state === 'loaded') {
-      console.log('  Background:   LaunchAgent loaded (idle)')
+      console.log('  Background:   enabled (idle)')
     } else if (launchAgent.state === 'installed-not-loaded') {
       if (hasConfig) {
-        console.log('  Background:   LaunchAgent installed but not loaded')
+        console.log('  Background:   installed but not running')
       } else {
-        console.log('  Background:   LaunchAgent installed — waiting for setup')
+        console.log('  Background:   waiting for setup')
       }
     } else {
-      console.log('  Background:   LaunchAgent not installed')
+      console.log('  Background:   off')
     }
   }
 

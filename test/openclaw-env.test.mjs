@@ -1191,7 +1191,7 @@ test('status stays honest after install-agent without saved config', () => {
     assert.match(status.stdout, /Local log preview:\s+.*\.idlewatch\/logs\//)
     assert.doesNotMatch(status.stdout, /\n\s*Local log:\s+/)
     assert.match(status.stdout, /Config:\s+.*\.idlewatch\/idlewatch\.env \(not saved yet\)/)
-    assert.match(status.stdout, /Background:\s+LaunchAgent installed — waiting for setup/)
+    assert.match(status.stdout, /Background:\s+waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
@@ -2015,7 +2015,7 @@ test('configure success says to refresh an already-running background agent', ()
     assert.match(configure.stdout, /✅ Settings saved for "QA Box"\./)
     assert.doesNotMatch(configure.stdout, /✅ Setup complete — "QA Box" is live!/)
 
-    const launchAgentWasRunning = /Background:\s+LaunchAgent loaded/.test(postInstallStatus.stdout)
+    const launchAgentWasRunning = /Background:\s+running in background|Background:\s+enabled \(idle\)/.test(postInstallStatus.stdout)
     if (launchAgentWasRunning) {
       assert.match(configure.stdout, /Background mode:\s+already running/)
       assert.doesNotMatch(configure.stdout, /Background agent:\s+already running/)
@@ -2160,7 +2160,7 @@ exit 0
         })
 
         assert.equal(withInstalledAgent.status, 0, withInstalledAgent.stderr)
-        assert.match(withInstalledAgent.stdout, /Background:\s+LaunchAgent installed but not loaded/)
+        assert.match(withInstalledAgent.stdout, /Background:\s+installed but not running/)
         assert.match(withInstalledAgent.stdout, /Start:\s+idlewatch install-agent/)
         assert.doesNotMatch(withInstalledAgent.stdout, /Re-enable:\s+idlewatch install-agent/)
         assert.doesNotMatch(withInstalledAgent.stdout, /Install once:\s+npm install -g idlewatch/)
@@ -2386,7 +2386,7 @@ exit 0
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.ok(run.stdout.includes('Background:   LaunchAgent loaded (running, pid 4242)'), 'should report the running launch agent state')
+    assert.ok(run.stdout.includes('Background:   running in background (pid 4242)'), 'should report the running background state')
     assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the running-agent apply hint aligned with saved-config wording')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
   } finally {
@@ -2428,7 +2428,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('(none yet)'), 'should still show no samples yet')
-    assert.ok(run.stdout.includes('Background:   LaunchAgent installed but not loaded'), 'should report the installed-not-loaded state')
+    assert.ok(run.stdout.includes('Background:   installed but not running'), 'should report the installed-not-loaded state')
     assert.ok(run.stdout.includes(`Start:    ${SOURCE_CMD} install-agent`), 'should suggest starting the saved background agent')
     assert.ok(!run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh enable')
     assert.ok(!run.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not look like a first-time install path')

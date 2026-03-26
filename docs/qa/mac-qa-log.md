@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:20 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R241 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 4:25 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R242 shipped one tiny status-copy polish fix
+
+## Cycle R242 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `status` wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `status` no longer leads its background-state line with raw `LaunchAgent ...` wording.
+- The macOS status line now stays calmer and more product-shaped in the most common scan-first moments:
+  - `Background:   off`
+  - `Background:   waiting for setup`
+  - `Background:   installed but not running`
+  - `Background:   running in background (pid ...)`
+- Kept the actual launch-agent behavior, setup/reconfigure flow, saved-config handling, and working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R242 implementation
+#### [x] L78 — `status` background-state copy now says the product state directly instead of surfacing `LaunchAgent` internals
+- Reworded the macOS `status` line for all four common states: off, waiting for setup, installed-not-running, and running.
+- Kept the existing status next-step hints unchanged.
+- Added regression coverage so the calmer status wording sticks across clean-home, installed-before-setup, installed-not-loaded, and running paths.
+
+### Spot-check coverage for R242
+- [x] Clean-home `status`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status stays honest after install-agent without saved config|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded|status command keeps running-agent apply hint aligned with saved-config wording'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- `status` now reads more like the product in the exact moment users are checking whether background mode is off, waiting, installed, or already running.
+- Setup/reconfigure flow, launch-agent behavior, saved-config handling, and the working telemetry path remain unchanged.
 
 ## Cycle R241 Status: CLOSED ✅
 
