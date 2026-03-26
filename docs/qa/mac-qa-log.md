@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:31 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R238 shipped the durable LaunchAgent target-path polish fix
+**Last updated:** Thursday, March 26th, 2026 — 4:05 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R239 tightened uninstall saved-config clarity
+
+## Cycle R239 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config retention clarity fix only, with no setup-flow changes, no auth/ingest changes, no packaging rewrite, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the uninstall/off-ramp path.
+- `uninstall-agent` help and runtime output now point to the exact saved config file path (`~/.idlewatch/idlewatch.env`) instead of the broader `~/.idlewatch` directory.
+- That keeps the reversible background-mode off-ramp a little clearer in the exact moment people are checking what stays on disk.
+- Updated the packaged macOS uninstall script to keep the same exact-path wording.
+- Local-log retention wording stayed intact, uninstall behavior stayed intact, and the telemetry path stayed untouched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R239 implementation
+#### [x] L77 — uninstall messaging now names the exact retained config file path
+- Reworded `uninstall-agent --help` from `Saved config stays in ~/.idlewatch.` to `Saved config stays at ~/.idlewatch/idlewatch.env when setup has been saved.`
+- Reworded both `uninstall-agent` runtime paths (normal uninstall and already-off no-op) to print the exact retained config file path.
+- Reworded the packaged macOS uninstall script to keep the same exact-path wording.
+- Added regression coverage so uninstall help/runtime output stays on the clearer saved-config path wording.
+
+### Spot-check coverage for R239
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent help reassures that config and logs are kept|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent when nothing is installed still reassures that config and logs are kept|uninstall-agent runtime output names a custom retained local log path'`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" bash scripts/uninstall-macos-launch-agent.sh`
+
+### Acceptance notes
+- The uninstall/re-enable off-ramp now says exactly which saved config file stays behind instead of making users infer it from the parent directory.
+- Uninstall behavior, local-log retention, setup/reconfigure flows, LaunchAgent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R238 Status: CLOSED ✅
 

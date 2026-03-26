@@ -1046,7 +1046,7 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 Usage:  ${uninstallAgentCommand}
 
 Disables background mode on macOS.
-Saved config stays in ~/.idlewatch.
+Saved config stays at ~/.idlewatch/idlewatch.env when setup has been saved.
 Local logs stay where they're already being written, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 
@@ -1243,11 +1243,12 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     const plistPath = path.join(os.homedir(), 'Library', 'LaunchAgents', `${svcLabel}.plist`)
     const uid = process.getuid?.() ?? ''
     const dataDir = idlewatchDataDir()
+    const envFile = defaultPersistedEnvFilePath()
 
     if (!fs.existsSync(plistPath)) {
       const localLogPath = resolvePersistedLocalLogPath()
       console.log('Background mode is already off.')
-      console.log(`   Saved config stays in ${dataDir}`)
+      console.log(`   Saved config stays at ${envFile}`)
       if (localLogPath) {
         console.log(`   Local log stays at ${localLogPath}`)
       } else {
@@ -1267,7 +1268,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     const invocation = detectCliInvocation()
     const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ Background mode turned off.')
-    console.log(`   Saved config stays in ${dataDir}`)
+    console.log(`   Saved config stays at ${envFile}`)
     if (localLogPath) {
       console.log(`   Local log stays at ${localLogPath}`)
     } else {

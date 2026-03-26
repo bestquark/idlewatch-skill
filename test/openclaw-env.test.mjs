@@ -991,7 +991,7 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   assert.match(run.stdout, /uninstall-agent — Disable background mode \(macOS\)/)
   assert.match(run.stdout, /Disables background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
-  assert.match(run.stdout, /Saved config stays in ~\/\.idlewatch\./)
+  assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)
   assert.match(run.stdout, /Local logs stay where they're already being written, so you can re-enable background mode later\./)
   assert.doesNotMatch(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch/)
   assert.doesNotMatch(run.stdout, /Remove background LaunchAgent \(macOS\)/)
@@ -1021,7 +1021,7 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background mode turned off\./)
     assert.doesNotMatch(run.stdout, /LaunchAgent removed — background collection stopped\./)
-    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.match(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
     assert.match(run.stdout, /Re-enable:\s+.*install-agent/)
     assert.doesNotMatch(run.stdout, /Saved config and local logs stay in/)
@@ -1047,7 +1047,7 @@ test('uninstall-agent when nothing is installed still reassures that config and 
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background mode is already off\./)
-    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.match(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
     assert.doesNotMatch(run.stdout, /LaunchAgent is not installed\. Nothing to remove\./)
   } finally {
@@ -1084,7 +1084,7 @@ test('uninstall-agent runtime output names a custom retained local log path', ()
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.match(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.ok(run.stdout.includes(`Local log stays at ${customLogPath}`), 'should show the retained custom local log path')
     assert.doesNotMatch(run.stdout, /Saved config and local logs stay in .*\.idlewatch/)
   } finally {
