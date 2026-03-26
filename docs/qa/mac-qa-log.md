@@ -1,5 +1,44 @@
 # IdleWatch Installer QA Log
 
+## Cycle R112 Status: CLOSED
+
+This pass stayed intentionally tiny: one setup-validation / saved-config wording cleanup only, with no behavior changes.
+
+### Outcome
+- Validation errors now use the calmer product wording users already see elsewhere in setup.
+- Local-only saved config comments no longer surface the implementation-first `Firebase` detail.
+- Setup behavior, saved-config handling, LaunchAgent behavior, and the working telemetry path were left untouched.
+
+### R112 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'invalid enrollment mode|missing an API key|saved device id stable'`
+
+### Prioritized findings
+
+#### [x] L22 — setup validation now says `local-only` where the product means `local-only`
+**Why it matters:** This was tiny, but it landed in exactly the moments where people pause after a failed scripted setup or while hand-checking the saved config. The product already frames the non-cloud path as `local-only`; a couple of remaining strings still fell back to the more implementation-ish `local mode` / `cloud/Firebase writes` wording.
+
+**What shipped**
+- Reworded the missing-cloud-key validation from:
+  - `Set IDLEWATCH_CLOUD_API_KEY or use local mode.`
+- To:
+  - `Set IDLEWATCH_CLOUD_API_KEY or switch to local-only mode.`
+- Reworded the invalid-mode hint from:
+  - `Choose "production" (cloud) or "local".`
+- To:
+  - `Choose "production" (cloud) or "local" (local-only).`
+- Reworded the saved env comment in both the JS and Rust/TUI setup paths from:
+  - `# Local-only mode (no cloud/Firebase writes).`
+- To:
+  - `# Local-only mode (no cloud writes).`
+
+### Acceptance notes
+- [x] Missing-key recovery is a little clearer in non-interactive setup.
+- [x] Invalid-mode recovery still names the real env value while mapping it to the product wording.
+- [x] Saved config comments stay accurate without surfacing backend implementation detail.
+- [x] No auth/ingest redesign, packaging changes, LaunchAgent changes, or telemetry-path changes.
+
+---
+
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 **Last updated:** Thursday, March 26th, 2026 — 12:14 AM (America/Toronto)  
 **Status:** COMPLETE ✅ - R206 found no new product-facing polish issue worth opening

@@ -1354,7 +1354,7 @@ test('quickstart names the valid enrollment modes when non-interactive mode is i
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Invalid enrollment mode: cloudy\./)
-    assert.match(run.stderr, /Choose "production" \(cloud\) or "local"\./)
+    assert.match(run.stderr, /Choose "production" \(cloud\) or "local" \(local-only\)\./)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
@@ -1380,7 +1380,7 @@ test('quickstart gives a calmer non-interactive error when cloud mode is missing
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Cloud mode needs an API key\./)
-    assert.match(run.stderr, /Set IDLEWATCH_CLOUD_API_KEY or use local mode\./)
+    assert.match(run.stderr, /Set IDLEWATCH_CLOUD_API_KEY or switch to local-only mode\./)
     assert.doesNotMatch(run.stderr, /Missing cloud API key/)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {
@@ -1633,6 +1633,7 @@ test('configure keeps the saved device id stable when renaming the device', () =
     assert.equal(quickstart.status, 0, quickstart.stderr)
 
     const initialEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(initialEnv, /# Local-only mode \(no cloud writes\)\./)
     assert.match(initialEnv, /IDLEWATCH_DEVICE_NAME=QA Box/)
     assert.match(initialEnv, /IDLEWATCH_DEVICE_ID=qa-box/)
 

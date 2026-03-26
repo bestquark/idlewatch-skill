@@ -748,7 +748,7 @@ fn main() -> Result<()> {
     ];
 
     if mode == "local" {
-        env_lines.push("# Local-only mode (no cloud/Firebase writes).".to_string());
+        env_lines.push("# Local-only mode (no cloud writes).".to_string());
     }
 
     if mode == "production" {

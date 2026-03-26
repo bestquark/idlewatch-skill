@@ -462,7 +462,7 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (!mode) mode = 'production'
   if (!['production', 'local'].includes(mode)) {
-    throw new Error(`Invalid enrollment mode: ${mode}. Choose "production" (cloud) or "local".`)
+    throw new Error(`Invalid enrollment mode: ${mode}. Choose "production" (cloud) or "local" (local-only).`)
   }
 
   if ((mode === 'production') && !cloudApiKey) {
@@ -487,7 +487,7 @@ export async function runEnrollmentWizard(options = {}) {
     }
 
     if (!cloudApiKey) {
-      if (!rl) throw new Error('Cloud mode needs an API key. Set IDLEWATCH_CLOUD_API_KEY or use local mode.')
+      if (!rl) throw new Error('Cloud mode needs an API key. Set IDLEWATCH_CLOUD_API_KEY or switch to local-only mode.')
       console.log('\nPaste the API key from idlewatch.com/api.')
       for (let attempt = 0; attempt < 3; attempt++) {
         cloudApiKey = normalizeCloudApiKey(await questionOrCancel(rl, 'Cloud API key: '))
@@ -547,7 +547,7 @@ export async function runEnrollmentWizard(options = {}) {
   ]
 
   if (mode === 'local') {
-    envLines.push('# Local-only mode (no cloud/Firebase writes).')
+    envLines.push('# Local-only mode (no cloud writes).')
   }
 
   if (mode === 'production') {
