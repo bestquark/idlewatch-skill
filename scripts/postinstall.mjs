@@ -19,7 +19,7 @@ try {
 
 console.log('')
 console.log('  Set up this device:')
-console.log('    idlewatch quickstart')
+console.log('    idlewatch quickstart --no-tui')
 console.log('')
 console.log('  Other install paths:')
 console.log('    npx idlewatch quickstart --no-tui')

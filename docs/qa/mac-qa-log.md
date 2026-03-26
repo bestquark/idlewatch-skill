@@ -2,6 +2,44 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R349 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one remaining install-surface wording consistency fix that still cleared the bar in the requested lane.
+
+### Outcome
+- Found one last small setup-command seam in the npm/global install postinstall handoff: it still said `idlewatch quickstart`, even though the rest of the product already converged on the calmer text-prompt setup path `idlewatch quickstart --no-tui`.
+- Updated the postinstall hint to `idlewatch quickstart --no-tui` so fresh installs keep the same low-friction setup story as main help, status, README, and the surrounding installer surfaces.
+- Added tighter regression coverage so the postinstall hint does not drift back to the more ambiguous bare `quickstart` wording.
+- Kept runtime behavior unchanged: this is install-surface copy polish only.
+- Preserved the now-working telemetry path.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L59 — npm/global install postinstall now keeps the calmer `idlewatch quickstart --no-tui` setup hint
+**Why it mattered:** This lands in a first-run install moment where people just want the cleanest next command. Bare `quickstart` was understandable, but the rest of the product already made the simpler preferred path clear. Tightening this keeps setup copy-pasteable and consistent without adding theory or changing behavior.
+
+**What shipped**
+- Updated `scripts/postinstall.mjs` from `idlewatch quickstart` to `idlewatch quickstart --no-tui`
+- Tightened `test/postinstall.test.mjs` so the install hint stays on the `--no-tui` path and does not drift back to the bare command
+- Kept all install/setup behavior unchanged
+
+### Spot-check coverage for R349
+- [x] `scripts/postinstall.mjs` output
+- [x] `test/postinstall.test.mjs`
+- [x] Postinstall setup hint now says `idlewatch quickstart --no-tui`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node scripts/postinstall.mjs`
+3. `node --test test/postinstall.test.mjs`
+
+### Acceptance notes
+- Fresh installs now keep the same calmer `--no-tui` setup handoff already used by nearby setup/help surfaces.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, startup/install behavior, and the working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 4:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny postinstall setup-hint seam fixed in this pass
+
 ## Cycle R348 Status: COMPLETE ✅
 
 This pass re-ran the exact installer/CLI polish lane from the current live checkout and stayed strict about not manufacturing another copy tweak just because the cron fired.
