@@ -1,8 +1,51 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:10 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R214 shipped install-path polish fixes
+**Last updated:** Thursday, March 26th, 2026 — 1:24 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - R215 found a small test-publish recovery-copy regression
+
+## Cycle R215 Status: OPEN ⚠️
+
+This pass stayed narrow and product-facing. Most of the setup/install flow still feels clean, but one small CLI-path polish issue is still user-visible and worth fixing before calling installer UX fully done.
+
+### Outcome
+- Main help, postinstall guidance, install-agent behavior, uninstall behavior, config persistence/reload, device identity persistence, and metric-toggle persistence still read clean.
+- `quickstart --no-tui` still fails gracefully on an invalid cloud key with a short, useful message.
+- `--test-publish` still works as a discoverable one-shot check, but one failure branch regressed into more technical-than-needed command copy.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [M5] Source-checkout command leaks into `--test-publish` invalid-key recovery copy
+- **Priority:** Medium
+- **Why this matters:** IdleWatch is otherwise disciplined about showing the cleanest command for the context (`idlewatch` for durable installs, `npx idlewatch` for one-off use). But when `--test-publish` fails with an invalid cloud API key from a source checkout, the recovery hint falls back to `node bin/idlewatch-agent.js configure --no-tui`. That is technically correct, but it feels internal, visually noisier than the rest of the product, and breaks the low-friction setup tone right when the user needs a calm next step.
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `IDLEWATCH_DEVICE_NAME=test IDLEWATCH_CLOUD_API_KEY=bad node bin/idlewatch-agent.js --test-publish`
+  3. Observe: `❌ Cloud publish failed for "test": API key rejected (invalid_api_key). Run node bin/idlewatch-agent.js configure --no-tui to update your API key.`
+- **Expected behavior:**
+  - Recovery copy should use the same context-aware command-selection rules as the rest of the CLI.
+  - The default user-facing path should not fall back to the raw source-checkout command in this error message when a cleaner product command is available.
+  - The suggested fix should feel consistent with help/status/install guidance rather than more technical than the problem itself.
+- **Acceptance criteria:**
+  - Invalid cloud-key one-shot publish failures no longer drop to `node bin/idlewatch-agent.js ...` in the default user-facing copy.
+  - The suggested recovery command matches the install context the same way main help/status/install guidance already does.
+  - Regression coverage exists for invalid-key `--test-publish` / one-shot publish failures so the copy does not drift back.
+
+### Spot-check coverage for R215
+- [x] Main `--help`
+- [x] Simulated `npx` `--help`
+- [x] `--test-publish` with no cloud config (clean HOME)
+- [x] `quickstart --no-tui` invalid cloud-key setup error
+- [x] Source-checkout `--test-publish` invalid cloud-key failure copy
+- [x] `npm test --silent`
+
+### Acceptance notes
+- The product still feels close to done; this is a polish consistency issue, not a flow redesign.
+- No auth, ingest, packaging, or launch-agent behavior changes are needed here.
+- Fixing this keeps the one-shot “does publishing work?” path aligned with the calmer install/setup tone already present elsewhere.
+
+---
 
 ## Cycle R214 Status: CLOSED ✅
 
