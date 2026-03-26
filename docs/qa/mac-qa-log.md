@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:13 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R207 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 12:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R208 shipped one tiny install-help next-step clarity fix
+
+## Cycle R208 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `install-agent --help` next-step clarity improvement only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent --help` no longer makes people infer which setup command to run before background mode can start.
+- In the no-saved-config explanation, help now points straight at the real next step:
+  - `save setup first with ... quickstart --no-tui, then re-run install-agent`
+- This keeps the install-before-setup path a little more copy-pasteable in the exact moment a cautious user pauses to read help before enabling background mode.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R208 implementation
+#### [x] L64 — `install-agent --help` now names the exact setup command to run before re-running background install
+- Reworded the unsaved-setup note in `install-agent --help` from a generic `save setup and re-run install-agent` line to one that names the actual setup command directly.
+- Kept the already-saved path unchanged (`IdleWatch starts automatically`).
+- Added regression coverage so help keeps the direct quickstart pointer and does not slip back to the vaguer wording.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent help keeps the durable setup path short and clear'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- `install-agent --help` now removes one small guesswork moment from the install-before-setup path.
+- Setup behavior, LaunchAgent behavior, saved-config handling, and the working telemetry path remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+---
 
 ## Cycle R207 Status: CLOSED ✅
 

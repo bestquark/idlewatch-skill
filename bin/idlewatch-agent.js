@@ -153,6 +153,7 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
+  const quickstartCommand = preferredSetupCommand('quickstart')
 
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
@@ -167,7 +168,7 @@ Usage:  ${installAgentCommand}
 
 Enables background mode on macOS.
 If setup is already saved, IdleWatch starts automatically.
-If not, it stays off until you save setup and re-run install-agent.`
+If not, save setup first with ${quickstartCommand}, then re-run install-agent.`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
