@@ -2,6 +2,61 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R367 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing polish issue in the requested lane worth opening. The current setup/install/status path stays pleasantly minimal instead of drifting back toward tool-noise.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+- Result: **89 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js install-agent`
+  - `node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js configure --no-tui`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+  - `node bin/idlewatch-agent.js --test-publish`
+  - `npm exec --yes -- idlewatch --help`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live spot checks listed above with a clean HOME and stubbed `launchctl` for install/uninstall lifecycle checks
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical copy surfaced in the requested areas. In particular, the current build still keeps:
+- first-run status short and preview-shaped
+- install-before-setup honest without launchd overexplanation
+- quickstart/configure success output calm and copy-pasteable
+- saved device identity continuity obvious inline
+- metric-toggle persistence reflected immediately in `status`
+- uninstall reassurance short and reversible
+- `--test-publish` explicit without becoming its own workflow
+- npm/npx one-off-vs-durable-install guidance clear without being preachy
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+#### [ ] P2 — QA cron payload still points at stale workspace paths
+**Repro**
+1. Inspect the incoming QA cron payload for this cycle
+2. Observe that it references `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md`
+3. Compare with the live checkout on disk: `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-cron-polish-plan.md`
+
+**Observed**
+The QA pass still needs manual path discovery before any actual verification starts.
+
+**Acceptance criteria**
+Update the cron payload to the live checkout path so future polish runs start directly in the correct repo and plan file.
+
+**Last updated:** Thursday, March 26th, 2026 — 6:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found; stale cron path still worth fixing operationally
+
 ## Cycle R366 Status: COMPLETE ✅
 
 Focused installer/CLI polish re-check completed again from the live checkout.
