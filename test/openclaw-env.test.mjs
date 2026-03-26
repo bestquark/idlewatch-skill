@@ -1402,6 +1402,46 @@ test('configure --no-tui preserves the saved local/cloud mode when mode is omitt
   }
 })
 
+test('configure accepts saved config lines prefixed with export', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-export-env-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'export IDLEWATCH_ENROLL_MODE=local',
+      'export IDLEWATCH_DEVICE_NAME="Export Box"',
+      'export IDLEWATCH_DEVICE_ID=export-box',
+      'export IDLEWATCH_MONITOR_TARGETS="cpu,memory"',
+      `export IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'export-box-metrics.ndjson')}"`
+    ].join('\n') + '\n')
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Export Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "Renamed Export Box"\./)
+    assert.match(configure.stdout, /✓ Local telemetry verified\./)
+    assert.doesNotMatch(configure.stderr, /Missing cloud API key/)
+
+    const updatedEnv = fs.readFileSync(path.join(configDir, 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Export Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+    assert.doesNotMatch(updatedEnv, /IDLEWATCH_CLOUD_API_KEY=/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure keeps the saved device id stable when renaming the device', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-rename-home-'))
   try {
@@ -1709,6 +1749,35 @@ test('status command treats quoted saved config values like normal values', () =
     assert.match(run.stdout, /Publish mode:\s+local-only/)
     assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
     assert.doesNotMatch(run.stdout, /"Quoted Box"|'Quoted Box'/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command accepts saved config lines prefixed with export', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-export-env-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(path.join(configDir, 'logs'), { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'export IDLEWATCH_DEVICE_NAME="Export Box"',
+      'export IDLEWATCH_ENROLL_MODE=local',
+      'export IDLEWATCH_MONITOR_TARGETS="cpu,memory"',
+      `export IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'export-box-metrics.ndjson')}"`
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(configDir, 'logs', 'export-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Device:\s+Export Box/)
+    assert.match(run.stdout, /Publish mode:\s+local-only/)
+    assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

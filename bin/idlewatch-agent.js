@@ -338,6 +338,11 @@ function parseEnvValue(rawValue) {
   return value
 }
 
+function normalizeEnvKey(rawKey) {
+  const key = String(rawKey || '').trim().replace(/^export\s+/, '')
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : ''
+}
+
 function parseEnvFileToObject(envFilePath) {
   const raw = fs.readFileSync(envFilePath, 'utf8')
   const env = {}
@@ -346,7 +351,7 @@ function parseEnvFileToObject(envFilePath) {
     if (!trimmed || trimmed.startsWith('#')) continue
     const idx = trimmed.indexOf('=')
     if (idx <= 0) continue
-    const key = trimmed.slice(0, idx).trim()
+    const key = normalizeEnvKey(trimmed.slice(0, idx))
     const value = parseEnvValue(trimmed.slice(idx + 1))
     if (key) env[key] = value
   }

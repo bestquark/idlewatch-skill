@@ -1,8 +1,47 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:10 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R163 found no new polish regressions worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 8:05 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R164 shipped one tiny saved-config polish fix
+
+---
+
+## Cycle R164 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config handling fix only, with no setup-flow redesign, no auth/ingest changes, no packaging changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Hand-edited `~/.idlewatch/idlewatch.env` files now accept the very normal shell-style `export KEY=value` form instead of silently treating `export KEY` as an unknown setting name.
+- This keeps setup, status, and reconfigure calmer for cautious users who inspect or tweak saved config manually.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R164 spot-check coverage
+- [x] `status` with `export`-prefixed saved config lines
+- [x] `configure --no-tui` with `export`-prefixed saved config lines
+- [x] Existing quoted-value saved-config regression slice
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status command accepts saved config lines prefixed with export|configure accepts saved config lines prefixed with export|status command treats quoted saved config values like normal values'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L47 — saved config now accepts normal `export KEY=value` lines
+**Why it matters:** This is tiny, but it sits in a high-trust seam. People hand-edit env files, and `export KEY=value` is normal shell muscle memory. Before this fix, IdleWatch would silently fail to reuse those saved values because it treated the whole `export KEY` text as the setting name.
+
+**What shipped**
+- Saved-config parsing now strips one leading `export ` prefix from env keys before validating them.
+- The same normalization now applies in both the main CLI env loader and enrollment/reconfigure's saved-config reader.
+- Added regression coverage for both `status` and `configure --no-tui` so the hand-edited path stays reliable.
+
+### Acceptance notes
+- Plain `KEY=value` env files still work exactly as before.
+- Quoted values still round-trip cleanly.
+- The working telemetry path remains untouched.
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
