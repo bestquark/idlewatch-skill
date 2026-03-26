@@ -1267,7 +1267,7 @@ const subcommandPromise = (async () => {
       })
 
       if (onceRun.status === 0) {
-        const modeLabel = result.mode === 'local' ? 'local' : 'cloud'
+        const modeLabel = result.mode === 'local' ? 'local-only' : 'cloud'
         const launchAgentState = probeOwnedLaunchAgentState()
         const setupHeadline = isReconfigure
           ? `\n✅ Settings saved for "${result.deviceName}".`

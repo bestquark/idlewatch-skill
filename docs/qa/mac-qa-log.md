@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:20 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R209 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 12:34 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R210 shipped one tiny setup-summary wording alignment fix
+
+## Cycle R210 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure summary wording alignment only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Setup/reconfigure completion no longer says `Mode: local` in the exact moment right after a successful local-only setup.
+- That summary line now says:
+  - `Mode:   local-only`
+- This keeps the success moment aligned with the rest of the product, which already consistently uses `local-only` in status, prompts, validation, and runtime messaging.
+- No auth, ingest, packaging, launch-agent behavior, or telemetry behavior was touched.
+
+### R210 implementation
+#### [x] L65 — setup completion now says `local-only`, not `local`
+- Reworded the setup/reconfigure success summary label from `local` to `local-only` for the local path.
+- Kept cloud summaries unchanged.
+- Added regression coverage so the post-setup summary keeps the calmer product wording.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart success summarizes setup verification instead of dumping raw telemetry JSON'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- Local-only setup still completes the same way and still verifies telemetry immediately.
+- Reconfigure/setup success now matches the product wording already used elsewhere for the same mode.
+- Saved-config handling, background install/reconfigure behavior, and the working telemetry path remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+---
 
 ## Cycle R209 Status: CLOSED ✅
 
