@@ -1354,6 +1354,33 @@ test('quickstart names the valid enrollment modes when non-interactive mode is i
   }
 })
 
+test('quickstart gives a calmer non-interactive error when cloud mode is missing an API key', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-missing-cloud-key-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'production',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Cloud Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Cloud mode needs an API key\./)
+    assert.match(run.stderr, /Set IDLEWATCH_CLOUD_API_KEY or use local mode\./)
+    assert.doesNotMatch(run.stderr, /Missing cloud API key/)
+    assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart and configure keep one-off runs honest about background install under npm exec env', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-npx-env-'))
   try {

@@ -487,7 +487,7 @@ export async function runEnrollmentWizard(options = {}) {
     }
 
     if (!cloudApiKey) {
-      if (!rl) throw new Error('Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).')
+      if (!rl) throw new Error('Cloud mode needs an API key. Set IDLEWATCH_CLOUD_API_KEY or use local mode.')
       console.log('\nPaste the API key from idlewatch.com/api.')
       for (let attempt = 0; attempt < 3; attempt++) {
         cloudApiKey = normalizeCloudApiKey(await questionOrCancel(rl, 'Cloud API key: '))

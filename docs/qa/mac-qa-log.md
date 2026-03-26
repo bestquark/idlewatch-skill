@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:30 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R190 spot-check found no new polish issue worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 10:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R191 shipped one tiny non-interactive cloud-setup validation cleanup
+
+---
+
+## Cycle R191 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny non-interactive cloud-setup validation cleanup only, with no auth/ingest redesign, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Non-interactive cloud setup no longer fails with the raw env-var-shaped `Missing cloud API key (IDLEWATCH_CLOUD_API_KEY).` message.
+- The failure now says:
+  - `Cloud mode needs an API key. Set IDLEWATCH_CLOUD_API_KEY or use local mode.`
+- This keeps a headless setup/reconfigure mistake calmer and more actionable in SSH/cron/CI-style flows without changing setup semantics or the now-working telemetry path.
+
+### R191 implementation
+#### [x] L58 — missing non-interactive cloud key errors now say what to do, not just which env var was absent
+- Reworded the non-interactive missing-key failure from a raw env-var diagnostic to a shorter recovery message.
+- Kept the interactive prompt flow unchanged.
+- Added regression coverage so headless cloud setup keeps the calmer wording and no longer falls back to the older `Missing cloud API key` text.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart gives a calmer non-interactive error when cloud mode is missing an API key|quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart rejects a fully invalid metric selection with a clear validation error'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is small, but it lands in a real setup/recovery moment. If someone picks cloud mode in a non-interactive shell and forgets the key, the fix should read like the product: what’s missing and what to do next. Naming the raw env var is still useful, but it should not be the whole message.
 
 ---
 
