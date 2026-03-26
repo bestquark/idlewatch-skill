@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:12 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - no new polish regressions found in the requested installer/CLI lane
+**Last updated:** Thursday, March 26th, 2026 — 1:33 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-help copy polish improvement in the requested installer/CLI lane
+
+## Cycle R318 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only closed one still-worth-shipping copy/paste seam in the install help surface.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in `install-agent --help`.
+- The install-before-setup handoff no longer ends with the vaguer `then re-run install-agent` wording.
+- In source checkouts, that sentence now stays fully copy-pasteable and consistent with the calmer product-shaped help surface:
+  - `If not, save setup first with idlewatch quickstart --no-tui, then re-run idlewatch install-agent.`
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path unchanged.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L49 — `install-agent --help` now ends with the full follow-up command instead of the vaguer bare subcommand name
+**Why it matters:** This is tiny, but it lands in the exact setup/install handoff where someone is deciding what to run next. Saying `re-run install-agent` was understandable, but not quite as neat or copy-pasteable as the surrounding help surface.
+
+### Spot-check coverage for R318
+- [x] `install-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear'`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js install-agent --help`
+3. `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear'`
+
+### Acceptance notes
+- The install help handoff now reads like one calmer product and keeps the next step copy-pasteable.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, background startup behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R317 Status: COMPLETE ✅
 
