@@ -985,7 +985,7 @@ test('unknown command suggests the closest subcommand and keeps the current invo
   })
 
   assert.equal(sourceRun.status, 1)
-  assert.match(sourceRun.stderr, /Unknown command "configre"\. Did you mean "configure"\? Run node .*bin\/idlewatch-agent\.js --help for available commands\./)
+  assert.match(sourceRun.stderr, /Unknown command "configre"\. Did you mean "configure"\? Run idlewatch --help for available commands\./)
 
   const npxRun = spawnSync(process.execPath, [BIN, 'instal-agent'], {
     env: {

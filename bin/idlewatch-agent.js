@@ -1484,7 +1484,7 @@ const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'st
 const firstPositional = argv.find(a => !a.startsWith('-'))
 if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
   const suggestion = suggestKnownSubcommand(firstPositional, KNOWN_SUBCOMMANDS)
-  const helpCommand = inferCliCommand('--help')
+  const helpCommand = preferredProductCommand('--help')
   const suggestionLine = suggestion ? ` Did you mean "${suggestion}"?` : ''
   console.error(`Unknown command "${firstPositional}".${suggestionLine} Run ${helpCommand} for available commands.`)
   process.exit(1)

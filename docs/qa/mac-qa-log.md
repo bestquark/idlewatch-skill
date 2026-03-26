@@ -1,83 +1,43 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:58 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - no new polish issue cleared the bar in this pass; lane remains closed
+**Last updated:** Thursday, March 26th, 2026 — 12:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny worth-it polish fix; lane still remains narrow and low-risk
 
-## Cycle R315 Status: COMPLETE ✅
+## Cycle R316 Status: COMPLETE ✅
 
-This pass re-ran the narrow installer/CLI polish lane directly in the live checkout with fresh spot checks for setup quality, saved-config persistence/reload behavior, launch-agent install-before-setup and installed-but-not-running states, `--test-publish`, device identity continuity, metric-toggle persistence, and npm/npx path clarity.
+This pass stayed intentionally tiny and only closed one remaining help-surface seam that still cleared the bar in the live checkout.
 
 ### Outcome
-- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical user-facing issue cleared the bar for a low-risk implementation change in this pass.
-- Fresh live spot checks still read like one calm product across main `--help`, clean-home `status`, install-before-setup, local-only `quickstart --no-tui`, rename + metric-toggle persistence, post-config `status`, clean-home `--test-publish`, and `npm exec --yes -- idlewatch --help`.
-- The setup handoff remains neat and low-friction:
-  - first-run `status` still points straight to `idlewatch quickstart --no-tui`
-  - install-before-setup still keeps the durable/background distinction honest without extra theory
-  - post-setup success still keeps next steps short and copy-pasteable
-- Saved-config behavior still looks predictable and product-shaped:
-  - device rename still keeps the stable device ID obvious inline
-  - metric-selection changes still persist into saved config and the next `status` output
-  - configure/apply messaging still tells people exactly when to re-run `install-agent`
-- `--test-publish` still stays short and quiet on the happy path.
-- `npm exec --yes -- idlewatch --help` still keeps the one-off-vs-durable distinction clear, and the only extra noise observed there was still npm’s own upgrade banner, not IdleWatch product copy.
+- Shipped one small, low-risk polish improvement in the unknown-command recovery path.
+- In a source checkout, mistyped commands no longer bounce people back to the more implementation-looking `node bin/idlewatch-agent.js --help` hint.
+- That recovery line now stays on the same calmer product-shaped help command already used by the main help surface:
+  - `Run idlewatch --help for available commands.`
+- Kept suggestion behavior unchanged (`Did you mean "configure"?`) and kept npm/npx behavior unchanged (`Run npx idlewatch --help ...`).
+- Kept setup flow, saved-config handling, startup/install behavior, and the working telemetry path unchanged.
 - The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
-- None. No product-facing polish regression was worth opening from this cycle.
+#### [x] L48 — source-checkout unknown-command recovery now stays on the calmer `idlewatch --help` command
+**Why it matters:** This is tiny, but it lands in a first-impression recovery moment. Most of the setup/help lane already converged on `idlewatch ...` in source checkouts. Letting the typo path fall back to `node bin/idlewatch-agent.js --help` made the product feel a little more technical than the surrounding flow right when someone made a simple mistake.
 
-### Spot-check coverage for R315
+### Spot-check coverage for R316
 - [x] Main `--help`
-- [x] First-run `status` in a clean HOME
-- [x] `install-agent` before setup in a clean HOME
-- [x] Local-only non-interactive `quickstart --no-tui`
-- [x] `configure --no-tui` device rename + metric toggle persistence
-- [x] Post-config `status`
-- [x] `--test-publish` in a clean HOME
-- [x] `npm exec --yes -- idlewatch --help`
+- [x] Unknown command in a source checkout
+- [x] Unknown command in `npm exec` context
 - [x] Targeted `openclaw-env` regression subset
 
 ### Exact repro commands used
 1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. `TMPHOME=$(mktemp -d)`
-3. `TMPHOME2=$(mktemp -d)`
-4. `TMPHOME3=$(mktemp -d)`
-5. `FAKEBIN=$(mktemp -d)`
-6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
-   ```bash
-   cat > "$FAKEBIN/launchctl" <<'EOF'
-   #!/usr/bin/env bash
-   set -euo pipefail
-   cmd="${1:-}"
-   if [[ "$cmd" == "print" ]]; then
-     exit 1
-   fi
-   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
-     exit 0
-   fi
-   exit 0
-   EOF
-   chmod +x "$FAKEBIN/launchctl"
-   ```
-7. `node bin/idlewatch-agent.js --help`
-8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
-12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-13. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
-14. `PATH="$(mktemp -d):$PATH" HOME="$TMPHOME3" npm exec --yes -- idlewatch --help`
-15. `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart gives a calmer non-interactive error when cloud mode is missing an API key|install-agent follow-up uses source checkout command path|quickstart completion stays honest when a LaunchAgent was installed before setup|configure success says to refresh an already-running background agent|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|test-publish|metric|device|npx|uninstall-agent removes plist and keeps config and local logs|help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|main help keeps the source-checkout header on the calmer product command'`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern='unknown command suggests the closest subcommand and keeps the current invocation path|main help keeps the source-checkout header on the calmer product command|help preserves one-off command hints under npm exec'`
+3. `node bin/idlewatch-agent.js configre`
 
 ### Acceptance notes
-- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
-- Installed-before-setup and installed-but-not-running states still stay honest and low-friction.
-- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
-- Metric-selection changes still persist cleanly into saved config and the next `status` output.
-- `--test-publish` and npm/npx install guidance still keep the next step short and actionable without surfacing extra implementation detail.
-- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
+- The typo-recovery path now matches the calmer product-shaped help story already used elsewhere in source checkouts.
+- `npm exec` still keeps the one-off help path explicit.
+- This is recovery-copy polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
-## Cycle R314 Status: COMPLETE ✅
+## Cycle R315 Status: COMPLETE ✅
 
 This pass stayed deliberately narrow and only touched one tiny setup/reconfigure paper cut that still cleared the bar in the live checkout.
 
