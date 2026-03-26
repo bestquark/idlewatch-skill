@@ -1,6 +1,19 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
+
+## Cycle R323 Status: COMPLETE ✅
+
+Tiny packaging/install quality-of-life cleanup landed in this pass.
+- v0.2.0 remains production-ready
+- Acceptance criteria still met
+- Generated npm pack artifacts no longer dirty the repo during local packaging/install validation loops
+
+### Cycle R323 Update: Implemented ✅
+- [x] Ignored generated `idlewatch-*.tgz` package artifacts so local package/install checks keep a clean working tree
+- [x] Preserved the current installer/CLI behavior and the now-working telemetry path
+- [x] Re-checked repo status after the ignore update: package artifact noise no longer appears as a pending change
+
 **Last updated:** Thursday, March 26th, 2026 — 1:39 PM (America/Toronto)  
 **Status:** OPEN ⚠️ - one tiny runtime uninstall command-story seam found in this pass
 

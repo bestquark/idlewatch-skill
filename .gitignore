@@ -3,4 +3,5 @@ dist/
 logs/
 tui/target/
 *.log
+idlewatch-*.tgz
 .DS_Store
