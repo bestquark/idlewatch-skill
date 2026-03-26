@@ -2,6 +2,60 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R329 Status: OPEN ⚠️
+
+This pass stayed narrow and product-facing: re-ran the installer/CLI polish lane against the live checkout, kept the runtime path honest, and only logged something if it still felt slightly confusing, inconsistent, or more friction-heavy than the surrounding setup story.
+
+### Outcome
+- Main `--help` still keeps the calmer `idlewatch quickstart --no-tui` setup path front and center.
+- Targeted installer/CLI regression coverage still passes cleanly: **85 passed, 0 failed**.
+- Runtime setup, reconfigure, status, launch-agent install/uninstall, device-ID continuity, metric-toggle persistence, `--test-publish`, and npm/npx install-path clarity still look acceptable in the live checkout.
+- One small docs seam is still worth fixing: `skill/SKILL.md` is now the outlier and still advertises bare installed-path `idlewatch quickstart` / `idlewatch configure` commands, while README and current CLI guidance already converge on the calmer `--no-tui` flow.
+- This is tiny, but `skill/SKILL.md` is a real scan-first surface for users deciding what to run next after install, so the mismatch reintroduces a low-grade "which setup path do you actually want me to use?" wobble.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [ ] L53 — `skill/SKILL.md` installed-path setup/reconfigure commands should match the calmer `--no-tui` flow already used in README and CLI guidance
+**Why it matters:** This is small, but it lands in a scan-first setup moment. README and the CLI already nudge people toward the low-friction text-prompt path with `--no-tui`; leaving the skill doc on bare `quickstart` / `configure` makes the product feel slightly less consistent right where someone is choosing a copy-paste command.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Compare the installed-path quickstart/configure guidance in the skill doc:
+   ```bash
+   grep -n "idlewatch quickstart\|idlewatch configure" skill/SKILL.md README.md
+   ```
+3. Observe `skill/SKILL.md` still advertises the older bare installed-path commands:
+   - `idlewatch quickstart`
+   - `idlewatch configure`
+4. Compare with the current calmer product guidance already used elsewhere:
+   - `README.md` → `idlewatch quickstart --no-tui`
+   - `README.md` → `idlewatch configure --no-tui`
+   - `node bin/idlewatch-agent.js --help` → `Get started:  idlewatch quickstart --no-tui`
+
+**Acceptance criteria**
+- `skill/SKILL.md` should use `idlewatch quickstart --no-tui` for the installed-path setup command.
+- `skill/SKILL.md` should use `idlewatch configure --no-tui` for the installed-path reconfigure command and nearby setup note.
+- Keep this docs-only: no runtime setup, auth, ingest, packaging, or launch-agent behavior change.
+
+### Spot-check coverage for R329
+- [x] Main `--help`
+- [x] `skill/SKILL.md` vs `README.md` installed-path command comparison
+- [x] Targeted `openclaw-env` regression subset
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `grep -n "idlewatch quickstart\|idlewatch configure" skill/SKILL.md README.md`
+3. `node bin/idlewatch-agent.js --help`
+4. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help preserves one-off command hints under npm exec|help keeps the happy path above advanced env tuning noise|quickstart completion stays honest when a LaunchAgent was installed before setup|configure success says to refresh an already-running background agent|test-publish|metric|device|npx|uninstall-agent)'`
+
+### Acceptance notes
+- Runtime setup/install/status/background guidance still reads like one calm product.
+- The only current open issue from this pass is a small docs consistency seam in `skill/SKILL.md`.
+- No auth, ingest, packaging redesign, launch-agent change, or telemetry-path change is being proposed here.
+
+**Last updated:** Thursday, March 26th, 2026 — 2:28 PM (America/Toronto)  
+**Status:** OPEN ⚠️ - one tiny skill-doc command-story seam found in this pass
+
 ## Cycle R328 Status: COMPLETE ✅
 
 This pass re-checked the current installer/CLI polish lane against the live checkout and only kept something if it still felt like a real small, low-risk UX fix instead of busywork.
