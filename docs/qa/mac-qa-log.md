@@ -1,44 +1,59 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 5:11 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R247 found one small postinstall-path messaging seam worth fixing
+**Last updated:** Thursday, March 26th, 2026 — 5:19 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R248 shipped the last small postinstall copy cleanup from R247
 
-## Cycle R247 Status: OPEN ⚠️
+## Cycle R248 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny postinstall copy cleanup only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the last remaining global npm install copy seam.
+- Global npm `postinstall` no longer advertises the env-var-driven menubar install toggle in the main install-success output.
+- The default success block now keeps the path scan-friendly and user-facing:
+  - `idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `Optional on macOS: idlewatch menubar`
+- This removes a developer-flavored line from the exact moment right after install succeeds while keeping the menubar option visible in a calmer way.
+- Kept setup/reconfigure flow shape, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
+- The cron payload path mismatch remains external to the product itself: this pass still used `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R248 implementation
+#### [x] L82 — global npm `postinstall` now keeps optional menubar guidance user-facing
+- Replaced `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch` in the default postinstall success block with `Optional on macOS: idlewatch menubar`.
+- Kept `idlewatch quickstart` as the obvious primary next step.
+- Kept the one-off `npx idlewatch quickstart --no-tui` path unchanged.
+- Added regression coverage so postinstall output does not drift back to the env-var install toggle.
+
+### Spot-check coverage for R248
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `node scripts/postinstall.mjs`
+
+### Acceptance notes
+- Global npm postinstall now reads more like the product and less like an implementation escape hatch.
+- The change is copy-only and local to install-success output.
+- Setup/reconfigure behavior, saved config, launch-agent behavior, packaging behavior, and the working telemetry path remain unchanged.
+
+## Cycle R247 Status: COMPLETE ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
 - Core setup, status, install-before-setup, reconfigure persistence, device-ID continuity, `--test-publish`, uninstall behavior, and `npm exec` durable-install guidance still read like one calm product.
-- One small postinstall seam is still more technical/noisy than the rest of the CLI: after a global npm install, the final `Other install paths` block advertises an env-var-driven menubar install command.
-- That line is technically valid, but it feels more like an implementation escape hatch than a clean next-step option for end users in a scan-first moment right after install.
+- One small postinstall seam was found and then closed in the follow-up R248 pass: after a global npm install, the final `Other install paths` block had advertised an env-var-driven menubar install command.
+- That seam was copy-only and did not require any behavior change.
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
 
-#### [L82] Global npm `postinstall` still advertises an env-var-driven menubar install path in the main install-success output
+#### [x] [L82] Global npm `postinstall` no longer advertises an env-var-driven menubar install path in the main install-success output
 - **Priority:** Low
-- **Why this matters:** Right after `npm install -g idlewatch`, the product mostly does the right thing: it ends with one obvious next step (`idlewatch quickstart`) and keeps the one-off `npx` path available. But the final line in `Other install paths` still says `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch`. That is accurate, yet it reads like a developer toggle, adds visual noise, and makes the install-success moment feel more technical than the actual user task. A person choosing the CLI path usually needs either the setup command they should run now or a short human sentence about the optional menubar app — not a raw env-var install incantation.
-- **Exact repro:**
-  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-  2. `TMP_PREFIX=$(mktemp -d)`
-  3. `TMP_CACHE=$(mktemp -d)`
-  4. `TMP_HOME=$(mktemp -d)`
-  5. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
-  6. Observe postinstall output:
-     - `Set up this device:`
-     - `  idlewatch quickstart`
-     - `Other install paths:`
-     - `  npx idlewatch quickstart --no-tui`
-     - `  IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch`
-- **Expected behavior:**
-  - Global npm postinstall should stay minimal and product-shaped in the moment immediately after install succeeds.
-  - The output should keep the main CLI next step obvious.
-  - Optional menubar guidance, if shown there at all, should read like a user-facing option rather than exposing an env-var-driven install toggle.
-- **Acceptance criteria:**
+- **Why this mattered:** Right after `npm install -g idlewatch`, the product mostly did the right thing: it ended with one obvious next step (`idlewatch quickstart`) and kept the one-off `npx` path available. But the final line in `Other install paths` had still said `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch`. That was accurate, yet it read like a developer toggle, added visual noise, and made the install-success moment feel more technical than the actual user task.
+- **Shipped behavior:**
   - Global npm postinstall no longer advertises `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch` as one of the main install-success lines.
   - The install-success output keeps `idlewatch quickstart` as the obvious primary next step.
-  - If menubar guidance remains, it is reworded into a calmer user-facing path or moved out of the default postinstall success block.
+  - Menubar guidance remains visible in a calmer user-facing form: `Optional on macOS: idlewatch menubar`.
   - Regression coverage exists for postinstall output so this copy does not drift back.
 
 ### Spot-check coverage for R247
@@ -96,8 +111,8 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ### Acceptance notes
 - Setup wizard, status, install-before-setup behavior, saved-config reconfigure, device-ID continuity, metric-toggle persistence, `--test-publish`, invalid cloud-key recovery, uninstall behavior, and `npm exec` durable-install guidance still feel coherent and low-friction.
-- The remaining seam is small and copy-only: global npm postinstall still exposes a developer-flavored menubar install toggle in a user-facing success moment.
-- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
+- The postinstall seam from this cycle is now closed in R248.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change was needed.
 
 ## Cycle R246 Status: COMPLETE ✅
 
