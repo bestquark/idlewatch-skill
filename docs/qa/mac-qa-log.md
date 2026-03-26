@@ -6504,8 +6504,14 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ### Prioritized findings
 
-#### [ ] M8 — `skill/SKILL.md` still advertises the wrong npm/npx command path and an outdated Firestore-first product story
-**Why it matters:** The main CLI and README now tell a neat story: package name `idlewatch`, foreground trial via `npx idlewatch ...`, durable install via `npm install -g idlewatch`, then `idlewatch install-agent` for background mode. But the repo's own skill-facing doc still says `npx idlewatch-skill --help`, `idlewatch-agent`, and frames the product around Firebase/Firestore instead of the calmer local-first / optional cloud-link shape. That reintroduces exactly the install-path confusion the rest of the polish work has been removing.
+#### [x] M8 — `skill/SKILL.md` now matches the current npm/npx command path and calmer local-first product story
+**Why it matters:** The main CLI and README now tell a neat story: package name `idlewatch`, foreground trial via `npx idlewatch ...`, durable install via `npm install -g idlewatch`, then `idlewatch install-agent` for background mode. Keeping the repo's own skill-facing doc aligned avoids reintroducing the install-path confusion the rest of the polish work has been removing.
+
+**Resolution (R170):**
+- Reworded `skill/SKILL.md` so it stays local-first and describes cloud linking as optional.
+- Kept `npx idlewatch quickstart --no-tui` as the one-off path and `npm install -g idlewatch` → `idlewatch quickstart` as the durable path.
+- Added `idlewatch configure` to the common command list and clarified that background mode belongs to the durable install path.
+- Kept `idlewatch-agent` only as a compatibility alias note instead of presenting it as the primary command.
 
 **Exact repro**
 1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`

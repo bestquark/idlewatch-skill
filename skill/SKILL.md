@@ -1,6 +1,6 @@
 ---
 name: idlewatch
-description: Collect host CPU/memory/GPU and optional OpenClaw usage telemetry, keep a local log, and optionally publish to IdleWatch cloud.
+description: Collect host CPU/memory/GPU and optional OpenClaw usage telemetry, keep a local log, and optionally link this device to IdleWatch cloud.
 ---
 
 # IdleWatch Skill
@@ -19,10 +19,17 @@ Use `npx` for one-off setup, foreground testing, or a quick local-only run.
 npm install -g idlewatch
 ```
 
+Then run:
+
+```bash
+idlewatch quickstart
+```
+
 ## Common commands
 
 ```bash
-idlewatch quickstart      # guided setup
+idlewatch quickstart      # set up this device
+idlewatch configure       # re-open saved setup
 idlewatch --once          # one-shot publish check
 idlewatch --test-publish  # alias for --once
 idlewatch --dry-run       # preview metrics without publishing
@@ -30,15 +37,16 @@ idlewatch run             # continuous foreground collection
 idlewatch install-agent   # enable background mode on macOS
 ```
 
-`idlewatch` is the main command. `idlewatch-agent` is still available as a compatibility alias.
+`idlewatch` is the main command. `idlewatch-agent` still works as a compatibility alias, but prefer `idlewatch` in docs and copy-paste commands.
 
 ## Setup notes
 
 - Setup saves config to `~/.idlewatch/idlewatch.env`
 - Local-only mode works without any cloud key
-- Cloud publishing is optional
+- Cloud linking is optional
 - Re-open setup later with `idlewatch configure`
 - Saved changes apply on the next start
+- Background mode is a durable-install feature; after `npx` setup, install once with `npm install -g idlewatch`, then run `idlewatch install-agent`
 - If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config
 
 ## Environment
