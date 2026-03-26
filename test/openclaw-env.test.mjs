@@ -1233,7 +1233,7 @@ test('install-agent does not claim background is running when launchd still repo
   }
 })
 
-test('install-agent refresh success keeps the saved-config wording calm', () => {
+test('install-agent refresh confirmation stays on background-mode wording', () => {
   if (process.platform !== 'darwin') {
     return
   }
@@ -1259,7 +1259,8 @@ test('install-agent refresh success keeps the saved-config wording calm', () => 
 
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /✅ LaunchAgent refreshed — IdleWatch is running in the background\./)
-    assert.match(install.stdout, /Existing background agent refreshed with the saved config\./)
+    assert.match(install.stdout, /Background mode refreshed with the saved config\./)
+    assert.doesNotMatch(install.stdout, /Existing background agent refreshed with the saved config\./)
     assert.doesNotMatch(install.stdout, /restarted with the latest config/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })

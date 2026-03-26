@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:52 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R226 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 2:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R227 shipped one tiny background-refresh wording cleanup
+
+## Cycle R227 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny install/refresh success-copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent` no longer falls back to the older `Existing background agent refreshed with the saved config.` line when re-running background install against an already-loaded agent.
+- That refresh confirmation now stays aligned with the calmer product framing used elsewhere:
+  - `Background mode refreshed with the saved config.`
+- This keeps setup/reconfigure/install success sounding like one product instead of briefly slipping back into implementation-first `agent` wording in a saved-config refresh moment.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R227 implementation
+#### [x] L71 — `install-agent` refresh success now says `background mode`, not `background agent`
+- Reworded the already-loaded refresh confirmation from `Existing background agent refreshed with the saved config.` to `Background mode refreshed with the saved config.`
+- Kept the main running/install summary unchanged.
+- Added regression coverage so this one older phrase does not drift back.
+
+### Spot-check coverage for R227
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent refresh confirmation stays on background-mode wording'`
+
+### Acceptance notes
+- Re-running `install-agent` with saved config still refreshes the same running background install.
+- This is output polish only; launch-agent behavior, saved-config handling, and the working telemetry path remain unchanged.
 
 ## Cycle R226 Status: CLOSED ✅
 

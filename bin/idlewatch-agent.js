@@ -1172,7 +1172,7 @@ const subcommandPromise = (async () => {
       if (backgroundAgentRunning) {
         console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
         if (alreadyLoaded) {
-          console.log('   Existing background agent refreshed with the saved config.')
+          console.log('   Background mode refreshed with the saved config.')
         }
       } else {
         console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
