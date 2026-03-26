@@ -1878,7 +1878,8 @@ exit 0
 
         assert.equal(withInstalledAgent.status, 0, withInstalledAgent.stderr)
         assert.match(withInstalledAgent.stdout, /Background:\s+LaunchAgent installed but not loaded/)
-        assert.match(withInstalledAgent.stdout, /Re-enable:\s+idlewatch install-agent/)
+        assert.match(withInstalledAgent.stdout, /Start:\s+idlewatch install-agent/)
+        assert.doesNotMatch(withInstalledAgent.stdout, /Re-enable:\s+idlewatch install-agent/)
         assert.doesNotMatch(withInstalledAgent.stdout, /Install once:\s+npm install -g idlewatch/)
         assert.doesNotMatch(withInstalledAgent.stdout, /Then enable:\s+idlewatch install-agent/)
       } finally {
@@ -2086,7 +2087,8 @@ exit 0
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('(none yet)'), 'should still show no samples yet')
     assert.ok(run.stdout.includes('Background:   LaunchAgent installed but not loaded'), 'should report the installed-not-loaded state')
-    assert.ok(run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should suggest re-enabling the saved background agent')
+    assert.ok(run.stdout.includes(`Start:    ${SOURCE_CMD} install-agent`), 'should suggest starting the saved background agent')
+    assert.ok(!run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh enable')
     assert.ok(!run.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not look like a first-time install path')
     assert.ok(!run.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when launchd reports otherwise')
   } finally {

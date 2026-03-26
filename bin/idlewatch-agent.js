@@ -1722,7 +1722,7 @@ if (statusRequested) {
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already enabled via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log('  Re-enable:  idlewatch install-agent')
+        console.log('  Start:    idlewatch install-agent')
       } else {
         console.log('  Install once: npm install -g idlewatch')
         console.log('  Then enable:  idlewatch install-agent')
@@ -1735,7 +1735,7 @@ if (statusRequested) {
         if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
           console.log('  Background: already enabled')
         } else if (launchAgent.state === 'installed-not-loaded') {
-          console.log(`  Re-enable:  ${installAgentCommand}`)
+          console.log(`  Start:    ${installAgentCommand}`)
         } else {
           console.log(`  Enable:   ${installAgentCommand}`)
         }
@@ -1752,7 +1752,7 @@ if (statusRequested) {
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already enabled via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log('  Re-enable:  idlewatch install-agent')
+        console.log('  Start:    idlewatch install-agent')
       } else {
         console.log('  Install once: npm install -g idlewatch')
         console.log('  Then enable:  idlewatch install-agent')
@@ -1762,7 +1762,7 @@ if (statusRequested) {
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
         console.log(`  Apply:    re-run ${installAgentCommand} to refresh it with the saved config`)
       } else if (launchAgent.state === 'installed-not-loaded') {
-        console.log(`  Re-enable:  ${installAgentCommand}`)
+        console.log(`  Start:    ${installAgentCommand}`)
       } else {
         console.log(`  Enable:   ${installAgentCommand}`)
       }

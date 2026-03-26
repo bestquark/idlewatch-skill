@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:12 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R197 spot-check found no new product-facing polish issue
+**Last updated:** Wednesday, March 25th, 2026 — 11:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R198 shipped one tiny status next-step wording cleanup
+
+---
+
+## Cycle R198 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny status next-step wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `status` no longer says `Re-enable` when the LaunchAgent is already installed but just not loaded.
+- That next step now says:
+  - `Start:    ... install-agent`
+- This keeps the installed-but-not-running path aligned with the calmer, more honest wording already used in install-before-setup and setup completion: the background agent is already installed, so this is a start moment, not a fresh enable moment.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R198 implementation
+#### [x] L61 — status now says `Start`, not `Re-enable`, when the LaunchAgent is installed but not loaded
+- Reworded the installed-but-not-loaded next-step hint in `status` from `Re-enable` to `Start` for both normal and `npx` contexts.
+- Kept first-time background install hints unchanged (`Enable` / `Then enable`) so the initial setup path still reads clearly.
+- Added regression coverage for both source-checkout and `npx` status output.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded|status command keeps npx background hints short and durable-install oriented'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it lands in a real status/recovery moment. If background mode is already installed, the next step should tell the truth in the shortest possible way. `Start` is easier to scan and avoids implying the user is about to do a first-time enable again.
 
 ---
 
