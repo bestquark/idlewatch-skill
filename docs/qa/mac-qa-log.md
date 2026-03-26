@@ -1,52 +1,40 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:03 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R238 found one durable-install/background-path polish issue worth fixing
+**Last updated:** Thursday, March 26th, 2026 — 4:31 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R238 shipped the durable LaunchAgent target-path polish fix
 
-## Cycle R238 Status: OPEN ⚠️
+## Cycle R238 Status: CLOSED ✅
 
-This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+This pass stayed intentionally narrow and product-facing: one small background-install durability fix only, with no auth/ingest changes, no packaging rewrite, and no telemetry-path changes.
 
 ### Outcome
-- Most polished paths still read clean, but one durable-install seam is still user-visible on a real machine.
-- The installed LaunchAgent plist currently bakes in the exact checkout path and exact Node binary path from the moment `install-agent` runs.
-- On this machine, `status` looks normal, but the loaded plist points at `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill/bin/idlewatch-agent.js` even though the cron payload and current workspace now point elsewhere.
-- That is low-level implementation leakage in a background feature that should feel durable. If the checkout moves, the workspace is renamed, or that Node path changes, background mode can quietly depend on stale paths the user never chose.
+- Shipped one small, low-risk polish improvement in the highest-priority open seam.
+- `install-agent` now prefers a durable `idlewatch` CLI path in the LaunchAgent plist when one is available on `PATH`, instead of always hard-coding the current checkout script path plus the current Node binary path.
+- When no durable installed CLI is available yet, the existing source-checkout fallback still works, so setup/reconfigure flows stay simple and unsurprising.
+- Re-running `install-agent` now refreshes the plist onto the current durable CLI target as soon as that path exists, which makes background mode feel more like the durable path the product copy already promises.
+- The telemetry path stayed untouched.
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
-### Prioritized findings
-
-#### [M6] `install-agent` writes a LaunchAgent that hard-codes the current checkout path and current Node binary path
-- **Priority:** Medium
-- **Why this matters:** Background mode is being presented as the calm durable path. Hard-coding `process.argv[1]` and `process.execPath` into the plist makes that durability feel more fragile than the product copy suggests. A normal user should not have to think about whether they installed from a checkout, moved a folder, renamed a workspace, upgraded Node, or now have a plist quietly pointing at an old path.
-- **Exact repro:**
-  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-  2. `idlewatch status`
-  3. `plutil -p "$HOME/Library/LaunchAgents/com.idlewatch.agent.plist"`
-  4. Observe `ProgramArguments` in the installed plist:
-     - `/opt/homebrew/Cellar/node/25.6.1/bin/node`
-     - `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill/bin/idlewatch-agent.js`
-     - `run`
-  5. Compare that with the current cron payload / current workspace path, which now points at `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`.
-- **Expected behavior:**
-  - Background mode should anchor to a durable installed command path, app payload path, or another product-owned stable target rather than a transient checkout location.
-  - Re-running `install-agent` after a move/upgrade should refresh the plist cleanly onto the current durable target without requiring users to inspect plist internals.
-  - Status/help/install copy should stay calm and product-shaped; users should not be exposed to a latent “background mode depends on wherever this repo happened to live that day” trap.
-- **Acceptance criteria:**
-  - `install-agent` no longer writes a LaunchAgent plist that depends on a transient checkout path when a durable installed path is available.
-  - The LaunchAgent target survives common moves better (repo move, workspace rename, Node path drift after upgrade/reinstall) or at minimum refreshes cleanly onto the current durable install target.
-  - Regression coverage exists for the generated plist target path so this does not drift back.
+### R238 implementation
+#### [x] M6 — `install-agent` now prefers a durable CLI target for LaunchAgent `ProgramArguments`
+- Added a small resolver in `bin/idlewatch-agent.js` that scans `PATH` for a durable `idlewatch` executable and uses that path for LaunchAgent `ProgramArguments` when available.
+- Explicitly avoids reusing the current source-checkout script path or transient `npx` cache paths as the durable target.
+- Keeps the existing `process.execPath + process.argv[1] + run` fallback when no durable installed CLI is available yet, so source-checkout usage still behaves exactly as before.
+- Added regression coverage for both sides of the behavior:
+  - durable installed CLI available → plist anchors to that CLI path
+  - no durable installed CLI available → plist falls back to the source script path
 
 ### Spot-check coverage for R238
 - [x] Real-machine `idlewatch status`
 - [x] Real-machine installed LaunchAgent plist inspection
 - [x] Source review of LaunchAgent `ProgramArguments` generation in `bin/idlewatch-agent.js`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent prefers a durable idlewatch CLI path in the LaunchAgent plist when available|install-agent falls back to the source script in the LaunchAgent plist when no durable idlewatch CLI is available|install-agent follow-up uses source checkout command path|install-agent does not claim background is running when launchd still reports not loaded|install-agent refresh confirmation stays on background-mode wording'`
 
 ### Acceptance notes
-- This is still a product-polish / durability issue, not an auth redesign, ingest redesign, or packaging-flow redesign.
-- Setup/config persistence, device-ID persistence, metric persistence, and current invalid-key messaging still look fine in this pass.
-- The main open question is just whether background mode should keep depending on the exact source checkout / Node path that happened to exist at install time.
+- Background mode no longer depends on a transient checkout path when a durable installed CLI path is already available.
+- Source-checkout usage still works without adding new setup steps or new user-facing options.
+- This stays in the intended polish lane: tiny durability improvement only, with setup flow, saved-config handling, install/reconfigure feel, and the working telemetry path preserved.
 
 ## Cycle R237 Status: CLOSED ✅
 

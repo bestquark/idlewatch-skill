@@ -147,6 +147,33 @@ function backgroundInstallCommandForInvocation(invocation = detectCliInvocation(
   return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
 }
 
+function resolveDurableLaunchAgentProgramArguments() {
+  const sourceScriptPath = path.resolve(process.argv[1] || '')
+  const pathEntries = String(process.env.PATH || '')
+    .split(path.delimiter)
+    .map(entry => entry.trim())
+    .filter(Boolean)
+
+  for (const entry of pathEntries) {
+    const candidate = path.join(entry, 'idlewatch')
+    try {
+      accessSync(candidate, constants.X_OK)
+    } catch {
+      continue
+    }
+
+    const resolvedCandidate = fs.realpathSync.native?.(candidate) || fs.realpathSync(candidate)
+    if (!resolvedCandidate) continue
+    if (sourceScriptPath && resolvedCandidate === sourceScriptPath) continue
+    if (sourceScriptPath && resolvedCandidate.startsWith(path.dirname(sourceScriptPath) + path.sep)) continue
+    if (resolvedCandidate.includes(`${path.sep}.npm${path.sep}_npx${path.sep}`)) continue
+
+    return { programArguments: [candidate, 'run'], targetKind: 'durable-cli' }
+  }
+
+  return { programArguments: [process.execPath, process.argv[1], 'run'], targetKind: 'source-script' }
+}
+
 function slugifyVisibleDeviceName(name) {
   return String(name || '')
     .trim()
@@ -1115,9 +1142,7 @@ const subcommandPromise = (async () => {
     const runCommand = inferCliCommand('run')
     const uninstallAgentCommand = inferCliCommand('uninstall-agent')
 
-    // Find the idlewatch binary
-    const binPath = process.argv[1]
-    const nodePath = process.execPath
+    const { programArguments, targetKind } = resolveDurableLaunchAgentProgramArguments()
 
     const shouldStartImmediately = hasSavedConfig
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
@@ -1128,9 +1153,7 @@ const subcommandPromise = (async () => {
   <string>${svcLabel}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>${nodePath}</string>
-    <string>${binPath}</string>
-    <string>run</string>
+${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
   </array>
   <key>RunAtLoad</key>
   <${shouldStartImmediately ? 'true' : 'false'}/>
@@ -1168,6 +1191,9 @@ const subcommandPromise = (async () => {
       console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
+      if (targetKind === 'source-script') {
+        console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
+      }
       process.exit(0)
     }
 
@@ -1190,6 +1216,9 @@ const subcommandPromise = (async () => {
       console.log(`   Saved config: ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
+      if (targetKind === 'source-script') {
+        console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
+      }
     } else {
       const installError = launchctlOutput(load) || 'unknown error'
       console.error('Background mode install failed.')

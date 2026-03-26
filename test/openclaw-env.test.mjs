@@ -1235,6 +1235,79 @@ test('install-agent does not claim background is running when launchd still repo
   }
 })
 
+
+test('install-agent prefers a durable idlewatch CLI path in the LaunchAgent plist when available', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-durable-cli-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-durable-cli-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeIdlewatch = path.join(fakeBinDir, 'idlewatch')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+    writeFileSync(fakeIdlewatch, '#!/usr/bin/env bash\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeIdlewatch, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    const plistPath = path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')
+    const plist = fs.readFileSync(plistPath, 'utf8')
+    assert.ok(plist.includes(`<string>${fakeIdlewatch}</string>`), 'should target the durable idlewatch CLI path')
+    assert.ok(plist.includes('<string>run</string>'), 'should keep the run subcommand in the plist')
+    assert.ok(!plist.includes(`<string>${process.execPath}</string>`), 'should not pin the current node binary when a durable idlewatch CLI is available')
+    assert.ok(!plist.includes(`<string>${BIN}</string>`), 'should not pin the current source checkout script when a durable idlewatch CLI is available')
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('install-agent falls back to the source script in the LaunchAgent plist when no durable idlewatch CLI is available', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-source-plist-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-source-plist-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: fakeBinDir
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    const plistPath = path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')
+    const plist = fs.readFileSync(plistPath, 'utf8')
+    assert.ok(plist.includes(`<string>${process.execPath}</string>`), 'should keep the current node binary when no durable idlewatch CLI is available')
+    assert.ok(plist.includes(`<string>${BIN}</string>`), 'should keep the current source checkout script when no durable idlewatch CLI is available')
+    assert.ok(plist.includes('<string>run</string>'), 'should keep the run subcommand in the fallback plist')
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('install-agent refresh confirmation stays on background-mode wording', () => {
   if (process.platform !== 'darwin') {
     return
