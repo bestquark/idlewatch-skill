@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 11:05 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R295 re-ran the active polish lane from the current checkout; no new product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 11:22 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R296 shipped one tiny main-help copy polish fix; no broader product-facing issues cleared the bar
+
+## Cycle R296 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one main `--help` presentation polish only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Closed one small source-checkout wording seam in the main CLI help.
+- In a source checkout, `idlewatch --help` now leads with the calmer product command (`idlewatch`) instead of the noisier raw launcher path (`node bin/idlewatch-agent.js`).
+- Kept `Get started:` behavior unchanged, so npm/npx guidance still shows the right one-off command where needed.
+- Added regression coverage to lock the calmer source-checkout main-help header in place while preserving npm exec behavior.
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, startup/install quality of life, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L42 — source-checkout main `--help` now uses the calmer product command in the header/usage block
+**What shipped**
+- Reworded the source-checkout main help title and usage from the raw launcher path to the product-shaped `idlewatch` command.
+- Left the existing command list, setup hint, npm exec detection, and durable-install guidance intact.
+- Updated help regression tests so source-checkout help stays calm while npm exec help still stays explicit.
+
+### Spot-check coverage for R296
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|main help keeps the source-checkout header on the calmer product command'`
+- [x] `node bin/idlewatch-agent.js --help`
+
+### Acceptance notes
+- Main help now reads more like one polished product and less like a raw script entrypoint.
+- This is copy polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R295 Status: COMPLETE ✅
 

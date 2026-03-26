@@ -229,6 +229,8 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/m)
+  assert.doesNotMatch(run.stdout, /^node .*idlewatch-agent\.js\n\nUsage:\s+node .*idlewatch-agent\.js <command> \[options\]/m)
   assert.match(run.stdout, /Get started:/)
   assert.match(run.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
   assert.doesNotMatch(run.stdout, /Get started:\s+node .*quickstart --no-tui/)
@@ -933,7 +935,7 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
-test('main help matches the current source-checkout invocation path', () => {
+test('main help keeps the source-checkout header on the calmer product command', () => {
   const run = spawnSync(process.execPath, [BIN, '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
     encoding: 'utf8',
@@ -941,7 +943,7 @@ test('main help matches the current source-checkout invocation path', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /^node .*bin\/idlewatch-agent\.js\n\nUsage:\s+node .*bin\/idlewatch-agent\.js <command> \[options\]/)
+  assert.match(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/)
   assert.match(run.stdout, /quickstart\s+Set up this device \(name, metrics, optional cloud link\)/)
   assert.match(run.stdout, /configure\s+Re-open setup \(name, metrics, optional cloud link\)/)
   assert.match(run.stdout, /status\s+Show device config and background mode state/)
@@ -951,7 +953,7 @@ test('main help matches the current source-checkout invocation path', () => {
   assert.doesNotMatch(run.stdout, /configure\s+Re-open setup to change settings — values auto-filled/)
   assert.doesNotMatch(run.stdout, /status\s+Show device config and background agent state/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
-  assert.doesNotMatch(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/)
+  assert.doesNotMatch(run.stdout, /^node .*bin\/idlewatch-agent\.js\n\nUsage:\s+node .*bin\/idlewatch-agent\.js <command> \[options\]/)
 })
 
 test('main help stays on the durable command in npx context', () => {

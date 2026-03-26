@@ -354,7 +354,7 @@ function bootstrapLaunchAgentWithRetry({ domain, domainTarget, plistPath, alread
 
 function printHelp() {
   const invocation = detectCliInvocation()
-  const cliBase = inferCliCommand()
+  const cliBase = preferredProductCommand()
   const installAgentSummary = invocation.kind === 'npx'
     ? 'Enable background mode (requires durable install)'
     : 'Enable background mode (macOS)'
