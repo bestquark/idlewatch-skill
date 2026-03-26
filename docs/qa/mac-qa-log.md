@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R325 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one runtime uninstall off-ramp copy polish fix only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Closed the one open runtime copy seam from R324.
+- Successful `uninstall-agent` output no longer falls back to the raw source-checkout recovery hint `node bin/idlewatch-agent.js install-agent`.
+- That final line now stays on the same calmer product-shaped command story already used by nearby setup, status, install-before-setup, quickstart, configure, and npm/npx surfaces:
+  - `Turn it back on: idlewatch install-agent`
+- Kept uninstall behavior unchanged: this is copy polish only.
+- Kept saved-config and local-log retention wording unchanged.
+- Kept the working telemetry path untouched.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L52 — runtime `uninstall-agent` success output now keeps the final recovery hint on `idlewatch install-agent`
+**Why it mattered:** This lands in a reversible off-ramp where the user is deciding whether background mode feels safe to turn off. The uninstall message was already calm and reassuring about kept config and logs; letting the last line drop back to `node bin/idlewatch-agent.js install-agent` made the product feel slightly more implementation-ish than the surrounding flow.
+
+**What shipped**
+- Reworded the runtime `uninstall-agent` recovery hint so source checkouts stay on `idlewatch install-agent` instead of the raw launcher path.
+- Kept npm/npx-specific durable-install guidance unchanged.
+- Added tighter regression coverage so this off-ramp does not drift back.
+
+### Spot-check coverage for R325
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output names a custom retained local log path'`
+- [x] Runtime `uninstall-agent` success output keeps `Turn it back on: idlewatch install-agent`
+
+### Acceptance notes
+- The uninstall runtime off-ramp now matches the calmer command story already used across nearby setup/status/install surfaces.
+- This is wording polish only; uninstall behavior, saved-config handling, startup/install behavior, and the working telemetry path remain unchanged.
+
 ## Cycle R324 Status: OPEN ⚠️
 
 This pass re-ran the current installer/CLI polish lane from the live checkout and only kept what still felt genuinely user-facing, slightly noisy, or more implementation-shaped than the rest of the flow.

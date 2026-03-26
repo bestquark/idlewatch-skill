@@ -206,7 +206,10 @@ function launchctlOutput(result) {
 }
 
 function backgroundInstallCommandForInvocation(invocation = detectCliInvocation()) {
-  return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
+  if (invocation.kind === 'npx' || invocation.kind === 'source') {
+    return 'idlewatch install-agent'
+  }
+  return inferCliCommand('install-agent')
 }
 
 function backgroundInstallHelpCommand(invocation = detectCliInvocation()) {
