@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:26 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R261 shipped one small first-run status setup-hint polish fix
+**Last updated:** Thursday, March 26th, 2026 — 6:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R262 shipped one small install-before-setup setup-hint polish fix
+
+## Cycle R262 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny install-before-setup copy polish fix only, with no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the install-before-setup handoff.
+- In a source checkout, `install-agent` before saved setup no longer uses the more internal-looking `node bin/idlewatch-agent.js quickstart --no-tui` command for its primary `Save setup:` hint.
+- That branch now keeps the same calmer product-shaped setup hint already used by main help and first-run `status`:
+  - `Save setup:   idlewatch quickstart --no-tui`
+- Kept the more literal source-checkout commands for `Run now`, `Then start`, `Check`, and `Remove`, so the actual operational follow-up remains unchanged.
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, packaged scripts, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R262 implementation
+#### [x] L89 — install-before-setup now keeps the primary setup hint on the calmer `idlewatch quickstart --no-tui` command style
+- Reworded only the `Save setup:` line in the source-checkout `install-agent` pre-setup success path.
+- Left the real operational source-checkout follow-up commands unchanged elsewhere in that block.
+- Added regression coverage so this handoff does not drift back to the raw checkout command for the main setup hint.
+
+### Spot-check coverage for R262
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent follow-up uses source checkout command path|status stays honest after install-agent without saved config|help keeps the happy path above advanced env tuning noise|install-agent help keeps the durable setup path short and clear'`
+
+### Acceptance notes
+- The install-before-setup handoff is a touch calmer and more consistent in the exact moment a user is told what to run first.
+- This is copy polish only; saved-config handling, launch-agent behavior, operational source-checkout commands, and the working telemetry path remain unchanged.
 
 ## Cycle R261 Status: COMPLETE ✅
 

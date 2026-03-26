@@ -1217,13 +1217,13 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.match(run.stdout, /✅ Background mode installed\./)
     assert.match(run.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
-    assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart command')
+    assert.ok(run.stdout.includes('Save setup:   idlewatch quickstart --no-tui'), 'should keep the primary setup hint on the calmer product command')
     assert.ok(run.stdout.includes(`Run now:      ${SOURCE_CMD} run`), 'should show source-checkout foreground run command')
     assert.ok(run.stdout.includes(`Then start:   ${SOURCE_CMD} install-agent`), 'should show source-checkout start command after pre-installing background mode')
     assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
-    assert.doesNotMatch(run.stdout, /Save setup:.*idlewatch quickstart/)
+    assert.doesNotMatch(run.stdout, /Save setup:.*node .*quickstart --no-tui/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

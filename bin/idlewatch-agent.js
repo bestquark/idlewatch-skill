@@ -1194,7 +1194,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     if (!shouldStartImmediately) {
       console.log('✅ Background mode installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
-      console.log(`   Save setup:   ${quickstartCommand}`)
+      console.log(`   Save setup:   ${preferredHelpSetupCommand('quickstart')}`)
       console.log(`   Run now:      ${runCommand}`)
       console.log(`   Then start:   ${installAgentCommand}`)
       console.log(`   Config path:  ${envFile}`)
