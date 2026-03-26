@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R335 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one docs consistency fix that still cleared the bar in the installer/setup lane.
+
+### Outcome
+- Found one remaining scan-first wording seam in `docs/packaging/macos-launch-agent.md`: the packaged macOS background-mode doc still referred to bare `idlewatch quickstart` in the prerequisite/install refresh story while the rest of the current setup guidance already converged on the calmer text-prompt path `idlewatch quickstart --no-tui`.
+- Updated that doc-only setup story so the prerequisite note, saved-config install branch, and refresh note all now name `idlewatch quickstart --no-tui` explicitly.
+- Kept runtime behavior unchanged: no auth, ingest, telemetry, packaging mechanics, launch-agent behavior, or saved-config semantics changed.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L54 — packaged macOS LaunchAgent doc now keeps the prerequisite/install refresh story on `idlewatch quickstart --no-tui`
+**Why it mattered:** This was tiny, but it sat in a scan-first setup/install doc that people can hit while deciding how to finish or refresh background mode. Leaving it on bare `quickstart` reintroduced a small command-story wobble right where the rest of the product already prefers the calmer text-prompt setup path.
+
+**What shipped**
+- Updated the prerequisite note to reference `idlewatch quickstart --no-tui`
+- Updated the saved-config install note to reference `idlewatch quickstart --no-tui`
+- Updated the refresh note to reference `idlewatch quickstart --no-tui`
+- Kept this docs-only
+
+### Spot-check coverage for R335
+- [x] `docs/packaging/macos-launch-agent.md` now uses `idlewatch quickstart --no-tui` consistently in the prerequisite/install refresh story
+- [x] No runtime behavior changed
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `grep -n "quickstart --no-tui\|idlewatch quickstart" docs/packaging/macos-launch-agent.md`
+
+### Acceptance notes
+- The packaged macOS background-mode doc now matches the calmer setup/reconfigure command story already used by the CLI, README, onboarding docs, and recent QA-driven polish fixes.
+- This is docs polish only; the now-working telemetry path remains untouched.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:01 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny docs command-story seam fixed in this pass
+
 ## Cycle R334 Status: COMPLETE ✅
 
 This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt confusing, noisy, repetitive, visually busy, or more technical than it needs to be for a normal user.

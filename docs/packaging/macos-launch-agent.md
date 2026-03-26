@@ -6,7 +6,7 @@ Run IdleWatch as a background service that starts automatically at login.
 
 - IdleWatch.app installed (typically `/Applications/IdleWatch.app`)
 - macOS 12+ (Monterey or later)
-- Optional: saved IdleWatch config from `idlewatch quickstart` if you want the agent to publish to IdleWatch Cloud right away
+- Optional: saved IdleWatch config from `idlewatch quickstart --no-tui` if you want the agent to publish to IdleWatch Cloud right away
 
 ## Install
 
@@ -24,10 +24,10 @@ npm run install:macos-launch-agent
 
 This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
 
-- If `~/.idlewatch/idlewatch.env` already exists from quickstart, the install also loads the agent right away and background mode starts normally.
+- If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away and background mode starts normally.
 - If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
 
-Config changes are picked up on the next start. After running quickstart or changing settings, re-run the install script once to load or refresh background mode with the saved config.
+Config changes are picked up on the next start. After running `idlewatch quickstart --no-tui` or changing settings, re-run the install script once to load or refresh background mode with the saved config.
 
 ### Configuration
 
