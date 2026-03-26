@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:24 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R265 shipped one tiny status-copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 7:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R266 shipped one tiny status-hint copy polish fix
+
+## Cycle R266 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `status` next-step copy polish fix only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the macOS `status` next-step hints.
+- When `status` detects background mode is already loaded/running, its follow-up hint no longer says the slightly more toggle-ish `Background: already enabled` / `Background: already enabled via the durable install`.
+- Those hint lines now stay aligned with the calmer wording already used in the main background state line:
+  - `Background: already on`
+  - `Background: already on via the durable install`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R266 implementation
+#### [x] L91 — loaded/running `status` hint now says `already on`, not `already enabled`
+- Reworded only the loaded/running background hint text in `status`.
+- Kept the actual branch behavior and follow-up commands unchanged.
+- Added regression coverage for the `npx` durable-install handoff so this status hint does not drift back to `already enabled`.
+
+### Spot-check coverage for R266
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='status command keeps loaded npx background hints on calmer already-on wording|status command says background is on while waiting for the next check when launchd has it loaded|status command keeps npx background hints short and durable-install oriented|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded'`
+
+### Acceptance notes
+- `status` now reads a touch more consistently in the already-on background branches that still had older `enabled` wording.
+- This is copy-only; setup/reconfigure, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R265 Status: COMPLETE ✅
 

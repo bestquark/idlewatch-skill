@@ -1784,7 +1784,7 @@ if (statusRequested) {
       console.log(`  Start:    ${inferCliCommand('run')}`)
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
-        console.log('  Background: already enabled via the durable install')
+        console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start:    idlewatch install-agent')
       } else {
@@ -1797,7 +1797,7 @@ if (statusRequested) {
         const launchAgent = probeOwnedLaunchAgentState()
         const installAgentCommand = inferCliCommand('install-agent')
         if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
-          console.log('  Background: already enabled')
+          console.log('  Background: already on')
         } else if (launchAgent.state === 'installed-not-loaded') {
           console.log(`  Start:    ${installAgentCommand}`)
         } else {
@@ -1814,7 +1814,7 @@ if (statusRequested) {
     if (detectCliInvocation().kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
-        console.log('  Background: already enabled via the durable install')
+        console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start:    idlewatch install-agent')
       } else {

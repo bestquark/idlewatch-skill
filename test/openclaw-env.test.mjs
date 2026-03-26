@@ -2279,6 +2279,60 @@ exit 0
   }
 })
 
+test('status command keeps loaded npx background hints on calmer already-on wording', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-npx-loaded-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-npx-loaded-bin-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(path.join(configDir, 'logs'), { recursive: true })
+    fs.mkdirSync(path.join(tempDir, 'Library', 'LaunchAgents'), { recursive: true })
+    fs.writeFileSync(path.join(tempDir, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Hint Box',
+      'IDLEWATCH_DEVICE_ID=hint-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(fakeBinDir, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  cat <<'EOF'
+state = waiting
+EOF
+  exit 0
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background:\s+on \(waiting for next check\)/)
+    assert.match(run.stdout, /Background:\s+already on via the durable install/)
+    assert.doesNotMatch(run.stdout, /Background:\s+already enabled via the durable install/)
+    assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command treats quoted saved config values like normal values', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-quoted-env-'))
   try {
