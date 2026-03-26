@@ -2,6 +2,33 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R328 Status: COMPLETE ✅
+
+This pass re-checked the current installer/CLI polish lane against the live checkout and only kept something if it still felt like a real small, low-risk UX fix instead of busywork.
+
+### Outcome
+- The previously-open uninstall recovery-hint seam is already fixed in the live checkout.
+- Runtime `uninstall-agent` output keeps the calmer `Turn it back on: idlewatch install-agent` command story.
+- The narrow installer/setup/status/reconfigure lane still reads clean and consistent.
+- No new setup/reconfigure, saved-config, startup/install, or validation-message issue stood out as worth changing in this cycle.
+- The now-working telemetry path remains untouched.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No new small, low-risk polish issue still felt worth implementing in this cycle.
+
+### Spot-check coverage for R328
+- [x] Runtime `uninstall-agent` success output keeps the calmer recovery hint
+- [x] Targeted installer/CLI regression pass stays green
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs`
+- [x] Result: **85 passed, 0 failed**
+
+### Acceptance notes
+- No code change was needed from the live checkout state.
+- This cycle closes verification only; auth/ingest design, packaging, and telemetry behavior remain unchanged.
+
 ## Cycle R327 Status: COMPLETE ✅
 
 This pass re-ran the narrow installer/CLI polish lane from the live checkout and only kept something if it still felt confusing, noisy, repetitive, or unnecessarily technical for a normal user.
