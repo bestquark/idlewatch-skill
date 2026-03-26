@@ -1106,7 +1106,7 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
   }
 })
 
-test('uninstall-agent when nothing is installed still reassures that config and logs are kept', () => {
+test('uninstall-agent when nothing is installed stays honest about future config and log paths', () => {
   if (process.platform !== 'darwin') {
     return
   }
@@ -1122,9 +1122,45 @@ test('uninstall-agent when nothing is installed still reassures that config and 
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background mode is already off\./)
+    assert.match(run.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
+    assert.match(run.stdout, /Local logs would go in .*\.idlewatch\/logs/)
+    assert.doesNotMatch(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
+    assert.doesNotMatch(run.stdout, /LaunchAgent is not installed\. Nothing to remove\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('uninstall-agent no-op still says stays when saved config or logs already exist', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-noop-existing-'))
+  const configDir = path.join(tempDir, '.idlewatch')
+  const logDir = path.join(configDir, 'logs')
+
+  fs.mkdirSync(logDir, { recursive: true })
+  writeFileSync(path.join(configDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory'
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background mode is already off\./)
     assert.match(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
-    assert.doesNotMatch(run.stdout, /LaunchAgent is not installed\. Nothing to remove\./)
+    assert.doesNotMatch(run.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(run.stdout, /Local logs would go in .*\.idlewatch\/logs/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

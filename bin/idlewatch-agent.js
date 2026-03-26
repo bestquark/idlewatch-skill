@@ -688,6 +688,36 @@ function resolvePersistedLocalLogPath() {
   return null
 }
 
+function printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting = true }) {
+  const defaultLogDir = path.join(dataDir, 'logs')
+  const hasSavedConfig = fs.existsSync(envFile)
+  const hasKnownLocalLog = Boolean(localLogPath)
+  const hasExistingLogTarget = hasKnownLocalLog
+    ? fs.existsSync(localLogPath) || fs.existsSync(path.dirname(localLogPath))
+    : fs.existsSync(defaultLogDir)
+
+  if (assumeExisting || hasSavedConfig) {
+    console.log(`   Saved config stays at ${envFile}`)
+  } else {
+    console.log(`   Saved config would live at ${envFile}`)
+  }
+
+  if (hasKnownLocalLog) {
+    if (assumeExisting || hasExistingLogTarget) {
+      console.log(`   Local log stays at ${localLogPath}`)
+    } else {
+      console.log(`   Local log would be written at ${localLogPath}`)
+    }
+    return
+  }
+
+  if (assumeExisting || hasExistingLogTarget) {
+    console.log(`   Local logs stay in ${defaultLogDir}`)
+  } else {
+    console.log(`   Local logs would go in ${defaultLogDir}`)
+  }
+}
+
 function resolveDashboardLogPath(host) {
   const persistedLogPath = resolvePersistedLocalLogPath()
   if (persistedLogPath) {
@@ -1257,12 +1287,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     if (!fs.existsSync(plistPath)) {
       const localLogPath = resolvePersistedLocalLogPath()
       console.log('Background mode is already off.')
-      console.log(`   Saved config stays at ${envFile}`)
-      if (localLogPath) {
-        console.log(`   Local log stays at ${localLogPath}`)
-      } else {
-        console.log(`   Local logs stay in ${path.join(dataDir, 'logs')}`)
-      }
+      printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
       process.exit(0)
     }
 
@@ -1277,12 +1302,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     const invocation = detectCliInvocation()
     const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ Background mode turned off.')
-    console.log(`   Saved config stays at ${envFile}`)
-    if (localLogPath) {
-      console.log(`   Local log stays at ${localLogPath}`)
-    } else {
-      console.log(`   Local logs stay in ${path.join(dataDir, 'logs')}`)
-    }
+    printUninstallRetentionSummary({ envFile, dataDir, localLogPath })
     console.log(`   Turn it back on: ${backgroundInstallCommandForInvocation(invocation)}`)
     if (invocation.kind === 'npx') {
       console.log('   Background mode still belongs to the durable install, not this one-off npx run.')

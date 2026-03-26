@@ -1,62 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:22 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R267 found one small uninstall no-op wording trust wobble
+**Last updated:** Thursday, March 26th, 2026 — 7:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R267 closed with one small clean-home uninstall wording polish fix
 
-## Cycle R267 Status: OPEN ⚠️
+## Cycle R267 Status: COMPLETE ✅
 
-This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+This pass stayed intentionally narrow and product-facing: one tiny uninstall no-op honesty fix only, with no setup-flow reshaping, no saved-config behavior changes, no startup/install behavior changes, and no telemetry-path changes.
 
 ### Outcome
-- Most of the current onboarding and background-mode surface still feels done: clean-home `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, clean-home `--test-publish`, invalid cloud-key recovery, `npm exec` durable-install guidance, and global npm `postinstall` still read like one calm product.
-- One small user-facing uninstall seam is still worth fixing before calling the macOS off-ramp fully polished.
-- In a clean HOME where nothing has ever been configured, `uninstall-agent` now calmly says background mode is already off, but it still follows with `Saved config stays at ...` and `Local logs stay in ...` even though neither path exists yet.
-- That output is technically harmless, but it creates a tiny trust wobble in a cautious cleanup moment by implying IdleWatch kept files that were never created.
+- Shipped one small, low-risk polish improvement in the clean-home `uninstall-agent` no-op path.
+- In a brand-new HOME with no saved setup and no local logs yet, `uninstall-agent` still calmly says background mode is already off, but it no longer implies IdleWatch kept files that were never created.
+- That path now distinguishes between real retained files and future/default locations:
+  - `Saved config would live at ...`
+  - `Local logs would go in ...`
+- Normal uninstall behavior with actual saved config/logs remains unchanged and still uses the calmer retained wording:
+  - `Saved config stays at ...`
+  - `Local logs stay in ...` / `Local log stays at ...`
+- Added regression coverage for both the clean-home no-op wording and the existing retained-file no-op wording.
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
-### Prioritized findings
+### R267 implementation
 
-#### [L92] Clean-home `uninstall-agent` still implies config/logs were kept even when nothing exists yet
-- **Priority:** Low
-- **Why this matters:** The current no-op uninstall path is already much calmer than the old `LaunchAgent is not installed` wording, but it now slightly over-corrects. In a brand-new HOME, saying `Saved config stays at ...` and `Local logs stay in ...` sounds like IdleWatch preserved real files, when in fact there is nothing on disk yet. That is a tiny wording issue, but it lands in a trust-sensitive “I’m cleaning this up” moment where the product should stay strictly honest.
-- **Exact repro:**
-  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-  2. `FAKEBIN=$(mktemp -d)`
-  3. Create fake `launchctl` shim that leaves the agent not loaded while allowing uninstall checks to succeed:
-     ```bash
-     cat > "$FAKEBIN/launchctl" <<'EOF'
-     #!/usr/bin/env bash
-     set -euo pipefail
-     cmd="${1:-}"
-     if [[ "$cmd" == "print" ]]; then
-       exit 1
-     fi
-     if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
-       exit 0
-     fi
-     exit 0
-     EOF
-     chmod +x "$FAKEBIN/launchctl"
-     ```
-  4. `TMPHOME=$(mktemp -d)`
-  5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
-  6. Observe output:
-     - `Background mode is already off.`
-     - `Saved config stays at .../.idlewatch/idlewatch.env`
-     - `Local logs stay in .../.idlewatch/logs`
-  7. Verify those paths do not exist yet:
-     - `[ -e "$TMPHOME/.idlewatch/idlewatch.env" ]` → false
-     - `[ -d "$TMPHOME/.idlewatch/logs" ]` → false
-- **Expected behavior:**
-  - The clean-home no-op uninstall path should stay as calm as it is now, but it should not imply files were preserved when no setup or logs exist yet.
-  - The messaging should distinguish between “these paths are where config/logs would live” vs “existing config/logs were kept”.
-  - The off-ramp should remain short, reassuring, and strictly honest.
-- **Acceptance criteria:**
-  - Clean-home `uninstall-agent` no longer implies saved config or local logs were kept when those paths do not exist.
-  - If retention paths are still shown in that state, the wording clearly frames them as future/default locations rather than existing preserved files.
-  - Normal uninstall behavior with real saved config/logs remains unchanged.
-  - Regression coverage exists for the clean-home no-op uninstall path so the copy does not drift back.
+#### [x] L92 — clean-home `uninstall-agent` no longer implies config/logs were kept when nothing exists yet
+- Added a tiny shared uninstall retention-summary helper so the CLI can choose honest wording based on whether saved config/log targets already exist.
+- Kept the real uninstall-success path unchanged when setup/logs already exist.
+- Reworded only the clean-home no-op branch to frame paths as future/default locations instead of preserved files.
+- Added regression coverage for:
+  - clean-home no-op uninstall wording
+  - no-op uninstall when saved config/logs already exist
 
 ### Spot-check coverage for R267
 - [x] Main `--help`
