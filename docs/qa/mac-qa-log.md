@@ -1,8 +1,106 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:18 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R230 shipped one tiny saved-config inline-comment parsing polish
+**Last updated:** Thursday, March 26th, 2026 — 3:33 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - R231 found one small postinstall npx-path consistency issue
+
+## Cycle R231 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Core setup, saved-config reload, install-before-setup, device-ID continuity, metric-toggle persistence, `--test-publish`, invalid cloud-key recovery, uninstall retention messaging, and durable-vs-`npx` background guidance still feel calm and coherent.
+- `npm run validate:onboarding --silent` and `npm test --silent` both still passed cleanly.
+- One small user-facing copy mismatch remains worth fixing: global npm `postinstall` still suggests the older `npx idlewatch quickstart` path instead of the calmer `npx idlewatch quickstart --no-tui` one-off path the docs now consistently prefer.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [L73] Global npm postinstall still suggests the older `npx idlewatch quickstart` path instead of the calmer `--no-tui` one-off setup flow
+- **Priority:** Low
+- **Why this matters:** The recent docs polish already converged on `npx idlewatch quickstart --no-tui` as the simplest copy-paste path for one-off use. But right after a global install — a scan-first moment where users are deciding what to do next — postinstall still prints the older `npx idlewatch quickstart` line. That inconsistency is small, but it slightly muddies the install-path story and reintroduces a tiny “which setup command do you actually want me to use?” wobble.
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `TMP_PREFIX=$(mktemp -d)`
+  3. `TMP_CACHE=$(mktemp -d)`
+  4. `TMP_HOME=$(mktemp -d)`
+  5. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+  6. Observe postinstall output:
+     - `Set up this device:`
+     - `  idlewatch quickstart`
+     - `Other install paths:`
+     - `  npx idlewatch quickstart`
+- **Expected behavior:**
+  - Global npm postinstall should keep the install-path story internally consistent with the already-polished README / skill docs.
+  - If one-off guidance is shown there at all, it should use the same lowest-friction text-prompt command the docs now prefer: `npx idlewatch quickstart --no-tui`.
+  - The output should stay short, CLI-first, and product-shaped.
+- **Acceptance criteria:**
+  - Global npm postinstall no longer suggests bare `npx idlewatch quickstart` in its one-off path hint.
+  - The one-off path shown there matches the docs’ simpler `--no-tui` guidance.
+  - Regression coverage exists for the postinstall output so this copy does not drift back.
+
+### Spot-check coverage for R231
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `uninstall-agent --help`
+- [x] `uninstall-agent` when nothing is installed
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] Global `npm install -g . --foreground-scripts` postinstall copy
+- [x] `npm run validate:onboarding --silent`
+- [x] `npm test --silent`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `TMPPREFIX=$(mktemp -d)`
+6. `TMPCACHE=$(mktemp -d)`
+7. `FAKEBIN=$(mktemp -d)`
+8. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+9. `node bin/idlewatch-agent.js --help`
+10. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+15. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+16. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+17. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+18. `node bin/idlewatch-agent.js uninstall-agent --help`
+19. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+20. `npm exec --yes -- idlewatch --help`
+21. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch install-agent`
+22. `HOME="$(mktemp -d)" npm install -g . --prefix "$TMPPREFIX" --cache "$TMPCACHE" --foreground-scripts`
+23. `npm run validate:onboarding --silent`
+24. `npm test --silent`
+
+### Acceptance notes
+- Main CLI help, first-run status, install-before-setup behavior, saved-config reconfigure, device-ID continuity, metric-toggle persistence, `--test-publish`, invalid cloud-key recovery, uninstall messaging, and `npm exec` durable-install guidance still read like one calm product.
+- The remaining issue is narrow and copy-only: global npm postinstall should match the already-polished `npx ... --no-tui` one-off guidance.
+- No auth, ingest, packaging-flow, launch-agent-behavior, or telemetry-path redesign is needed here.
 
 ## Cycle R230 Status: CLOSED ✅
 
