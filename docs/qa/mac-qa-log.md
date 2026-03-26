@@ -1,24 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:03 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R280 re-checked the active polish lane; no new product-facing issue cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 8:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R280 shipped one tiny quickstart-help polish improvement in the active polish lane
 
 ## Cycle R280 Status: COMPLETE ✅
 
 This pass re-checked the current polish lane from the active checkout, not just prior closed notes: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this pass.
-- Fresh spot checks still read like one calm product across main `--help`, `configure --help`, `reconfigure --help`, `status --help`, clean-home `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, `uninstall-agent`, clean-home `--test-publish`, invalid cloud-key recovery, `npm exec --yes -- idlewatch --help`, and durable-install handoff from `npm exec --yes -- idlewatch install-agent`.
-- The targeted regression suite stayed green for help-copy calmness, saved-config reload hints, device-ID continuity, metric-toggle persistence, uninstall retention messaging, npm/npx path clarity, and background-mode refresh wording.
+- Shipped one tiny, low-risk help polish improvement.
+- Source-checkout `quickstart --help` now uses the same calmer help-only command formatter already used by main help and first-run status:
+  - `Usage:  idlewatch quickstart --no-tui`
+- This removes one more internal-looking `node bin/idlewatch-agent.js ...` seam from the setup surface without changing runtime behavior.
 - The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
-- None. No product-facing polish regression was worth opening from this cycle.
+
+#### [x] L33 — source-checkout `quickstart --help` now matches the polished help-only setup command style
+**Why it matters:** Main help and first-run status were already polished to avoid leading with internal-looking `node bin/...` setup commands in source-checkout contexts. `quickstart --help` still exposed that seam at a first-run decision point.
+
+**What shipped**
+- Reused the existing help-only setup command formatter for quickstart subcommand help.
+- Non-TTY quickstart help now shows:
+  - `Usage:  idlewatch quickstart --no-tui`
+- The local-first setup description stays unchanged.
 
 ### Spot-check coverage for R280
 - [x] Main `--help`
+- [x] `quickstart --help`
 - [x] `configure --help`
 - [x] `reconfigure --help`
 - [x] `status --help`
