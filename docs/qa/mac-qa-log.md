@@ -13810,3 +13810,29 @@ This pass stayed intentionally tiny: one scan-first `status` layout polish fix, 
 - Introduced a tiny shared status-field printer for the `status` surface so labels pad consistently.
 - Applied it to first-run preview rows and existing background/sample lines without changing the underlying content.
 - Added regression coverage so these scan-first status states stay aligned while preserving the current wording and behavior.
+
+## Cycle R115 Status: CLOSED
+
+This pass stayed intentionally tiny: one interactive setup validation polish fix, with no auth, ingest, packaging, or telemetry-path changes.
+
+### Outcome
+- Interactive setup/reconfigure no longer silently treats any non-`2` mode answer as cloud mode.
+- The setup wizard now keeps the choice explicit: only `1` means Cloud link and only `2` means Local-only.
+- Invalid mode answers now get one short correction line instead of quietly drifting into the wrong setup path.
+- The working telemetry path remains untouched.
+
+### R115 spot-check coverage
+- [x] `node --test test/enrollment.test.mjs --test-name-pattern 'resolveSetupModeChoice'`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'does not fall back to the text wizard after a TUI run already wrote config'`
+
+### Prioritized findings
+
+#### [x] L26 — interactive setup mode selection no longer silently defaults to cloud on invalid input
+**Why it matters:** This is a tiny but real first-run friction seam. In the text setup wizard, entering anything except `2` used to quietly become cloud mode. That makes a simple typo feel more consequential than it should, especially for people who were trying to keep setup local-only and minimal.
+
+**What shipped**
+- Added a tiny shared setup-mode resolver for the interactive wizard.
+- `1` still maps to Cloud link and `2` still maps to Local-only.
+- Any other answer now stays in the prompt loop and shows:
+  - `Choose 1 for Cloud link or 2 for Local-only.`
+- Added regression coverage for the mode resolver so this setup-choice seam stays explicit and predictable.

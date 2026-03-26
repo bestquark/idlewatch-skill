@@ -355,6 +355,25 @@ export function promptModeText({ isReconfigure = false } = {}) {
   return `\n${title}\n\nSetup mode:\n  1) Cloud link — publish with an API key from idlewatch.com/api\n  2) Local-only — keep samples on this Mac\n`
 }
 
+export function resolveSetupModeChoice(rawChoice, defaultChoice = '1') {
+  const normalizedDefault = String(defaultChoice || '1').trim() === '2' ? '2' : '1'
+  const normalizedChoice = String(rawChoice || '').trim() || normalizedDefault
+
+  if (normalizedChoice === '1') {
+    return { ok: true, choice: '1', mode: 'production' }
+  }
+
+  if (normalizedChoice === '2') {
+    return { ok: true, choice: '2', mode: 'local' }
+  }
+
+  return {
+    ok: false,
+    choice: normalizedChoice,
+    message: 'Choose 1 for Cloud link or 2 for Local-only.'
+  }
+}
+
 export function tuiFallbackMessage(reason) {
   if (!reason || ['disabled', 'cargo-missing', 'bundled-binary-missing', 'bundled-binary-missing-and-cargo-missing'].includes(reason)) {
     return 'Using text setup.'
@@ -491,8 +510,14 @@ export async function runEnrollmentWizard(options = {}) {
     if (isReconfigure) {
       console.log(`Current device: ${existingConfig.deviceName} (${currentMode === 'production' ? 'cloud' : 'local-only'})`)
     }
-    const modeInput = (await questionOrCancel(rl, `\nMode [1/2] (default ${modeDefault}): `)).trim() || modeDefault
-    mode = modeInput === '2' ? 'local' : 'production'
+    while (true) {
+      const modeChoice = resolveSetupModeChoice(await questionOrCancel(rl, `\nMode [1/2] (default ${modeDefault}): `), modeDefault)
+      if (modeChoice.ok) {
+        mode = modeChoice.mode
+        break
+      }
+      console.log(modeChoice.message)
+    }
     const deviceNameInput = (await questionOrCancel(rl, `Device name [${deviceName}]: `)).trim()
     deviceName = normalizeDeviceName(deviceNameInput || deviceName)
   }
