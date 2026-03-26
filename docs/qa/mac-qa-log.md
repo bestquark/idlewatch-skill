@@ -1,8 +1,122 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:05 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R266 shipped one tiny status-hint copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 7:22 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - R267 found one small uninstall no-op wording trust wobble
+
+## Cycle R267 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Most of the current onboarding and background-mode surface still feels done: clean-home `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, clean-home `--test-publish`, invalid cloud-key recovery, `npm exec` durable-install guidance, and global npm `postinstall` still read like one calm product.
+- One small user-facing uninstall seam is still worth fixing before calling the macOS off-ramp fully polished.
+- In a clean HOME where nothing has ever been configured, `uninstall-agent` now calmly says background mode is already off, but it still follows with `Saved config stays at ...` and `Local logs stay in ...` even though neither path exists yet.
+- That output is technically harmless, but it creates a tiny trust wobble in a cautious cleanup moment by implying IdleWatch kept files that were never created.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [L92] Clean-home `uninstall-agent` still implies config/logs were kept even when nothing exists yet
+- **Priority:** Low
+- **Why this matters:** The current no-op uninstall path is already much calmer than the old `LaunchAgent is not installed` wording, but it now slightly over-corrects. In a brand-new HOME, saying `Saved config stays at ...` and `Local logs stay in ...` sounds like IdleWatch preserved real files, when in fact there is nothing on disk yet. That is a tiny wording issue, but it lands in a trust-sensitive “I’m cleaning this up” moment where the product should stay strictly honest.
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `FAKEBIN=$(mktemp -d)`
+  3. Create fake `launchctl` shim that leaves the agent not loaded while allowing uninstall checks to succeed:
+     ```bash
+     cat > "$FAKEBIN/launchctl" <<'EOF'
+     #!/usr/bin/env bash
+     set -euo pipefail
+     cmd="${1:-}"
+     if [[ "$cmd" == "print" ]]; then
+       exit 1
+     fi
+     if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+       exit 0
+     fi
+     exit 0
+     EOF
+     chmod +x "$FAKEBIN/launchctl"
+     ```
+  4. `TMPHOME=$(mktemp -d)`
+  5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+  6. Observe output:
+     - `Background mode is already off.`
+     - `Saved config stays at .../.idlewatch/idlewatch.env`
+     - `Local logs stay in .../.idlewatch/logs`
+  7. Verify those paths do not exist yet:
+     - `[ -e "$TMPHOME/.idlewatch/idlewatch.env" ]` → false
+     - `[ -d "$TMPHOME/.idlewatch/logs" ]` → false
+- **Expected behavior:**
+  - The clean-home no-op uninstall path should stay as calm as it is now, but it should not imply files were preserved when no setup or logs exist yet.
+  - The messaging should distinguish between “these paths are where config/logs would live” vs “existing config/logs were kept”.
+  - The off-ramp should remain short, reassuring, and strictly honest.
+- **Acceptance criteria:**
+  - Clean-home `uninstall-agent` no longer implies saved config or local logs were kept when those paths do not exist.
+  - If retention paths are still shown in that state, the wording clearly frames them as future/default locations rather than existing preserved files.
+  - Normal uninstall behavior with real saved config/logs remains unchanged.
+  - Regression coverage exists for the clean-home no-op uninstall path so the copy does not drift back.
+
+### Spot-check coverage for R267
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] Global `npm install -g . --foreground-scripts` postinstall copy
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] `uninstall-agent --help`
+- [x] `uninstall-agent` when nothing is installed
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+14. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+15. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+16. `HOME="$(mktemp -d)" npm install -g . --prefix "$(mktemp -d)" --cache "$(mktemp -d)" --foreground-scripts`
+17. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+18. `node bin/idlewatch-agent.js uninstall-agent --help`
+19. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+20. `TMPHOME4=$(mktemp -d) && PATH="$FAKEBIN:$PATH" HOME="$TMPHOME4" node bin/idlewatch-agent.js uninstall-agent && test ! -e "$TMPHOME4/.idlewatch/idlewatch.env" && test ! -d "$TMPHOME4/.idlewatch/logs"`
+
+### Acceptance notes
+- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
+- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
+- Metric-selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish`, invalid cloud-key recovery, and npm/npx install guidance still keep the next step short and actionable without surfacing extra implementation detail.
+- The remaining issue is small and wording-only: the clean-home uninstall no-op path should stay honest about config/log retention when no files exist yet.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R266 Status: COMPLETE ✅
 
