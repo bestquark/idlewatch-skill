@@ -1,8 +1,33 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:02 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R271 spot-check pass found no new product-facing polish issue
+**Last updated:** Thursday, March 26th, 2026 — 8:16 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R272 shipped one tiny help-copy polish fix
+
+## Cycle R272 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-copy consistency fix only, with no setup-flow reshaping, no saved-config behavior change, no startup/install behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in source-checkout help text only.
+- `configure --help`, `reconfigure --help`, and `status --help` no longer fall back to the more internal-looking `node bin/idlewatch-agent.js install-agent` command in their saved-config refresh hint.
+- Those scan-first help surfaces now keep the same calmer product-shaped refresh command already used in the `npx` path:
+  - `If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config.`
+- Kept runtime setup/reconfigure/status behavior, saved-config handling, launch-agent behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Outcome checklist
+- [x] `configure --help` now keeps the calmer product-shaped refresh command in source checkouts
+- [x] `reconfigure --help` now keeps the calmer product-shaped refresh command in source checkouts
+- [x] `status --help` now keeps the calmer product-shaped refresh command in source checkouts
+- [x] Regression coverage updated for all three help surfaces
+
+### Spot-check coverage for R272
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status help keeps the calmer background-mode wording and saved-config refresh hint'`
+
+### Acceptance notes
+- This keeps the scan-first help surfaces a touch more consistent with the calmer `idlewatch ...` command style already used elsewhere in source-checkout help.
+- This is help-copy only; setup/reconfigure/status behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R271 Status: COMPLETE ✅
 

@@ -201,6 +201,13 @@ function backgroundInstallCommandForInvocation(invocation = detectCliInvocation(
   return invocation.kind === 'npx' ? 'idlewatch install-agent' : inferCliCommand('install-agent')
 }
 
+function backgroundInstallHelpCommand(invocation = detectCliInvocation()) {
+  if (invocation.kind === 'source' || invocation.kind === 'npx') {
+    return 'idlewatch install-agent'
+  }
+  return inferCliCommand('install-agent')
+}
+
 function resolveDurableLaunchAgentProgramArguments() {
   const sourceScriptPath = path.resolve(process.argv[1] || '')
   const pathEntries = String(process.env.PATH || '')
@@ -1087,7 +1094,7 @@ if (args.has('--help') || args.has('-h')) {
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
-  const backgroundInstallCommand = backgroundInstallCommandForInvocation()
+  const backgroundInstallCommand = backgroundInstallHelpCommand()
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = inferCliCommand('menubar')
   const reconfigureCommand = inferCliCommand('reconfigure')
