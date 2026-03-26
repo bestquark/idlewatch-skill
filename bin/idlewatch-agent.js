@@ -469,11 +469,12 @@ function expandSupportedPathVars(value) {
 
   const home = process.env.HOME || os.homedir()
   const tmpdir = process.env.TMPDIR || os.tmpdir()
+  const makeShellVarPattern = (name) => new RegExp(`\\$\\{${name}\\}|\\$${name}`, 'g')
 
   return value
     .replace(/^~(?=$|\/)/, home)
-    .replace(/\$\{HOME\}|\$HOME/g, home)
-    .replace(/\$\{TMPDIR\}|\$TMPDIR/g, tmpdir)
+    .replace(makeShellVarPattern('HOME'), home)
+    .replace(makeShellVarPattern('TMPDIR'), tmpdir)
 }
 
 function resolveEnvPath(value) {

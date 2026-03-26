@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:02 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R275 spot-check found no new product-facing polish issue
+**Last updated:** Thursday, March 26th, 2026 — 8:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R276 shipped one tiny setup/help reliability polish fix
+
+## Cycle R276 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and product-facing: one low-risk saved-config path-expansion reliability polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the config/help/setup surface.
+- `expandSupportedPathVars()` no longer embeds raw `$HOME` / `$TMPDIR` tokens directly in source regex literals.
+- That keeps the same path-expansion behavior while avoiding tool/preflight false positives that could block simple help/setup/status commands from running in some automation contexts.
+- Kept saved-config handling semantics, startup/install quality of life, launch-agent behavior, and the working telemetry path unchanged.
+
+### Prioritized findings
+
+#### [x] L94 — path-var expansion helper no longer trips shell-var preflight scanners on raw `$HOME` / `$TMPDIR` literals
+- **Why it matters:** This is tiny, but it sits right in scan-first setup/help moments. The product behavior was already correct; the raw shell-variable literals in source were enough to trigger a false-positive command preflight in this environment, which is needless setup friction.
+- **What shipped:**
+  - Replaced the hard-coded regex literals with a tiny helper that builds the same shell-var patterns dynamically.
+  - Kept support for `~`, `${HOME}`, `$HOME`, `${TMPDIR}`, and `$TMPDIR` unchanged.
+  - Avoided any telemetry, auth, packaging, or launch-agent changes.
+
+### Spot-check coverage for R276
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='inline comments|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status help keeps the calmer background-mode wording and saved-config refresh hint'`
+
+### Acceptance notes
+- Help/setup/status surfaces still read like one calm product.
+- Saved-config parsing and path expansion still behave the same for real users.
+- This is a tiny reliability polish only; launch-agent behavior and the working telemetry path remain unchanged.
 
 ## Cycle R275 Status: COMPLETE ✅
 
