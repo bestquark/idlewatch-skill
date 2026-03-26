@@ -1117,16 +1117,16 @@ if (args.has('--help') || args.has('-h')) {
     : 'Uses plain-text prompts.'
   const statusCommand = preferredProductCommand('status')
   const statusUsageCommand = preferredProductCommand('status')
-  const createCommand = inferCliCommand('create')
+  const createCommand = preferredProductCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
   const backgroundInstallCommand = backgroundInstallHelpCommand()
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
-  const menubarCommand = inferCliCommand('menubar')
+  const menubarCommand = preferredProductCommand('menubar')
   const reconfigureCommand = preferredProductCommand('reconfigure')
   const reconfigureUsageCommand = preferredHelpSetupCommand('reconfigure')
   const reconfigureUsage = process.stdin.isTTY ? `${reconfigureUsageCommand} [--no-tui]` : reconfigureUsageCommand
-  const dashboardCommand = inferCliCommand('dashboard')
-  const runCommand = inferCliCommand('run')
+  const dashboardCommand = preferredProductCommand('dashboard')
+  const runCommand = preferredProductCommand('run')
   const subHelp = {
     quickstart: `${quickstartCommand} — Set up this device
 

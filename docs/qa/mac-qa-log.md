@@ -2,6 +2,64 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R341 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and kept the same installer/CLI polish lane strict: only ship something if it removes a little product noise without changing setup, saved-config behavior, launch-agent behavior, or the now-working telemetry path.
+
+### Outcome
+- Found one remaining small command-story seam in nearby CLI help: `run`, `create`, `dashboard`, and `menubar` help screens still fell back to raw `node bin/idlewatch-agent.js ...` title/usage lines even though the calmer setup/install/help surfaces already present the product as `idlewatch ...`.
+- Updated those four help screens to keep the same calmer `idlewatch ...` command shape.
+- Kept runtime behavior unchanged: this is help-copy polish only.
+- Preserved the working telemetry path.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L56 — nearby CLI help screens now keep the calmer `idlewatch ...` command story
+**Why it mattered:** This is small, but it lands in a scan-first help moment right next to setup/install flows that already read like one calm product. Letting these nearby commands fall back to raw `node bin/...` paths made the CLI feel slightly more implementation-shaped than it needs to.
+
+**What shipped**
+- Updated `run --help` title and usage to `idlewatch run`
+- Updated `create --help` title and usage to `idlewatch create`
+- Updated `dashboard --help` title and usage to `idlewatch dashboard`
+- Updated `menubar --help` title and usage to `idlewatch menubar`
+- Added focused regression coverage for those help surfaces
+- Kept setup/reconfigure/install/status behavior unchanged
+
+### Spot-check coverage for R341
+- [x] `run --help`
+- [x] `create --help`
+- [x] `dashboard --help`
+- [x] `menubar --help`
+- [x] Ad-hoc verification that these help screens no longer show raw `node bin/idlewatch-agent.js ...` paths
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js run --help`
+3. `node bin/idlewatch-agent.js create --help`
+4. `node bin/idlewatch-agent.js dashboard --help`
+5. `node bin/idlewatch-agent.js menubar --help`
+6. Ad-hoc verification:
+   ```bash
+   node --input-type=module <<'EOF'
+   import { spawnSync } from 'node:child_process'
+   const bin = './bin/idlewatch-agent.js'
+   for (const command of ['run','create','dashboard','menubar']) {
+     const out = spawnSync(process.execPath, [bin, command, '--help'], { encoding: 'utf8', timeout: 10000 })
+     if (out.status !== 0) throw new Error(`${command} exited ${out.status}: ${out.stderr}`)
+     if (!out.stdout.startsWith(`idlewatch ${command}`)) throw new Error(`${command} did not start with idlewatch command`)
+     if (/^node .*idlewatch-agent\.js/m.test(out.stdout)) throw new Error(`${command} still shows raw node path`)
+   }
+   console.log('ad-hoc help verification: ok')
+   EOF
+   ```
+
+### Acceptance notes
+- The nearby help surfaces now keep the same calmer command story already used by the setup/install/status lane.
+- This is help-copy polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny remaining help-command seam fixed in this pass
+
 ## Cycle R340 Status: COMPLETE ✅
 
 This pass re-ran the narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt confusing, repetitive, visually noisy, or unnecessarily technical for a setup/install user.

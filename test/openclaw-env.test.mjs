@@ -1096,6 +1096,21 @@ test('status help keeps the calmer background-mode wording and saved-config refr
   assert.doesNotMatch(run.stdout, /If the background agent is already running, re-run .* install-agent to restart it\./)
 })
 
+test('run/create/dashboard/menubar help keeps the calmer idlewatch command story', () => {
+  for (const command of ['run', 'create', 'dashboard', 'menubar']) {
+    const run = spawnSync(process.execPath, [BIN, command, '--help'], {
+      env: { ...process.env, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, `${command}: ${run.stderr}`)
+    assert.match(run.stdout, new RegExp(`^idlewatch ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.doesNotMatch(run.stdout, /^node .*idlewatch-agent\.js/m)
+    assert.doesNotMatch(run.stdout, new RegExp(`Usage:\\s+node .* ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+  }
+})
+
 test('uninstall-agent help reassures that config and logs are kept', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
