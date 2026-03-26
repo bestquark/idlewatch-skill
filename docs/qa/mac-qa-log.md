@@ -1,8 +1,81 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:15 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R198 shipped one tiny status next-step wording cleanup
+**Last updated:** Wednesday, March 25th, 2026 — 11:20 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R199 no new product-facing polish issue found
+
+---
+
+## Cycle R199 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
+- The current CLI still reads like one calm product across first-run `status`, install-before-setup, local-only non-interactive setup, saved-config reconfigure, device-ID continuity, metric-toggle persistence, `--test-publish`, invalid cloud-key recovery, and durable-vs-`npx` install guidance.
+- The only mismatch found again was external to the product itself: this cron payload still named `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`, while the active repo for this pass was `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`.
+
+### R199 spot-check coverage
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+15. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+16. `npm exec --yes -- idlewatch --help`
+17. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch install-agent`
+18. `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- First-run `status` still previews the default config path before setup exists and keeps the extra metrics secondary.
+- Install-before-setup still behaves safely and calmly: background install can happen early, but collection stays off until setup exists.
+- Setup/reconfigure completion still clearly separates installed-but-not-loaded from already-running background behavior without over-narrating reload semantics.
+- Device rename still preserves stable device identity and local-log continuity while explaining the preserved ID inline.
+- Metric selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish` remains discoverable and low-noise.
+- Invalid cloud-key setup still fails with a short, actionable message that tells the user exactly what to fix.
+- `npm exec` guidance still keeps foreground trial usage on `npx` while pointing background mode back to the durable install path.
+- The stale cron payload path remains external to the product itself.
 
 ---
 
