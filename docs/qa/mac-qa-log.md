@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:20 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R199 no new product-facing polish issue found
+**Last updated:** Wednesday, March 25th, 2026 — 11:32 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R200 shipped one tiny main-help wording alignment
+
+---
+
+
+## Cycle R200 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny top-level help wording alignment only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Main `--help` no longer describes `status` with the slightly older `background agent state` wording.
+- The command list now says:
+  - `status       Show device config and background mode state`
+- This keeps the scan-first top-level help aligned with the calmer `background mode` phrasing already used by `status --help`, setup/reconfigure guidance, and the rest of the polished CLI.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R200 implementation
+#### [x] L62 — main help now says `background mode state`, not `background agent state`
+- Reworded the top-level `status` summary in main help from `background agent state` to `background mode state`.
+- Kept the actual `status` command output and help behavior unchanged.
+- Added regression coverage so source-checkout main help keeps the calmer wording and does not slip back to the older phrase.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|main help stays on the durable command in npx context|status help keeps the calmer background-mode wording and saved-config refresh hint'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it lands in a scan-first setup moment. The CLI had already mostly converged on the calmer `background mode` mental model; top-level help still had one older `background agent` phrase that made the product sound a notch more technical than it needed to.
 
 ---
 
