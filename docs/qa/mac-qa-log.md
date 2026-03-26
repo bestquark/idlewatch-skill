@@ -1,8 +1,62 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:10 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - no new product-facing polish issue cleared the bar in this pass
+**Last updated:** Thursday, March 26th, 2026 — 1:24 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny source-checkout install follow-up seam fixed in this pass
+
+## Cycle R320 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only closed one remaining copy/paste seam in the saved-config install path.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the `install-agent` success branch for source checkouts when setup is already saved but launchd still reports the agent as not loaded.
+- That follow-up block no longer falls back to raw `node bin/idlewatch-agent.js ...` commands for `Start`, `Check`, and `Remove`.
+- It now stays on the same calmer product-shaped command story already used by nearby help, install-before-setup, setup completion, and status surfaces:
+  - `Start:        idlewatch install-agent`
+  - `Check:        idlewatch status`
+  - `Remove:       idlewatch uninstall-agent`
+- Kept behavior unchanged: this is output polish only.
+- Kept saved-config handling, startup/install behavior, and the working telemetry path unchanged.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L50 — source-checkout saved-config `install-agent` follow-up now stays on the calmer `idlewatch ...` command story
+**Why it matters:** This lands in a real recovery/setup moment: setup is already saved, background mode is installed, and the user just needs the cleanest next command. Dropping back to raw launcher paths there made the product feel slightly more implementation-ish than the surrounding flow.
+
+### Spot-check coverage for R320
+- [x] `install-agent` with saved config but launchd still not loaded
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent does not claim background is running when launchd still reports not loaded|quickstart completion stays honest when a LaunchAgent was installed before setup|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded'`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. Save a minimal config to `~/.idlewatch/idlewatch.env`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+7. Confirm the follow-up now stays on:
+   - `Start:        idlewatch install-agent`
+   - `Check:        idlewatch status`
+   - `Remove:       idlewatch uninstall-agent`
+
+### Acceptance notes
+- The saved-config install recovery path now matches the calmer product-shaped command story already used elsewhere in setup/install/status.
+- This is wording polish only; setup behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R319 Status: COMPLETE ✅
 

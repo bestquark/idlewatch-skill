@@ -1251,10 +1251,10 @@ const subcommandPromise = (async () => {
 
     const hasSavedConfig = fs.existsSync(envFile)
     const quickstartCommand = preferredSetupCommand('quickstart')
-    const installAgentCommand = inferCliCommand('install-agent')
-    const statusCommand = inferCliCommand('status')
-    const runCommand = inferCliCommand('run')
-    const uninstallAgentCommand = inferCliCommand('uninstall-agent')
+    const installAgentCommand = preferredProductCommand('install-agent')
+    const statusCommand = preferredProductCommand('status')
+    const runCommand = preferredProductCommand('run')
+    const uninstallAgentCommand = preferredProductCommand('uninstall-agent')
 
     const { programArguments, targetKind } = resolveDurableLaunchAgentProgramArguments()
 
