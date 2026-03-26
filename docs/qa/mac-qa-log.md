@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R374 Status: COMPLETE ✅
+
+One tiny setup-doc wording seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one remaining README wording mismatch in the setup/reconfigure lane.
+- `README.md` now says `simple prompts` instead of `plain-text prompts` for the `--no-tui` path.
+- That keeps the top-level setup doc aligned with the calmer CLI help wording already used by `quickstart`, `configure`, and `reconfigure`.
+- Kept runtime behavior unchanged: this is docs/copy polish only.
+- Preserved the now-working telemetry path.
+
+### Prioritized findings
+#### [x] L68 — README now says `simple prompts` instead of `plain-text prompts`
+**Why it mattered:** This is tiny, but it sits in the first-run setup doc where the product should feel calm and human. `Plain-text prompts` was understandable, but slightly more implementation-shaped than the surrounding setup/help language.
+
+**What shipped**
+- Updated the README `--no-tui` note to `Use --no-tui for simple prompts if the TUI isn't available.`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R374
+- [x] README quickstart section now uses `simple prompts`
+- [x] Nearby CLI help wording already matches this calmer phrasing
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `grep -n "simple prompts\|plain-text prompts" README.md`
+
+### Acceptance notes
+- The top-level setup doc now matches the calmer `simple prompts` story already used across the installer/CLI help lane.
+- This is docs polish only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 7:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny README wording seam fixed in this pass
+
 ## Cycle R373 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
