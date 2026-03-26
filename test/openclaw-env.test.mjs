@@ -2968,6 +2968,31 @@ exit 7
   }
 })
 
+test('quickstart reports the exact config path when setup cannot save the env file', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-savefail-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Save Fail Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: '/dev/null/idlewatch.env'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Enrollment failed: setup could not save config at \/dev\/null\/idlewatch\.env\./)
+    assert.doesNotMatch(run.stderr, /did not save idlewatch\.env/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('install-agent reload timeout keeps the refresh failure wording on background mode', () => {
   if (process.platform !== 'darwin') return
 

@@ -15896,3 +15896,29 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
   - `<app binary path> install-agent`
 - Added regression coverage for the no-CLI PATH case in `test/macos-launch-agent-scripts.test.mjs`.
 - Kept the existing cleaner `idlewatch ...` guidance unchanged when the normal CLI is already available.
+
+---
+
+## Cycle R346 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny saved-config failure-message polish fix in the setup path.
+- If setup cannot write the configured env file, IdleWatch now says `setup could not save config at …` and prints the exact target path.
+- This avoids falling back to the slightly more internal-feeling `did not save idlewatch.env` wording right in a setup/reconfigure recovery moment.
+- Behavior is unchanged: this is CLI error-copy polish only.
+- The working telemetry path remains untouched.
+
+### R346 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart reports the exact config path when setup cannot save the env file|install-agent reload timeout keeps the refresh failure wording on background mode|install-agent reports launchctl exit status when launchctl fails silently'`
+
+### Prioritized findings
+
+#### [x] L31 — setup save failures now name the exact config path instead of the internal filename
+**Why it matters:** This is tiny, but it lands in a setup failure moment where the next clue should be calm and concrete. `idlewatch.env` is an implementation detail; the useful thing is the exact path IdleWatch could not write.
+
+**What shipped**
+- Reworded the setup save failure from:
+  - `Enrollment failed: setup did not save idlewatch.env (...)`
+- To:
+  - `Enrollment failed: setup could not save config at <path>.`
+- Added regression coverage for a non-interactive `quickstart --no-tui` save failure using an unwritable target path.

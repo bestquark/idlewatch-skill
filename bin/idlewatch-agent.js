@@ -1471,7 +1471,8 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
         console.error('Setup cancelled. No changes saved.')
         process.exit(0)
       } else if (String(err?.message || '').startsWith('setup_did_not_write_env_file:')) {
-        console.error(`Enrollment failed: setup did not save idlewatch.env (${String(err.message).split(':').slice(1).join(':')}).`)
+        const failedConfigPath = String(err.message).slice('setup_did_not_write_env_file:'.length) || 'the config file'
+        console.error(`Enrollment failed: setup could not save config at ${failedConfigPath}.`)
       } else {
         console.error(`Enrollment failed: ${err.message}`)
       }
