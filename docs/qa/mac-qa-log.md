@@ -2,6 +2,51 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R330 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow: a fresh re-check of the installer/CLI polish lane against the live checkout, with extra attention to whether anything user-facing had drifted into feeling verbose, fussy, or more technical than it needs to be.
+
+### Outcome
+- Targeted installer/CLI regression coverage still passes cleanly: **85 passed, 0 failed**.
+- Live help surfaces still read cleanly and stay on the calmer product path: `--help`, `configure --help`, `status --help`, `install-agent --help`, and `uninstall-agent --help`.
+- Setup/reconfigure copy, saved-config reload guidance, launch-agent install/uninstall wording, test-publish messaging, device-ID persistence, metric-toggle persistence, and npm/npx install-path clarity still feel appropriately minimal in the live checkout.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new product-facing polish issues found in the requested lane
+**Why it matters:** This lane is already in the right shape. The copy is short, the setup path stays low-friction, and the background-mode guidance is honest without getting noisy. Forcing churn here would likely make the product worse, not better.
+
+**Verified**
+- Main help still keeps `idlewatch quickstart --no-tui` as the clearest starting point
+- Reconfigure/status help still keeps saved-config refresh guidance short and understandable
+- Install/uninstall help still frames launch-agent behavior in calm background-mode language
+- `--test-publish` remains explicit and discoverable without turning into a separate confusing workflow
+- Saved metric/device behavior still preserves identity and prior choices the way users would expect
+- `npx` guidance still nudges people toward durable install paths for background mode without being preachy
+
+### Spot-check coverage for R330
+- [x] Main `--help`
+- [x] `configure --help`
+- [x] `status --help`
+- [x] `install-agent --help`
+- [x] `uninstall-agent --help`
+- [x] Targeted `openclaw-env` regression subset
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `node bin/idlewatch-agent.js configure --help`
+4. `node bin/idlewatch-agent.js status --help`
+5. `node bin/idlewatch-agent.js install-agent --help`
+6. `node bin/idlewatch-agent.js uninstall-agent --help`
+7. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+
+### Acceptance notes
+- No confusing, repetitive, visually noisy, or unnecessarily technical copy surfaced in this pass.
+- No auth, ingest, packaging, or launch-agent redesign is justified by current evidence.
+- Remaining friction in this cron lane is operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+
 ## Cycle R329 Status: COMPLETE ✅
 
 This pass stayed narrow and product-facing: re-ran the installer/CLI polish lane against the live checkout, kept the runtime path honest, and shipped the one remaining tiny docs consistency fix that still felt worth doing.
