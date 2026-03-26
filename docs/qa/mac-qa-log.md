@@ -106,7 +106,7 @@ This pass stayed intentionally tiny and low-risk: one source-checkout post-setup
 - Setup/reconfigure/status/install surfaces now keep one calmer product-shaped command story through the immediate post-setup handoff in source checkouts.
 - This is wording polish only; setup behavior, saved-config handling, launch-agent behavior, npm/npx guidance, and the working telemetry path remain unchanged.
 
-## Cycle R305 Status: OPEN ⚠️
+## Cycle R305 Status: COMPLETE ✅
 
 This pass re-ran the active polish lane from the live checkout named by the current filesystem, not the stale cron payload path, with emphasis on setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 
@@ -119,7 +119,7 @@ This pass re-ran the active polish lane from the live checkout named by the curr
 
 ### Prioritized findings
 
-#### [ ] L45 — source-checkout setup/configure success handoffs should stay on the same calmer `idlewatch ...` command story as nearby help/status/install surfaces
+#### [x] L45 — source-checkout setup/configure success handoffs now stay on the same calmer `idlewatch ...` command story as nearby help/status/install surfaces
 **Why it matters:** The product has already converged on a calmer `idlewatch ...` command story across main help, first-run `status`, install-before-setup, post-setup `status`, and npm/npx guidance. Letting the immediate post-setup success handoff fall back to raw `node bin/idlewatch-agent.js ...` commands makes the exact "what do I run next?" moment feel slightly more implementation-ish and inconsistent than the surrounding product.
 
 **Exact repro**
@@ -1005,7 +1005,7 @@ This pass stayed intentionally tiny and low-risk: one source-checkout install-be
 - Source-checkout install-before-setup now tells one coherent copy/paste story in the exact next-step block users scan first.
 - This is wording polish only; setup/reconfigure behavior, saved-config handling, background install behavior, npm/npx guidance, and the working telemetry path remain unchanged.
 
-## Cycle R289 Status: OPEN ⚠️
+## Cycle R289 Status: COMPLETE ✅
 
 This pass re-ran the active polish lane from the current checkout instead of relying on the stale cron payload path, with emphasis on setup/help scanability, config persistence + reload guidance, launch-agent install-before-setup behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx durable-install guidance.
 
@@ -1017,7 +1017,7 @@ This pass re-ran the active polish lane from the current checkout instead of rel
 
 ### Prioritized findings
 
-#### [ ] L39 — source-checkout install-before-setup and nearby runtime handoffs should tell one coherent next-command story
+#### [x] L39 — source-checkout install-before-setup and nearby runtime handoffs now tell one coherent next-command story
 **Why it matters:** The product has intentionally polished a lot of help/setup copy toward calmer `idlewatch ...` commands. That works when it is clearly help-only framing. But in current source-checkout runtime handoffs, the product now mixes `idlewatch ...` and `node bin/idlewatch-agent.js ...` inside the same immediate next-step block. In the install-before-setup path, it even suggests `idlewatch run` / `idlewatch install-agent` right after the user invoked the product through `node bin/idlewatch-agent.js install-agent`, while the same block still falls back to literal checkout commands for `status` / `uninstall-agent`. That feels inconsistent and slightly confusing in the exact moment people copy the next command.
 
 **Exact repro**
