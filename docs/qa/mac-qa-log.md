@@ -1,8 +1,115 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 11:49 AM (America/Toronto)  
-**Status:** CLOSED ✅ - source-checkout install-before-setup handoff is back on one calm product command story
+**Last updated:** Thursday, March 26th, 2026 — 12:06 PM (America/Toronto)  
+**Status:** OPEN ⚠️ - one small source-checkout post-setup handoff seam remains
+
+## Cycle R305 Status: OPEN ⚠️
+
+This pass re-ran the active polish lane from the live checkout named by the current filesystem, not the stale cron payload path, with emphasis on setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Most of the current setup/help/status/install surface still reads calm and low-friction across main `--help`, first-run `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, post-setup `status`, rename + metric-toggle persistence, clean-home `--test-publish`, `npm exec` durable-install guidance, and the targeted regression suite.
+- One small source-checkout runtime seam is still worth fixing: post-setup `quickstart --no-tui` and `configure --no-tui` success handoffs still fall back to raw `node bin/idlewatch-agent.js ...` commands for `Start` / `Use it now`, even though nearby help, status, and install-before-setup surfaces already use the calmer `idlewatch ...` command story.
+- This is tiny, but it lands in the exact next-step copy/paste moment where someone has just successfully saved setup and is deciding what to run next.
+- Behavior remains good and honest: saved config is persisted, device identity continuity still works on rename, metric toggles persist, background install state is accurate, and the working telemetry path is unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [ ] L45 — source-checkout setup/configure success handoffs should stay on the same calmer `idlewatch ...` command story as nearby help/status/install surfaces
+**Why it matters:** The product has already converged on a calmer `idlewatch ...` command story across main help, first-run `status`, install-before-setup, post-setup `status`, and npm/npx guidance. Letting the immediate post-setup success handoff fall back to raw `node bin/idlewatch-agent.js ...` commands makes the exact "what do I run next?" moment feel slightly more implementation-ish and inconsistent than the surrounding product.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+7. Observe the success handoff mixes back into raw launcher commands:
+   - `Start:    node bin/idlewatch-agent.js install-agent`
+   - `Use it now:`
+   - `  node bin/idlewatch-agent.js run   Run in foreground`
+8. Optional continuity check:
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+9. Observe the same mixed command story again in `configure` success output.
+10. Compare with nearby surfaces that already stay calmer:
+   - main help → `idlewatch quickstart --no-tui`
+   - install-before-setup → `idlewatch run` / `idlewatch install-agent`
+   - post-setup `status` → `idlewatch configure --no-tui` / `idlewatch install-agent`
+
+**Acceptance criteria**
+- Source-checkout `quickstart --no-tui` success should present one coherent next-command story instead of dropping back to raw `node bin/idlewatch-agent.js ...` commands in the immediate handoff block.
+- Source-checkout `configure --no-tui` success should do the same.
+- Keep behavior unchanged: this is wording/command-handoff polish only.
+- Keep npm/npx durable-install guidance exactly as-is.
+
+### Spot-check coverage for R305
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `--test-publish` in a clean HOME
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] Targeted `openclaw-env` regression subset
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+15. `PATH="$(mktemp -d):$PATH" HOME="$TMPHOME3" npm exec --yes -- idlewatch --help`
+16. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+17. `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent does not claim background is running when launchd still reports not loaded|quickstart completion stays honest when a LaunchAgent was installed before setup|configure success says to refresh an already-running background agent|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|test-publish|metric|device|npx|uninstall-agent removes plist and keeps config and local logs|help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|main help keeps the source-checkout header on the calmer product command'`
+
+### Acceptance notes
+- Main help, first-run `status`, install-before-setup, post-setup `status`, rename continuity, metric-toggle persistence, `--test-publish`, and npm/npx install guidance still feel calm and low-friction in this pass.
+- One small source-checkout post-setup handoff seam remains worth fixing before calling this lane fully closed again.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R304 Status: COMPLETE ✅
 
