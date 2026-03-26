@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R355 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and shipped one low-risk saved-config reliability improvement in the requested setup/reconfigure lane.
+
+### Outcome
+- Tightened saved-config handling so setup/reconfigure now write `~/.idlewatch/idlewatch.env` atomically.
+- That keeps the setup story boring in a good way: if a config write is interrupted, IdleWatch avoids leaving behind a half-written env file or stray temp file in the config directory.
+- Runtime behavior, install/reconfigure flow, wording, and the working telemetry path are unchanged.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L62 — setup/reconfigure now write the saved config atomically
+**Why it mattered:** This is tiny, but it lands directly in the saved-config reliability lane. Setup and reconfigure should feel safe and unsurprising; if a write gets interrupted, the user should not end up with a truncated `idlewatch.env` or cleanup junk in `~/.idlewatch`.
+
+**What shipped**
+- Switched the saved-config writer to write a locked-down temp file in the same directory and rename it into place.
+- Kept the final config file permissions on `0600`.
+- Added regression coverage that `quickstart --no-tui` plus `configure --no-tui` leave the real `idlewatch.env` updated and do not leave `.idlewatch.env.tmp-*` files behind.
+- Kept setup copy, background-mode behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R355
+- [x] Targeted `openclaw-env` regression for atomic saved-config writes
+- [x] Source review of `src/enrollment.js`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart/configure write saved config atomically without leaving temp files behind'`
+
+### Acceptance notes
+- Saved-config handling is slightly more resilient without adding setup steps or changing the product story.
+- No auth, ingest, or packaging redesigns were introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny saved-config reliability improvement shipped in this pass
+
+
+
 ## Cycle R354 Status: COMPLETE ✅
 
 This pass stayed disciplined: re-check the requested installer/CLI polish lane, only log something if it still felt like real end-user friction, and avoid inventing churn.

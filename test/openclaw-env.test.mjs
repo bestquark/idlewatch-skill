@@ -1904,6 +1904,55 @@ test('configure --no-tui preserves the saved local/cloud mode when mode is omitt
   }
 })
 
+test('quickstart/configure write saved config atomically without leaving temp files behind', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-atomic-config-home-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    const envFile = path.join(configDir, 'idlewatch.env')
+
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Atomic Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+    assert.equal(fs.existsSync(envFile), true)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Atomic Box 2',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+
+    const configDirEntries = fs.readdirSync(configDir)
+    assert.deepEqual(configDirEntries.filter((name) => name.startsWith('.idlewatch.env.tmp-')), [])
+
+    const saved = fs.readFileSync(envFile, 'utf8')
+    assert.match(saved, /IDLEWATCH_DEVICE_NAME=Atomic Box 2/)
+    assert.match(saved, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure --no-tui keeps saved metrics when metrics are omitted', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-preserve-metrics-home-'))
   try {

@@ -43,8 +43,32 @@ function ensureDir(dirPath) {
 }
 
 function writeSecureFile(filePath, content) {
-  ensureDir(path.dirname(filePath))
-  fs.writeFileSync(filePath, content, { encoding: 'utf8', mode: 0o600 })
+  const dirPath = path.dirname(filePath)
+  ensureDir(dirPath)
+
+  const tempFilePath = path.join(
+    dirPath,
+    `.${path.basename(filePath)}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  )
+
+  try {
+    fs.writeFileSync(tempFilePath, content, { encoding: 'utf8', mode: 0o600 })
+    try {
+      fs.chmodSync(tempFilePath, 0o600)
+    } catch {
+      // best effort on filesystems that ignore chmod
+    }
+    fs.renameSync(tempFilePath, filePath)
+  } finally {
+    if (fs.existsSync(tempFilePath)) {
+      try {
+        fs.rmSync(tempFilePath, { force: true })
+      } catch {
+        // best effort cleanup when a write fails before rename
+      }
+    }
+  }
+
   try {
     fs.chmodSync(filePath, 0o600)
   } catch {
