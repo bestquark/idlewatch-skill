@@ -1240,7 +1240,7 @@ const subcommandPromise = (async () => {
 
     const invocation = detectCliInvocation()
     if (invocation.kind === 'npx') {
-      console.error('Background install needs a durable IdleWatch install first.')
+      console.error('Background mode needs a durable install.')
       console.error('')
       console.error('Install once:  npm install -g idlewatch')
       console.error('Then enable:   idlewatch install-agent')

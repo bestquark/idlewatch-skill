@@ -15180,7 +15180,33 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - `provider_quota` now renders as `provider quota (provider_quota)` in that error path.
 - Kept the exact token visible for copy/paste and automation, while making the human-facing phrasing less abrupt.
 
-## Cycle R117 Status: CLOSED
+## Cycle R344 Status: CLOSED ✅
+
+### Outcome
+- `npx` `install-agent --help` and the real `npx` refusal now use the same calmer product wording.
+- Both surfaces now say `Background mode needs a durable install.` before the existing durable-install and `Run now: npx idlewatch run` hints.
+- This removes one tiny trust seam in the setup/install path without changing any LaunchAgent behavior.
+- The working telemetry path remains untouched.
+
+### R344 spot-check coverage
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+- [x] `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear|refuses launch-agent install from npx while preserving the durable-install hint'`
+
+### Prioritized findings
+
+#### [x] L29 — `npx` install-agent help and refusal now tell the same durable-install story
+**Why it matters:** This is tiny, but it lands in a cautious install moment. The help path already told users that background mode needs a durable install, while the real refusal still switched back to a slightly harsher `Background install needs a durable IdleWatch install first.` message. That mismatch made the product feel a little less crisp than the underlying behavior.
+
+**What shipped**
+- Reworded the real `npx` refusal to match help: `Background mode needs a durable install.`
+- Kept the same next steps:
+  - `Install once: npm install -g idlewatch`
+  - `Then enable: idlewatch install-agent`
+  - `Run now: npx idlewatch run`
+- Added regression coverage so the help/refusal pair stays aligned.
+
+## Cycle R118 Status: CLOSED
 
 ### Outcome
 - `install-agent --help` now uses a slightly calmer setup-first line in the one place users pause before enabling background mode.
