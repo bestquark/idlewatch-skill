@@ -1,10 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:33 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R231 found one small postinstall npx-path consistency issue
+**Last updated:** Thursday, March 26th, 2026 — 3:46 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R232 shipped the one remaining postinstall npx-path consistency fix
 
-## Cycle R231 Status: OPEN ⚠️
+## Cycle R232 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny postinstall copy-alignment fix only, with no auth/ingest changes, no packaging-flow changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Global npm `postinstall` no longer suggests the older bare `npx idlewatch quickstart` one-off path.
+- The one-off hint now matches the calmer docs path already used elsewhere:
+  - `npx idlewatch quickstart --no-tui`
+- This keeps install-path guidance internally consistent in the exact scan-first moment right after `npm install -g` finishes.
+- No auth, ingest, packaging flow, launch-agent behavior, saved-config behavior, or telemetry behavior changed.
+
+### R232 implementation
+#### [x] L73 — global npm postinstall now points one-off users to `npx idlewatch quickstart --no-tui`
+- Reworded only the one-off postinstall hint.
+- Kept the main durable-install next step unchanged: `idlewatch quickstart`.
+- Added regression coverage so postinstall does not drift back to the older bare `npx idlewatch quickstart` copy.
+
+### Spot-check coverage for R232
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- Global npm postinstall now tells one cleaner install-path story.
+- The durable CLI path stays minimal.
+- The working telemetry path remains untouched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+## Cycle R231 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 

@@ -41,6 +41,7 @@ test('postinstall keeps the opt-in menubar install hint short', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Other install paths:/)
-  assert.match(run.stdout, /npx idlewatch quickstart/)
+  assert.match(run.stdout, /npx idlewatch quickstart --no-tui/)
+  assert.doesNotMatch(run.stdout, /npx idlewatch quickstart\n/)
   assert.match(run.stdout, /IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch/)
 })
