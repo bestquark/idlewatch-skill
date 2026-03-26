@@ -165,7 +165,7 @@ Then enable: idlewatch install-agent`
 
 Usage:  ${installAgentCommand}
 
-Enables the LaunchAgent for background mode.
+Enables background mode on macOS.
 If setup is already saved, IdleWatch starts automatically.
 If not, it stays off until you save setup and re-run install-agent.`
 }

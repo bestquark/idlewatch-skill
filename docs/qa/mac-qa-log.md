@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:52 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R195 spot-check only; no new product-facing polish issue found
+**Last updated:** Wednesday, March 25th, 2026 — 11:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R196 shipped one tiny install-help wording cleanup
+
+---
+
+## Cycle R196 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `install-agent --help` wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent --help` no longer opens its body with the more implementation-first `Enables the LaunchAgent for background mode.` line.
+- The help now says:
+  - `Enables background mode on macOS.`
+- This keeps the scan-first subcommand help a little more aligned with the calmer product framing already used by main help, setup, status, and uninstall, while leaving the actual macOS LaunchAgent behavior unchanged.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R196 implementation
+#### [x] L60 — `install-agent --help` body now leads with background-mode wording instead of LaunchAgent wording
+- Reworded the first `install-agent --help` body line from `Enables the LaunchAgent for background mode.` to `Enables background mode on macOS.`
+- Kept the heading, usage, saved-config behavior, and runtime install behavior unchanged.
+- Added regression coverage so the subcommand help keeps the calmer wording and does not slip back to the older implementation-first phrase.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent help keeps the durable setup path short and clear'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it lands in a scan-first help moment. Most of the CLI already talks in product terms — setup, background mode, saved config, optional cloud link — and this was one of the last little places where the dedicated help still surfaced the macOS implementation detail before the user-facing behavior.
 
 ---
 
