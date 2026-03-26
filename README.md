@@ -21,7 +21,7 @@ Use the `npx` path when you want to try IdleWatch without installing it first.
 ## Quickstart
 
 ```bash
-idlewatch quickstart
+idlewatch quickstart --no-tui
 ```
 
 Pick a device name, choose local-only or cloud, and you’re done.
@@ -31,7 +31,7 @@ The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample
 To change settings later, run:
 
 ```bash
-idlewatch configure
+idlewatch configure --no-tui
 ```
 
 Saved changes apply on the next start. If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config.

@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:00 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - current polish lane still closed after another fresh re-check found no new user-facing polish regressions
+**Last updated:** Thursday, March 26th, 2026 — 12:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - current polish lane still closed after one last tiny README setup/reconfigure handoff cleanup
+
+## Cycle R309 Status: COMPLETE ✅
+
+This pass stayed deliberately narrow and only touched one still-worth-it doc seam in the main scan-first setup surface.
+
+### Outcome
+- Closed one last tiny README consistency wobble: the installed-path quickstart and reconfigure snippets now default to `--no-tui`, matching the calmer copy-paste setup/reconfigure flow the CLI help and nearby onboarding surfaces already present.
+- No runtime behavior, saved-config behavior, launch-agent behavior, auth flow, packaging flow, or telemetry path changed.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L46 — README installed-path setup and reconfigure snippets now default to the calmer `--no-tui` flow
+**Why it matters:** This is tiny, but README is still the first scan surface for many setup/reconfigure runs. Letting it advertise bare `idlewatch quickstart` / `idlewatch configure` while the CLI help, status handoffs, and one-off onboarding already converge on `--no-tui` reintroduced a small “which setup path do you actually want me to use?” wobble.
+
+### Spot-check coverage for R309
+- [x] `README.md` quickstart snippet now says `idlewatch quickstart --no-tui`
+- [x] `README.md` reconfigure snippet now says `idlewatch configure --no-tui`
+- [x] Main CLI help still keeps `Get started:  idlewatch quickstart --no-tui`
+- [x] No code-path or telemetry behavior changed
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `grep -n "idlewatch quickstart --no-tui\|idlewatch configure --no-tui" README.md`
+3. `node bin/idlewatch-agent.js --help`
+
+### Acceptance notes
+- The main README now matches the simpler text-prompt setup/reconfigure story already used in CLI help and nearby onboarding.
+- This pass was docs-only by design and keeps the now-working telemetry path untouched.
 
 ## Cycle R308 Status: COMPLETE ✅
 
