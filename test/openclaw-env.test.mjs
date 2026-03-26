@@ -1441,6 +1441,33 @@ test('quickstart rejects a fully invalid metric selection with a clear validatio
   }
 })
 
+test('quickstart names requested metrics that are unavailable on this machine', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-unavailable-metrics-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: '/usr/bin:/bin',
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'provider_quota'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /No valid metrics were selected\./)
+    assert.match(run.stderr, /Not available here: provider_quota\./)
+    assert.match(run.stderr, /Choose one or more of:/)
+    assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart names the valid enrollment modes when non-interactive mode is invalid', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-invalid-mode-'))
   try {

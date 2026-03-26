@@ -1,8 +1,33 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:40 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R244 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 4:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R245 shipped one small setup validation polish fix
+
+## Cycle R245 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup validation message improvement only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in non-interactive setup validation.
+- When setup is given a metric name IdleWatch recognizes but cannot actually use on the current machine, the error now says so directly instead of sounding like a generic invalid-input failure.
+- This keeps setup/reconfigure flows a little more self-explanatory when people try machine-specific options like provider quota on a Mac that is not signed into any supported provider CLI.
+- Kept saved-config handling, install/reconfigure flow shape, startup/install quality of life, and the working telemetry path unchanged.
+- The cron payload path mismatch remains external to the product itself: this pass still used `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R245 implementation
+#### [x] H80 — setup now distinguishes unknown metrics from known-but-unavailable metrics in its validation error
+- Added `Not available here: ...` wording when the requested metric exists in IdleWatch but is unavailable on the current machine.
+- Kept the short `Choose one or more of:` recovery list so the next step remains obvious.
+- Added regression coverage for the unavailable-metric case.
+
+### Spot-check coverage for R245
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+
+### Acceptance notes
+- Setup failure copy is now more honest when the issue is machine capability rather than a typo.
+- The change is tiny, local to validation messaging, and does not affect saved config, runtime metric collection, or cloud publish behavior.
+- The working telemetry path remains untouched.
 
 ## Cycle R244 Status: CLOSED ✅
 
