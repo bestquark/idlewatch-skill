@@ -1,8 +1,83 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:16 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R272 shipped one tiny help-copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 7:52 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R273 found no new product-facing polish regressions
+
+## Cycle R273 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
+- Clean-home `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, clean-home `--test-publish`, invalid cloud-key recovery, `configure --help`, `reconfigure --help`, `status --help`, `npm exec --yes -- idlewatch --help`, and `npm exec --yes -- idlewatch install-agent` still read like one calm product.
+- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
+- Metric-selection changes still persist cleanly into saved config and the next `status` output.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+- The `npm notice` upgrade banners seen around some `npm exec` runs still appear to come from npm itself, not IdleWatch output, so they are not being logged here as a product issue.
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Spot-check coverage for R273
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `uninstall-agent`
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `configure --help`
+- [x] `reconfigure --help`
+- [x] `status --help`
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+8. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+13. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+14. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+15. `node bin/idlewatch-agent.js configure --help`
+16. `node bin/idlewatch-agent.js reconfigure --help`
+17. `node bin/idlewatch-agent.js status --help`
+18. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+19. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+
+### Acceptance notes
+- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
+- Installed-before-setup and installed-but-not-running states still stay honest and low-friction.
+- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
+- Metric-selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish`, invalid cloud-key recovery, and npm/npx install guidance still keep the next step short and actionable without surfacing extra implementation detail.
+- `configure --help`, `reconfigure --help`, and `status --help` still keep saved-config reload semantics calm and explicit without drifting back into noisier wording.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R272 Status: COMPLETE ✅
 
