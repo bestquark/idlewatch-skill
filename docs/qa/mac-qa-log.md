@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 2:52 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R228 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 3:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R229 shipped one tiny npx onboarding/docs reliability cleanup
+
+## Cycle R229 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny npx setup-path docs cleanup only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- README and `skill/SKILL.md` now lead one-off `npx` setup with `quickstart --no-tui`, matching the calmer copy-paste path already used across the CLI, QA runs, and saved-config guidance.
+- The README note now frames `--no-tui` as the simplest text-prompt path instead of only a platform fallback.
+- Updated the in-repo polish plan repo path to the active checkout under `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`.
+- No auth, ingest, packaging, launch-agent, saved-config, or telemetry behavior changed.
+
+### R229 implementation
+#### [x] L72 — npx onboarding docs now default to the simplest `--no-tui` setup path
+- Reworded README and skill examples from `npx idlewatch quickstart` to `npx idlewatch quickstart --no-tui` for one-off setup/foreground testing.
+- Kept the durable installed path unchanged (`idlewatch quickstart`).
+- Narrowed the README note so it recommends `--no-tui` as the simple text-prompt path without over-explaining bundled-TUI packaging details.
+- Updated the in-repo polish plan repo path so future polish passes open the right checkout first.
+
+### Spot-check coverage for R229
+- [x] README one-off setup example
+- [x] README background-mode section
+- [x] `skill/SKILL.md` one-off setup example
+- [x] `idlewatch-cron-polish-plan.md` repo path
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- One-off docs now better match the product's lowest-friction copy-paste path.
+- Durable install/background guidance remains unchanged.
+- The working telemetry path remains untouched.
 
 ## Cycle R228 Status: CLOSED ✅
 

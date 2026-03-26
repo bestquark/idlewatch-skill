@@ -8,7 +8,7 @@ description: Collect host CPU/memory/GPU and optional OpenClaw usage telemetry, 
 ## Try it once
 
 ```bash
-npx idlewatch quickstart
+npx idlewatch quickstart --no-tui
 ```
 
 Use `npx` for one-off setup, foreground testing, or a quick local-only run.

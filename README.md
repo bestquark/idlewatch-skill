@@ -11,12 +11,12 @@ npm install -g idlewatch
 Or run directly with npx for one-off setup or foreground testing:
 
 ```bash
-npx idlewatch quickstart
+npx idlewatch quickstart --no-tui
 ```
 
 Use the `npx` path when you want to try IdleWatch without installing it first.
 
-> **Note:** On platforms without a bundled TUI binary, add `--no-tui` to go straight to text prompts.
+> **Note:** Add `--no-tui` any time you want the simplest text-prompt setup path.
 
 ## Quickstart
 
@@ -49,7 +49,7 @@ idlewatch run                 # start continuous collection
 
 ## Background collection (macOS)
 
-Use `npx idlewatch quickstart` for one-off setup or foreground testing.
+Use `npx idlewatch quickstart --no-tui` for one-off setup or foreground testing.
 For background mode:
 
 ```bash

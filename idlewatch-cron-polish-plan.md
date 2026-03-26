@@ -1,7 +1,7 @@
 # IdleWatch Installer Polish Plan
 
 **Focus:** UX polish (no auth/backend redesigns)
-**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill`
+**Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
 ---
 
 ## Priority 1: High Severity
