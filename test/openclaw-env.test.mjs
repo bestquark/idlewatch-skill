@@ -1537,6 +1537,49 @@ test('configure --no-tui preserves the saved local/cloud mode when mode is omitt
   }
 })
 
+test('configure --no-tui keeps saved metrics when metrics are omitted', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-preserve-metrics-home-'))
+  try {
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Metric Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Metric Box'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "Renamed Metric Box"\./)
+    assert.match(configure.stdout, /✓ Local telemetry verified\./)
+
+    const updatedEnv = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Metric Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure accepts saved config lines prefixed with export', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-export-env-'))
   try {

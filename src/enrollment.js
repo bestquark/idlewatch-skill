@@ -418,7 +418,8 @@ export async function runEnrollmentWizard(options = {}) {
   )
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
-  const requestedMonitorTargets = options.monitorTargets || process.env.IDLEWATCH_ENROLL_MONITOR_TARGETS || process.env.IDLEWATCH_MONITOR_TARGETS || ''
+  const explicitMonitorTargets = options.monitorTargets || process.env.IDLEWATCH_ENROLL_MONITOR_TARGETS || process.env.IDLEWATCH_MONITOR_TARGETS || ''
+  const requestedMonitorTargets = explicitMonitorTargets || existingConfig?.monitorTargets?.join(',') || ''
   let monitorTargets = ensureMonitorTargetsOrThrow(requestedMonitorTargets, availableMonitorTargets)
 
   if (!nonInteractive && !noTui) {
