@@ -1,8 +1,41 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:49 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R202 polish sweep found no new product-facing issues
+**Last updated:** Wednesday, March 25th, 2026 — 11:58 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R203 shipped two tiny setup/reconfigure friction cuts
+
+---
+
+## Cycle R203 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: two tiny setup/reconfigure polish fixes only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped two small, low-risk polish improvements.
+- Text-mode setup/reconfigure no longer aborts immediately when the metrics entry is invalid; it now shows the validation message and lets the user correct the line in-place.
+- The Rust TUI no longer ends with stale implementation-path copy (`idlewatch-agent --once` and an app-bundle install script). It now finishes with the same calmer product-shaped next steps as the rest of the CLI: saved settings, config path, `idlewatch --once`, `idlewatch configure`, and `idlewatch install-agent` on macOS.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R203 implementation
+#### [x] Text-mode metrics validation now reprompts instead of aborting setup
+- Kept the same validation rules and error text.
+- Changed the interactive text prompt so an invalid metrics line behaves like a normal correction moment, not a full restart moment.
+- This removes one avoidable setup interruption in the plain-text path without adding options or changing accepted values.
+
+#### [x] Rust TUI completion output now matches the polished CLI path
+- Removed stale completion text that pointed at `idlewatch-agent --once` and a deep app-bundle install script path.
+- Replaced it with short, current product guidance: settings saved, mode, config path, device name, `idlewatch --once`, `idlewatch configure`, and `idlewatch install-agent` on macOS.
+- This keeps TUI setup/reconfigure aligned with the rest of the product and avoids exposing implementation details in the success moment.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart rejects a fully invalid metric selection with a clear validation error|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|quickstart success summarizes setup verification instead of dumping raw telemetry JSON'`
+- [x] `npm run test:unit`
+
+### Acceptance notes
+- The plain-text setup path now lets people recover from a bad metrics entry without restarting setup.
+- The TUI success screen now uses the same durable/product-facing command path as the rest of the CLI.
+- Saved-config handling, background install/reconfigure behavior, and the working telemetry path remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ---
 

@@ -517,8 +517,16 @@ export async function runEnrollmentWizard(options = {}) {
     const suggested = monitorTargets.join(',')
     const friendlySuggested = monitorTargets.map(t => FRIENDLY_MONITOR_TARGET_LABELS[t] || t).join(', ')
     console.log(`Selected: ${friendlySuggested}`)
-    const monitorInput = (await questionOrCancel(rl, `Metrics [${suggested}]: `)).trim()
-    monitorTargets = ensureMonitorTargetsOrThrow(monitorInput || suggested, availableMonitorTargets)
+
+    while (true) {
+      const monitorInput = (await questionOrCancel(rl, `Metrics [${suggested}]: `)).trim()
+      try {
+        monitorTargets = ensureMonitorTargetsOrThrow(monitorInput || suggested, availableMonitorTargets)
+        break
+      } catch (error) {
+        console.log(error.message)
+      }
+    }
   }
 
   const safeDeviceId = sanitizeDeviceId(

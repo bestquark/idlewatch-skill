@@ -762,10 +762,15 @@ fn main() -> Result<()> {
     }
 
     write_secure_file(&env_file, &format!("{}\n", env_lines.join("\n")))?;
-    println!("Enrollment complete. Mode={} envFile={}", mode, env_file.display());
-    println!("Saved device name: {}", device_name);
-    println!("You can rerun this TUI anytime to update device name, API key, or metrics.");
-    println!("Next step: idlewatch-agent --once");
-    println!("For background startup on macOS: /Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh");
+    let mode_label = if mode == "production" { "cloud" } else { "local-only" };
+    println!("Settings saved.");
+    println!("Mode: {}", mode_label);
+    println!("Config: {}", env_file.display());
+    println!("Device: {}", device_name);
+    println!("Next step: idlewatch --once");
+    println!("Change later: idlewatch configure");
+    if cfg!(target_os = "macos") {
+        println!("Background mode: idlewatch install-agent");
+    }
     Ok(())
 }
