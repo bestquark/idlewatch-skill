@@ -967,6 +967,35 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
 })
 
+test('uninstall-agent runtime output keeps the saved-config wording calm', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-runtime-'))
+  const launchAgentsDir = path.join(tempDir, 'Library', 'LaunchAgents')
+  const plistPath = path.join(launchAgentsDir, 'com.idlewatch.agent.plist')
+
+  fs.mkdirSync(launchAgentsDir, { recursive: true })
+  writeFileSync(plistPath, '<plist/>')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /LaunchAgent removed — background collection stopped\./)
+    assert.match(run.stdout, /Saved config and local logs stay in .*\.idlewatch/)
+    assert.match(run.stdout, /Re-enable:\s+.*install-agent/)
+    assert.doesNotMatch(run.stdout, /Your config and logs were kept in/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('install-agent refuses disposable npm exec paths and explains the durable path', () => {
   if (process.platform !== 'darwin') {
     return

@@ -1202,7 +1202,7 @@ const subcommandPromise = (async () => {
 
     const invocation = detectCliInvocation()
     console.log('✅ LaunchAgent removed — background collection stopped.')
-    console.log(`   Your config and logs were kept in ${dataDir}`)
+    console.log(`   Saved config and local logs stay in ${dataDir}`)
     console.log(`   Re-enable:  ${backgroundInstallCommandForInvocation(invocation)}`)
     if (invocation.kind === 'npx') {
       console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
