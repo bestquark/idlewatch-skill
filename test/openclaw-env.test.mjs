@@ -271,10 +271,11 @@ test('setup mode prompt stays neutral and local-first friendly', () => {
   assert.doesNotMatch(prompt, /Cloud \(recommended\)/)
 })
 
-test('reconfigure mode prompt keeps the same calmer setup-mode wording', () => {
+test('reconfigure mode prompt keeps the calmer update-setup wording', () => {
   const prompt = promptModeText({ isReconfigure: true })
 
-  assert.match(prompt, /IdleWatch Reconfigure/)
+  assert.match(prompt, /IdleWatch Update Setup/)
+  assert.doesNotMatch(prompt, /IdleWatch Reconfigure/)
   assert.match(prompt, /1\) Cloud link — publish with an API key from idlewatch\.com\/api/)
   assert.match(prompt, /2\) Local-only — keep samples on this Mac/)
   assert.doesNotMatch(prompt, /Cloud \(recommended\)/)

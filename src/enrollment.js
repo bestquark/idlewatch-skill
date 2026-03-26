@@ -380,7 +380,7 @@ function tryRustTui({ configDir, outputEnvFile }) {
 }
 
 export function promptModeText({ isReconfigure = false } = {}) {
-  const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup'
+  const title = isReconfigure ? 'IdleWatch Update Setup' : 'IdleWatch Setup'
   return `\n${title}\n\nSetup mode:\n  1) Cloud link — publish with an API key from idlewatch.com/api\n  2) Local-only — keep samples on this Mac\n`
 }
 

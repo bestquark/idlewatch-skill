@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R356 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one wording-consistency fix still visible in the interactive saved-config reconfigure flow.
+
+### Outcome
+- Updated the interactive reconfigure prompt title from `IdleWatch Reconfigure` to `IdleWatch Update Setup`.
+- That keeps the text wizard aligned with the calmer `Update setup` wording already used by `configure --help`, `reconfigure --help`, main help, and nearby setup surfaces.
+- Behavior stays unchanged: setup choices, saved-config reuse, validation, install/reconfigure flow, and the working telemetry path are unchanged.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L63 — interactive reconfigure prompt now says `IdleWatch Update Setup`
+**Why it mattered:** This is tiny, but it lands in the exact saved-config reconfigure moment where the product should feel calm and consistent. Leaving the text wizard on `Reconfigure` made that one setup surface feel slightly older and more tool-shaped than the surrounding `Update setup` story.
+
+**What shipped**
+- Updated `promptModeText({ isReconfigure: true })` to render `IdleWatch Update Setup`
+- Added regression coverage so the prompt does not drift back to `IdleWatch Reconfigure`
+- Kept setup behavior, saved-config handling, and telemetry behavior unchanged
+
+### Spot-check coverage for R356
+- [x] Targeted `openclaw-env` regression for reconfigure prompt wording
+- [x] Source review of `src/enrollment.js`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern='reconfigure mode prompt keeps the calmer update-setup wording'`
+
+### Acceptance notes
+- The interactive reconfigure wizard now matches the calmer `Update setup` wording already used across the rest of the setup/help lane.
+- No auth, ingest, or packaging redesigns were introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny interactive reconfigure wording seam fixed in this pass
+
+
 ## Cycle R355 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and shipped one low-risk saved-config reliability improvement in the requested setup/reconfigure lane.
