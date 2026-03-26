@@ -2,6 +2,60 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R333 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: I re-ran the installer/CLI polish lane from the live checkout and only kept something if it still felt like real user friction instead of churn.
+
+### Outcome
+- Targeted installer/CLI regression coverage still passes cleanly: **85 passed, 0 failed**.
+- Fresh spot checks still read like one calm product across main help, install/reconfigure/status help, first-run `status`, clean-home `--test-publish`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-configure `status`, and uninstall messaging.
+- Setup/reconfigure flow shape, validation messages, saved-config reuse, launch-agent install/uninstall quality of life, device identity continuity, metric-toggle persistence, and npm/npx durable-install guidance still look appropriately minimal in the live checkout.
+- The now-working telemetry path remains untouched.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** This setup/install surface is already on the right side of minimal. Forcing another tweak here would be more likely to add noise than remove it.
+
+**Verified**
+- Main help still keeps the happy path short and scannable
+- `configure --help`, `status --help`, `install-agent --help`, and `uninstall-agent --help` still stay calm and copy-pasteable
+- First-run `status` still previews setup without implementation-detail sprawl
+- `--test-publish` still stays explicit and short on the happy path
+- Install-before-setup still frames background mode as reversible and not yet running
+- `quickstart --no-tui` / `configure --no-tui` still keep the next step short and honest
+- Saved device identity and metric selection still persist the way users expect
+- `npx` help still keeps one-off use explicit while reserving durable-install guidance for background mode
+
+### Spot-check coverage for R333
+- [x] Main `--help`
+- [x] `configure --help`
+- [x] `status --help`
+- [x] `install-agent --help`
+- [x] `uninstall-agent --help`
+- [x] First-run `status` in a clean HOME
+- [x] `--test-publish` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-configure `status`
+- [x] `uninstall-agent` runtime success output
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] Targeted `openclaw-env` regression subset
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help)'`
+- [x] Result: **85 passed, 0 failed**
+
+### Acceptance notes
+- No confusing, repetitive, noisy, or needlessly technical new copy surfaced in this pass.
+- No auth, ingest, packaging, launch-agent, or telemetry-path redesign is justified by current evidence.
+- The only remaining seam in this cron lane is operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 2:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new worthwhile polish issue found in this pass
+
+
 ## Cycle R332 Status: COMPLETE ✅
 
 This pass re-ran the narrow installer/CLI polish lane from the live checkout with fresh runtime spot checks, not just the regression suite. I kept the bar the same: only log something if it still feels confusing, noisy, repetitive, overly technical, or like needless setup friction for a normal user.
