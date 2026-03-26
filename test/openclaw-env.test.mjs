@@ -1027,7 +1027,8 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /configure — Re-open setup\n\nUsage:\s+.*configure --no-tui\n/)
+  assert.match(run.stdout, /configure — Re-open setup\n\nUsage:\s+idlewatch configure --no-tui\n/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+node .*configure --no-tui\n/)
   assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
@@ -1063,7 +1064,8 @@ test('reconfigure help stays clean in non-TTY mode', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /reconfigure — Re-open setup \(alias for configure\)\n\nUsage:\s+.*reconfigure --no-tui\n/)
+  assert.match(run.stdout, /reconfigure — Re-open setup \(alias for configure\)\n\nUsage:\s+idlewatch reconfigure --no-tui\n/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+node .*reconfigure --no-tui\n/)
   assert.match(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses plain-text prompts\./)
   assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)

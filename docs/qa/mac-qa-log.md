@@ -1,8 +1,39 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:55 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R281 re-checked the active polish lane; no new product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 9:03 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R282 shipped one tiny help-path polish fix; no broader product-facing issues cleared the bar
+
+## Cycle R282 Status: COMPLETE ✅
+
+This pass stayed intentionally small and product-facing: one low-risk setup/reconfigure help polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one tiny help-path consistency fix in the setup/reconfigure surface.
+- In source checkouts, `configure --help` and `reconfigure --help` now match `quickstart --help` by showing the cleaner product-facing usage lines:
+  - `Usage:  idlewatch configure --no-tui`
+  - `Usage:  idlewatch reconfigure --no-tui`
+- Kept the command title lines, saved-config wording, background refresh guidance, runtime behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L34 — source-checkout `configure --help` and `reconfigure --help` now match the polished setup usage style
+**Why it matters:** `quickstart --help` already hid the internal-looking `node bin/idlewatch-agent.js ...` seam in source-checkout usage text. Reconfigure paths still exposed that seam during the exact moment a user is trying to adjust saved setup.
+
+**What shipped**
+- Reused the same help-only setup command style for `configure` and `reconfigure` usage output.
+- Kept the calmer saved-config reload wording and background-mode guidance exactly as-is.
+- Added regression coverage so both help screens stay on the polished product-facing usage path.
+
+### Spot-check coverage for R282
+- [x] `configure --help`
+- [x] `reconfigure --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+
+### Acceptance notes
+- Setup/reconfigure help now reads like one calmer product across `quickstart`, `configure`, and `reconfigure`.
+- This is presentation polish only; saved-config handling, background refresh behavior, install flow, and the working telemetry path remain unchanged.
 
 ## Cycle R281 Status: COMPLETE ✅
 

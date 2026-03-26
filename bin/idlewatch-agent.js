@@ -1095,7 +1095,8 @@ if (args.has('--help') || args.has('-h')) {
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
   const configureCommand = inferCliCommand('configure')
-  const configureUsage = process.stdin.isTTY ? `${configureCommand} [--no-tui]` : `${configureCommand} --no-tui`
+  const configureUsageCommand = preferredHelpSetupCommand('configure')
+  const configureUsage = process.stdin.isTTY ? `${configureUsageCommand} [--no-tui]` : configureUsageCommand
   const configurePromptHint = process.stdin.isTTY
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
@@ -1106,7 +1107,8 @@ if (args.has('--help') || args.has('-h')) {
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = inferCliCommand('menubar')
   const reconfigureCommand = inferCliCommand('reconfigure')
-  const reconfigureUsage = process.stdin.isTTY ? `${reconfigureCommand} [--no-tui]` : `${reconfigureCommand} --no-tui`
+  const reconfigureUsageCommand = preferredHelpSetupCommand('reconfigure')
+  const reconfigureUsage = process.stdin.isTTY ? `${reconfigureUsageCommand} [--no-tui]` : reconfigureUsageCommand
   const dashboardCommand = inferCliCommand('dashboard')
   const runCommand = inferCliCommand('run')
   const subHelp = {
