@@ -35,15 +35,15 @@ Wizard output:
 
 ### Optional: background startup on macOS
 
-Background mode needs a durable install. `npx idlewatch ...` is for one-off runs, not LaunchAgent setup.
+Background mode needs a durable install. `npx idlewatch ...` is for one-off runs, not background-mode setup.
 
-For a normal packaged-app install, register IdleWatch for background startup with the script bundled inside the app:
+For a normal packaged-app install, turn on background mode with the script bundled inside the app:
 
 ```bash
 /Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh
 ```
 
-To remove the LaunchAgent later:
+To turn background mode off later:
 
 ```bash
 /Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh

@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 5:52 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R255 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 5:47 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R256 shipped one tiny external onboarding wording cleanup
+
+## Cycle R256 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny external onboarding wording cleanup only, with no setup-flow change, no saved-config behavior change, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the last remaining external onboarding seam.
+- `docs/onboarding-external.md` no longer slips back into raw `LaunchAgent` wording in the main durable background-mode guidance.
+- The external onboarding page now keeps the same calmer product framing already used across the CLI, status, install, uninstall, and recent QA passes:
+  - `not background-mode setup`
+  - `turn on background mode`
+  - `turn background mode off later`
+- Kept the packaged script paths, durable-vs-`npx` guidance, setup/reconfigure flow shape, saved-config handling, startup/install behavior, and the working telemetry path unchanged.
+
+### R256 implementation
+#### [x] L85 — external onboarding now keeps `background mode` wording in the packaged durable-install section
+- Reworded `docs/onboarding-external.md` so the durable packaged-app section no longer says `not LaunchAgent setup`.
+- Reworded the same section so it says `turn on background mode` and `turn background mode off later` instead of surfacing the macOS mechanism in the main user-facing line.
+- Left the actual script paths and install flow unchanged.
+
+### Spot-check coverage for R256
+- [x] `docs/onboarding-external.md`
+- [x] Manual copy consistency check: CLI/background wording vs external onboarding
+- [x] `grep -n 'background mode needs a durable install\|turn on background mode\|turn background mode off later' docs/onboarding-external.md`
+
+### Acceptance notes
+- External onboarding now stays product-shaped in the durable background-mode section instead of briefly falling back to `LaunchAgent` wording.
+- This is docs-only; setup/reconfigure behavior, saved config, background install behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R255 Status: COMPLETE ✅
 
