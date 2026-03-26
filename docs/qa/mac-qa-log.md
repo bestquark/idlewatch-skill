@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 11:15 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R300 spot-check pass found no new product-facing polish regressions worth opening
+**Last updated:** Thursday, March 26th, 2026 — 11:16 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R301 shipped one tiny doc polish fix; no broader product-facing polish regressions worth opening
+
+## Cycle R301 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny wording cleanup in launch-agent docs only, with no setup-flow changes, saved-config behavior changes, launch-agent behavior changes, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `docs/packaging/macos-launch-agent.md` no longer slips back to `background collection` in the saved-setup install branch.
+- The install doc now says background mode `starts normally`, which matches the calmer wording already used across CLI help, status, and installer messaging.
+- No auth, ingest, packaging mechanics, or telemetry behavior was touched.
+
+### Prioritized findings
+
+#### [x] L33 — packaging doc now says `background mode`, not `background collection`, in the saved-setup install branch
+**Why it matters:** This is tiny, but it sits in the exact scan-first packaging/setup moment where people compare shell-install docs with the CLI’s calmer `background mode` framing. Letting one line drift back to `background collection` made the packaged path feel slightly more implementation-ish than the rest of the product.
+
+**What shipped**
+- Reworded `docs/packaging/macos-launch-agent.md` from:
+  - `background collection starts normally`
+- To:
+  - `background mode starts normally`
+
+### Spot-check coverage for R301
+- [x] `grep -n "background mode starts normally\|background collection starts normally" docs/packaging/macos-launch-agent.md`
+
+### Acceptance notes
+- Packaged-app launch-agent docs now match the CLI’s current background-mode language.
+- No setup semantics changed.
+- The working telemetry path remains untouched.
 
 ## Cycle R300 Status: COMPLETE ✅
 
