@@ -7,15 +7,21 @@ function truthy(value) {
 }
 
 try {
+  const shouldInstallMenubarApp = truthy(process.env.IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL)
   const shouldLaunch = truthy(process.env.IDLEWATCH_LAUNCH_MENUBAR_ON_INSTALL)
-  installMenubarApp({ force: false, launch: shouldLaunch })
+
+  if (shouldInstallMenubarApp) {
+    installMenubarApp({ force: false, launch: shouldLaunch })
+  }
 } catch (error) {
   console.warn(`IdleWatch postinstall menubar setup skipped: ${error.message}`)
 }
 
 console.log('')
 console.log('  Set up this device:')
-console.log('    - global install:  idlewatch quickstart')
-console.log('    - one-off use:     npx idlewatch quickstart')
-console.log('    - packaged app:    use the bundled quickstart command inside IdleWatch.app docs')
+console.log('    idlewatch quickstart')
+console.log('')
+console.log('  Other install paths:')
+console.log('    npx idlewatch quickstart')
+console.log('    IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch')
 console.log('')

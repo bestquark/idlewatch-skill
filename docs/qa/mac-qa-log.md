@@ -1,17 +1,17 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:04 AM (America/Toronto)  
-**Status:** ACTION NEEDED ⚠️ - R214 opened install-path polish findings
+**Last updated:** Thursday, March 26th, 2026 — 1:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R214 shipped install-path polish fixes
 
-## Cycle R214 Status: OPEN ⚠️
+## Cycle R214 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
 - Core setup/config/background behavior still feels solid. Device rename continuity, metric-toggle persistence, install-before-setup safety, `--test-publish`, and saved-config reconfigure messaging all passed spot checks.
-- One product-facing install-path issue is worth fixing: a global `npm install -g idlewatch` currently auto-creates a macOS menu bar app in `~/Applications/IdleWatch.app` during `postinstall`, which is surprising for a CLI install and muddies the “global CLI vs npx vs packaged app” story.
-- One smaller copy issue also remains: the `postinstall` guidance mixes three setup paths at once, including a vague packaged-app line that reads like internal packaging knowledge instead of a calm user next step.
+- Global `npm install -g idlewatch` is now CLI-first by default: `postinstall` no longer auto-creates `~/Applications/IdleWatch.app` unless the install explicitly opts in with `IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1`.
+- `postinstall` copy now ends with one obvious next step for the path the user just chose: `idlewatch quickstart`.
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### R214 spot-check coverage
@@ -29,7 +29,7 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ### Prioritized findings
 
-#### [M1] `npm install -g idlewatch` unexpectedly creates a macOS app bundle in `~/Applications`
+#### [x] M1 — `npm install -g idlewatch` no longer auto-creates a macOS app bundle in `~/Applications`
 - **Why this matters:** A user choosing the CLI path expects “install a CLI, then run `idlewatch quickstart`.” Auto-creating a menu bar app during `npm install -g` adds surprise, visual noise, and setup ambiguity before the user has even asked for the app.
 - **Current behavior observed:** Global install ran `postinstall`, built the menubar scaffold, and printed:
   - `IdleWatch menubar app scaffold ready: ~/Applications/IdleWatch.app`
@@ -45,7 +45,7 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
   - Preferred: do **not** create/install the menu bar app during `npm install -g`; leave that to an explicit `idlewatch menubar` or packaged-app flow.
   - If the auto-install behavior is intentionally kept, the install output must say this clearly up front and explain how to skip it in one short line.
 
-#### [L1] `postinstall` next-step copy mixes install paths and ends on a vague packaged-app instruction
+#### [x] L1 — `postinstall` next-step copy now ends with a calmer CLI-first next step
 - **Why this matters:** The current output is readable, but it makes the user parse three product surfaces at once right after install: global CLI, `npx`, and packaged app. The packaged-app line (`use the bundled quickstart command inside IdleWatch.app docs`) feels internal and unnecessarily technical.
 - **Current behavior observed:** After global install, `postinstall` prints:
   - `global install: idlewatch quickstart`
@@ -81,7 +81,7 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ### Acceptance notes
 - Setup wizard, config persistence, next-start reload semantics, launch-agent install/uninstall flow, test-publish aliasing, device identity continuity, and metric-toggle persistence still feel coherent and low-friction.
-- The meaningful remaining polish gap in this cycle is install-path clarity during global npm install.
+- Global npm install now keeps the default path unsurprising and CLI-first, while still leaving an explicit opt-in hook for menubar-app installs during npm install.
 - The stale cron payload path remains external to the product itself.
 
 ---
