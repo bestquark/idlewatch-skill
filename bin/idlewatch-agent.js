@@ -1706,7 +1706,7 @@ if (statusRequested) {
     if (launchAgent.state === 'running') {
       console.log(`  Background:   running in background (pid ${launchAgent.pid})`)
     } else if (launchAgent.state === 'loaded') {
-      console.log('  Background:   enabled (idle)')
+      console.log('  Background:   on (waiting for next check)')
     } else if (launchAgent.state === 'installed-not-loaded') {
       if (hasConfig) {
         console.log('  Background:   installed but not running')

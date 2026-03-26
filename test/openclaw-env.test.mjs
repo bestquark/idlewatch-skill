@@ -2119,7 +2119,7 @@ test('configure success says to refresh an already-running background agent', ()
     assert.match(configure.stdout, /✅ Settings saved for "QA Box"\./)
     assert.doesNotMatch(configure.stdout, /✅ Setup complete — "QA Box" is live!/)
 
-    const launchAgentWasRunning = /Background:\s+running in background|Background:\s+enabled \(idle\)/.test(postInstallStatus.stdout)
+    const launchAgentWasRunning = /Background:\s+running in background|Background:\s+on \(waiting for next check\)/.test(postInstallStatus.stdout)
     if (launchAgentWasRunning) {
       assert.match(configure.stdout, /Background mode:\s+already running/)
       assert.doesNotMatch(configure.stdout, /Background agent:\s+already running/)
@@ -2494,6 +2494,53 @@ exit 0
     assert.ok(run.stdout.includes('Background:   running in background (pid 4242)'), 'should report the running background state')
     assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the running-agent apply hint aligned with saved-config wording')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
+  } finally {
+    rmSync(fakeBin, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('status command says background is on while waiting for the next check when launchd has it loaded', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-loaded-idle-'))
+  const fakeBin = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-loaded-idle-bin-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    const logDir = path.join(configDir, 'logs')
+    fs.mkdirSync(logDir, { recursive: true })
+    fs.mkdirSync(path.join(tempHome, 'Library', 'LaunchAgents'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Idle Box',
+      'IDLEWATCH_DEVICE_ID=idle-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+    fs.writeFileSync(path.join(logDir, 'idle-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "\$cmd" == "print" ]]; then
+  cat <<'EOF'
+state = waiting
+EOF
+  exit 0
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempHome, PATH: `${fakeBin}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Background:   on (waiting for next check)'), 'should describe the loaded-but-idle background state in plain language')
+    assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the apply hint for the loaded background state')
+    assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
     rmSync(tempHome, { recursive: true, force: true })

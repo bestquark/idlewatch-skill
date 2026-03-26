@@ -1,80 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:02 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R264 found no new product-facing polish regressions
+**Last updated:** Thursday, March 26th, 2026 — 7:24 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R265 shipped one tiny status-copy polish fix
 
-## Cycle R264 Status: COMPLETE ✅
+## Cycle R265 Status: COMPLETE ✅
 
-This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+This pass stayed intentionally narrow and product-facing: one tiny loaded-but-idle `status` copy polish fix only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
 
 ### Outcome
-- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
-- Main `--help`, first-run `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, clean-home `--test-publish`, invalid cloud-key recovery, `npm exec` durable-install guidance, and global npm `postinstall` still read like one calm product.
-- Focus areas from this lane still hold up: saved-config reload behavior, installed-but-not-running guidance, stable device-ID continuity on rename, metric-toggle persistence, and one-off-vs-durable install-path clarity.
+- Shipped one small, low-risk polish improvement in the saved-config background-state scan path.
+- When macOS has the LaunchAgent loaded but there is no active pid yet, `status` no longer says the slightly more implementation-ish `Background: enabled (idle)`.
+- That state now reads in calmer product language:
+  - `Background:   on (waiting for next check)`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
-### Prioritized findings
-- None. No product-facing polish regression was worth opening from this cycle.
+### R265 implementation
+#### [x] L90 — loaded-but-idle background state now reads `on (waiting for next check)`
+- Reworded only the macOS `status` label for the loaded-without-pid state.
+- Kept running / installed-but-not-loaded / waiting-for-setup / off states unchanged.
+- Added regression coverage so this scan-first state does not drift back to the older `enabled (idle)` wording.
 
-### Spot-check coverage for R264
-- [x] Main `--help`
-- [x] First-run `status` in a clean HOME
-- [x] `install-agent` before setup in a clean HOME
-- [x] Local-only non-interactive `quickstart --no-tui`
-- [x] `configure --no-tui` persistence coverage via targeted test suite
-- [x] Post-setup `status`
-- [x] `--test-publish` in a clean HOME
-- [x] Invalid cloud-key setup error wording
-- [x] `npm exec --yes -- idlewatch --help`
-- [x] Global `npm install -g . --foreground-scripts` postinstall copy
-- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='test-publish|npx|install-agent help keeps the durable setup path short and clear|status command shows contextual next-step hints|status stays honest after install-agent without saved config|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|uninstall-agent removes plist and keeps config and local logs|install-agent follow-up uses source checkout command path|configure failure keeps redo guidance|metric|device'`
-
-### Exact repro commands used
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. `TMPHOME=$(mktemp -d)`
-3. `TMPHOME2=$(mktemp -d)`
-4. `TMPHOME3=$(mktemp -d)`
-5. `TMPPREFIX=$(mktemp -d)`
-6. `TMPCACHE=$(mktemp -d)`
-7. `FAKEBIN=$(mktemp -d)`
-8. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
-   ```bash
-   cat > "$FAKEBIN/launchctl" <<'EOF'
-   #!/usr/bin/env bash
-   set -euo pipefail
-   cmd="${1:-}"
-   if [[ "$cmd" == "print" ]]; then
-     exit 1
-   fi
-   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
-     exit 0
-   fi
-   exit 0
-   EOF
-   chmod +x "$FAKEBIN/launchctl"
-   ```
-9. `node bin/idlewatch-agent.js --help`
-10. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
-14. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-15. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
-16. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
-17. `npm exec --yes -- idlewatch --help`
-18. `HOME="$(mktemp -d)" npm install -g . --prefix "$TMPPREFIX" --cache "$TMPCACHE" --foreground-scripts`
-19. `node --test test/openclaw-env.test.mjs --test-name-pattern='test-publish|npx|install-agent help keeps the durable setup path short and clear|status command shows contextual next-step hints|status stays honest after install-agent without saved config|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|uninstall-agent removes plist and keeps config and local logs|install-agent follow-up uses source checkout command path|configure failure keeps redo guidance|metric|device'`
+### Spot-check coverage for R265
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='status command says background is on while waiting for the next check when launchd has it loaded|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded|configure success says to refresh an already-running background agent'`
 
 ### Acceptance notes
-- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
-- Installed-before-setup and installed-but-not-running states still stay honest and low-friction.
-- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
-- Metric-selection changes still persist cleanly into saved config and the next `status` output.
-- `--test-publish`, invalid cloud-key recovery, and npm/npx install guidance still keep the next step short and actionable without surfacing extra implementation detail.
-- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
+- `status` now stays calmer in the one loaded-but-waiting background state that still sounded slightly mechanical.
+- This is copy-only; setup/reconfigure, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
-## Cycle R263 Status: COMPLETE ✅
+## Cycle R264 Status: COMPLETE ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 
