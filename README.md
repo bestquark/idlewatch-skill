@@ -47,7 +47,7 @@ idlewatch --dry-run           # preview collected metrics without publishing
 idlewatch run                 # start continuous collection
 ```
 
-## Background collection (macOS)
+## Background mode (macOS)
 
 Use `npx idlewatch quickstart --no-tui` for one-off setup or foreground testing.
 For background mode:

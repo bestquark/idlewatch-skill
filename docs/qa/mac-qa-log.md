@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 11:20 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R302 re-checked the active polish lane from the live checkout; no new product-facing polish regressions worth opening
+**Last updated:** Thursday, March 26th, 2026 — 11:25 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R303 closed one tiny README wording seam; no further product-facing polish regressions worth opening from this pass
+
+## Cycle R303 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one README wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Closed one leftover wording seam in the most scan-first doc surface.
+- `README.md` no longer labels the macOS background section as `Background collection (macOS)`.
+- That header now matches the calmer product wording used across CLI help, status, install/uninstall messaging, and recent packaging/onboarding docs:
+  - `Background mode (macOS)`
+- Kept all commands, setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path unchanged.
+- The stale cron payload path remained external to the product itself in this pass too: the active checkout was still `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L43 — README macOS background section now says `Background mode`, not `Background collection`
+**Why it matters:** This is tiny, but it sits in a scan-first setup/install moment. The product has already converged on `background mode` almost everywhere people decide how to run or install IdleWatch. Leaving the README header on `Background collection` reintroduced one needless wording wobble in the main docs entrypoint.
+
+**What shipped**
+- Reworded only the README section header from `Background collection (macOS)` to `Background mode (macOS)`.
+- Kept the one-off `npx` path, durable install guidance, optional menubar hint, and all commands unchanged.
+
+### Spot-check coverage for R303
+- [x] `grep -n "Background mode (macOS)\|Background collection (macOS)" README.md`
+
+### Acceptance notes
+- README now tells the same calmer `background mode` story as the CLI and current setup/install docs.
+- This is docs polish only; setup/reconfigure behavior, saved-config handling, background startup behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R302 Status: COMPLETE ✅
 
