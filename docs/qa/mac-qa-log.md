@@ -1,8 +1,40 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 10:40 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R289 found one remaining source-checkout runtime handoff seam in install-before-setup / follow-up guidance
+**Last updated:** Thursday, March 26th, 2026 — 10:55 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R290 closed the last small source-checkout install-before-setup command-handoff seam
+
+## Cycle R290 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one source-checkout install-before-setup command-handoff consistency fix only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Closed the one remaining copy/paste seam in the source-checkout install-before-setup success block.
+- When the user invokes IdleWatch from a checkout with `node bin/idlewatch-agent.js install-agent`, the immediate next-step block now stays on that same source-checkout command shape for setup, foreground run, start, status, and uninstall.
+- This keeps the exact follow-up commands copy-pasteable and coherent in the moment users decide what to run next.
+- Kept npm/npx durable-install guidance, setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L39 — source-checkout install-before-setup and nearby runtime handoffs now tell one coherent next-command story
+**What shipped**
+- Reworded the source-checkout `install-agent` pre-setup next-step block to use the current invocation path consistently:
+  - `node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js run`
+  - `node bin/idlewatch-agent.js install-agent`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+- Kept this change limited to the source-checkout install-before-setup handoff block only.
+- Added regression coverage so this block does not drift back into mixed command shapes.
+
+### Spot-check coverage for R290
+- [x] `install-agent` before setup in a clean HOME
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent follow-up uses source checkout command path|install-agent does not claim background is running when launchd still reports not loaded|install-agent help keeps the durable setup path short and clear'`
+
+### Acceptance notes
+- Source-checkout install-before-setup now tells one coherent copy/paste story in the exact next-step block users scan first.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, background install behavior, npm/npx guidance, and the working telemetry path remain unchanged.
 
 ## Cycle R289 Status: OPEN ⚠️
 
