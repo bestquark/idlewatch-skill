@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R351 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one remaining wording-consistency fix in the setup/reconfigure doc lane.
+
+### Outcome
+- Found one small wording seam still visible in the shipped skill doc: `skill/SKILL.md` still said `re-open saved setup` / `Re-open setup later`, even though the CLI help and nearby docs already converged on the calmer `Update setup` wording.
+- Updated those two skill-doc lines to `update saved setup` / `Update setup later` so the installed quick-reference now matches the current product voice.
+- Kept runtime behavior unchanged: this is docs/copy polish only.
+- Preserved the now-working telemetry path.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L60 — `skill/SKILL.md` now says `update setup` instead of `re-open setup`
+**Why it mattered:** This is tiny, but it sits in a scan-first setup/reconfigure quick reference. The surrounding CLI and docs already made the calmer `Update setup` story consistent; leaving the skill doc on `re-open` reintroduced a small wording wobble right where someone is choosing a copy-paste command.
+
+**What shipped**
+- Updated `idlewatch configure --no-tui    # re-open saved setup` to `# update saved setup`
+- Updated `Re-open setup later with idlewatch configure --no-tui` to `Update setup later with idlewatch configure --no-tui`
+- Kept this docs-only
+
+### Spot-check coverage for R351
+- [x] `skill/SKILL.md` common command comment now says `update saved setup`
+- [x] `skill/SKILL.md` setup note now says `Update setup later`
+- [x] No runtime behavior changed
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `grep -n "update saved setup\|Update setup later\|re-open saved setup\|Re-open setup later" skill/SKILL.md`
+
+### Acceptance notes
+- The installed quick-reference now matches the calmer `Update setup` wording already used by the CLI and nearby docs.
+- This is docs polish only; setup/reconfigure behavior, saved-config handling, startup/install behavior, and the working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 4:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny skill-doc wording seam fixed in this pass
+
 ## Cycle R350 Status: COMPLETE ✅
 
 This pass re-ran the live installer/CLI polish lane from the actual checkout and stayed strict about not inventing work once the setup/install surfaces already felt calm, consistent, and low-friction.
