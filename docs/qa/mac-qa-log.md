@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:31 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R217 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 1:35 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R218 shipped one tiny setup fallback wording cleanup
+
+## Cycle R218 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup fallback wording cleanup only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Setup fallback no longer leaks internal TUI/platform failure details in the user-facing warning path.
+- Routine fallback now simply says:
+  - `Using text setup.`
+- Unexpected fallback cases now stay calm without surfacing raw reason codes:
+  - `TUI setup is unavailable here. Using text setup.`
+- This keeps setup/reconfigure a little less technical in the exact moment the product is already recovering automatically.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R218 implementation
+#### [x] L67 — setup fallback copy now stays product-shaped instead of exposing TUI failure internals
+- Reworded the normal TUI-unavailable fallback to a minimal `Using text setup.` message.
+- Reworded the unexpected fallback path so it no longer prints raw internal reason codes.
+- Kept behavior unchanged: IdleWatch still falls back to text setup automatically.
+- Added regression coverage for both the routine and unexpected fallback message shapes.
+
+### Spot-check coverage for R218
+- [x] `node --test test/enrollment.test.mjs`
+- [x] `npm test --silent`
+
+### Acceptance notes
+- Setup/reconfigure still recover automatically into the plain-text flow when the TUI path is unavailable.
+- The fallback copy is now calmer and more product-like without hiding that the CLI is continuing safely.
+- No auth, ingest, packaging, launch-agent, saved-config, or telemetry-path behavior changed.
 
 ## Cycle R217 Status: CLOSED ✅
 

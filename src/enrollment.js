@@ -326,6 +326,14 @@ export function promptModeText({ isReconfigure = false } = {}) {
   return `\n${title}\n\nSetup mode:\n  1) Cloud link — publish with an API key from idlewatch.com/api\n  2) Local-only — keep samples on this Mac\n`
 }
 
+export function tuiFallbackMessage(reason) {
+  if (!reason || ['disabled', 'cargo-missing', 'bundled-binary-missing', 'bundled-binary-missing-and-cargo-missing'].includes(reason)) {
+    return 'Using text setup.'
+  }
+
+  return 'TUI setup is unavailable here. Using text setup.'
+}
+
 function monitorTargetsNeedOpenClawUsage(monitorTargets) {
   return monitorTargets.some((item) => OPENCLAW_AGENT_TARGETS.includes(item) && item !== 'agent_activity')
 }
@@ -437,10 +445,9 @@ export async function runEnrollmentWizard(options = {}) {
       }
     }
 
-    if (tuiResult.reason === 'bundled-binary-missing-and-cargo-missing') {
-      console.warn('TUI setup not available for this platform. Using text prompts.')
-    } else if (!['disabled', 'cargo-missing', 'bundled-binary-missing'].includes(tuiResult.reason || '')) {
-      console.warn(`IdleWatch TUI unavailable (${tuiResult.reason || 'unknown'}). Falling back to text setup.`)
+    const fallbackMessage = tuiFallbackMessage(tuiResult.reason)
+    if (fallbackMessage) {
+      console.warn(fallbackMessage)
     }
   }
 
