@@ -1,55 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:39 AM (America/Toronto)  
-**Status:** OPEN ⚠️ - R216 revalidated one small test-publish recovery-copy regression
+**Last updated:** Thursday, March 26th, 2026 — 1:57 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R216 shipped one small `--test-publish` recovery-copy consistency fix
 
-## Cycle R216 Status: OPEN ⚠️
+## Cycle R216 Status: CLOSED ✅
 
-This pass revalidated the current polish surface instead of widening scope. The broad setup/install flow still feels calm, but the same one small `--test-publish` recovery-copy seam is still present in the source-checkout path.
+This pass stayed intentionally narrow and product-facing: one tiny `--test-publish` invalid-key recovery-copy alignment only.
 
 ### Outcome
-- Setup wizard copy, config persistence/reload behavior, install-before-setup behavior, uninstall behavior, device identity persistence, and metric-toggle persistence still look polished.
-- `--test-publish` still behaves well in the two main happy-ish paths:
-  - no saved cloud link → local-only one-shot sample with low-noise output
-  - valid cloud-mode shape + bad key → clear failure classification (`invalid_api_key`)
-- The remaining issue is copy consistency only: the invalid-key recovery hint still falls back to the raw source-checkout command instead of the calmer product command style already used elsewhere.
+- Shipped one small, low-risk polish improvement.
+- Source-checkout `--test-publish` invalid-key failures no longer fall back to the raw `node bin/idlewatch-agent.js configure --no-tui` recovery hint.
+- The failure classification stays the same (`invalid_api_key`), but the next step now uses the calmer product command style:
+  - `Run idlewatch configure --no-tui to update your API key.`
 - The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
-### Prioritized findings
-
-#### [M5] Source-checkout command leaks into `--test-publish` invalid-key recovery copy
-- **Priority:** Medium
-- **Why this matters:** This is still the one moment in the polish lane where the product drops out of its calmer voice. The error classification is good, but the next-step copy becomes more internal and visually noisy right when the user needs the shortest possible recovery instruction.
-- **Exact repro:**
-  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-  2. `IDLEWATCH_DEVICE_NAME=test IDLEWATCH_CLOUD_API_KEY=bad node bin/idlewatch-agent.js --test-publish`
-  3. Observe:
-     - `❌ Cloud publish failed for "test": API key rejected (invalid_api_key). Run node bin/idlewatch-agent.js configure --no-tui to update your API key.`
-- **Expected behavior:**
-  - Keep the concise `invalid_api_key` failure classification.
-  - Use the same context-aware user-facing command selection rules as help/status/install guidance.
-  - Prefer the cleaner product command in default recovery copy instead of the raw source-checkout path where possible.
-- **Acceptance criteria:**
-  - Invalid cloud-key one-shot publish failures no longer default to `node bin/idlewatch-agent.js ...` in the user-facing recovery hint.
-  - Recovery copy matches the install context the same way other CLI surfaces already do.
-  - Regression coverage exists for invalid-key `--test-publish` failures so the copy does not drift back.
+### R216 implementation
+#### [x] M5 — source-checkout `--test-publish` invalid-key recovery copy now stays product-shaped
+- Kept the existing invalid-key classification and failure behavior unchanged.
+- Narrowed the fix to the one recovery-copy seam in required cloud one-shot publish failures.
+- Added regression coverage so source-checkout `--test-publish` keeps the cleaner recovery command and does not drift back to the raw checkout path.
 
 ### Spot-check coverage for R216
-- [x] Main `--help`
-- [x] First-run `status` in a clean HOME
-- [x] `install-agent` before setup in a clean HOME
-- [x] Local-only non-interactive `quickstart --no-tui`
-- [x] Post-setup `status`
-- [x] `configure --no-tui` device rename + metric-toggle persistence
-- [x] `--test-publish` with no saved cloud config
 - [x] Source-checkout `--test-publish` invalid cloud-key failure copy
 - [x] `npm test --silent`
 
 ### Acceptance notes
 - This is still a consistency fix, not a behavior redesign.
-- No auth, ingest, packaging, launch-agent, or persistence behavior changes are recommended from this cycle.
-- The core pipeline remains ready; the remaining issue is just one recovery-copy seam in the test-publish path.
+- No auth, ingest, packaging, launch-agent, persistence, or telemetry-path behavior changed.
+- The core pipeline remains ready; the remaining issue from this cycle is closed.
 
 ---
 

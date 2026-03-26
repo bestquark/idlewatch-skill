@@ -1618,6 +1618,56 @@ test('configure reuses a saved cloud API key from export-prefixed quoted env lin
   }
 })
 
+test('--test-publish invalid cloud-key recovery copy stays product-shaped in a source checkout', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-test-publish-invalid-key-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-test-publish-invalid-key-root-'))
+  const rejectServer = path.join(tempRoot, 'reject-server.mjs')
+  const port = 47933
+
+  fs.writeFileSync(rejectServer, `
+    import http from 'node:http'
+    const port = Number(process.argv[2])
+    const server = http.createServer((req, res) => {
+      req.resume()
+      req.on('end', () => {
+        res.writeHead(401, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ error: 'invalid_api_key' }))
+      })
+    })
+    server.listen(port, '127.0.0.1')
+  `)
+
+  const serverProc = spawn(process.execPath, [rejectServer, String(port)], {
+    stdio: 'ignore'
+  })
+  sleep(150)
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, '--test-publish'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_DEVICE_NAME: 'test',
+        IDLEWATCH_CLOUD_API_KEY: 'bad',
+        IDLEWATCH_CLOUD_INGEST_URL: `http://127.0.0.1:${port}/api/ingest`,
+        IDLEWATCH_REQUIRE_CLOUD_WRITES: '1',
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Cloud publish failed for "test": API key rejected \(invalid_api_key\)\./)
+    assert.match(run.stderr, /Run idlewatch configure --no-tui to update your API key\./)
+    assert.doesNotMatch(run.stderr, /Run node .*bin\/idlewatch-agent\.js configure --no-tui to update your API key\./)
+  } finally {
+    serverProc.kill('SIGTERM')
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 test('configure keeps the saved device id stable when renaming the device', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-rename-home-'))
   try {

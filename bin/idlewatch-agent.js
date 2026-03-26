@@ -77,6 +77,15 @@ function preferredSetupCommand(command = 'quickstart') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function preferredRecoveryCommand(command = 'configure') {
+  const suffix = process.stdin.isTTY ? '' : ' --no-tui'
+  const invocation = detectCliInvocation()
+  if (invocation.kind === 'source') {
+    return `idlewatch ${command}${suffix}`
+  }
+  return inferCliCommand(`${command}${suffix}`)
+}
+
 function launchAgentInfo() {
   const svcLabel = 'com.idlewatch.agent'
   const uid = process.getuid?.() ?? ''
@@ -2687,7 +2696,7 @@ async function tick() {
   if (!DRY_RUN && REQUIRE_CLOUD_WRITES && ONCE && !published) {
     if (cloudIngestKickedOut) {
       throw new Error(
-        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run ${preferredSetupCommand('configure')} to update your API key.`
+        `❌ Cloud publish failed for "${DEVICE_NAME}": API key rejected (${cloudIngestKickoutReason || 'unauthorized'}). Run ${preferredRecoveryCommand('configure')} to update your API key.`
       )
     }
     throw new Error(`❌ Cloud publish failed for "${DEVICE_NAME}": check API key and connectivity.`)
