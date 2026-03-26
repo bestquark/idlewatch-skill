@@ -2,6 +2,50 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R347 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one wording polish fix that still felt worth keeping in the installer/CLI setup lane.
+
+### Outcome
+- Found one remaining small wording seam in the reconfigure/setup help surfaces: `configure` / `reconfigure` still said `Re-open setup`, which read a little more tool-shaped than the surrounding calm setup copy.
+- Updated those help surfaces to say `Update setup` instead.
+- Tightened the body copy from `Re-opens setup to change...` to `Updates...` so the command summary and help text now tell the same simpler story.
+- Kept runtime behavior unchanged: this is help-copy polish only.
+- Preserved the now-working telemetry path.
+- Re-ran the focused regression plus live help checks and it still passes cleanly: **87 passed, 0 failed**.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L58 — `configure` / `reconfigure` help now says `Update setup` instead of `Re-open setup`
+**Why it mattered:** This is tiny, but it sits in a scan-first reconfigure moment where people just want to change a few saved settings. `Update setup` reads a little more natural and task-shaped than `Re-open setup`, without adding any extra theory or changing behavior.
+
+**What shipped**
+- Updated the main command list summary for `configure` to `Update setup (name, metrics, optional cloud link)`
+- Updated `configure --help` title/body to `Update setup` / `Updates device name, metrics, and your optional cloud link.`
+- Updated `reconfigure --help` title/body to match the same simpler wording
+- Added regression coverage so this wording does not drift back
+- Kept setup/reconfigure/install/status behavior unchanged
+
+### Spot-check coverage for R347
+- [x] Main `--help`
+- [x] `configure --help`
+- [x] `reconfigure --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **87 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `node bin/idlewatch-agent.js configure --help`
+4. `node bin/idlewatch-agent.js reconfigure --help`
+5. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- The setup/reconfigure help lane now reads a touch more naturally without adding noise.
+- This is wording polish only; saved-config handling, launch-agent behavior, startup/install quality of life, and the working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 4:09 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny reconfigure/help wording seam fixed in this pass
+
 ## Cycle R346 Status: COMPLETE ✅
 
 This pass re-ran the same installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt genuinely confusing, noisy, repetitive, or more technical than a normal setup/install user should have to parse.

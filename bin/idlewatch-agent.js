@@ -366,7 +366,7 @@ function printHelp() {
     : 'Enable background mode (macOS)'
   const commands = [
     ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
-    ['configure', 'Re-open setup (name, metrics, optional cloud link)'],
+    ['configure', 'Update setup (name, metrics, optional cloud link)'],
     ['status', 'Show device config and background mode state'],
     ['run', 'Run the collector in the foreground'],
     ['create', 'Create a custom telemetry metric'],
@@ -1134,11 +1134,11 @@ Usage:  ${quickstartUsage}
 
 Walks you through device name, metrics, and an optional cloud link.
 ${quickstartPromptHint}`,
-    configure: `${configureCommand} — Re-open setup
+    configure: `${configureCommand} — Update setup
 
 Usage:  ${configureUsage}
 
-Re-opens setup to change device name, metrics, and your optional cloud link.
+Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
@@ -1172,11 +1172,11 @@ Usage:  ${menubarCommand} [--launch] [--force]
 Installs the macOS menu bar companion app.
   --launch   Open the app immediately after install
   --force    Reinstall even if already installed`,
-    reconfigure: `${reconfigureCommand} — Re-open setup (alias for configure)
+    reconfigure: `${reconfigureCommand} — Update setup (alias for configure)
 
 Usage:  ${reconfigureUsage}
 
-Re-opens setup to change device name, metrics, and your optional cloud link.
+Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
