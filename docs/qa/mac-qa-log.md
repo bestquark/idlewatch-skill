@@ -1,8 +1,114 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:25 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - one tiny uninstall-help wording seam fixed in this pass
+**Last updated:** Thursday, March 26th, 2026 — 1:39 PM (America/Toronto)  
+**Status:** OPEN ⚠️ - one tiny runtime uninstall command-story seam found in this pass
+
+## Cycle R322 Status: OPEN ⚠️
+
+This pass re-ran the same narrow installer/CLI polish lane from the live checkout and only logged something if it still felt genuinely user-facing, a bit noisy, or more implementation-ish than the rest of the flow.
+
+### Outcome
+- Most of the current setup/help/install/status lane still reads calm and coherent across main `--help`, clean-home `status`, clean-home `--test-publish`, `npm exec --yes -- idlewatch --help`, install-before-setup, local-only `quickstart --no-tui`, rename + metric-toggle persistence, post-configure `status`, and runtime `uninstall-agent` retention wording.
+- One tiny runtime copy seam is still worth fixing: successful `uninstall-agent` output still ends with the source-checkout-specific recovery hint `Turn it back on: node bin/idlewatch-agent.js install-agent`.
+- That final line now feels slightly out of character with the calmer `idlewatch ...` command story already used by the surrounding help, install-before-setup, post-setup, post-configure, and uninstall-help surfaces.
+- Kept this pass intentionally narrow: no auth, ingest, packaging, launch-agent behavior, or telemetry-path redesign is being proposed here.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [ ] L52 — runtime `uninstall-agent` success output should stay on the calmer `idlewatch install-agent` recovery command
+**Why it matters:** This lands in a reversible off-ramp where the user is deciding whether background mode feels safe to turn off. The uninstall message is already calm and reassuring about kept config/logs; dropping back to `node bin/idlewatch-agent.js install-agent` in the final recovery hint makes that last line feel a little more technical than the rest of the product.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves launchd unloaded while letting install/uninstall succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. Save local setup:
+   ```bash
+   PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" \
+     IDLEWATCH_ENROLL_NON_INTERACTIVE=1 \
+     IDLEWATCH_ENROLL_MODE=local \
+     IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' \
+     IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' \
+     node bin/idlewatch-agent.js quickstart --no-tui
+   ```
+6. Turn background mode off:
+   ```bash
+   PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent
+   ```
+7. Observe the final recovery hint still falls back to a raw launcher path:
+   - `Turn it back on: node bin/idlewatch-agent.js install-agent`
+8. Compare with nearby calmer product-shaped command surfaces in the same flow:
+   - install-before-setup → `Then start:   idlewatch install-agent`
+   - quickstart/configure success → `Start:    idlewatch install-agent`
+   - status → `Start:    idlewatch install-agent`
+
+**Acceptance criteria**
+- Successful runtime `uninstall-agent` output should keep the final recovery hint on the calmer `idlewatch install-agent` command story.
+- Keep uninstall behavior unchanged: this is copy polish only.
+- Keep saved-config/log retention wording unchanged.
+- Keep npm/npx-specific guidance unchanged where that distinction still matters.
+
+### Spot-check coverage for R322
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `--test-publish` in a clean HOME
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `uninstall-agent` runtime success output
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+5. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+6. `TMPHOME=$(mktemp -d)`
+7. `FAKEBIN=$(mktemp -d)`
+8. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+
+### Acceptance notes
+- The uninstall runtime off-ramp is already reassuring about keeping config and logs; only the final recovery command still feels slightly more implementation-ish than the surrounding product.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R321 Status: COMPLETE ✅
 
