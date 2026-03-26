@@ -167,9 +167,9 @@ else
   echo "Setup is not finished yet, so background collection stays off for now."
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
-    echo "   idlewatch quickstart"
+    echo "   idlewatch quickstart --no-tui"
   fi
-  echo "   $BIN_PATH quickstart"
+  echo "   $BIN_PATH quickstart --no-tui"
   echo ""
   echo "Then re-run this install script to turn on login startup with the saved config."
   if command -v idlewatch >/dev/null 2>&1; then

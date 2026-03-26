@@ -1,8 +1,41 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:03 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R282 shipped one tiny help-path polish fix; no broader product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 9:12 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R283 shipped one tiny packaged-install setup-path polish fix; no broader product-facing issues cleared the bar
+
+## Cycle R283 Status: COMPLETE ✅
+
+This pass stayed intentionally small and product-facing: one low-risk packaged-install setup polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one tiny setup-path consistency fix in the packaged macOS install script.
+- In the no-saved-setup handoff, the bundled install script now points to the calmer text-prompt setup path already preferred across current docs and CLI guidance:
+  - `idlewatch quickstart --no-tui`
+  - `/Applications/IdleWatch.app/.../IdleWatch quickstart --no-tui`
+- Kept the status hint, saved-config behavior, startup/install flow shape, runtime behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L35 — packaged macOS install script now keeps the no-setup handoff on `quickstart --no-tui`
+**Why it matters:** This is tiny, but it sits right in the install-before-setup moment where a person is deciding what to run next. The rest of the product already converged on `quickstart --no-tui` as the neatest copy-paste setup path; the packaged script still nudged people back to the older bare `quickstart` form for no real gain.
+
+**What shipped**
+- Reworded the bundled `install-macos-launch-agent.sh` no-setup `Finish setup:` hints from bare `quickstart` to `quickstart --no-tui`.
+- Kept the same two handoff shapes:
+  - installed CLI on PATH → `idlewatch quickstart --no-tui`
+  - packaged app binary path → `.../IdleWatch quickstart --no-tui`
+- Added regression coverage so the no-setup packaged install handoff stays on the calmer text-prompt path.
+
+### Spot-check coverage for R283
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Acceptance notes
+- The packaged install-before-setup handoff now tells the same lower-friction setup story as the current CLI and docs.
+- This is setup-copy polish only; saved-config handling, startup/install behavior, and the working telemetry path remain unchanged.
+
+## Cycle R282 Status: COMPLETE ✅
 
 ## Cycle R282 Status: COMPLETE ✅
 
