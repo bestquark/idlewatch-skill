@@ -2,6 +2,78 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R327 Status: COMPLETE ✅
+
+This pass re-ran the narrow installer/CLI polish lane from the live checkout and only kept something if it still felt confusing, noisy, repetitive, or unnecessarily technical for a normal user.
+
+### Outcome
+- Main help still reads clean and product-shaped.
+- Clean-home `status` still gives a calm first-run preview without dumping implementation detail.
+- Clean-home `--test-publish` still stays short and useful.
+- Install-before-setup still keeps the reversible background-mode story clear.
+- Local-only `quickstart --no-tui` still verifies setup without verbose telemetry noise.
+- `configure --no-tui` still preserves device identity while reflecting renamed device text and saved metric toggles immediately.
+- Post-configure `status` still shows stable device identity continuity and the updated metric set.
+- Runtime `install-agent` / `uninstall-agent` command-story polish still holds, including the calmer `Turn it back on: idlewatch install-agent` recovery hint.
+- `npm exec --yes -- idlewatch --help` still makes the durable-install split understandable.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No new small, low-risk polish issue still felt worth changing in this cycle.
+
+### Spot-check coverage for R327
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `--test-publish` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] Runtime `install-agent` success output
+- [x] Runtime `uninstall-agent` success output
+- [x] `npm exec --yes -- idlewatch --help`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+5. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+6. `TMPHOME=$(mktemp -d)`
+7. `FAKEBIN=$(mktemp -d)`
+8. Create fake `launchctl` shim that leaves the agent not loaded while allowing install/uninstall commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+15. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+
+### Acceptance notes
+- The current setup/help/install/status lane still reads like one calm product.
+- Device identity continuity, saved-config reload guidance, launch-agent install/uninstall behavior, metric-toggle persistence, and npm/npx install-path clarity all still look acceptable in the live checkout.
+- No auth, ingest, packaging, or major flow redesign is being proposed from this cycle.
+
+**Last updated:** Thursday, March 26th, 2026 — 2:00 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new polish issue found in this pass
+
+
 ## Cycle R326 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and honest: the top remaining runtime uninstall seam from older open notes was re-checked in the live checkout and is already fixed, so no product code change was needed.
