@@ -1195,7 +1195,8 @@ test('install-agent does not claim background is running when launchd still repo
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /✅ LaunchAgent installed\./)
     assert.match(install.stdout, /Saved config is ready, but background collection is not loaded yet\./)
-    assert.ok(install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should show re-enable hint for the current install path')
+    assert.ok(install.stdout.includes(`Start:        ${SOURCE_CMD} install-agent`), 'should show a start hint for the current install path when the agent is installed but not loaded')
+    assert.ok(!install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh re-enable')
     assert.doesNotMatch(install.stdout, /IdleWatch is running in the background/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })

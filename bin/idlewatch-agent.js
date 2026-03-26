@@ -1167,7 +1167,7 @@ const subcommandPromise = (async () => {
       } else {
         console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
         console.log('   Saved config is ready, but background collection is not loaded yet.')
-        console.log(`   Re-enable:    ${installAgentCommand}`)
+        console.log(`   Start:        ${installAgentCommand}`)
       }
       console.log(`   Saved config: ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)

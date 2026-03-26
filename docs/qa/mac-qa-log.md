@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:53 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R204 found no new product-facing polish regressions
+**Last updated:** Wednesday, March 25th, 2026 — 11:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R205 shipped one tiny install/start wording cleanup
+
+---
+
+## Cycle R205 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny background-start wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent` no longer says `Re-enable` in the specific recovery path where the LaunchAgent is already installed and the saved config is ready, but launchd still has it not loaded yet.
+- That follow-up now says:
+  - `Start:        ... install-agent`
+- This keeps `install-agent` aligned with the calmer, more honest wording already used by `status` and setup completion for the same installed-but-not-loaded state.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R205 implementation
+#### [x] L63 — `install-agent` now says `Start`, not `Re-enable`, when background mode is installed but not loaded
+- Reworded the installed-but-not-loaded follow-up in `install-agent` from `Re-enable` to `Start`.
+- Kept the first-time background install path unchanged (`Then start`) and kept the already-running refresh path unchanged (`refresh it with the saved config`).
+- Added regression coverage so the install path stays aligned with `status` for this state.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent does not claim background is running when launchd still reports not loaded|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded'`
+
+### Acceptance notes
+- The saved-config-installed-but-not-loaded state now reads as a simple start moment everywhere the user sees it.
+- LaunchAgent install behavior, background refresh behavior, setup/reconfigure behavior, and the working telemetry path remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ---
 
