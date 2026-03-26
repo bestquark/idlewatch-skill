@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:55 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - shipped one tiny worth-it polish fix; lane still remains narrow and low-risk
+**Last updated:** Thursday, March 26th, 2026 — 1:12 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new polish regressions found in the requested installer/CLI lane
+
+## Cycle R317 Status: COMPLETE ✅
+
+This pass stayed in the same narrow polish lane and did not find anything new worth shipping.
+
+### Outcome
+- Re-checked the exact requested surfaces: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+- Re-ran the targeted installer/CLI regression subset and got **85 passed, 0 failed**.
+- Spot-checked live output for `--help`, `status --help`, `install-agent --help`, local-only quickstart, saved-config reconfigure, saved-config status, and already-off uninstall behavior.
+- No new copy, flow, persistence, or background-mode issues stood out as confusing, repetitive, overly technical, or visually noisy.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- No new fixes requested in this cycle.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+3. `node bin/idlewatch-agent.js --help`
+4. `node bin/idlewatch-agent.js status --help`
+5. `node bin/idlewatch-agent.js install-agent --help`
+6. `HOME=$(mktemp -d) IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local-only IDLEWATCH_ENROLL_DEVICE_NAME='QA Mac' node bin/idlewatch-agent.js quickstart --no-tui`
+7. `HOME=$(mktemp -d) ... node bin/idlewatch-agent.js configure --no-tui` with saved config + preserved device id
+8. `HOME=$(mktemp -d) node bin/idlewatch-agent.js uninstall-agent`
+
+### Acceptance notes
+- Setup/reconfigure still reads short and useful.
+- Saved config still persists cleanly and applies on next start.
+- Background refresh guidance is still explicit without becoming scary or technical.
+- `npx` guidance still cleanly points one-off users toward durable install only when background mode matters.
 
 ## Cycle R316 Status: COMPLETE ✅
 
