@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:34 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R259 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 6:21 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R260 shipped one small source-checkout help-copy polish fix
+
+## Cycle R260 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-copy polish fix only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the source-checkout help path.
+- Main `--help` no longer leads first-time source-checkout users to the more internal-looking `node bin/idlewatch-agent.js quickstart --no-tui` command in the final `Get started:` line.
+- `install-agent --help` now keeps the same calmer product-shaped setup hint in that source-checkout context:
+  - `If not, save setup first with idlewatch quickstart --no-tui, then re-run install-agent.`
+- Kept runtime setup/reconfigure/status behavior, saved-config handling, launch-agent behavior, packaged scripts, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R260 implementation
+#### [x] L87 — source-checkout help now keeps the setup hint on the calmer `idlewatch ...` command style
+- Added a tiny help-only command formatter so source-checkout help can stay product-shaped without changing runtime/status/retry command selection elsewhere.
+- Reworded main `--help` so `Get started:` uses `idlewatch quickstart --no-tui` in the source-checkout help context.
+- Reworded `install-agent --help` so its unsaved-setup recovery hint uses `idlewatch quickstart --no-tui` in the same context.
+- Added regression coverage so these help lines do not drift back to the raw checkout command path.
+
+### Spot-check coverage for R260
+- [x] Main `--help`
+- [x] `install-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path|quickstart failure keeps idlewatch --once as the primary retry only for the default saved config path|quickstart failure uses custom-path-aware retry copy when setup saved config outside the default path|configure failure keeps redo guidance on configure instead of sending people back through quickstart|install-agent follow-up uses source checkout command path|status command hides cloud link info in local-only mode|status command shows contextual next-step hints'`
+
+### Acceptance notes
+- The first-run help path is a touch calmer and more copy-pasteable in source-checkout usage.
+- This is help-copy polish only; retry/status/runtime command selection, saved-config handling, background-mode behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R259 Status: COMPLETE ✅
 

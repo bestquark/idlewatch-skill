@@ -230,6 +230,8 @@ test('help keeps the happy path above advanced env tuning noise', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Get started:/)
+  assert.match(run.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
+  assert.doesNotMatch(run.stdout, /Get started:\s+node .*quickstart --no-tui/)
   assert.match(run.stdout, /quickstart/)
   assert.match(run.stdout, /run\s+Run the collector in the foreground/)
   assert.doesNotMatch(run.stdout, /run\s+Start the background collector/)
@@ -874,7 +876,8 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.match(run.stdout, /Enables background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Enables the LaunchAgent for background mode\./)
   assert.match(run.stdout, /If setup is already saved, IdleWatch starts automatically\./)
-  assert.match(run.stdout, /If not, save setup first with .*quickstart --no-tui, then re-run install-agent\./)
+  assert.match(run.stdout, /If not, save setup first with idlewatch quickstart --no-tui, then re-run install-agent\./)
+  assert.doesNotMatch(run.stdout, /If not, save setup first with node .*quickstart --no-tui, then re-run install-agent\./)
   assert.doesNotMatch(run.stdout, /If not, it stays off until you save setup and re-run install-agent\./)
   assert.doesNotMatch(run.stdout, /If you're using npx\/npm exec:/)
   assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)

@@ -77,6 +77,15 @@ function preferredSetupCommand(command = 'quickstart') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function preferredHelpSetupCommand(command = 'quickstart') {
+  const suffix = process.stdin.isTTY ? '' : ' --no-tui'
+  const invocation = detectCliInvocation()
+  if (invocation.kind === 'source') {
+    return `idlewatch ${command}${suffix}`
+  }
+  return inferCliCommand(`${command}${suffix}`)
+}
+
 function preferredRecoveryCommand(command = 'configure') {
   const suffix = process.stdin.isTTY ? '' : ' --no-tui'
   const invocation = detectCliInvocation()
@@ -189,7 +198,7 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
-  const quickstartCommand = preferredSetupCommand('quickstart')
+  const quickstartCommand = preferredHelpSetupCommand('quickstart')
 
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
@@ -311,7 +320,7 @@ Options:
   --help                  Show this help
   --help-env              Show all environment variables
 
-Get started:  ${preferredSetupCommand('quickstart')}`)
+Get started:  ${preferredHelpSetupCommand('quickstart')}`)
 }
 
 function printHelpEnv() {
