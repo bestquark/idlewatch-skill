@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R334 Status: COMPLETE ✅
+
+This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt confusing, noisy, repetitive, visually busy, or more technical than it needs to be for a normal user.
+
+### Outcome
+- Targeted installer/CLI regression coverage still passes cleanly: **85 passed, 0 failed**.
+- Fresh runtime spot checks still read like one calm product across main `--help`, first-run `status`, clean-home `--test-publish`, and the saved-config/install/status/test coverage already represented in the regression subset.
+- Setup handoff, config persistence/reload wording, launch-agent install/uninstall behavior, device identity continuity, metric-toggle persistence, and npm/npx path clarity still look appropriately minimal in the live checkout.
+- No new small, low-risk product-facing issue in the requested lane cleared the bar for a worthwhile change.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** This surface is already on the right side of simple. Forcing another tweak here would be more likely to add noise than remove it.
+
+**Verified**
+- Main help still keeps the happy path short and scannable
+- First-run `status` still previews setup without implementation-detail sprawl
+- `--test-publish` still stays short and explicit on the happy path
+- Existing saved-config, launch-agent, device-ID, metric-toggle, and npm/npx polish checks remain green in the targeted regression subset
+
+### Spot-check coverage for R334
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `--test-publish` in a clean HOME
+- [x] Targeted `openclaw-env` regression subset
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+5. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help)'`
+
+### Acceptance notes
+- No confusing, repetitive, visually noisy, or unnecessarily technical new copy surfaced in this pass.
+- No auth, ingest, packaging, launch-agent, or telemetry-path redesign is justified by current evidence.
+- The main remaining seam in this cron lane is operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 2:53 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new worthwhile polish issue found in this pass
+
 ## Cycle R333 Status: COMPLETE ✅
 
 This pass stayed intentionally narrow and product-facing: I re-ran the installer/CLI polish lane from the live checkout and only kept something if it still felt like real user friction instead of churn.
