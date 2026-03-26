@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:12 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R283 shipped one tiny packaged-install setup-path polish fix; no broader product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 9:18 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R284 shipped one tiny status-help usage polish fix; no broader product-facing issues cleared the bar
+
+## Cycle R284 Status: COMPLETE ✅
+
+This pass stayed intentionally small and product-facing: one low-risk status-help polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one tiny source-checkout help consistency fix in the setup/reconfigure/status surface.
+- In source checkouts, `status --help` now matches the calmer product-facing usage style already used by `quickstart --help`, `configure --help`, and `reconfigure --help`:
+  - `Usage:  idlewatch status --no-tui`
+- Kept the status title line, saved-config refresh hint, runtime behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L36 — source-checkout `status --help` now matches the polished setup/help usage style
+**Why it matters:** `status --help` is a scan-first support surface during setup and reconfigure. Letting it keep the raw `node bin/idlewatch-agent.js ...` usage line after the other help screens were already cleaned up reintroduced a small needless seam in the exact moment someone is checking what command shape the product wants.
+
+**What shipped**
+- Reused the same help-only product-shaped command formatting already used by the other polished help screens.
+- Kept the calmer background-mode wording and saved-config refresh hint exactly as-is.
+- Added regression coverage so source-checkout `status --help` stays on the polished usage path.
+
+### Spot-check coverage for R284
+- [x] `status --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='status help keeps the calmer background-mode wording and saved-config refresh hint'`
+
+### Acceptance notes
+- Setup/reconfigure/status help now reads like one calmer product across all of the main scan-first help screens.
+- This is presentation polish only; saved-config handling, startup/install behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R283 Status: COMPLETE ✅
 

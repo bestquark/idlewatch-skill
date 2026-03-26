@@ -1101,6 +1101,7 @@ if (args.has('--help') || args.has('-h')) {
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
   const statusCommand = inferCliCommand('status')
+  const statusUsageCommand = preferredHelpSetupCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
   const backgroundInstallCommand = backgroundInstallHelpCommand()
@@ -1129,7 +1130,7 @@ Saved changes apply on the next start.
 If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     status: `${statusCommand} — Show device config and background mode state
 
-Usage:  ${statusCommand}
+Usage:  ${statusUsageCommand}
 
 Displays device config, publish mode, enabled metrics, last sample age,
 and background mode state.
