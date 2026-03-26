@@ -981,7 +981,7 @@ Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
 If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
-    status: `${statusCommand} — Show device state
+    status: `${statusCommand} — Show device config and background mode state
 
 Usage:  ${statusCommand}
 

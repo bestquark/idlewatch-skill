@@ -6682,3 +6682,28 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 - The cron prompt pointed at `~/.openclaw/workspace/idlewatch-skill`, but the active repo/docs for this pass were actually under `~/.openclaw/workspace.bak/idlewatch-skill`.
 - Working tree also contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
 - No auth, ingest, or packaging redesign is recommended from this cycle.
+
+---
+
+## Cycle R111 Status: CLOSED
+
+This pass stayed intentionally tiny: one copy-alignment polish fix in `status --help`, with no behavior changes.
+
+### Outcome
+- Tightened the `status --help` title from the vaguer `Show device state` to `Show device config and background mode state`.
+- This better matches the body copy and the product’s current mental model: setup saves config, and `status` is mostly about config + background mode clarity.
+- No setup flow, saved-config behavior, telemetry flow, or LaunchAgent behavior changed.
+
+### R111 spot-check coverage
+- `node bin/idlewatch-agent.js status --help`
+- `node --test test/openclaw-env.test.mjs`
+
+### Prioritized findings
+
+#### [x] L21 — Align `status --help` title with the calmer config-first wording
+**Why it matters:** The body copy already says `status` shows device config and background mode state, but the title still said `Show device state`, which is broader and a bit fuzzier than the product now needs.
+
+**What shipped**
+- Updated the `status --help` heading to:
+  - `status — Show device config and background mode state`
+- Added test coverage for the heading so the shorter-but-fuzzier phrasing does not slip back in.

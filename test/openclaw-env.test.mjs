@@ -970,6 +970,7 @@ test('status help keeps the calmer background-mode wording and saved-config refr
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /status — Show device config and background mode state/)
   assert.match(run.stdout, /Displays device config, publish mode, enabled metrics, last sample age,\nand background mode state\./)
   assert.match(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)
   assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
