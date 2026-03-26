@@ -2,6 +2,44 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R338 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one wording fix that still cleared the bar in the installer/CLI polish lane.
+
+### Outcome
+- Found one remaining small help-text mismatch in the main CLI help: `--once, --test-publish` still claimed it would always `Collect and publish one sample, then exit`, even though the common local-only / unlinked path just collects a sample and saves it locally.
+- Updated the main help option line to the calmer, more accurate wording: `Collect one sample, then exit`.
+- Kept runtime behavior unchanged: `--test-publish` still uses the same working telemetry path and still publishes when linked, while local-only runs stay local.
+- Re-ran the targeted installer/CLI regression subset and it still passes cleanly: **85 passed, 0 failed**.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L55 — main help no longer over-promises that `--test-publish` always publishes
+**Why it mattered:** This lands in a scan-first setup/support surface. In the common local-only setup path, users were being told to expect a publish even though the product correctly just collects and saves a sample locally. Tightening that copy makes the one-shot/test path feel more honest without adding extra explanation.
+
+**What shipped**
+- Updated main `--help` option text from `Collect and publish one sample, then exit` to `Collect one sample, then exit`
+- Added regression coverage so the help line stays accurate and does not drift back
+- Kept the actual `--test-publish` / `--once` runtime behavior unchanged
+
+### Spot-check coverage for R338
+- [x] Main `--help`
+- [x] `--test-publish` local-only happy path in a clean HOME
+- [x] Targeted `openclaw-env` regression subset for help + test-publish
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help keeps the happy path above advanced env tuning noise|test-publish aliases to one-shot publish mode)'`
+3. `node bin/idlewatch-agent.js --help`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+
+### Acceptance notes
+- Main help now stays honest about the one-shot sample path in both local-only and linked setups.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:23 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny help-text mismatch fixed in this pass
+
 ## Cycle R337 Status: COMPLETE ✅
 
 This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only keeping something that still felt confusing, repetitive, visually noisy, or more technical than a normal setup/install user should have to parse.

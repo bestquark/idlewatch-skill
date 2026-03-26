@@ -241,8 +241,8 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.doesNotMatch(run.stdout, /install-agent\s{1,2}Enable background mode \(macOS\)/)
   assert.doesNotMatch(run.stdout, /run\s+Start the background collector/)
   assert.match(run.stdout, /--dry-run/)
-  assert.match(run.stdout, /--once/)
-  assert.match(run.stdout, /--test-publish/)
+  assert.match(run.stdout, /--once, --test-publish\s+Collect one sample, then exit/)
+  assert.doesNotMatch(run.stdout, /--once, --test-publish\s+Collect and publish one sample, then exit/)
 })
 
 test('help preserves one-off command hints under npm exec', () => {

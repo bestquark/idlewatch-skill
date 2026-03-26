@@ -388,7 +388,7 @@ Commands:
 ${commandLines}
 
 Options:
-  --once, --test-publish  Collect and publish one sample, then exit
+  --once, --test-publish  Collect one sample, then exit
   --dry-run               Collect and print one sample without publishing
   --json                  Output raw JSON instead of summary (with --once/--dry-run)
   --help                  Show this help

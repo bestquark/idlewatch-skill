@@ -39,15 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 77 - COMPLETE ✅ (No implementation needed)
+## Cycle Status: Cycle 78 - COMPLETE ✅
 
-**Finding:** The current installer/CLI polish lane still looks production-ready in the live checkout.
+**Finding:** One small, low-risk help-text polish fix was still worth shipping in the live checkout.
+- Main `--help` no longer over-promises that `--test-publish` always publishes; it now says `Collect one sample, then exit`
+- This better matches the common local-only / unlinked flow, where the sample is collected and saved locally instead of published remotely
 - Targeted installer/CLI regression subset still passes cleanly (85 passed, 0 failed)
 - Setup/reconfigure/status/install help remains short, calm, and consistent
-- No new small, low-risk product-facing fix was worth shipping in this cycle
 - All acceptance criteria remain met
 
-**Last updated:** Thursday, March 26th, 2026 — 2:28 PM (America/Toronto)
+**Last updated:** Thursday, March 26th, 2026 — 3:23 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
