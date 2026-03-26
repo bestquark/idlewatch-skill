@@ -948,13 +948,13 @@ if (args.has('--help') || args.has('-h')) {
   const quickstartCommand = preferredSetupCommand('quickstart')
   const quickstartUsage = process.stdin.isTTY ? `${quickstartCommand} [--no-tui]` : quickstartCommand
   const quickstartPromptHint = process.stdin.isTTY
-    ? 'Use --no-tui for plain-text prompts (no Rust TUI).'
-    : 'Uses plain-text prompts (no Rust TUI).'
+    ? 'Use --no-tui for plain-text prompts.'
+    : 'Uses plain-text prompts.'
   const configureCommand = inferCliCommand('configure')
   const configureUsage = process.stdin.isTTY ? `${configureCommand} [--no-tui]` : `${configureCommand} --no-tui`
   const configurePromptHint = process.stdin.isTTY
-    ? 'Use --no-tui for plain-text prompts (no Rust TUI).'
-    : 'Uses plain-text prompts (no Rust TUI).'
+    ? 'Use --no-tui for plain-text prompts.'
+    : 'Uses plain-text prompts.'
   const statusCommand = inferCliCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')

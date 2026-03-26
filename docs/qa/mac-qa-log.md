@@ -1,8 +1,52 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:45 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R175 spot-check pass found no new product-facing polish issue
+**Last updated:** Wednesday, March 25th, 2026 — 10:20 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R176 shipped one tiny help-copy simplification
+
+---
+
+## Cycle R176 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny help-copy simplification only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Non-TTY setup/reconfigure help no longer says `no Rust TUI`.
+- The help now keeps the same meaning in calmer product language:
+  - `Uses plain-text prompts.`
+  - `Use --no-tui for plain-text prompts.`
+- This removes one last implementation-detail phrase from a cautious-user moment without changing setup behavior.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R176 spot-check coverage
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L51 — setup help no longer exposes the Rust implementation detail in plain-text prompt hints
+**Why it matters:** This was tiny, but it sat in a scan-first setup moment. The product already tells a calm story everywhere else; `no Rust TUI` was accurate, but more implementation-first than the rest of the CLI needed.
+
+**What shipped**
+- Reworded interactive help hints from:
+  - `Use --no-tui for plain-text prompts (no Rust TUI).`
+- To:
+  - `Use --no-tui for plain-text prompts.`
+- Reworded non-TTY help hints from:
+  - `Uses plain-text prompts (no Rust TUI).`
+- To:
+  - `Uses plain-text prompts.`
+- Added regression coverage so `quickstart`, `configure`, and `reconfigure` keep the calmer wording.
+
+### Acceptance notes
+- Setup and reconfigure semantics are unchanged.
+- Non-TTY help still points people straight to the text-prompt path.
+- Saved-config reload guidance, launch-agent messaging, and the working telemetry path remain untouched.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ---
 
