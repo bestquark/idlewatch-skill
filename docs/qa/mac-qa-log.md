@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R368 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing polish issue in the requested lane worth opening. The current setup/install/reconfigure/status path remains notably low-noise and product-shaped instead of relapsing into tool chatter.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+- Result: **89 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js --test-publish`
+  - `npm exec --yes -- idlewatch --help`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live spot checks listed above with a clean HOME, plus the usual stubbed-`launchctl` lifecycle checks when re-checking install/uninstall flows
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical copy surfaced in the requested areas. In particular, the current build still keeps:
+- first-run status short and preview-shaped
+- main help calm and command-oriented
+- `--test-publish` explicit without turning into a second workflow
+- one-off `npx` guidance clearly separate from durable background install guidance
+- npm's own upgrade notice isolated as external tool noise rather than product copy
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 6:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R367 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
