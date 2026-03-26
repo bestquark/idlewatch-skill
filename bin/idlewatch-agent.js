@@ -95,6 +95,51 @@ function preferredRecoveryCommand(command = 'configure') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function levenshteinDistance(a = '', b = '') {
+  const left = String(a)
+  const right = String(b)
+  if (left === right) return 0
+  if (!left.length) return right.length
+  if (!right.length) return left.length
+
+  const prev = Array.from({ length: right.length + 1 }, (_, index) => index)
+  const curr = new Array(right.length + 1)
+
+  for (let i = 0; i < left.length; i += 1) {
+    curr[0] = i + 1
+    for (let j = 0; j < right.length; j += 1) {
+      const cost = left[i] === right[j] ? 0 : 1
+      curr[j + 1] = Math.min(
+        curr[j] + 1,
+        prev[j + 1] + 1,
+        prev[j] + cost
+      )
+    }
+    for (let j = 0; j < curr.length; j += 1) prev[j] = curr[j]
+  }
+
+  return prev[right.length]
+}
+
+function suggestKnownSubcommand(value, knownSubcommands) {
+  const normalized = String(value || '').trim().toLowerCase()
+  if (!normalized) return null
+
+  let best = null
+  for (const candidate of knownSubcommands) {
+    const lowered = String(candidate).toLowerCase()
+    const startsNear = lowered.startsWith(normalized) || normalized.startsWith(lowered)
+    const distance = levenshteinDistance(normalized, lowered)
+    if (startsNear || distance <= 3) {
+      if (!best || distance < best.distance) {
+        best = { candidate, distance }
+      }
+    }
+  }
+
+  return best?.candidate || null
+}
+
 function launchAgentInfo() {
   const svcLabel = 'com.idlewatch.agent'
   const uid = process.getuid?.() ?? ''
@@ -1407,7 +1452,10 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
 const KNOWN_SUBCOMMANDS = new Set(['quickstart', 'configure', 'reconfigure', 'status', 'dashboard', 'run', 'create', 'menubar', 'install-agent', 'uninstall-agent', 'version'])
 const firstPositional = argv.find(a => !a.startsWith('-'))
 if (firstPositional && !KNOWN_SUBCOMMANDS.has(firstPositional)) {
-  console.error(`Unknown command "${firstPositional}". Run idlewatch --help for available commands.`)
+  const suggestion = suggestKnownSubcommand(firstPositional, KNOWN_SUBCOMMANDS)
+  const helpCommand = inferCliCommand('--help')
+  const suggestionLine = suggestion ? ` Did you mean "${suggestion}"?` : ''
+  console.error(`Unknown command "${firstPositional}".${suggestionLine} Run ${helpCommand} for available commands.`)
   process.exit(1)
 }
 

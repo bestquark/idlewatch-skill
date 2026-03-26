@@ -2,7 +2,19 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 **Last updated:** Thursday, March 26th, 2026 — 7:55 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R267 closed with one small clean-home uninstall wording polish fix
+**Status:** COMPLETE ✅ - R268 closed with one small unknown-command recovery polish fix
+
+## Cycle R268 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny CLI recovery polish only, with no setup-flow reshaping, no saved-config behavior changes, no startup/install behavior changes, and no telemetry-path changes.
+
+### Outcome
+- [x] Mistyped subcommands now suggest the closest valid command
+- [x] Unknown-command help now stays aligned with the current invocation path (`node …`, `idlewatch`, or `npx idlewatch`)
+- [x] Added regression coverage for source-checkout and `npx` flows
+
+### Why this was worth doing
+This trims a small but real setup/reconfigure paper cut: if someone types `configre` or `instal-agent`, IdleWatch now nudges them straight back to the intended command instead of just failing generically.
 
 ## Cycle R267 Status: COMPLETE ✅
 

@@ -972,6 +972,33 @@ test('main help stays on the durable command in npx context', () => {
   assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
 })
 
+test('unknown command suggests the closest subcommand and keeps the current invocation path', () => {
+  const sourceRun = spawnSync(process.execPath, [BIN, 'configre'], {
+    env: { ...process.env, PATH: process.env.PATH },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(sourceRun.status, 1)
+  assert.match(sourceRun.stderr, /Unknown command "configre"\. Did you mean "configure"\? Run node .*bin\/idlewatch-agent\.js --help for available commands\./)
+
+  const npxRun = spawnSync(process.execPath, [BIN, 'instal-agent'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(npxRun.status, 1)
+  assert.match(npxRun.stderr, /Unknown command "instal-agent"\. Did you mean "install-agent"\? Run npx idlewatch --help for available commands\./)
+})
+
 test('quickstart help stays clean in non-TTY mode', () => {
   const run = spawnSync(process.execPath, [BIN, 'quickstart', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
