@@ -95,6 +95,14 @@ function preferredRecoveryCommand(command = 'configure') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function preferredProductCommand(command = '') {
+  const invocation = detectCliInvocation()
+  if (invocation.kind === 'source') {
+    return command ? `idlewatch ${command}` : 'idlewatch'
+  }
+  return inferCliCommand(command)
+}
+
 function levenshteinDistance(a = '', b = '') {
   const left = String(a)
   const right = String(b)
@@ -1094,20 +1102,20 @@ if (args.has('--help') || args.has('-h')) {
   const quickstartPromptHint = process.stdin.isTTY
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
-  const configureCommand = inferCliCommand('configure')
+  const configureCommand = preferredProductCommand('configure')
   const configureUsageCommand = preferredHelpSetupCommand('configure')
   const configureUsage = process.stdin.isTTY ? `${configureUsageCommand} [--no-tui]` : configureUsageCommand
   const configurePromptHint = process.stdin.isTTY
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
-  const statusCommand = inferCliCommand('status')
+  const statusCommand = preferredProductCommand('status')
   const statusUsageCommand = preferredHelpSetupCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
   const backgroundInstallCommand = backgroundInstallHelpCommand()
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = inferCliCommand('menubar')
-  const reconfigureCommand = inferCliCommand('reconfigure')
+  const reconfigureCommand = preferredProductCommand('reconfigure')
   const reconfigureUsageCommand = preferredHelpSetupCommand('reconfigure')
   const reconfigureUsage = process.stdin.isTTY ? `${reconfigureUsageCommand} [--no-tui]` : reconfigureUsageCommand
   const dashboardCommand = inferCliCommand('dashboard')
@@ -1288,8 +1296,8 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
       console.log('✅ Background mode installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
       console.log(`   Save setup:   ${preferredHelpSetupCommand('quickstart')}`)
-      console.log(`   Run now:      ${runCommand}`)
-      console.log(`   Then start:   ${installAgentCommand}`)
+      console.log(`   Run now:      ${preferredProductCommand('run')}`)
+      console.log(`   Then start:   ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
@@ -1881,7 +1889,7 @@ if (statusRequested) {
       console.log(`  Start:    ${inferCliCommand('run')}`)
       if (process.platform === 'darwin') {
         const launchAgent = probeOwnedLaunchAgentState()
-        const installAgentCommand = inferCliCommand('install-agent')
+        const installAgentCommand = preferredProductCommand('install-agent')
         if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
           console.log('  Background: already on')
         } else if (launchAgent.state === 'installed-not-loaded') {
@@ -1894,8 +1902,8 @@ if (statusRequested) {
       }
     }
   } else if (!isPlaceholderName) {
-    const installAgentCommand = inferCliCommand('install-agent')
-    console.log(`  Change:   ${preferredSetupCommand('configure')}`)
+    const installAgentCommand = preferredProductCommand('install-agent')
+    console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
 
     if (detectCliInvocation().kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null

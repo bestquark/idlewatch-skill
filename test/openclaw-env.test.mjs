@@ -1293,8 +1293,8 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.match(run.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes('Save setup:   idlewatch quickstart --no-tui'), 'should keep the primary setup hint on the calmer product command')
-    assert.ok(run.stdout.includes(`Run now:      ${SOURCE_CMD} run`), 'should show source-checkout foreground run command')
-    assert.ok(run.stdout.includes(`Then start:   ${SOURCE_CMD} install-agent`), 'should show source-checkout start command after pre-installing background mode')
+    assert.ok(run.stdout.includes('Run now:      idlewatch run'), 'should keep the foreground run hint on the calmer product command in source checkouts')
+    assert.ok(run.stdout.includes('Then start:   idlewatch install-agent'), 'should keep the follow-up start hint on the calmer product command in source checkouts')
     assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')
@@ -2552,7 +2552,7 @@ test('status command shows contextual next-step hints', () => {
     assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} run`), 'should hint at run for continuous monitoring')
 
     if (process.platform === 'darwin') {
-      assert.ok(noSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should show enable hint when no samples exist and LaunchAgent is not installed')
+      assert.ok(noSamples.stdout.includes('Enable:   idlewatch install-agent'), 'should keep the enable hint on the calmer product command when no samples exist and background mode is not installed')
       assert.ok(!noSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.ok(!noSamples.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when LaunchAgent is not installed')
     }
@@ -2568,12 +2568,12 @@ test('status command shows contextual next-step hints', () => {
       timeout: 10000
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} configure --no-tui`), 'should hint at non-TTY configure when samples exist')
+    assert.ok(withSamples.stdout.includes('idlewatch configure --no-tui'), 'should keep the configure hint on the calmer product command in source checkouts')
     assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?! --no-tui)(?:\s|$)/, 'should not fall back to plain configure in non-TTY status hints')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 
     if (process.platform === 'darwin') {
-      assert.ok(withSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should show enable hint when LaunchAgent is not installed')
+      assert.ok(withSamples.stdout.includes('Enable:   idlewatch install-agent'), 'should keep the enable hint on the calmer product command when background mode is not installed')
       assert.ok(!withSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.doesNotMatch(withSamples.stdout, /Apply:.*already running in the background/, 'should not show running-agent apply hint after uninstall/not-installed state')
     }
@@ -2621,7 +2621,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('Background:   running in background (pid 4242)'), 'should report the running background state')
-    assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the running-agent apply hint aligned with saved-config wording')
+    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the running-agent apply hint on the calmer product command in source checkouts')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
@@ -2668,7 +2668,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('Background:   on (waiting for next check)'), 'should describe the loaded-but-idle background state in plain language')
-    assert.ok(run.stdout.includes(`Apply:    re-run ${SOURCE_CMD} install-agent to refresh it with the saved config`), 'should keep the apply hint for the loaded background state')
+    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the apply hint on the calmer product command for the loaded background state in source checkouts')
     assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
@@ -2710,7 +2710,7 @@ exit 0
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('(none yet)'), 'should still show no samples yet')
     assert.ok(run.stdout.includes('Background:   installed but not running'), 'should report the installed-not-loaded state')
-    assert.ok(run.stdout.includes(`Start:    ${SOURCE_CMD} install-agent`), 'should suggest starting the saved background agent')
+    assert.ok(run.stdout.includes('Start:    idlewatch install-agent'), 'should keep the start hint on the calmer product command for the saved background agent in source checkouts')
     assert.ok(!run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh enable')
     assert.ok(!run.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not look like a first-time install path')
     assert.ok(!run.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when launchd reports otherwise')

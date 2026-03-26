@@ -1,21 +1,21 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:52 AM (America/Toronto)  
-**Status:** ACTIVE ⚠️ - R287 found one small source-checkout command-shape consistency issue worth fixing
+**Last updated:** Thursday, March 26th, 2026 — 10:04 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R287 fixed the small source-checkout command-shape consistency issue
 
-## Cycle R287 Status: ACTIVE ⚠️
+## Cycle R287 Status: COMPLETE ✅
 
 This pass re-ran the active polish lane from the current checkout instead of relying on the stale cron payload path, with emphasis on setup/help scanability, config persistence + reload guidance, launch-agent install-before-setup behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
 
 ### Outcome
-- Found one small but real polish seam worth fixing: source-checkout setup/help/install/status surfaces still mix `idlewatch ...` and `node bin/idlewatch-agent.js ...` in the same user-facing flow.
+- Fixed the one small polish seam from this pass: source-checkout setup/help/install/status surfaces now keep the calmer `idlewatch ...` command shape in the same user-facing flow instead of bouncing back to `node bin/idlewatch-agent.js ...` for nearby titles and next steps.
 - Everything else in this pass still reads calm and low-friction across clean-home `status`, install-before-setup, local-only `quickstart --no-tui`, rename + metric-toggle persistence, clean-home `--test-publish`, and `npm exec` durable-install guidance.
 - The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
 
-#### [ ] L37 — source-checkout setup/help/install/status flow still mixes two command shapes for the same next step
+#### [x] L37 — source-checkout setup/help/install/status flow now keeps one calmer command shape through the same next step
 **Why it matters:** This is small, but it hits exactly when someone is scanning for the next command to copy/paste. The current source-checkout flow already tries to present the calmer product-facing `idlewatch ...` command shape in help usage lines, then flips back to `node bin/idlewatch-agent.js ...` in nearby titles and next-step guidance. That back-and-forth adds a needless seam and makes the setup path feel slightly more technical than it needs to.
 
 **Exact repro**
