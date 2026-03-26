@@ -1,8 +1,92 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:24 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R166 shipped one tiny uninstall-output wording polish fix
+**Last updated:** Wednesday, March 25th, 2026 — 8:33 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R167 found no new end-user polish issue worth opening
+
+---
+
+## Cycle R167 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical user-facing issue cleared the bar for an implementation ticket in this cycle.
+- The current CLI still feels calm in the highest-friction seams: first-run status, install-before-setup, local-only quickstart, saved-config reconfigure, rename continuity, metric toggle persistence, low-noise `--test-publish`, uninstall retention messaging, and `npx` vs durable-install guidance.
+- The stale-path lane-management issue is still external to the product itself: this cron payload again pointed at `~/.openclaw/workspace/idlewatch-skill`, while the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+
+### R167 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only `quickstart --no-tui` after pre-installing the LaunchAgent
+- [x] Post-setup `status` with LaunchAgent installed but not loaded
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `node bin/idlewatch-agent.js --test-publish`
+- [x] `node bin/idlewatch-agent.js uninstall-agent`
+- [x] `npx`-like main `--help`
+- [x] `npx`-like `install-agent` refusal
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Acceptance notes
+- Main help, setup help, and reconfigure help still scan cleanly and keep the calmer local-first setup story.
+- Install-before-setup still preserves the right mental model: background install can happen early, but collection stays off until setup is saved.
+- Setup/reconfigure completion still clearly separates installed-but-not-loaded from already-running background behavior without over-narrating reload semantics.
+- Device rename still preserves stable device identity and local-log continuity while explaining the preserved ID inline.
+- Metric selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish` remains discoverable and low-noise.
+- `npx` guidance still keeps foreground trial usage on `npx` while pointing background mode back to the durable install path.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install/uninstall commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `node bin/idlewatch-agent.js quickstart --help`
+9. `node bin/idlewatch-agent.js configure --help`
+10. `node bin/idlewatch-agent.js install-agent --help`
+11. `node bin/idlewatch-agent.js uninstall-agent --help`
+12. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+14. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+15. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+16. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+17. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+18. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+19. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+20. `npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js --help`
+21. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/usr/local/lib/node_modules/npm/bin/npx-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent`
+22. `npm run validate:onboarding --silent`
+
+### Notes
+- The cron payload path was stale again; the active repo/docs available for this pass were under `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
