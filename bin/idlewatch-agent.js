@@ -1777,7 +1777,7 @@ if (statusRequested) {
 
   console.log('')
   if (!hasConfig) {
-    console.log(`  Get started:  ${preferredSetupCommand('quickstart')}`)
+    console.log(`  Get started:  ${preferredHelpSetupCommand('quickstart')}`)
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {

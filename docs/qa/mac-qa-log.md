@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:21 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R260 shipped one small source-checkout help-copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 6:26 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R261 shipped one small first-run status setup-hint polish fix
+
+## Cycle R261 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny first-run status copy polish fix only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the clean-home `status` path.
+- First-run `status` no longer falls back to the more internal-looking `node bin/idlewatch-agent.js quickstart --no-tui` command in the final `Get started:` line when running from a source checkout.
+- The unsaved-setup status screen now keeps the same calmer product-shaped setup hint already used by main help:
+  - `Get started:  idlewatch quickstart --no-tui`
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, packaged scripts, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R261 implementation
+#### [x] L88 — first-run `status` now keeps the calmer product-shaped setup hint in source checkouts
+- Reworded the clean-home `status` `Get started:` line so it uses the same help-only command formatter already used by main help.
+- Kept the actual runtime/status/install/retry command selection unchanged elsewhere.
+- Added regression coverage so the unsaved-setup status screen does not drift back to the raw checkout command path.
+
+### Spot-check coverage for R261
+- [x] First-run `status` in a clean HOME
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='status stays honest after install-agent without saved config|status command shows contextual next-step hints|help keeps the happy path above advanced env tuning noise|status command hides cloud link info in local-only mode'`
+
+### Acceptance notes
+- The clean-home `status` path is a touch calmer and more consistent with main help in the exact moment a new user asks what to run first.
+- This is status-copy polish only; setup/reconfigure behavior, saved-config handling, background install behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R260 Status: COMPLETE ✅
 

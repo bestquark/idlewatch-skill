@@ -1267,6 +1267,8 @@ test('status stays honest after install-agent without saved config', () => {
     assert.doesNotMatch(status.stdout, /\n\s*Local log:\s+/)
     assert.match(status.stdout, /Config:\s+.*\.idlewatch\/idlewatch\.env \(not saved yet\)/)
     assert.match(status.stdout, /Background:\s+waiting for setup/)
+    assert.match(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(status.stdout, /Get started:\s+node .*quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
@@ -2152,7 +2154,8 @@ test('status command hides cloud link info in local-only mode', () => {
     assert.ok(!run.stdout.includes('Cloud link:'), 'should not show cloud link in local-only')
     assert.ok(!run.stdout.includes('API key:'), 'should not show API key in local-only')
     assert.ok(run.stdout.includes('local-only'), 'should show local-only mode')
-    assert.ok(run.stdout.includes(`${SOURCE_CMD} quickstart --no-tui`), 'should hint at quickstart when no config')
+    assert.ok(run.stdout.includes('idlewatch quickstart --no-tui'), 'should hint at quickstart when no config')
+    assert.ok(!run.stdout.includes(`${SOURCE_CMD} quickstart --no-tui`), 'should keep the calmer help-shaped quickstart hint in source checkouts')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
