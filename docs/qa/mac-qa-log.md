@@ -8341,3 +8341,28 @@ This pass stayed intentionally tiny: one copy-alignment polish fix in `status --
 - Updated the `status --help` heading to:
   - `status — Show device config and background mode state`
 - Added test coverage for the heading so the shorter-but-fuzzier phrasing does not slip back in.
+
+---
+
+## Cycle R112 Status: CLOSED
+
+This pass shipped one tiny saved-config reliability fix with no telemetry, auth, or packaging changes.
+
+### Outcome
+- IdleWatch now accepts persisted `idlewatch.env` files that begin with a UTF-8 BOM.
+- That keeps `status` and `configure --no-tui` working even if the saved config was touched by an editor that silently adds a BOM.
+- The parser change is intentionally tiny and only affects env-key normalization, so the working telemetry path stays untouched.
+
+### R112 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'UTF-8 BOM|prefixed with export|quoted saved config values like normal values'`
+
+### Prioritized findings
+
+#### [x] L22 — Saved config parsing tolerates UTF-8 BOM files
+**Why it matters:** Setup/reconfigure should stay boring. If a user or tool edits `~/.idlewatch/idlewatch.env` and writes a BOM, the first key can become unreadable, which makes saved config feel flaky for no good reason.
+
+**What shipped**
+- Strip a leading UTF-8 BOM when normalizing persisted env keys.
+- Added regression coverage for both:
+  - `status` reading a BOM-prefixed saved config
+  - `configure --no-tui` reusing and updating a BOM-prefixed saved config
