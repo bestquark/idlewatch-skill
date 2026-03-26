@@ -1237,7 +1237,7 @@ const subcommandPromise = (async () => {
 
     const invocation = detectCliInvocation()
     const localLogPath = resolvePersistedLocalLogPath()
-    console.log('✅ LaunchAgent removed — background collection stopped.')
+    console.log('✅ Background mode turned off.')
     console.log(`   Saved config stays in ${dataDir}`)
     if (localLogPath) {
       console.log(`   Local log stays at ${localLogPath}`)

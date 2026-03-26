@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:04 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R233 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 3:28 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R234 shipped one tiny uninstall success-copy cleanup
+
+## Cycle R234 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall success-copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `uninstall-agent` success no longer opens with the more implementation-first `LaunchAgent removed — background collection stopped.` line.
+- The success headline now stays aligned with the calmer product framing already used by help and status:
+  - `✅ Background mode turned off.`
+- Saved-config retention, local-log retention, durable re-enable guidance, uninstall behavior, and the working telemetry path all stayed unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R234 implementation
+#### [x] L74 — `uninstall-agent` success now says `Background mode turned off.` instead of leading with `LaunchAgent removed`
+- Reworded only the uninstall success headline.
+- Kept the saved-config and local-log reassurance lines unchanged.
+- Kept the existing re-enable hint unchanged.
+- Added regression coverage so uninstall success stays on the calmer product wording and does not drift back.
+
+### Spot-check coverage for R234
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent when nothing is installed still reassures that config and logs are kept|uninstall-agent runtime output names a custom retained local log path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- Uninstall success now sounds like the product, not the macOS mechanism underneath it.
+- This is output polish only; uninstall behavior, saved-config handling, local-log handling, and the working telemetry path remain unchanged.
 
 ## Cycle R233 Status: CLOSED ✅
 

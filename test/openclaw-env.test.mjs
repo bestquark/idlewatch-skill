@@ -1019,7 +1019,8 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /LaunchAgent removed — background collection stopped\./)
+    assert.match(run.stdout, /Background mode turned off\./)
+    assert.doesNotMatch(run.stdout, /LaunchAgent removed — background collection stopped\./)
     assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
     assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
     assert.match(run.stdout, /Re-enable:\s+.*install-agent/)
