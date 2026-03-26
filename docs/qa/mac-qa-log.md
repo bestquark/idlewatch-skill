@@ -1,8 +1,42 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:15 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R182 verified the current polish lane stayed clean; only the stale cron repo path remains external to the product
+**Last updated:** Wednesday, March 25th, 2026 — 10:00 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R183 shipped one tiny saved-config polish fix for cloud-key reuse from hand-edited env files
+
+---
+
+## Cycle R183 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config reliability improvement only, focused on reconfigure staying calm when someone hand-edits `~/.idlewatch/idlewatch.env` in a normal shell style.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Reconfigure now reuses a saved cloud API key even when the env file uses the very normal shell-style forms the repo already accepts elsewhere:
+  - `export IDLEWATCH_CLOUD_API_KEY=...`
+  - `IDLEWATCH_CLOUD_API_KEY="..."`
+- Before this fix, the saved-config reader that re-opened cloud setup only looked for a plain unprefixed `IDLEWATCH_CLOUD_API_KEY=` line in that one branch, so a hand-edited env file could fall through to an avoidable `Missing cloud API key` / re-entry moment.
+- This keeps setup/reconfigure a little more forgiving without changing auth flow, background behavior, or the now-working telemetry path.
+
+### R183 spot-check coverage
+- [x] `configure --no-tui` with an export-prefixed quoted saved cloud key
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L54 — reconfigure now reuses saved cloud keys from export-prefixed or quoted env lines
+**Why it matters:** This is tiny, but it sits in a high-trust saved-config seam. People inspect and hand-edit env files, and `export KEY=value` plus quoted values are normal shell muscle memory. The repo already accepted those shapes in other saved-config readers, so this one remaining strict branch felt unnecessarily brittle.
+
+**What shipped**
+- Cloud-key reuse during setup/reconfigure now parses saved env lines with the same key/value normalization already used elsewhere.
+- `export IDLEWATCH_CLOUD_API_KEY=...` now works in that branch.
+- Quoted values keep working there too.
+- Added regression coverage for the export-prefixed quoted cloud-key case.
+
+### Acceptance notes
+- Reconfigure no longer needlessly asks for a cloud key again just because the saved env file uses a normal shell-style prefix.
+- Local-only flows, install/uninstall behavior, metric persistence, device-ID continuity, and the telemetry publish path remain unchanged.
+- The stale cron payload path remains external to the product itself.
 
 ---
 

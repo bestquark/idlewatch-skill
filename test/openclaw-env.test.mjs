@@ -1531,6 +1531,49 @@ test('configure accepts saved config lines prefixed with export', () => {
   }
 })
 
+test('configure reuses a saved cloud API key from export-prefixed quoted env lines', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-cloud-export-env-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'export IDLEWATCH_DEVICE_NAME="Cloud Export Box"',
+      'export IDLEWATCH_DEVICE_ID=cloud-export-box',
+      'export IDLEWATCH_MONITOR_TARGETS="cpu,memory"',
+      `export IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'cloud-export-box-metrics.ndjson')}"`,
+      'export IDLEWATCH_CLOUD_INGEST_URL="https://api.idlewatch.com/api/ingest"',
+      'export IDLEWATCH_CLOUD_API_KEY="iwk_abcdefghijklmnopqrstuvwxyz123456"',
+      'export IDLEWATCH_REQUIRE_CLOUD_WRITES=1'
+    ].join('\n') + '\n')
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Cloud Export Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(configure.status, 0, 'test fixture should still fail the cloud verification step with a fake key')
+    assert.match(configure.stderr, /API key rejected|Cloud publish failed/)
+    assert.doesNotMatch(configure.stderr, /Missing cloud API key/)
+    assert.doesNotMatch(configure.stderr, /Cloud API key is invalid/)
+
+    const updatedEnv = fs.readFileSync(path.join(configDir, 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Cloud Export Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+    assert.match(updatedEnv, /IDLEWATCH_CLOUD_API_KEY=iwk_abcdefghijklmnopqrstuvwxyz123456/)
+    assert.match(updatedEnv, /IDLEWATCH_REQUIRE_CLOUD_WRITES=1/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure keeps the saved device id stable when renaming the device', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-rename-home-'))
   try {

@@ -441,12 +441,15 @@ export async function runEnrollmentWizard(options = {}) {
         const raw = fs.readFileSync(outputEnvFile, 'utf8')
         for (const line of raw.split(/\r?\n/)) {
           const trimmed = line.trim()
-          if (trimmed.startsWith('IDLEWATCH_CLOUD_API_KEY=')) {
-            const savedKey = normalizeCloudApiKey(trimmed.slice('IDLEWATCH_CLOUD_API_KEY='.length))
-            if (looksLikeCloudApiKey(savedKey)) {
-              cloudApiKey = savedKey
-              break
-            }
+          if (!trimmed || trimmed.startsWith('#')) continue
+          const idx = trimmed.indexOf('=')
+          if (idx <= 0) continue
+          const key = normalizeEnvKey(trimmed.slice(0, idx))
+          if (key !== 'IDLEWATCH_CLOUD_API_KEY') continue
+          const savedKey = normalizeCloudApiKey(parseEnvValue(trimmed.slice(idx + 1)))
+          if (looksLikeCloudApiKey(savedKey)) {
+            cloudApiKey = savedKey
+            break
           }
         }
       } catch { /* ignore */ }
