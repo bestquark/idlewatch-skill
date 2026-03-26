@@ -2,6 +2,58 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R365 Status: COMPLETE ✅
+
+Focused installer/CLI polish re-check completed against the requested lane:
+- setup wizard quality
+- config persistence + reload behavior
+- launch-agent install/uninstall behavior
+- test-publish messaging
+- device identity persistence
+- metric toggle persistence
+- npm/npx install-path clarity
+
+### Priority call
+No new product-facing installer/CLI polish regressions found in the current build. The setup and saved-config flow still read like a product instead of a dev tool: short help, predictable refresh wording, calm background-mode messaging, and durable-install guidance that stays visible without getting pushy.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+- Result: **88 passed, 0 failed**
+- Live spot checks run from the source checkout for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js reconfigure --help`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js install-agent`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+
+### Prioritized findings
+#### [x] P0 — No product-facing installer/CLI polish issues found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Spot-check the six live CLI surfaces listed above
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical copy surfaced in the requested areas.
+
+**Acceptance criteria**
+Keep the current UX bar: short setup copy, predictable saved-config/apply wording, stable device identity, durable-install guidance for background mode, and calm uninstall reassurance.
+
+#### [ ] P2 — QA cron payload still points at stale workspace paths
+**Repro**
+1. Inspect the incoming QA cron payload for this cycle
+2. Observe that it references `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md`
+3. Compare with the live checkout on disk: `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-cron-polish-plan.md`
+
+**Observed**
+The QA pass needs manual path discovery before any actual verification starts.
+
+**Acceptance criteria**
+Update the cron payload to the live checkout path so future polish runs start directly in the correct repo and plan file.
+
+**Last updated:** Thursday, March 26th, 2026 — 6:10 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish regressions; stale cron path still worth fixing operationally
+
 ## Cycle R364 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and only shipped one wording cleanup that still felt worth keeping in the setup/help lane.
