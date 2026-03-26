@@ -279,9 +279,13 @@ If not, save setup first with ${quickstartCommand}, then re-run install-agent.`
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const invocation = detectCliInvocation()
-  const installAgentCommand = inferCliCommand('install-agent')
-  const backgroundInstallCommand = backgroundInstallCommandForInvocation(invocation)
-  const runCommand = inferCliCommand('run')
+  const installAgentCommand = preferredProductCommand('install-agent')
+  const backgroundInstallCommand = invocation.kind === 'npx'
+    ? backgroundInstallCommandForInvocation(invocation)
+    : preferredProductCommand('install-agent')
+  const runCommand = invocation.kind === 'npx'
+    ? inferCliCommand('run')
+    : preferredProductCommand('run')
   const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
   const backgroundAgentInstalledNeedsRefresh = launchAgentState?.state === 'installed-not-loaded'
 

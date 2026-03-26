@@ -1,8 +1,41 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:06 PM (America/Toronto)  
-**Status:** OPEN ⚠️ - one small source-checkout post-setup handoff seam remains
+**Last updated:** Thursday, March 26th, 2026 — 11:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - current polish lane closed again after one tiny source-checkout handoff fix
+
+## Cycle R306 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one source-checkout post-setup command-handoff polish fix only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Closed the one open source-checkout post-setup seam from R305.
+- After local `quickstart --no-tui` / `configure --no-tui`, the immediate next-step block no longer falls back to raw `node bin/idlewatch-agent.js ...` commands in source checkouts.
+- Those success handoffs now stay on the same calmer product-shaped command story already used by nearby help, status, and install surfaces:
+  - `Start:    idlewatch install-agent`
+  - `Use it now:`
+  - `  idlewatch run   Run in foreground`
+- Kept behavior unchanged: this is wording/command-handoff polish only.
+- Kept npm/npx durable-install guidance unchanged.
+- The working telemetry path remains untouched.
+- The stale cron payload path remained external to the product itself in this pass too: the active checkout was still `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L45 — source-checkout setup/configure success handoffs now stay on the calmer `idlewatch ...` command story
+**Why it mattered:** This lands in the exact “what do I run next?” moment after setup saved successfully. The surrounding product had already converged on a calmer `idlewatch ...` command story; letting these handoffs fall back to raw `node bin/...` commands made the success moment feel more implementation-ish than the rest of the CLI.
+
+**What shipped**
+- Reworded the source-checkout post-setup / post-configure next-step block so `run` and `install-agent` stay on `idlewatch ...`.
+- Left npm/npx behavior unchanged.
+- Added regression coverage so these handoffs do not drift back.
+
+### Spot-check coverage for R306
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent follow-up uses source checkout command path|quickstart completion stays honest when a LaunchAgent was installed before setup|configure success says to refresh an already-running background agent'`
+
+### Acceptance notes
+- Setup/reconfigure/status/install surfaces now keep one calmer product-shaped command story through the immediate post-setup handoff in source checkouts.
+- This is wording polish only; setup behavior, saved-config handling, launch-agent behavior, npm/npx guidance, and the working telemetry path remain unchanged.
 
 ## Cycle R305 Status: OPEN ⚠️
 
