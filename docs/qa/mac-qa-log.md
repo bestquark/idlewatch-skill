@@ -1,8 +1,39 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 10:55 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R290 closed the last small source-checkout install-before-setup command-handoff seam
+**Last updated:** Thursday, March 26th, 2026 — 9:55 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R291 tightened one last small background-mode wording seam in install/setup handoffs
+
+## Cycle R291 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one wording-consistency polish only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Closed one small wording seam where source-checkout install/setup handoffs still slipped back to `background collection` / `not loaded yet` phrasing while the rest of the product already consistently frames this as `background mode`.
+- Install-after-setup-not-running now says the saved config is ready and that background mode is installed but not running yet.
+- Source-checkout install/remove handoffs now use the same calmer product wording for the reversible off-ramp: `safe — only turns background mode off`.
+- Source-checkout setup/configure completion now says `Background mode is not on yet.` instead of the slightly older `Background collection is not enabled yet.`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L40 — install/setup handoffs now keep calmer `background mode` wording in the remaining source-checkout not-running branches
+**What shipped**
+- Reworded the install-with-saved-config-but-not-running branch from `Saved config is ready, but background collection is not loaded yet.` to `Saved config is ready, but background mode is installed and not running yet.`
+- Reworded source-checkout setup/configure completion from `Background collection is not enabled yet.` to `Background mode is not on yet.`
+- Reworded source-checkout install/remove handoffs from `safe — only stops background collection` to `safe — only turns background mode off`.
+- Added regression coverage so these scan-first handoffs stay on the calmer product wording.
+
+### Spot-check coverage for R291
+- [x] `install-agent` with saved config but launchd still not loaded
+- [x] `quickstart` completion after install-before-setup
+- [x] `configure` completion in the not-running branch
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent does not claim background is running when launchd still reports not loaded|quickstart completion stays honest when a LaunchAgent was installed before setup|configure success says to refresh an already-running background agent|quickstart success summarizes setup verification instead of dumping raw telemetry JSON'`
+
+### Acceptance notes
+- The install/setup off-ramp now stays on one calmer `background mode` story even in the remaining source-checkout not-running branches.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, background install behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R290 Status: COMPLETE ✅
 

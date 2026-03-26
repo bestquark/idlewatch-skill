@@ -1377,7 +1377,8 @@ test('install-agent does not claim background is running when launchd still repo
 
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /✅ Background mode installed\./)
-    assert.match(install.stdout, /Saved config is ready, but background collection is not loaded yet\./)
+    assert.match(install.stdout, /Saved config is ready, but background mode is installed and not running yet\./)
+    assert.match(install.stdout, /Remove:\s+.*uninstall-agent\s+\(safe — only turns background mode off\)/)
     assert.ok(install.stdout.includes(`Start:        ${SOURCE_CMD} install-agent`), 'should show a start hint for the current install path when the agent is installed but not loaded')
     assert.ok(!install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh re-enable')
     assert.doesNotMatch(install.stdout, /IdleWatch is running in the background/)
@@ -1537,7 +1538,7 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
     assert.doesNotMatch(run.stdout, /Background agent is already installed\./)
     assert.match(run.stdout, /Start:\s+.*install-agent/)
     assert.match(run.stdout, /It will use the saved config\./)
-    assert.doesNotMatch(run.stdout, /Background collection is not enabled yet\./)
+    assert.doesNotMatch(run.stdout, /Background mode is not on yet\./)
     assert.doesNotMatch(run.stdout, /Auto-start in background \(recommended\)/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
@@ -2201,7 +2202,7 @@ test('configure success says to refresh an already-running background agent', ()
       assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
       assert.doesNotMatch(configure.stdout, /To keep it running:/)
     } else {
-      assert.match(configure.stdout, /Background collection is not enabled yet\./)
+      assert.match(configure.stdout, /Background mode is not on yet\./)
       assert.match(configure.stdout, /Use it now:/)
       assert.match(configure.stdout, /For background mode:/)
       assert.doesNotMatch(configure.stdout, /To keep it running:/)

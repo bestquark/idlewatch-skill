@@ -311,7 +311,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
 
   if (invocation.kind === 'npx') {
     if (!backgroundAgentRunning) {
-      console.log('\n   Background collection is not enabled yet.')
+      console.log('\n   Background mode is not on yet.')
     }
     console.log('\n   Use it now:')
     console.log(`     ${runCommand}   Run in foreground`)
@@ -322,7 +322,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   }
 
   if (!backgroundAgentRunning) {
-    console.log('\n   Background collection is not enabled yet.')
+    console.log('\n   Background mode is not on yet.')
   }
 
   console.log('\n   Use it now:')
@@ -1301,7 +1301,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
       console.log(`   Then start:   ${inferCliCommand('install-agent')}`)
       console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
-      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
+      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
       }
@@ -1321,12 +1321,12 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
         }
       } else {
         console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
-        console.log('   Saved config is ready, but background collection is not loaded yet.')
+        console.log('   Saved config is ready, but background mode is installed and not running yet.')
         console.log(`   Start:        ${installAgentCommand}`)
       }
       console.log(`   Saved config: ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
-      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
+      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
       }
