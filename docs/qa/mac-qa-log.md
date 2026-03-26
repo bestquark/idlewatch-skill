@@ -1,8 +1,75 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:55 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R274 shipped one tiny installer wording polish fix
+**Last updated:** Thursday, March 26th, 2026 — 8:02 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R275 spot-check found no new product-facing polish issue
+
+## Cycle R275 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
+- Main `--help`, clean-home `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, `uninstall-agent`, clean-home `--test-publish`, invalid cloud-key recovery, and the recent reload-time `background mode` wording fix still read like one calm product.
+- Targeted regression coverage still passes for help-copy consistency, device-ID continuity, metric-toggle persistence, uninstall retention messaging, npm/npx install-path clarity, `--test-publish`, and the reload-time `background mode` wording branch.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Spot-check coverage for R275
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `uninstall-agent`
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] Targeted `openclaw-env` regression suite
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+14. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+15. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+16. `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent reload timeout keeps the refresh failure wording on background mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status help keeps the calmer background-mode wording and saved-config refresh hint|test-publish|metric|device|npx|uninstall-agent removes plist and keeps config and local logs'`
+
+### Acceptance notes
+- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
+- Installed-before-setup and installed-but-not-running states still stay honest and low-friction.
+- Device rename still preserves stable device identity and local-log continuity while making the kept ID obvious inline.
+- Metric-selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish`, invalid cloud-key recovery, and npm/npx install guidance still keep the next step short and actionable without surfacing extra implementation detail.
+- The reload-time refresh failure path still stays on `background mode` wording instead of drifting back to older `background agent` / `old background agent` phrasing.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R274 Status: COMPLETE ✅
 
