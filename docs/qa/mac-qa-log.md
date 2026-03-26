@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R357 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and shipped one small validation-message polish fix still visible in the non-interactive setup lane.
+
+### Outcome
+- Tightened the invalid `IDLEWATCH_ENROLL_MODE` error so it now names the simple values first while also acknowledging the accepted symmetry aliases.
+- The message now points people to `cloud` or `local` and explicitly notes that `cloud-only` / `local-only` also work.
+- That keeps automation/setup feedback more honest and less guessy without adding new behavior, new flags, or more setup steps.
+- Runtime behavior stays unchanged: accepted enrollment modes, saved-config handling, install/reconfigure flow, and the working telemetry path are unchanged.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L64 — invalid non-interactive enrollment-mode errors now name the simple values and accepted aliases
+**Why it mattered:** This is tiny, but it lands in the exact setup automation moment where people are copy-pasting env vars and just want the error to tell them the real accepted shape. The old message still only named `cloud` and `local-only`, even though the product intentionally accepts a cleaner symmetric set of aliases.
+
+**What shipped**
+- Updated the invalid enrollment-mode error to say `Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`
+- Kept accepted values unchanged: `cloud`, `cloud-only`, `local`, and `local-only` still normalize the same way they already did.
+- Added regression coverage so the clearer alias-aware validation message does not drift back.
+- Kept setup behavior, saved-config handling, and telemetry behavior unchanged.
+
+### Spot-check coverage for R357
+- [x] Targeted `openclaw-env` regression for invalid enrollment-mode messaging plus alias acceptance
+- [x] Source review of `src/enrollment.js`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart gives a calmer non-interactive error when cloud mode is missing an API key'`
+
+### Acceptance notes
+- Non-interactive setup errors now better match the actual accepted mode vocabulary without adding more setup complexity.
+- No auth, ingest, or packaging redesigns were introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:28 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny alias-aware validation-message seam fixed in this pass
+
+
 ## Cycle R356 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and only shipped one wording-consistency fix still visible in the interactive saved-config reconfigure flow.
