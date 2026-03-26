@@ -14560,3 +14560,26 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reused the existing friendly metric-label formatter in the `Not available here:` validation hint.
 - `provider_quota` now renders as `provider quota (provider_quota)` in that error path.
 - Kept the exact token visible for copy/paste and automation, while making the human-facing phrasing less abrupt.
+
+## Cycle R117 Status: CLOSED
+
+### Outcome
+- `install-agent --help` now uses a slightly calmer setup-first line in the one place users pause before enabling background mode.
+- The fallback now says `finish setup ... then run idlewatch install-agent` instead of the slightly more procedural `save setup first ... then re-run ...` wording.
+- Behavior is unchanged: this is help-copy polish only.
+- The working telemetry path remains untouched.
+
+### R117 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent help keeps the durable setup path short and clear'`
+
+### Prioritized findings
+
+#### [x] L28 — `install-agent --help` fallback line now reads more like setup guidance than recovery wording
+**Why it matters:** This is tiny, but it lands in a cautious setup moment. `install-agent --help` already explains the right mental model, but `save setup first` / `re-run` still sounded a little more mechanical than the rest of the product. `finish setup` / `run` reads cleaner and keeps the setup flow feeling simpler.
+
+**What shipped**
+- Reworded the no-saved-setup fallback from:
+  - `If not, save setup first with idlewatch quickstart --no-tui, then re-run idlewatch install-agent.`
+- To:
+  - `If not, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
+- Added regression coverage so the shorter setup-first phrasing sticks.
