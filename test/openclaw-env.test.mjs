@@ -885,6 +885,26 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.doesNotMatch(run.stdout, /Uses the saved config from ~\/\.idlewatch\/idlewatch\.env\./)
 })
 
+test('install-agent and uninstall-agent keep the macOS-only error on background-mode wording', () => {
+  const install = spawnSync(process.execPath, ['--input-type=module', '-e', "Object.defineProperty(process, 'platform', { value: 'linux' }); process.argv=['node','bin/idlewatch-agent.js','install-agent']; await import('./idlewatch-agent.js')"], {
+    cwd: path.dirname(BIN),
+    encoding: 'utf8',
+    timeout: 10000
+  })
+  assert.equal(install.status, 1)
+  assert.match(install.stderr, /Background mode is only available on macOS\./)
+  assert.doesNotMatch(install.stderr, /LaunchAgent is only available on macOS\./)
+
+  const uninstall = spawnSync(process.execPath, ['--input-type=module', '-e', "Object.defineProperty(process, 'platform', { value: 'linux' }); process.argv=['node','bin/idlewatch-agent.js','uninstall-agent']; await import('./idlewatch-agent.js')"], {
+    cwd: path.dirname(BIN),
+    encoding: 'utf8',
+    timeout: 10000
+  })
+  assert.equal(uninstall.status, 1)
+  assert.match(uninstall.stderr, /Background mode is only available on macOS\./)
+  assert.doesNotMatch(uninstall.stderr, /LaunchAgent is only available on macOS\./)
+})
+
 test('install-agent help in npx context points straight to the durable path', () => {
   const run = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
     env: {

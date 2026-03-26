@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 5:26 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R249 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 5:42 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R250 shipped one tiny wording cleanup in the macOS-only install/uninstall path
+
+## Cycle R250 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny macOS-only validation message cleanup only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the setup/start off-ramp for non-macOS environments.
+- `install-agent` and `uninstall-agent` no longer say `LaunchAgent is only available on macOS.` in the user-facing failure path.
+- They now keep the product framing already used elsewhere:
+  - `Background mode is only available on macOS.`
+- This removes one more implementation-first phrase from a simple platform-limit moment without changing any behavior.
+- Kept setup/reconfigure flow shape, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still used `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R250 implementation
+#### [x] L83 — macOS-only install/uninstall errors now say `background mode`, not `LaunchAgent`
+- Reworded the non-macOS guard in both `install-agent` and `uninstall-agent` from `LaunchAgent is only available on macOS.` to `Background mode is only available on macOS.`
+- Kept the exit status and branching behavior unchanged.
+- Added regression coverage so these platform-limit errors stay on product wording and do not drift back.
+
+### Spot-check coverage for R250
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear|install-agent and uninstall-agent keep the macOS-only error on background-mode wording'`
+
+### Acceptance notes
+- The non-macOS background-mode path now sounds like the product instead of the macOS mechanism underneath it.
+- This is wording polish only; install behavior, uninstall behavior, saved-config handling, and the working telemetry path remain unchanged.
 
 ## Cycle R249 Status: COMPLETE ✅
 

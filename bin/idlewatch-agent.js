@@ -1116,7 +1116,7 @@ const subcommandPromise = (async () => {
 
   if (installAgentRequested) {
     if (process.platform !== 'darwin') {
-      console.error('LaunchAgent is only available on macOS.')
+      console.error('Background mode is only available on macOS.')
       process.exit(1)
     }
 
@@ -1236,7 +1236,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
 
   if (uninstallAgentRequested) {
     if (process.platform !== 'darwin') {
-      console.error('LaunchAgent is only available on macOS.')
+      console.error('Background mode is only available on macOS.')
       process.exit(1)
     }
     const svcLabel = 'com.idlewatch.agent'
