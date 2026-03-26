@@ -179,6 +179,7 @@ else
     echo "💡 Quick status check:"
     echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
   else
-    echo "Then run this install script again to turn on login startup with the saved config."
+    echo "Then turn on login startup:"
+    echo "   $BIN_PATH install-agent"
   fi
 fi

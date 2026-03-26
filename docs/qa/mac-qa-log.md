@@ -15827,3 +15827,29 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - To:
   - `If not, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
 - Added regression coverage so the shorter setup-first phrasing sticks.
+
+---
+
+## Cycle R119 Status: CLOSED ✅
+
+### Outcome
+- Found one more genuinely small packaged-installer friction point worth fixing.
+- In the macOS shell installer's no-setup handoff, the fallback path without an `idlewatch` CLI on PATH still told people to `run this install script again` after setup instead of showing the exact next command.
+- That added a tiny bit of ambiguity in the exact setup/reconfigure moment where copy-paste clarity matters.
+- Behavior is unchanged: this is installer copy/output polish only.
+- The working telemetry path remains untouched.
+
+### R119 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+
+#### [x] L30 — packaged macOS installer now shows the exact login-startup command even before the CLI is on PATH
+**Why it matters:** This is tiny, but it lands in a simple setup moment. If the standard `idlewatch` command is already available, the installer already prints a clean `idlewatch install-agent` next step. The fallback path without that command was still more vague and procedural: `run this install script again`. Showing the exact launcher command removes one guess and keeps the setup handoff more copy-pasteable.
+
+**What shipped**
+- Updated `scripts/install-macos-launch-agent.sh` so the no-CLI fallback now says:
+  - `Then turn on login startup:`
+  - `<app binary path> install-agent`
+- Added regression coverage for the no-CLI PATH case in `test/macos-launch-agent-scripts.test.mjs`.
+- Kept the existing cleaner `idlewatch ...` guidance unchanged when the normal CLI is already available.
