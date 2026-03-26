@@ -44,14 +44,16 @@ function ensureDir(dirPath) {
 
 function writeSecureFile(filePath, content) {
   const dirPath = path.dirname(filePath)
-  ensureDir(dirPath)
-
-  const tempFilePath = path.join(
-    dirPath,
-    `.${path.basename(filePath)}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`
-  )
+  let tempFilePath = null
 
   try {
+    ensureDir(dirPath)
+
+    tempFilePath = path.join(
+      dirPath,
+      `.${path.basename(filePath)}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`
+    )
+
     fs.writeFileSync(tempFilePath, content, { encoding: 'utf8', mode: 0o600 })
     try {
       fs.chmodSync(tempFilePath, 0o600)
@@ -59,20 +61,22 @@ function writeSecureFile(filePath, content) {
       // best effort on filesystems that ignore chmod
     }
     fs.renameSync(tempFilePath, filePath)
+
+    try {
+      fs.chmodSync(filePath, 0o600)
+    } catch {
+      // best effort on filesystems that ignore chmod
+    }
+  } catch (error) {
+    throw new Error(`setup_did_not_write_env_file:${filePath}`, { cause: error })
   } finally {
-    if (fs.existsSync(tempFilePath)) {
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
       try {
         fs.rmSync(tempFilePath, { force: true })
       } catch {
         // best effort cleanup when a write fails before rename
       }
     }
-  }
-
-  try {
-    fs.chmodSync(filePath, 0o600)
-  } catch {
-    // best effort on filesystems that ignore chmod
   }
 }
 

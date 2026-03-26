@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R378 Status: COMPLETE ✅
+
+One tiny saved-config failure seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small setup reliability/copy seam in the non-interactive save path.
+- `quickstart` / `configure` now keep the same calmer `Enrollment failed: setup could not save config at ...` message even when the save fails before the temp file is created, such as an invalid parent path.
+- That keeps setup failures product-shaped in the exact copy-paste moment where raw Node filesystem errors felt noisier than necessary.
+- Kept setup behavior, saved-config semantics, startup/install flow, and the now-working telemetry path unchanged.
+- Re-ran the focused installer/CLI regression lane and it still passes cleanly: **90 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L69 — early saved-config write failures now keep the exact config-path error instead of leaking raw filesystem mkdir errors
+**Why it mattered:** This is tiny, but it lands in the setup/save lane where people just want one honest sentence telling them what file IdleWatch could not save. The previous copy only covered the later `env file missing after setup` shape; earlier directory-creation failures could still leak raw Node errors like `EEXIST: file already exists, mkdir '/dev/null'`.
+
+**What shipped**
+- Wrapped the secure config writer so both directory-creation failures and temp-file write/rename failures normalize to `setup_did_not_write_env_file:<path>`.
+- Kept the user-facing setup failure on the calmer exact-path message: `Enrollment failed: setup could not save config at ...`.
+- Added regression coverage for the invalid-parent-path case using `/dev/null/idlewatch.env`.
+- Kept auth, ingest, packaging, launch-agent behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R378
+- [x] Targeted save-failure regression for invalid output path
+- [x] Full requested installer/CLI regression subset: **90 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart reports the exact config path when setup cannot save the env file'`
+3. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- Setup/save failures now stay calm and path-specific even when the save fails before `idlewatch.env` exists.
+- This is a tiny saved-config reliability + error-copy fix only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 7:46 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny saved-config failure seam fixed in this pass
+
 ## Cycle R377 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
