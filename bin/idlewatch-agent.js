@@ -614,7 +614,7 @@ function formatProviderConnectionSummaryLine(providerConnection) {
   return [providerName, status, accountBits, detail].filter(Boolean).join(' — ')
 }
 
-function resolveDashboardLogPath(host) {
+function resolvePersistedLocalLogPath() {
   if (process.env.IDLEWATCH_LOCAL_LOG_PATH) {
     return resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
   }
@@ -629,6 +629,15 @@ function resolveDashboardLogPath(host) {
     } catch {
       // ignore malformed env file and fallback
     }
+  }
+
+  return null
+}
+
+function resolveDashboardLogPath(host) {
+  const persistedLogPath = resolvePersistedLocalLogPath()
+  if (persistedLogPath) {
+    return persistedLogPath
   }
 
   const safeHost = host.replace(/[^a-zA-Z0-9_.-]/g, '_')
@@ -992,7 +1001,8 @@ Each metric has a name, type, and shell command that runs each cycle.`,
 Usage:  ${uninstallAgentCommand}
 
 Stops and removes the LaunchAgent for background mode.
-Saved config and local logs stay in ~/.idlewatch, so you can re-enable background mode later.`,
+Saved config stays in ~/.idlewatch.
+Local logs stay where they're already being written, so you can re-enable background mode later.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 
 Usage:  ${menubarCommand} [--launch] [--force]
@@ -1201,8 +1211,14 @@ const subcommandPromise = (async () => {
     } catch { /* ignore */ }
 
     const invocation = detectCliInvocation()
+    const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ LaunchAgent removed — background collection stopped.')
-    console.log(`   Saved config and local logs stay in ${dataDir}`)
+    console.log(`   Saved config stays in ${dataDir}`)
+    if (localLogPath) {
+      console.log(`   Local log stays at ${localLogPath}`)
+    } else {
+      console.log(`   Local logs stay in ${path.join(dataDir, 'logs')}`)
+    }
     console.log(`   Re-enable:  ${backgroundInstallCommandForInvocation(invocation)}`)
     if (invocation.kind === 'npx') {
       console.log('   Background mode still belongs to the durable install, not this one-off npx run.')

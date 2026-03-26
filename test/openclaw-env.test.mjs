@@ -961,7 +961,9 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /uninstall-agent — Disable background mode \(macOS\)/)
   assert.match(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
-  assert.match(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch, so you can re-enable background mode later\./)
+  assert.match(run.stdout, /Saved config stays in ~\/\.idlewatch\./)
+  assert.match(run.stdout, /Local logs stay where they're already being written, so you can re-enable background mode later\./)
+  assert.doesNotMatch(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch/)
   assert.doesNotMatch(run.stdout, /Remove background LaunchAgent \(macOS\)/)
   assert.doesNotMatch(run.stdout, /Stops and removes the IdleWatch LaunchAgent\./)
   assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
@@ -988,9 +990,48 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /LaunchAgent removed — background collection stopped\./)
-    assert.match(run.stdout, /Saved config and local logs stay in .*\.idlewatch/)
+    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
     assert.match(run.stdout, /Re-enable:\s+.*install-agent/)
+    assert.doesNotMatch(run.stdout, /Saved config and local logs stay in/)
     assert.doesNotMatch(run.stdout, /Your config and logs were kept in/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('uninstall-agent runtime output names a custom retained local log path', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-custom-log-'))
+  const launchAgentsDir = path.join(tempDir, 'Library', 'LaunchAgents')
+  const plistPath = path.join(launchAgentsDir, 'com.idlewatch.agent.plist')
+  const customLogPath = path.join(tempDir, 'custom-logs', 'kitchen-mac.ndjson')
+
+  fs.mkdirSync(launchAgentsDir, { recursive: true })
+  fs.mkdirSync(path.dirname(customLogPath), { recursive: true })
+  writeFileSync(plistPath, '<plist/>')
+  fs.mkdirSync(path.join(tempDir, '.idlewatch'), { recursive: true })
+  writeFileSync(path.join(tempDir, '.idlewatch', 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${customLogPath}`
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Saved config stays in .*\.idlewatch/)
+    assert.ok(run.stdout.includes(`Local log stays at ${customLogPath}`), 'should show the retained custom local log path')
+    assert.doesNotMatch(run.stdout, /Saved config and local logs stay in .*\.idlewatch/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

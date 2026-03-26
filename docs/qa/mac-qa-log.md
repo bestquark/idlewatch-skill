@@ -1,8 +1,46 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:17 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R173 found no new scoped polish regressions
+**Last updated:** Wednesday, March 25th, 2026 — 9:29 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R174 shipped one tiny uninstall-retention wording/accuracy polish
+
+---
+
+## Cycle R174 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny uninstall-retention wording/accuracy cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `uninstall-agent` no longer implies local logs always live under `~/.idlewatch`.
+- Help now separates the two retention promises more cleanly:
+  - saved config stays in `~/.idlewatch`
+  - local logs stay where they're already being written
+- Runtime uninstall output now names the actual retained location:
+  - default path: `~/.idlewatch/logs`
+  - custom path: the configured `IDLEWATCH_LOCAL_LOG_PATH`
+- This keeps the reversible off-ramp honest for users who customized local durability paths, without touching install behavior, saved-config loading, or the telemetry publish path.
+
+### R174 spot-check coverage
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'uninstall-agent help reassures that config and logs are kept|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent runtime output names a custom retained local log path'`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L50 — uninstall retention wording now stays accurate when local logs use a custom path
+**Why it matters:** This was tiny, but it sat in a cautious-user moment. The uninstall path already tried to reassure users that disabling background mode is reversible and non-destructive. The one remaining seam was accuracy: both help and runtime still bundled saved config and local logs into `~/.idlewatch`, even though local durability can be redirected with `IDLEWATCH_LOCAL_LOG_PATH`.
+
+**What shipped**
+- Reworded `uninstall-agent --help` so config retention and local-log retention are described separately.
+- Updated runtime uninstall output to keep the config location explicit while naming the actual retained local log destination.
+- Added a focused regression test for the custom-log-path case.
+- Kept behavior unchanged: this is output polish only.
+
+### Acceptance notes
+- The uninstall path now stays calm and honest for both default and custom local log locations.
+- No auth, ingest, packaging, background-agent behavior, or telemetry publishing logic changed.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ---
 
