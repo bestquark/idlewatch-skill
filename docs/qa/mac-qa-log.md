@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R361 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one low-risk validation-message polish fix that still helps in the setup automation lane.
+
+### Outcome
+- Tightened the invalid non-interactive metrics error so it no longer hides accepted OpenClaw metric aliases.
+- The message still leads with the simple happy-path choices, but now also explicitly says that `agent_activity`, `token_usage`, and `runtime_state` work when OpenClaw metrics are available.
+- That keeps copy-paste setup feedback more honest for automation and saved-config reconfigure flows without adding new flags, new behavior, or more setup steps.
+- Runtime behavior stays unchanged: accepted metrics, saved-config handling, startup/install behavior, and the now-working telemetry path are unchanged.
+- Re-ran the focused installer/CLI regression subset and it still passes cleanly: **88 passed, 0 failed**.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L65 — invalid non-interactive metric-selection errors now mention accepted OpenClaw aliases
+**Why it mattered:** This is tiny, but it lands in the exact setup automation moment where people are copy-pasting env vars and just want the error to tell them the real accepted shape. The old message named the simple choices, but it still hid the direct OpenClaw aliases that the product intentionally supports.
+
+**What shipped**
+- Updated the invalid metric-selection error to keep the simple choices first while also adding `OpenClaw aliases also work: agent_activity, token_usage, runtime_state.` when those metrics are available.
+- Kept accepted metrics unchanged: `openclaw` still expands the same way it already did, and the direct OpenClaw aliases still normalize the same way they already did.
+- Added regression coverage so the clearer alias-aware validation message does not drift back.
+- Kept setup behavior, saved-config handling, and telemetry behavior unchanged.
+
+### Spot-check coverage for R361
+- [x] Targeted `openclaw-env` regression for invalid metric-selection messaging plus nearby non-interactive validation checks
+- [x] Source review of `src/enrollment.js`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart rejects a fully invalid metric selection with a clear validation error|quickstart names requested metrics that are unavailable on this machine|quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart gives a calmer non-interactive error when cloud mode is missing an API key'`
+
+### Acceptance notes
+- Non-interactive setup errors now better match the actual accepted metric vocabulary without adding more setup complexity.
+- No auth, ingest, or packaging redesigns were introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny alias-aware metric validation seam fixed in this pass
+
 ## Cycle R360 Status: COMPLETE ✅
 
 This pass re-ran the exact requested installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt genuinely confusing, verbose, repetitive, visually noisy, or unnecessarily technical for an end user.

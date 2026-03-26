@@ -197,7 +197,10 @@ function ensureMonitorTargetsOrThrow(raw, available) {
   const unavailableHint = unavailableRequested.length > 0
     ? ` Not available here: ${unavailableRequested.map((item) => formatMonitorTargetChoice(item)).join(', ')}.`
     : ''
-  throw new Error(`No valid metrics were selected.${invalidHint}${unavailableHint} Choose one or more of: ${availableList}.`)
+  const openclawAliasHint = OPENCLAW_DERIVED_TARGETS.some((target) => available.includes(target))
+    ? ` OpenClaw aliases also work: ${OPENCLAW_DERIVED_TARGETS.join(', ')}.`
+    : ''
+  throw new Error(`No valid metrics were selected.${invalidHint}${unavailableHint} Choose one or more of: ${availableList}.${openclawAliasHint}`)
 }
 
 function normalizeCloudApiKey(raw) {
