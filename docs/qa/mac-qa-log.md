@@ -1,8 +1,46 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:49 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R180 spot-check stayed clean; no new product-facing polish issue cleared the bar
+**Last updated:** Wednesday, March 25th, 2026 — 9:58 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R181 shipped one tiny setup-copy polish fix; validation stayed green
+
+---
+
+## Cycle R181 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure copy cleanup only, with no auth, ingest, packaging, or telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- Interactive setup no longer labels cloud mode as `recommended`.
+- The mode chooser now keeps the calmer product shape already used elsewhere in help/docs:
+  - `1) Cloud link — publish with an API key from idlewatch.com/api`
+  - `2) Local-only — keep samples on this Mac`
+- This removes one small but real setup-friction seam in a cautious-user moment without changing setup behavior, saved-config handling, or the now-working telemetry path.
+
+### R181 spot-check coverage
+- [x] Setup mode prompt wording
+- [x] Reconfigure mode prompt wording
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L53 — interactive setup no longer frames cloud mode as the recommended default
+**Why it matters:** Almost the rest of the CLI now tells one calm story: local-first setup with an optional cloud link. The interactive mode chooser was one of the last places still nudging people toward cloud mode first with `Cloud (recommended)`, which made the simplest path feel slightly less first-class than it really is.
+
+**What shipped**
+- Reworded the interactive setup/reconfigure mode prompt from:
+  - `1) Cloud (recommended) — link with an API key from idlewatch.com/api`
+  - `2) Local-only — no cloud writes`
+- To:
+  - `1) Cloud link — publish with an API key from idlewatch.com/api`
+  - `2) Local-only — keep samples on this Mac`
+- Added regression coverage for both setup and reconfigure prompt text.
+
+### Acceptance notes
+- Setup semantics are unchanged: option `1` still selects cloud mode and option `2` still selects local-only mode.
+- Saved-config reuse, install-before-setup behavior, LaunchAgent flows, and telemetry publishing remain unchanged.
+- The stale cron payload path remains external to the product itself.
 
 ---
 

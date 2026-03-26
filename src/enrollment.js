@@ -290,9 +290,9 @@ function tryRustTui({ configDir, outputEnvFile }) {
   return { ok: false, reason: `cargo-run-failed:${run.status ?? 'unknown'}`, manifestPath }
 }
 
-function promptModeText({ isReconfigure = false } = {}) {
+export function promptModeText({ isReconfigure = false } = {}) {
   const title = isReconfigure ? 'IdleWatch Reconfigure' : 'IdleWatch Setup'
-  return `\n${title}\n\nSetup mode:\n  1) Cloud (recommended) — link with an API key from idlewatch.com/api\n  2) Local-only — no cloud writes\n`
+  return `\n${title}\n\nSetup mode:\n  1) Cloud link — publish with an API key from idlewatch.com/api\n  2) Local-only — keep samples on this Mac\n`
 }
 
 function monitorTargetsNeedOpenClawUsage(monitorTargets) {

@@ -6,6 +6,7 @@ import { mkdtempSync, writeFileSync, chmodSync, rmSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { promptModeText } from '../src/enrollment.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -252,6 +253,24 @@ test('help preserves one-off command hints under npm exec', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
   assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
+})
+
+test('setup mode prompt stays neutral and local-first friendly', () => {
+  const prompt = promptModeText()
+
+  assert.match(prompt, /IdleWatch Setup/)
+  assert.match(prompt, /1\) Cloud link — publish with an API key from idlewatch\.com\/api/)
+  assert.match(prompt, /2\) Local-only — keep samples on this Mac/)
+  assert.doesNotMatch(prompt, /Cloud \(recommended\)/)
+})
+
+test('reconfigure mode prompt keeps the same calmer setup-mode wording', () => {
+  const prompt = promptModeText({ isReconfigure: true })
+
+  assert.match(prompt, /IdleWatch Reconfigure/)
+  assert.match(prompt, /1\) Cloud link — publish with an API key from idlewatch\.com\/api/)
+  assert.match(prompt, /2\) Local-only — keep samples on this Mac/)
+  assert.doesNotMatch(prompt, /Cloud \(recommended\)/)
 })
 
 test('--test-publish aliases to one-shot publish mode', () => {
