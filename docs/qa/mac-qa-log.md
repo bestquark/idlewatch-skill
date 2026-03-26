@@ -1,8 +1,32 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 10:00 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R184 found no new product-facing polish issue; cron payload repo path still stale
+**Last updated:** Wednesday, March 25th, 2026 — 10:09 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R185 shipped one tiny first-run status polish fix
+
+---
+
+## Cycle R185 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config visibility improvement in first-run `status`, with no setup-flow changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- First-run `status` now shows the default saved-config path even before setup exists, instead of only saying `not saved yet`.
+- This removes one small moment of uncertainty for cautious users checking where IdleWatch will save setup before they commit anything.
+
+### R185 implementation
+#### [x] L55 — first-run `status` now shows the default config path before setup exists
+- Updated `status` output from `Config: not saved yet` to `Config: ~/.idlewatch/idlewatch.env (not saved yet)` using the resolved path for the current HOME.
+- Kept behavior unchanged: this is copy/output polish only.
+- Added regression coverage to keep the first-run / install-before-setup path honest.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status stays honest after install-agent without saved config|status command accepts saved config lines prefixed with export|status command treats quoted saved config values like normal values'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it sits in a real trust-building moment. People often inspect `idlewatch status` before finishing setup because they want to know what will be written and where. Showing the path directly keeps storage behavior obvious without adding any extra concepts or steps.
 
 ---
 

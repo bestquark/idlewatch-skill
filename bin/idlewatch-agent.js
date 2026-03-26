@@ -1634,7 +1634,7 @@ if (statusRequested) {
     }
   }
   console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
-  console.log(`  Config:       ${hasConfig ? envFile : 'not saved yet'}`)
+  console.log(`  Config:       ${hasConfig ? envFile : `${envFile} (not saved yet)`}`)
 
   // LaunchAgent state
   if (process.platform === 'darwin') {
