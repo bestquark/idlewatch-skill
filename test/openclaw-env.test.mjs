@@ -1086,7 +1086,7 @@ test('status help keeps the calmer background-mode wording and saved-config refr
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /status — Show device config and background mode state/)
-  assert.match(run.stdout, /Usage:\s+idlewatch status --no-tui\n/)
+  assert.match(run.stdout, /Usage:\s+idlewatch status\n/)
   assert.doesNotMatch(run.stdout, /Usage:\s+node .*status(?: --no-tui)?\n/)
   assert.match(run.stdout, /Displays device config, publish mode, enabled metrics, last sample age,\nand background mode state\./)
   assert.match(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)

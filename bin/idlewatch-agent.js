@@ -1110,7 +1110,7 @@ if (args.has('--help') || args.has('-h')) {
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
   const statusCommand = preferredProductCommand('status')
-  const statusUsageCommand = preferredHelpSetupCommand('status')
+  const statusUsageCommand = preferredProductCommand('status')
   const createCommand = inferCliCommand('create')
   const installAgentCommand = inferCliCommand('install-agent')
   const backgroundInstallCommand = backgroundInstallHelpCommand()
