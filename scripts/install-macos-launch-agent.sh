@@ -133,8 +133,10 @@ sed -i '' "s|{{DISABLED_VALUE}}|$DISABLED_VALUE|g" "$PLIST_PATH"
 
 USER_GUID="$(id -u)"
 PLIST_ID="gui/$USER_GUID/$PLIST_LABEL"
+WAS_ALREADY_LOADED=0
 if launchctl print "$PLIST_ID" >/dev/null 2>&1; then
-  echo "LaunchAgent already loaded. Replacing configuration for $PLIST_ID."
+  WAS_ALREADY_LOADED=1
+  echo "Background mode is already running. Refreshing its configuration."
   launchctl bootout "$PLIST_ID" || true
 fi
 
@@ -143,9 +145,14 @@ if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
   launchctl enable "$PLIST_ID"
 fi
 
-echo "Installed LaunchAgent: $PLIST_ID"
-echo "Plist: $PLIST_PATH"
-echo "Logs: $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
+if [[ $WAS_ALREADY_LOADED -eq 1 ]]; then
+  echo "✅ Background mode refreshed."
+else
+  echo "✅ Background mode installed."
+fi
+echo "   Service: $PLIST_ID"
+echo "   Plist:   $PLIST_PATH"
+echo "   Logs:    $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
 if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
   if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then

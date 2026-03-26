@@ -1,0 +1,85 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const ROOT = path.resolve(__dirname, '..')
+const INSTALL_SCRIPT = path.join(ROOT, 'scripts', 'install-macos-launch-agent.sh')
+const UNINSTALL_SCRIPT = path.join(ROOT, 'scripts', 'uninstall-macos-launch-agent.sh')
+
+function writeExecutable(filePath, content) {
+  fs.writeFileSync(filePath, content, 'utf8')
+  fs.chmodSync(filePath, 0o755)
+}
+
+test('packaged macOS launch-agent scripts keep background-mode wording calm', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+
+    writeExecutable(fakeLaunchctl, `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+state_dir="${tempHome}/.launchctl-state"
+mkdir -p "$state_dir"
+loaded_file="$state_dir/loaded"
+if [[ "$cmd" == "print" ]]; then
+  if [[ -f "$loaded_file" ]]; then
+    exit 0
+  fi
+  exit 1
+fi
+if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" ]]; then
+  touch "$loaded_file"
+  exit 0
+fi
+if [[ "$cmd" == "bootout" ]]; then
+  rm -f "$loaded_file"
+  exit 0
+fi
+exit 0
+`)
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const firstInstall = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(firstInstall.status, 0, firstInstall.stderr)
+    assert.match(firstInstall.stdout, /✅ Background mode installed\./)
+    assert.match(firstInstall.stdout, /\n\s*Service:\s+gui\//)
+    assert.doesNotMatch(firstInstall.stdout, /Installed LaunchAgent:/)
+    assert.doesNotMatch(firstInstall.stdout, /LaunchAgent already loaded\./)
+
+    const secondInstall = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(secondInstall.status, 0, secondInstall.stderr)
+    assert.match(secondInstall.stdout, /Background mode is already running\. Refreshing its configuration\./)
+    assert.match(secondInstall.stdout, /✅ Background mode refreshed\./)
+    assert.doesNotMatch(secondInstall.stdout, /LaunchAgent already loaded\./)
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, /✅ Background mode turned off\./)
+    assert.match(uninstall.stdout, /Logs stay in /)
+    assert.doesNotMatch(uninstall.stdout, /LaunchAgent logs were kept/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})

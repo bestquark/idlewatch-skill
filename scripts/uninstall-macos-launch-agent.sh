@@ -41,5 +41,5 @@ fi
 echo "✅ Background mode turned off."
 echo "   Removed plist: $PLIST_PATH"
 echo "   Saved config stays at $HOME/.idlewatch/idlewatch.env"
-echo "   LaunchAgent logs were kept in $LOG_DIR"
+echo "   Logs stay in $LOG_DIR"
 echo "   Re-enable: $REINSTALL_HINT"

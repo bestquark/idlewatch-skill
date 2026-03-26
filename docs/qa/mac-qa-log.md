@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:25 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R242 shipped one tiny status-copy polish fix
+**Last updated:** Thursday, March 26th, 2026 — 4:35 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R243 shipped one tiny packaged install-script wording polish fix
+
+## Cycle R243 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny packaged macOS install/uninstall script wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the packaged macOS background-mode scripts.
+- `scripts/install-macos-launch-agent.sh` no longer leads with raw `LaunchAgent already loaded` / `Installed LaunchAgent` wording in the main success path.
+- The packaged install flow now stays aligned with the calmer product framing already used by the CLI:
+  - `Background mode is already running. Refreshing its configuration.`
+  - `✅ Background mode installed.`
+  - `✅ Background mode refreshed.`
+- `scripts/uninstall-macos-launch-agent.sh` now says `Logs stay in ...` instead of `LaunchAgent logs were kept ...`.
+- Kept plist paths, saved-config guidance, install behavior, uninstall behavior, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R243 implementation
+#### [x] L79 — packaged macOS launch-agent install/uninstall scripts now keep the calmer `background mode` wording in their user-facing success paths
+- Reworded the packaged install script’s already-loaded line from `LaunchAgent already loaded...` to calmer background-mode refresh wording.
+- Reworded the packaged install script’s main success headline from `Installed LaunchAgent: ...` to `✅ Background mode installed.` / `✅ Background mode refreshed.` while keeping the service/plist/log details visible underneath.
+- Reworded the packaged uninstall script’s retained-log line from `LaunchAgent logs were kept ...` to `Logs stay in ...`.
+- Added regression coverage so the packaged script wording stays product-shaped across install, refresh, and uninstall.
+
+### Spot-check coverage for R243
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Acceptance notes
+- Packaged background-mode install/uninstall now sound like the product instead of surfacing `LaunchAgent` internals in the main success moments.
+- This is output polish only; setup/reconfigure flow, saved-config handling, packaged install/uninstall behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R242 Status: CLOSED ✅
 
