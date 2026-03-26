@@ -2,6 +2,49 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R364 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one wording cleanup that still felt worth keeping in the setup/help lane.
+
+### Outcome
+- Tightened the non-TTY setup/reconfigure help hint from `plain-text prompts` to `simple prompts`.
+- That keeps the first-run help surfaces a little less tool-shaped while preserving the same low-friction `--no-tui` story.
+- Kept behavior unchanged: this is help-copy polish only.
+- Preserved the now-working telemetry path.
+- Re-ran the focused installer/CLI regression lane and it still passes cleanly: **88 passed, 0 failed**.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L66 — quickstart/configure/reconfigure help now says `simple prompts` instead of `plain-text prompts`
+**Why it mattered:** This is tiny, but it lands in the exact setup/reconfigure help moment where the product should feel calm and human. `Plain-text prompts` worked, but it read a little more implementation-shaped than necessary for a scan-first setup surface.
+
+**What shipped**
+- Updated the non-TTY quickstart help hint to `Uses simple prompts.`
+- Updated the matching configure/reconfigure help hint to `Uses simple prompts.`
+- Kept the TTY guidance aligned on `Use --no-tui for simple prompts.`
+- Added regression coverage so the calmer wording does not drift back.
+- Kept setup behavior, saved-config handling, install/uninstall behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R364
+- [x] `quickstart --help`
+- [x] `configure --help`
+- [x] `reconfigure --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **88 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js quickstart --help`
+3. `node bin/idlewatch-agent.js configure --help`
+4. `node bin/idlewatch-agent.js reconfigure --help`
+5. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- The setup/help lane now reads a touch less technical without adding extra copy or steps.
+- This is wording polish only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 6:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny non-TTY help wording seam fixed in this pass
+
 ## Cycle R363 Status: COMPLETE ✅
 
 This pass re-ran the exact requested installer/CLI polish lane from the live checkout and kept the same discipline: only log something if it still feels genuinely confusing, verbose, repetitive, visually noisy, or unnecessarily technical for an end user.
