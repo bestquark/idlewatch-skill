@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:24 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - one tiny source-checkout install follow-up seam fixed in this pass
+**Last updated:** Thursday, March 26th, 2026 — 1:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny uninstall-help wording seam fixed in this pass
+
+## Cycle R321 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only closed one remaining help-surface wording seam in the uninstall off-ramp.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in `uninstall-agent --help`.
+- That help surface no longer uses the abstract `Local logs stay where they're already being written` wording.
+- It now keeps the same calmer, more concrete storage story already used by nearby uninstall/status surfaces:
+  - `Saved config stays at ~/.idlewatch/idlewatch.env when setup has been saved.`
+  - `Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.`
+- Kept behavior unchanged: this is help-copy polish only.
+- Kept saved-config handling, uninstall behavior, startup/install behavior, and the working telemetry path unchanged.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L51 — `uninstall-agent --help` now uses a more concrete local-log retention line
+**Why it matters:** This lands in the exact reversible off-ramp where someone wants reassurance that turning background mode off is safe. Naming the usual log home is a little calmer and clearer than the more abstract `where they're already being written` phrasing.
+
+### Spot-check coverage for R321
+- [x] `uninstall-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='uninstall-agent help reassures that config and logs are kept|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent when nothing is installed stays honest about future config and log paths|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output names a custom retained local log path'`
+
+### Acceptance notes
+- The uninstall help off-ramp now reads a touch more concretely without adding noise or caveats.
+- This is wording polish only; saved-config handling, uninstall behavior, startup/install behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R320 Status: COMPLETE ✅
 
