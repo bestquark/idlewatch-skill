@@ -39,15 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 82 - COMPLETE ✅
+## Cycle Status: Cycle 83 - COMPLETE ✅
 
-**Finding:** No new product-facing polish fix cleared the bar in the live checkout, and the installer/CLI lane still looks settled.
-- The setup/reconfigure/status/install story still feels neat, minimal, and low-friction instead of tool-shaped
-- Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior all remain in good shape
+**Finding:** One more genuinely tiny install-path polish fix cleared the bar in the live checkout.
+- The macOS shell installer no longer shows both the clean `idlewatch quickstart --no-tui` command and the raw app-binary fallback when the normal CLI is already available
+- The no-setup handoff now stays neater: finish setup with `idlewatch quickstart --no-tui`, then turn on login startup with `idlewatch install-agent`
+- Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior still remain in good shape
 - The now-working telemetry path remains untouched
-- Fresh focused regression coverage still passes cleanly: **89 passed, 0 failed**
+- Fresh focused regression coverage still passes cleanly: **2 passed, 0 failed** in the targeted shell-script suite used for this pass
 
-**Last updated:** Thursday, March 26th, 2026 — 6:46 PM (America/Toronto)
+**Last updated:** Thursday, March 26th, 2026 — 7:05 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

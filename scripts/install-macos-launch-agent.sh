@@ -168,13 +168,17 @@ else
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
     echo "   idlewatch quickstart --no-tui"
+  else
+    echo "   $BIN_PATH quickstart --no-tui"
   fi
-  echo "   $BIN_PATH quickstart --no-tui"
   echo ""
-  echo "Then re-run this install script to turn on login startup with the saved config."
   if command -v idlewatch >/dev/null 2>&1; then
+    echo "Then turn on login startup:"
+    echo "   idlewatch install-agent"
     echo ""
     echo "💡 Quick status check:"
     echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
+  else
+    echo "Then run this install script again to turn on login startup with the saved config."
   fi
 fi

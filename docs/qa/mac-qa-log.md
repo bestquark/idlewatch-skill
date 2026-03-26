@@ -15603,6 +15603,31 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 
 ### Prioritized findings
 
+## Cycle R345 Status: CLOSED ✅
+
+### Outcome
+- The source/packaged macOS install script now keeps the no-setup recovery path more product-shaped when `idlewatch` is already available.
+- Instead of showing both `idlewatch quickstart --no-tui` and the raw app-binary command, it now prefers the calmer single setup command, then follows with:
+  - `Then turn on login startup:`
+  - `idlewatch install-agent`
+- The fallback app-binary command is still kept for contexts where `idlewatch` is not on PATH.
+- LaunchAgent behavior and the working telemetry path remain untouched.
+
+### R345 spot-check coverage
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+
+#### [x] L30 — no-setup install-script follow-up no longer shows a raw app-binary setup command when the normal CLI is available
+**Why it matters:** This is tiny, but it sits right in the setup/install handoff. The rest of the product has already converged on a cleaner story: use `idlewatch quickstart --no-tui` to finish setup, then `idlewatch install-agent` for durable background mode. The shell installer was still printing both the clean CLI command and the more technical app-binary form in the same branch, which made an otherwise calm recovery path feel slightly more tool-shaped than it needed to.
+
+**What shipped**
+- When `idlewatch` is on PATH, the no-setup installer path now shows only:
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch install-agent`
+- The raw app-binary fallback is now shown only when the normal `idlewatch` command is not available.
+- Kept the existing `idlewatch status` hint and dormant-no-config LaunchAgent behavior unchanged.
+
 #### [x] L26 — interactive setup mode selection no longer silently defaults to cloud on invalid input
 **Why it matters:** This is a tiny but real first-run friction seam. In the text setup wizard, entering anything except `2` used to quietly become cloud mode. That makes a simple typo feel more consequential than it should, especially for people who were trying to keep setup local-only and minimal.
 

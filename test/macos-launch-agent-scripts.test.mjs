@@ -110,6 +110,8 @@ test('packaged macOS install script keeps the no-setup status hint config-first'
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /Setup is not finished yet, so background mode stays off for now\./)
     assert.match(install.stdout, /\bidlewatch quickstart --no-tui\b/)
+    assert.match(install.stdout, /Then turn on login startup:\s+idlewatch install-agent/)
+    assert.doesNotMatch(install.stdout, /Contents\/MacOS\/IdleWatch quickstart --no-tui/)
     assert.match(install.stdout, /quickstart --no-tui/)
     assert.doesNotMatch(install.stdout, /\bidlewatch quickstart\b(?! --no-tui)/)
     assert.doesNotMatch(install.stdout, /\bquickstart\b(?! --no-tui)/)
