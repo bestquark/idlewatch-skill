@@ -2763,6 +2763,34 @@ test('status command shows contextual next-step hints', () => {
   }
 })
 
+test('status command keeps placeholder-device rename hint on the calmer product command', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-rename-hint-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    const logDir = path.join(configDir, 'logs')
+    fs.mkdirSync(logDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=test',
+      'IDLEWATCH_DEVICE_ID=test',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+    fs.writeFileSync(path.join(logDir, 'test-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Rename this device:  idlewatch configure --no-tui'), 'should keep the rename hint on the calmer product command in source checkouts')
+    assert.doesNotMatch(run.stdout, /Rename this device:\s+node .*configure(?:\s|$)/, 'should not fall back to the source checkout command in the rename hint')
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command keeps running-agent apply hint aligned with saved-config wording', () => {
   if (process.platform !== 'darwin') return
 

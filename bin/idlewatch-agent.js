@@ -1877,7 +1877,7 @@ if (statusRequested) {
   const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
   const isPlaceholderName = hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())
   if (isPlaceholderName) {
-    console.log(`  ℹ️  Rename this device:  ${preferredSetupCommand('configure')}`)
+    console.log(`  ℹ️  Rename this device:  ${preferredRecoveryCommand('configure')}`)
   }
 
   console.log('')
