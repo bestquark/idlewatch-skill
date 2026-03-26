@@ -1,8 +1,90 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:40 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R213 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 1:04 AM (America/Toronto)  
+**Status:** ACTION NEEDED ⚠️ - R214 opened install-path polish findings
+
+## Cycle R214 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Core setup/config/background behavior still feels solid. Device rename continuity, metric-toggle persistence, install-before-setup safety, `--test-publish`, and saved-config reconfigure messaging all passed spot checks.
+- One product-facing install-path issue is worth fixing: a global `npm install -g idlewatch` currently auto-creates a macOS menu bar app in `~/Applications/IdleWatch.app` during `postinstall`, which is surprising for a CLI install and muddies the “global CLI vs npx vs packaged app” story.
+- One smaller copy issue also remains: the `postinstall` guidance mixes three setup paths at once, including a vague packaged-app line that reads like internal packaging knowledge instead of a calm user next step.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R214 spot-check coverage
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename persistence
+- [x] `configure --no-tui` metric-toggle persistence
+- [x] `install-agent` after saved setup
+- [x] `uninstall-agent`
+- [x] Simulated `npx` help / install-agent guidance
+- [x] Global `npm install -g . --foreground-scripts` postinstall copy and side effects
+
+### Prioritized findings
+
+#### [M1] `npm install -g idlewatch` unexpectedly creates a macOS app bundle in `~/Applications`
+- **Why this matters:** A user choosing the CLI path expects “install a CLI, then run `idlewatch quickstart`.” Auto-creating a menu bar app during `npm install -g` adds surprise, visual noise, and setup ambiguity before the user has even asked for the app.
+- **Current behavior observed:** Global install ran `postinstall`, built the menubar scaffold, and printed:
+  - `IdleWatch menubar app scaffold ready: ~/Applications/IdleWatch.app`
+  - `IdleWatch menubar app installed at ~/Applications/IdleWatch.app`
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `TMP_PREFIX=$(mktemp -d)`
+  3. `TMP_CACHE=$(mktemp -d)`
+  4. `TMP_HOME=$(mktemp -d)`
+  5. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+- **Acceptance criteria:**
+  - A plain global npm install should keep the default experience CLI-first and unsurprising.
+  - Preferred: do **not** create/install the menu bar app during `npm install -g`; leave that to an explicit `idlewatch menubar` or packaged-app flow.
+  - If the auto-install behavior is intentionally kept, the install output must say this clearly up front and explain how to skip it in one short line.
+
+#### [L1] `postinstall` next-step copy mixes install paths and ends on a vague packaged-app instruction
+- **Why this matters:** The current output is readable, but it makes the user parse three product surfaces at once right after install: global CLI, `npx`, and packaged app. The packaged-app line (`use the bundled quickstart command inside IdleWatch.app docs`) feels internal and unnecessarily technical.
+- **Current behavior observed:** After global install, `postinstall` prints:
+  - `global install: idlewatch quickstart`
+  - `one-off use: npx idlewatch quickstart`
+  - `packaged app: use the bundled quickstart command inside IdleWatch.app docs`
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. `TMP_PREFIX=$(mktemp -d)`
+  3. `TMP_CACHE=$(mktemp -d)`
+  4. `TMP_HOME=$(mktemp -d)`
+  5. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+- **Acceptance criteria:**
+  - Global npm install output should end with one obvious next step for the path the user just chose.
+  - Keep the copy short and product-like.
+  - Avoid referencing packaged-app docs from the npm postinstall path unless the output also tells the user exactly where that app lives and why they should care.
+
+### Exact validation run
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
+4. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+5. `HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. `HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Kitchen Mac' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+7. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+9. `HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+10. `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npx-cli.js node bin/idlewatch-agent.js --help`
+11. `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npx-cli.js node bin/idlewatch-agent.js install-agent`
+12. `TMP_PREFIX=$(mktemp -d)`
+13. `TMP_CACHE=$(mktemp -d)`
+14. `TMP_HOME=$(mktemp -d)`
+15. `HOME="$TMP_HOME" npm install -g . --prefix "$TMP_PREFIX" --cache "$TMP_CACHE" --foreground-scripts`
+
+### Acceptance notes
+- Setup wizard, config persistence, next-start reload semantics, launch-agent install/uninstall flow, test-publish aliasing, device identity continuity, and metric-toggle persistence still feel coherent and low-friction.
+- The meaningful remaining polish gap in this cycle is install-path clarity during global npm install.
+- The stale cron payload path remains external to the product itself.
+
+---
 
 ## Cycle R213 Status: CLOSED ✅
 
