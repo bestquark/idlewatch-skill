@@ -1,8 +1,34 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:28 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R234 shipped one tiny uninstall success-copy cleanup
+**Last updated:** Thursday, March 26th, 2026 — 3:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R235 shipped one tiny packaged uninstall success-copy cleanup
+
+## Cycle R235 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny packaged uninstall success-copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `scripts/uninstall-macos-launch-agent.sh` no longer opens with the more implementation-first `LaunchAgent removed — background collection stopped.` line.
+- The packaged uninstall success headline now stays aligned with the calmer product framing already used by the CLI:
+  - `✅ Background mode turned off.`
+- Packaged uninstall still keeps the explicit plist path, kept-config reassurance, kept-log reassurance, and re-enable hint unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R235 implementation
+#### [x] L75 — packaged macOS uninstall script now says `Background mode turned off.` instead of leading with `LaunchAgent removed`
+- Reworded only the packaged uninstall success headline in `scripts/uninstall-macos-launch-agent.sh`.
+- Kept the retained plist/config/log guidance unchanged.
+- Kept the existing re-enable hint unchanged.
+- Left uninstall behavior unchanged.
+
+### Spot-check coverage for R235
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" bash scripts/uninstall-macos-launch-agent.sh`
+
+### Acceptance notes
+- Packaged uninstall now sounds like the product, not the macOS mechanism underneath it.
+- This is output polish only; packaged uninstall behavior, saved-config handling, local-log handling, and the working telemetry path remain unchanged.
 
 ## Cycle R234 Status: CLOSED ✅
 

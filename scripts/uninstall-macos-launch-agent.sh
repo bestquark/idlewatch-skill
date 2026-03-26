@@ -38,7 +38,7 @@ if [[ -f "$PLIST_PATH" ]]; then
   rm -f "$PLIST_PATH"
 fi
 
-echo "✅ LaunchAgent removed — background collection stopped."
+echo "✅ Background mode turned off."
 echo "   Removed plist: $PLIST_PATH"
 echo "   Your config was kept in $HOME/.idlewatch"
 echo "   LaunchAgent logs were kept in $LOG_DIR"
