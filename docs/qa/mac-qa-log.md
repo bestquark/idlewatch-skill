@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 10:04 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R287 fixed the small source-checkout command-shape consistency issue
+**Last updated:** Thursday, March 26th, 2026 — 10:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R288 fixed the last source-checkout help-title/usage command-shape seam for install-agent and uninstall-agent
+
+## Cycle R288 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one help-surface command-shape consistency fix only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Fixed one last small source-checkout polish seam: `install-agent --help` and `uninstall-agent --help` no longer fall back to raw `node bin/idlewatch-agent.js ...` title/usage lines while nearby setup/help surfaces already present the calmer `idlewatch ...` product-shaped command.
+- That keeps the setup/reconfigure help lane feeling like one product in the exact copy/paste moment people scan first.
+- Kept runtime behavior, saved-config handling, background-mode behavior, npm/npx durable-install guidance, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L38 — source-checkout `install-agent --help` and `uninstall-agent --help` now keep the calmer product-shaped command title and usage lines
+**Why it matters:** This is tiny, but it sits right at the setup/start/off-ramp surfaces where people copy the next command. Most of the source-checkout help path was already polished onto `idlewatch ...`; leaving just these two help screens on raw `node bin/idlewatch-agent.js ...` made the product still feel slightly more technical than necessary.
+
+**What shipped**
+- Reused the existing product-shaped help command formatter for source-checkout `install-agent --help`.
+- Reused the same formatter for source-checkout `uninstall-agent --help`.
+- Kept the actual runtime/install/uninstall command behavior unchanged; this is help-copy polish only.
+
+### Spot-check coverage for R288
+- [x] `install-agent --help`
+- [x] `uninstall-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear|help keeps the happy path above advanced env tuning noise|uninstall-agent help reassures that config and logs are kept'`
+
+### Acceptance notes
+- Source-checkout help now tells one calmer `idlewatch ...` copy/paste story across setup, status, install, and uninstall surfaces.
+- This is presentation polish only; setup/reconfigure behavior, saved-config handling, background-mode behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R287 Status: COMPLETE ✅
 

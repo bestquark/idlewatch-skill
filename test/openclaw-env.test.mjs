@@ -875,7 +875,7 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /install-agent — Enable background mode \(macOS\)/)
+  assert.match(run.stdout, /idlewatch install-agent — Enable background mode \(macOS\)/)
   assert.match(run.stdout, /Enables background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Enables the LaunchAgent for background mode\./)
   assert.match(run.stdout, /If setup is already saved, IdleWatch starts automatically\./)
@@ -1102,7 +1102,7 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /uninstall-agent — Disable background mode \(macOS\)/)
+  assert.match(run.stdout, /idlewatch uninstall-agent — Disable background mode \(macOS\)/)
   assert.match(run.stdout, /Disables background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
   assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)

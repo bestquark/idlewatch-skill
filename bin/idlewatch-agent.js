@@ -258,6 +258,7 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentCommand = inferCliCommand('install-agent')
+  const installAgentHelpCommand = preferredProductCommand('install-agent')
   const quickstartCommand = preferredHelpSetupCommand('quickstart')
 
   if (invocation.kind === 'npx') {
@@ -267,9 +268,9 @@ Install once: npm install -g idlewatch
 Then enable: idlewatch install-agent`
   }
 
-  return `${installAgentCommand} — Enable background mode (macOS)
+  return `${installAgentHelpCommand} — Enable background mode (macOS)
 
-Usage:  ${installAgentCommand}
+Usage:  ${installAgentHelpCommand}
 
 Enables background mode on macOS.
 If setup is already saved, IdleWatch starts automatically.
@@ -1151,9 +1152,9 @@ Usage:  ${createCommand}
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
     'install-agent': installAgentHelpText(),
-    'uninstall-agent': `${uninstallAgentCommand} — Disable background mode (macOS)
+    'uninstall-agent': `${preferredProductCommand('uninstall-agent')} — Disable background mode (macOS)
 
-Usage:  ${uninstallAgentCommand}
+Usage:  ${preferredProductCommand('uninstall-agent')}
 
 Disables background mode on macOS.
 Saved config stays at ~/.idlewatch/idlewatch.env when setup has been saved.
