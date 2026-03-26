@@ -1643,7 +1643,7 @@ if (statusRequested) {
       console.log(`  Extras available: ${extraPreview.join(', ')}`)
     }
   }
-  console.log(`  Local log:    ${LOCAL_LOG_PATH || '(none)'}`)
+  console.log(`  ${hasConfig ? 'Local log:' : 'Local log preview:'} ${LOCAL_LOG_PATH || '(none)'}`)
   console.log(`  Config:       ${hasConfig ? envFile : `${envFile} (not saved yet)`}`)
 
   // LaunchAgent state

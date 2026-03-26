@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 1:47 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R219 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 2:00 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R220 shipped one tiny first-run status preview-label polish fix
+
+## Cycle R220 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one small first-run `status` copy cleanup only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- First-run `status` now labels the future local log destination as a preview until setup is actually saved.
+- The clean-HOME status path now says:
+  - `Local log preview: ...`
+- After setup exists, the normal active label still stays:
+  - `Local log: ...`
+- This keeps first-run storage/status framing a little more honest and less committal in the exact moment cautious users are checking what IdleWatch will write where.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R220 implementation
+#### [x] L68 — first-run `status` now says `Local log preview`, not `Local log`
+- Reworded only the unsaved-setup status label.
+- Kept the resolved path visible before setup so the storage destination stays obvious.
+- Kept post-setup `status` output unchanged.
+- Added regression coverage so clean-HOME status keeps the preview label and does not drift back.
+
+### Spot-check coverage for R220
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status stays honest after install-agent without saved config'`
+- [x] `npm test --silent`
+
+### Acceptance notes
+- First-run `status` still previews the default config path before setup exists and now matches that same preview framing for the local log destination.
+- Install-before-setup still behaves safely and calmly: background install can happen early, but collection stays off until setup exists.
+- Setup/reconfigure, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R219 Status: CLOSED ✅
 

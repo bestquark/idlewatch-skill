@@ -1161,6 +1161,8 @@ test('status stays honest after install-agent without saved config', () => {
     })
     assert.equal(status.status, 0, status.stderr)
     assert.match(status.stdout, /Setup:\s+not completed yet/)
+    assert.match(status.stdout, /Local log preview:\s+.*\.idlewatch\/logs\//)
+    assert.doesNotMatch(status.stdout, /\n\s*Local log:\s+/)
     assert.match(status.stdout, /Config:\s+.*\.idlewatch\/idlewatch\.env \(not saved yet\)/)
     assert.match(status.stdout, /Background:\s+LaunchAgent installed — waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
