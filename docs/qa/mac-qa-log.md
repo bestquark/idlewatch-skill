@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R353 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one remaining help-surface consistency fix that still felt product-facing in the requested setup/reconfigure lane.
+
+### Outcome
+- Found one small wording/shape seam still visible in `quickstart --help`: in non-interactive mode, the help title still rendered as `idlewatch quickstart --no-tui`, even though nearby help screens already keep the title on the command name and reserve flags for the usage line.
+- Updated `quickstart --help` so the title now stays on the calmer product command `idlewatch quickstart`, while the usage line still clearly shows `idlewatch quickstart --no-tui`.
+- Added regression coverage so the title does not drift back to embedding the flag.
+- Kept runtime behavior unchanged: this is help-copy polish only.
+- Preserved the now-working telemetry path.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L61 — `quickstart --help` now keeps the title on `idlewatch quickstart` and leaves `--no-tui` in the usage line
+**Why it mattered:** This is tiny, but it sits in a first-run setup surface. The surrounding help screens already keep command titles neat and reserve options for usage. Letting the quickstart title absorb `--no-tui` made that one help screen feel slightly fussier than the rest of the setup flow.
+
+**What shipped**
+- Updated the non-interactive `quickstart --help` title from `idlewatch quickstart --no-tui — Set up this device` to `idlewatch quickstart — Set up this device`
+- Kept the usage line on `idlewatch quickstart --no-tui`
+- Added regression coverage so the title stays flag-free
+- Kept setup, saved-config handling, install/uninstall behavior, and telemetry behavior unchanged
+
+### Spot-check coverage for R353
+- [x] `quickstart --help`
+- [x] Targeted `openclaw-env` regression test for quickstart help
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js quickstart --help`
+3. `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart help stays clean in non-TTY mode'`
+
+### Acceptance notes
+- `quickstart --help` now matches the calmer command-title shape already used by nearby help screens.
+- This is help-copy polish only; no setup behavior, validation behavior, saved-config behavior, background-mode behavior, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 4:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny quickstart-help consistency seam fixed in this pass
+
+
 ## Cycle R352 Status: COMPLETE ✅
 
 This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt like genuine end-user friction instead of churn.

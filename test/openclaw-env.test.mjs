@@ -1013,7 +1013,8 @@ test('quickstart help stays clean in non-TTY mode', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Usage:\s+idlewatch quickstart --no-tui\n/)
+  assert.match(run.stdout, /quickstart — Set up this device\n\nUsage:\s+idlewatch quickstart --no-tui\n/)
+  assert.doesNotMatch(run.stdout, /quickstart --no-tui — Set up this device/)
   assert.match(run.stdout, /Walks you through device name, metrics, and an optional cloud link\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+node .*quickstart --no-tui\n/)
   assert.match(run.stdout, /Uses plain-text prompts\./)

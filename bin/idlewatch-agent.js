@@ -1104,8 +1104,9 @@ if (args.has('--help-env')) {
 }
 if (args.has('--help') || args.has('-h')) {
   const subCmd = argv.find(a => !a.startsWith('-'))
-  const quickstartCommand = preferredHelpSetupCommand('quickstart')
-  const quickstartUsage = process.stdin.isTTY ? `${quickstartCommand} [--no-tui]` : quickstartCommand
+  const quickstartCommand = preferredProductCommand('quickstart')
+  const quickstartUsageCommand = preferredHelpSetupCommand('quickstart')
+  const quickstartUsage = process.stdin.isTTY ? `${quickstartUsageCommand} [--no-tui]` : quickstartUsageCommand
   const quickstartPromptHint = process.stdin.isTTY
     ? 'Use --no-tui for plain-text prompts.'
     : 'Uses plain-text prompts.'
