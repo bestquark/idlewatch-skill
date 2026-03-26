@@ -255,7 +255,10 @@ function parseEnvValue(rawValue) {
 }
 
 function normalizeEnvKey(rawKey) {
-  const key = String(rawKey || '').trim().replace(/^export\s+/, '')
+  const key = String(rawKey || '')
+    .replace(/^\uFEFF/, '')
+    .trim()
+    .replace(/^export\s+/, '')
   return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : ''
 }
 

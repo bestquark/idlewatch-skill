@@ -2003,6 +2003,43 @@ test('configure accepts a saved config file that starts with a UTF-8 BOM', () =>
   }
 })
 
+test('configure preserves the saved device name when the first key is prefixed by a UTF-8 BOM', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-bom-device-name-home-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), '\uFEFF' + [
+      'IDLEWATCH_DEVICE_NAME=BOM First Box',
+      'IDLEWATCH_DEVICE_ID=bom-first-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      `IDLEWATCH_LOCAL_LOG_PATH=${path.join(configDir, 'logs', 'bom-first-box-metrics.ndjson')}`
+    ].join('\n') + '\n')
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "BOM First Box"\./)
+    assert.match(configure.stdout, /✓ Local telemetry verified\./)
+
+    const updatedEnv = fs.readFileSync(path.join(configDir, 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=BOM First Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+    assert.doesNotMatch(updatedEnv, /^\uFEFF/m)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure accepts saved config values with trailing inline comments', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-inline-comment-env-'))
   try {
