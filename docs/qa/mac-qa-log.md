@@ -2,6 +2,50 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R377 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing polish issue in the requested lane worth opening. The current setup/install/reconfigure/status story still feels intentionally minimal and copy-pasteable, and the only extra noise in the `npx` path remains npm's own update banner rather than IdleWatch copy.
+
+### Verification evidence
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js status` in a clean HOME
+  - `node bin/idlewatch-agent.js --test-publish` in a clean HOME
+  - `npm exec --yes -- idlewatch --help` in a clean HOME
+  - clean-home lifecycle check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+    - `node bin/idlewatch-agent.js configure --no-tui`
+    - `node bin/idlewatch-agent.js status`
+    - `node bin/idlewatch-agent.js uninstall-agent`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Use a clean HOME for first-run `status`, `--test-publish`, and `npm exec --yes -- idlewatch --help`
+3. Repeat the install/setup/configure/uninstall lifecycle check with a stubbed `launchctl` to keep the launch-agent flow deterministic
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- first-run `status` short and preview-shaped
+- install-before-setup honest without overexplaining launchd internals
+- quickstart/configure success output calm and copy-pasteable
+- saved device identity continuity obvious inline
+- metric-toggle persistence reflected immediately in `status`
+- uninstall reassurance short and reversible
+- `--test-publish` explicit without becoming its own workflow
+- npm/npx one-off-vs-durable-install guidance clear, with only npm's own upgrade banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 7:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R376 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
