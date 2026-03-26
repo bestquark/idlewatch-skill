@@ -2,6 +2,51 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R380 Status: COMPLETE ✅
+
+One tiny packaged uninstall-script command-story seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small off-ramp polish seam in the packaged macOS launch-agent uninstall script.
+- `scripts/uninstall-macos-launch-agent.sh` now prefers the calmer `idlewatch install-agent` recovery hint when the CLI is available on PATH, instead of falling back to `./scripts/install-macos-launch-agent.sh`.
+- That keeps the reversible background-mode off-ramp aligned with the cleaner product command story already used across setup, status, install, and CLI uninstall flows.
+- Kept uninstall behavior unchanged: this is command-hint polish only.
+- Kept saved-config retention, local-log retention, startup/install behavior, and the now-working telemetry path unchanged.
+- Re-ran the focused packaged shell-script regression lane and it still passes cleanly: **3 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L70 — packaged macOS uninstall script now keeps the calmer `idlewatch install-agent` recovery hint when the CLI is available
+**Why it mattered:** This is tiny, but it lands in a reversible background-mode off-ramp where people just want one clean next command. Falling back to a raw script path made the packaged uninstall surface feel a little more implementation-shaped than the surrounding setup/install/status story.
+
+**What shipped**
+- Updated `scripts/uninstall-macos-launch-agent.sh` to prefer `idlewatch install-agent` when `idlewatch` is already available on PATH.
+- Kept the packaged-app fallback unchanged when the CLI is not available.
+- Tightened `test/macos-launch-agent-scripts.test.mjs` so the uninstall recovery hint stays on `idlewatch install-agent` in the common CLI-available path.
+- Kept setup behavior, launch-agent behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R380
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Runtime packaged-shell uninstall spot check with fake app + fake `launchctl` + fake `idlewatch` on PATH
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/macos-launch-agent-scripts.test.mjs`
+3. Fake packaged-app uninstall spot check with:
+   - fake `IdleWatch.app`
+   - fake `launchctl`
+   - fake `idlewatch` on PATH
+   - `bash scripts/install-macos-launch-agent.sh`
+   - `bash scripts/uninstall-macos-launch-agent.sh`
+4. Confirmed the final recovery hint now stays on:
+   - `Turn it back on: idlewatch install-agent`
+
+### Acceptance notes
+- The packaged shell uninstall off-ramp now matches the calmer command story already used by nearby setup/install/status surfaces.
+- This is wording polish only; no auth, ingest, packaging redesign, launch-agent logic change, or telemetry-path change was introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 7:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged uninstall command-story seam fixed in this pass
+
 ## Cycle R379 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.

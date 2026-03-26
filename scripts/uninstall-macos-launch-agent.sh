@@ -9,7 +9,9 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REINSTALL_SCRIPT="$SCRIPT_DIR/install-macos-launch-agent.sh"
 REINSTALL_HINT="./scripts/install-macos-launch-agent.sh"
 
-if [[ -x "$REINSTALL_SCRIPT" ]]; then
+if command -v idlewatch >/dev/null 2>&1; then
+  REINSTALL_HINT="idlewatch install-agent"
+elif [[ -x "$REINSTALL_SCRIPT" ]]; then
   case "$SCRIPT_DIR" in
     */Contents/Resources/payload/package/scripts)
       REINSTALL_HINT="$REINSTALL_SCRIPT"

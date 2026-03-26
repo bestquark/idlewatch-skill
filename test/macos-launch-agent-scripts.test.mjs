@@ -77,7 +77,8 @@ exit 0
     assert.equal(uninstall.status, 0, uninstall.stderr)
     assert.match(uninstall.stdout, /✅ Background mode turned off\./)
     assert.match(uninstall.stdout, /Logs stay in /)
-    assert.match(uninstall.stdout, /Turn it back on: /)
+    assert.match(uninstall.stdout, /Turn it back on:\s+idlewatch install-agent/)
+    assert.doesNotMatch(uninstall.stdout, /Turn it back on:\s+\.\/scripts\/install-macos-launch-agent\.sh/)
     assert.doesNotMatch(uninstall.stdout, /Re-enable: /)
     assert.doesNotMatch(uninstall.stdout, /LaunchAgent logs were kept/)
   } finally {
