@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R371 Status: COMPLETE ✅
+
+Tiny installer/setup validation-copy drift fixed from the live checkout.
+
+### Outcome
+- Closed one real but very small source-path mismatch in non-interactive setup validation.
+- `src/enrollment.js` now matches the accepted enrollment vocabulary and the already-documented product wording: invalid mode errors now say `Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`
+- Kept behavior unchanged: accepted values were already correct; this is message polish only.
+- Kept saved-config handling, startup/install behavior, and the now-working telemetry path unchanged.
+- Re-ran the focused validation lane and it still passes cleanly: **89 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L67 — invalid non-interactive enrollment-mode validation now names the simple values and accepted aliases consistently in `src/enrollment.js`
+**Why it mattered:** This was tiny, but it landed in the exact copy-paste setup moment where the error should tell people the real accepted shape. The runtime behavior already accepted `cloud`, `local`, `cloud-only`, and `local-only`; the lingering source-path message still only said `cloud` or `local-only`, which was slightly asymmetric and out of step with the surrounding setup polish.
+
+**What shipped**
+- Updated `src/enrollment.js` invalid enrollment-mode error to `Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs`.
+- Kept accepted modes, saved-config behavior, install/reconfigure flow, and telemetry behavior unchanged.
+
+### Spot-check coverage for R371
+- [x] Targeted `openclaw-env` regression for invalid enrollment-mode messaging plus alias acceptance
+- [x] Full requested installer/CLI regression subset: **89 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart gives a calmer non-interactive error when cloud mode is missing an API key'`
+3. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+
+### Acceptance notes
+- Non-interactive setup errors now match the actual accepted mode vocabulary consistently in the maintained source path.
+- This is low-risk validation-copy polish only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 7:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny enrollment-mode validation-copy drift fixed in this pass
+
 ## Cycle R370 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.

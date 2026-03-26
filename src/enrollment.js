@@ -556,7 +556,7 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (!mode) mode = 'production'
   if (!['production', 'local'].includes(mode)) {
-    throw new Error(`Invalid enrollment mode: ${mode}. Choose "cloud" or "local-only".`)
+    throw new Error(`Invalid enrollment mode: ${mode}. Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`)
   }
 
   if ((mode === 'production') && !cloudApiKey) {
