@@ -1296,12 +1296,12 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
     if (!shouldStartImmediately) {
       console.log('✅ Background mode installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
-      console.log(`   Save setup:   ${preferredSetupCommand('quickstart')}`)
-      console.log(`   Run now:      ${inferCliCommand('run')}`)
-      console.log(`   Then start:   ${inferCliCommand('install-agent')}`)
+      console.log(`   Save setup:   ${preferredHelpSetupCommand('quickstart')}`)
+      console.log(`   Run now:      ${preferredProductCommand('run')}`)
+      console.log(`   Then start:   ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${envFile}`)
-      console.log(`   Check:        ${statusCommand}`)
-      console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only turns background mode off)`)
+      console.log(`   Check:        ${preferredProductCommand('status')}`)
+      console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
       }
