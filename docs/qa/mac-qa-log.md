@@ -1,8 +1,60 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:04 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R257 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 6:19 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R258 shipped one tiny setup/reconfigure wording consistency fix
+
+## Cycle R258 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny setup/reconfigure success-copy consistency fix only, with no setup-flow reshaping, no saved-config behavior change, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the installed-but-not-running setup/reconfigure handoff.
+- Post-setup guidance no longer says `Start it:` in the exact branch where `status` and recent install guidance already use the calmer `Start:` label.
+- The quickstart/reconfigure success handoff now reads a little more scan-friendly and consistent:
+  - `Background mode is already installed.`
+  - `Start:    ... install-agent`
+  - `It will use the saved config.`
+- Kept saved-config handling, startup/install behavior, packaged scripts, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R258 implementation
+#### [x] L86 — setup/reconfigure installed-but-not-running guidance now uses the same calmer `Start:` label as `status`
+- Reworded the quickstart/configure installed-but-not-running next step from `Start it:` to `Start:`.
+- Kept the saved-config reassurance line unchanged: `It will use the saved config.`
+- Added regression coverage so this handoff stays aligned with `status` and does not drift back.
+
+### Spot-check coverage for R258
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart completion stays honest when a LaunchAgent was installed before setup|quickstart and configure keep one-off runs honest about background install under npm exec env|configure success says to refresh an already-running background agent'`
+- [x] Manual quickstart install-before-setup spot check
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+7. Observe setup success now says `Start:    ... install-agent`
+
+### Acceptance notes
+- Setup/reconfigure still keep the installed-before-setup recovery path calm and obvious.
+- This is wording polish only; saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R257 Status: COMPLETE ✅
 
