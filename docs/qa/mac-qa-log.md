@@ -1,8 +1,60 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 5:19 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R248 shipped the last small postinstall copy cleanup from R247
+**Last updated:** Thursday, March 26th, 2026 — 5:26 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R249 found no new product-facing polish issue worth opening
+
+## Cycle R249 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- No new confusing, verbose, repetitive, visually noisy, or unnecessarily technical end-user issue cleared the bar for an implementation ticket in this cycle.
+- `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, device-ID continuity, metric-toggle persistence, clean-home `--test-publish`, invalid cloud-key recovery, uninstall no-op reassurance, `npm exec` durable-install guidance, `postinstall`, and `npm run validate:onboarding --silent` still read like one calm product.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Spot-check coverage for R249
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `uninstall-agent` when nothing is installed
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] `node scripts/postinstall.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `npm run validate:onboarding --silent`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+3. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed, then run:
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node ./bin/idlewatch-agent.js install-agent`
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node ./bin/idlewatch-agent.js quickstart --no-tui`
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node ./bin/idlewatch-agent.js configure --no-tui`
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node ./bin/idlewatch-agent.js status`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+5. `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node ./bin/idlewatch-agent.js quickstart --no-tui`
+6. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" node ./bin/idlewatch-agent.js uninstall-agent`
+7. `npm exec --yes -- idlewatch --help`
+8. `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch install-agent`
+9. `node scripts/postinstall.mjs`
+10. `node --test test/postinstall.test.mjs`
+11. `npm run validate:onboarding --silent`
+
+### Acceptance notes
+- First-run and reconfigure flows still keep the setup story short, honest, and low-friction.
+- Device rename still preserves stable device identity and local-log continuity while explaining the preserved ID inline.
+- Metric selection changes still persist cleanly into saved config and the next `status` output.
+- `--test-publish` remains discoverable and low-noise in the clean-home path, and invalid cloud-key setup still fails with a short, actionable message.
+- `install-agent`, `uninstall-agent`, `npm exec`, and `postinstall` still keep the durable-vs-one-off install story coherent without surfacing unnecessary implementation detail.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change was needed.
 
 ## Cycle R248 Status: COMPLETE ✅
 
