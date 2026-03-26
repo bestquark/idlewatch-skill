@@ -85,3 +85,34 @@ exit 0
     fs.rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('packaged macOS install script keeps the no-setup status hint config-first', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-setup-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-setup-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /Setup is not finished yet, so background collection stays off for now\./)
+    assert.match(install.stdout, /Run 'idlewatch status' to see your saved config, background mode state, and last publish result\./)
+    assert.doesNotMatch(install.stdout, /device state, metrics enabled/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})

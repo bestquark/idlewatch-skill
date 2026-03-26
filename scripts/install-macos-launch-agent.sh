@@ -175,6 +175,6 @@ else
   if command -v idlewatch >/dev/null 2>&1; then
     echo ""
     echo "💡 Quick status check:"
-    echo "   Run 'idlewatch status' to see your device state, metrics enabled, and last publish result."
+    echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
   fi
 fi

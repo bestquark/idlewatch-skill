@@ -9697,3 +9697,36 @@ This pass shipped one tiny saved-config reliability fix with no telemetry, auth,
 - Added regression coverage for both:
   - `status` reading a BOM-prefixed saved config
   - `configure --no-tui` reusing and updating a BOM-prefixed saved config
+
+## Cycle R113 Status: CLOSED
+
+This pass stayed intentionally tiny: one packaged-installer wording polish fix plus one packaging-doc wording cleanup, with no setup-behavior, auth, ingest, packaging-flow, or telemetry changes.
+
+### Outcome
+- The packaged macOS install script’s no-setup follow-up now frames `idlewatch status` as the config/background-mode check it actually is, instead of the older vaguer `device state` wording.
+- `docs/packaging/macos-launch-agent.md` now says `refresh background mode with the saved config` instead of briefly falling back to `background agent` wording.
+- This keeps the app-installer setup/reconfigure path a little calmer and more product-shaped without changing any underlying LaunchAgent behavior.
+
+### R113 spot-check coverage
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Source review of `scripts/install-macos-launch-agent.sh`
+- [x] Source review of `docs/packaging/macos-launch-agent.md`
+
+### Prioritized findings
+
+#### [x] L23 — packaged installer no-setup status hint now stays config-first
+**Why it matters:** This is tiny, but it lands in a cautious setup moment. The packaged installer already does the right thing when setup is not saved yet, and the follow-up should reinforce the same mental model: config first, then background mode.
+
+**What shipped**
+- Reworded the packaged install script’s optional status hint from:
+  - `Run 'idlewatch status' to see your device state, metrics enabled, and last publish result.`
+- To:
+  - `Run 'idlewatch status' to see your saved config, background mode state, and last publish result.`
+- Added regression coverage in `test/macos-launch-agent-scripts.test.mjs` for the no-saved-config packaged install path so the calmer wording sticks.
+
+#### [x] L24 — packaging doc no longer says `background agent` in saved-config refresh guidance
+**Why it matters:** The CLI and installer have already mostly converged on the simpler `background mode` story. The packaging doc still had one small `background agent` phrase in the exact spot where it explains how saved config is picked up after setup/reconfigure.
+
+**What shipped**
+- Reworded `docs/packaging/macos-launch-agent.md` from `refresh the background agent with the saved config` to `refresh background mode with the saved config`.
+- Left the actual LaunchAgent/install semantics unchanged.
