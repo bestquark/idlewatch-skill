@@ -22,19 +22,19 @@ npm install -g idlewatch
 Then run:
 
 ```bash
-idlewatch quickstart
+idlewatch quickstart --no-tui
 ```
 
 ## Common commands
 
 ```bash
-idlewatch quickstart      # set up this device
-idlewatch configure       # re-open saved setup
-idlewatch --once          # one-shot publish check
-idlewatch --test-publish  # alias for --once
-idlewatch --dry-run       # preview metrics without publishing
-idlewatch run             # continuous foreground collection
-idlewatch install-agent   # enable background mode on macOS
+idlewatch quickstart --no-tui   # set up this device
+idlewatch configure --no-tui    # re-open saved setup
+idlewatch --once                # one-shot publish check
+idlewatch --test-publish        # alias for --once
+idlewatch --dry-run             # preview metrics without publishing
+idlewatch run                   # continuous foreground collection
+idlewatch install-agent         # enable background mode on macOS
 ```
 
 `idlewatch` is the main command. `idlewatch-agent` still works as a compatibility alias, but prefer `idlewatch` in docs and copy-paste commands.
@@ -44,7 +44,7 @@ idlewatch install-agent   # enable background mode on macOS
 - Setup saves config to `~/.idlewatch/idlewatch.env`
 - Local-only mode works without any cloud key
 - Cloud linking is optional
-- Re-open setup later with `idlewatch configure`
+- Re-open setup later with `idlewatch configure --no-tui`
 - Saved changes apply on the next start
 - Background mode is a durable-install feature; after `npx` setup, install once with `npm install -g idlewatch`, then run `idlewatch install-agent`
 - If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config
