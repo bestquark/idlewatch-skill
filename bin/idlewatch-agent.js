@@ -349,21 +349,28 @@ function printHelp() {
   const installAgentSummary = invocation.kind === 'npx'
     ? 'Enable background mode (requires durable install)'
     : 'Enable background mode (macOS)'
+  const commands = [
+    ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
+    ['configure', 'Re-open setup (name, metrics, optional cloud link)'],
+    ['status', 'Show device config and background mode state'],
+    ['run', 'Run the collector in the foreground'],
+    ['create', 'Create a custom telemetry metric'],
+    ['dashboard', 'Launch local telemetry dashboard'],
+    ['install-agent', installAgentSummary],
+    ['uninstall-agent', 'Disable background mode (macOS)'],
+    ['menubar', 'Install the macOS menu bar app'],
+    ['version', 'Show version']
+  ]
+  const commandWidth = Math.max(...commands.map(([name]) => name.length))
+  const commandLines = commands
+    .map(([name, summary]) => `  ${name.padEnd(commandWidth)}   ${summary}`)
+    .join('\n')
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
 
 Commands:
-  quickstart   Set up this device (name, metrics, optional cloud link)
-  configure    Re-open setup (name, metrics, optional cloud link)
-  status       Show device config and background mode state
-  run          Run the collector in the foreground
-  create       Create a custom telemetry metric
-  dashboard    Launch local telemetry dashboard
-  install-agent   ${installAgentSummary}
-  uninstall-agent Disable background mode (macOS)
-  menubar      Install the macOS menu bar app
-  version      Show version
+${commandLines}
 
 Options:
   --once, --test-publish  Collect and publish one sample, then exit

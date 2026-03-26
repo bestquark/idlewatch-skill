@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:32 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R278 fresh QA pass found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 8:53 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R279 shipped one tiny main-help scanability polish fix
+
+## Cycle R279 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and product-facing: one low-risk main-help scanability polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the first screen users scan during setup/reconfigure.
+- Main `--help` now keeps the command list visually aligned even for the longer `install-agent` and `uninstall-agent` rows.
+- That makes the setup/start/off-ramp commands a little easier to scan without changing any wording, branching, setup flow, saved-config behavior, or launch-agent behavior.
+- Kept the working telemetry path unchanged.
+
+### Prioritized findings
+
+#### [x] L96 — main help command list now keeps long command rows aligned with the rest of the menu
+- **Why it matters:** This is tiny, but it sits in the most scan-first moment of the whole product. The command list was already short and calm; the longer background-mode rows just made the menu look slightly jagged for no benefit.
+- **What shipped:**
+  - Switched the main help command list to padded command rows so long entries like `install-agent` and `uninstall-agent` align with the rest of the menu.
+  - Kept all command names, summaries, setup hints, and invocation-path behavior unchanged.
+  - Added regression coverage so the main help output keeps the cleaner alignment.
+
+### Spot-check coverage for R279
+- [x] Main `--help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec'`
+
+### Acceptance notes
+- The first-run help menu is a touch neater and easier to scan.
+- This is presentation polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R278 Status: COMPLETE ✅
 
