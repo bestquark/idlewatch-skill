@@ -1655,7 +1655,7 @@ test('quickstart names the valid enrollment modes when non-interactive mode is i
   }
 })
 
-test('quickstart accepts cloud/local-only enrollment mode aliases in non-interactive mode', () => {
+test('quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-mode-aliases-'))
   try {
     const localRun = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
@@ -1682,7 +1682,7 @@ test('quickstart accepts cloud/local-only enrollment mode aliases in non-interac
         HOME: tempHome,
         PATH: process.env.PATH,
         IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
-        IDLEWATCH_ENROLL_MODE: 'cloud',
+        IDLEWATCH_ENROLL_MODE: 'cloud-only',
         IDLEWATCH_ENROLL_DEVICE_NAME: 'Alias Box',
         IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
         IDLEWATCH_CLOUD_API_KEY: 'iwk_12345678901234567890alias',

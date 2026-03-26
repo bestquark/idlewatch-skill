@@ -1,8 +1,37 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 12:31 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - current polish lane still closed after another narrow live re-check; no new small product-facing fix cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 12:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-interactive setup alias polish fix; lane still otherwise closed
+
+## Cycle R314 Status: COMPLETE ✅
+
+This pass stayed deliberately narrow and only touched one tiny setup/reconfigure paper cut that still cleared the bar in the live checkout.
+
+### Outcome
+- Closed one small non-interactive setup seam: `IDLEWATCH_ENROLL_MODE=cloud-only` now works the same way `local-only` already did.
+- This keeps the setup vocabulary neater and more symmetrical in automation, copy-paste docs, and shell env usage without adding a new concept or changing saved-config behavior.
+- Kept the working telemetry path untouched.
+- Kept launch-agent/install behavior, saved config handling, and existing cloud/local wording unchanged outside this alias normalization path.
+- The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L47 — non-interactive setup now accepts the symmetrical `cloud-only` alias
+**Why it matters:** The product already accepted `local-only`, but not the natural mirror term `cloud-only`. That is a tiny paper cut in the exact automation/setup surface where people copy env vars and expect simple symmetric wording.
+
+### Spot-check coverage for R314
+- [x] Invalid non-interactive enrollment mode still names the supported values cleanly
+- [x] `IDLEWATCH_ENROLL_MODE=local-only` still works
+- [x] `IDLEWATCH_ENROLL_MODE=cloud-only` now works
+- [x] Missing cloud API key path still keeps the same short actionable error
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart gives a calmer non-interactive error when cloud mode is missing an API key'`
+
+### Acceptance notes
+- Non-interactive setup now accepts the neat symmetric pair `local-only` / `cloud-only`.
+- This is low-risk setup polish only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
 
 ## Cycle R313 Status: COMPLETE ✅
 

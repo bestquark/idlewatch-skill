@@ -193,7 +193,7 @@ function normalizeEnrollmentMode(raw) {
   const value = String(raw || '').trim().toLowerCase()
   if (!value) return ''
 
-  if (['production', 'cloud', 'cloud-link', 'cloud_link'].includes(value)) {
+  if (['production', 'cloud', 'cloud-only', 'cloud_only', 'cloud-link', 'cloud_link'].includes(value)) {
     return 'production'
   }
 
