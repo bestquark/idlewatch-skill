@@ -340,9 +340,14 @@ function parseEnvValue(rawValue) {
   const value = String(rawValue || '').trim()
   if (!value) return ''
 
-  const quote = value[0]
-  if ((quote === '"' || quote === "'") && value.endsWith(quote) && value.length >= 2) {
-    return value.slice(1, -1)
+  const quotedWithCommentMatch = value.match(/^(['"])([\s\S]*)\1(?:\s+#.*)?$/)
+  if (quotedWithCommentMatch) {
+    return quotedWithCommentMatch[2]
+  }
+
+  const inlineCommentIndex = value.search(/\s+#/)
+  if (inlineCommentIndex >= 0) {
+    return value.slice(0, inlineCommentIndex).trim()
   }
 
   return value

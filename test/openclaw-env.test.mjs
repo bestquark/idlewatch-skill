@@ -1685,6 +1685,44 @@ test('configure accepts a saved config file that starts with a UTF-8 BOM', () =>
   }
 })
 
+test('configure accepts saved config values with trailing inline comments', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-inline-comment-env-'))
+  try {
+    const configDir = path.join(tempHome, '.idlewatch')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_ENROLL_MODE=local # keep local-only for now',
+      'IDLEWATCH_DEVICE_NAME="Comment Box" # renamed in Notes',
+      'IDLEWATCH_DEVICE_ID=comment-box # stable id',
+      'IDLEWATCH_MONITOR_TARGETS="cpu,memory" # defaults for this Mac',
+      `IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'comment-box-metrics.ndjson')}" # custom path`
+    ].join('\n') + '\n')
+
+    const configure = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Renamed Comment Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory,gpu'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(configure.status, 0, configure.stderr)
+    assert.match(configure.stdout, /✅ Settings saved for "Renamed Comment Box"\./)
+    assert.match(configure.stdout, /✓ Local telemetry verified\./)
+
+    const updatedEnv = fs.readFileSync(path.join(configDir, 'idlewatch.env'), 'utf8')
+    assert.match(updatedEnv, /IDLEWATCH_DEVICE_NAME=Renamed Comment Box/)
+    assert.match(updatedEnv, /IDLEWATCH_MONITOR_TARGETS=cpu,memory,gpu/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('configure reuses a saved cloud API key from export-prefixed quoted env lines', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-cloud-export-env-'))
   try {
@@ -2117,6 +2155,36 @@ test('status command accepts saved config lines prefixed with export', () => {
     assert.match(run.stdout, /Device:\s+Export Box/)
     assert.match(run.stdout, /Publish mode:\s+local-only/)
     assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command accepts saved config values with trailing inline comments', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-inline-comment-env-'))
+  try {
+    const configDir = path.join(tempDir, '.idlewatch')
+    fs.mkdirSync(path.join(configDir, 'logs'), { recursive: true })
+    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME="Comment Box" # hand-edited label',
+      'IDLEWATCH_ENROLL_MODE=local # keep local-only',
+      'IDLEWATCH_MONITOR_TARGETS="cpu,memory" # default pair',
+      `IDLEWATCH_LOCAL_LOG_PATH="${path.join(configDir, 'logs', 'comment-box-metrics.ndjson')}" # custom local log`
+    ].join('\n') + '\n')
+
+    fs.writeFileSync(path.join(configDir, 'logs', 'comment-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Device:\s+Comment Box/)
+    assert.match(run.stdout, /Publish mode:\s+local-only/)
+    assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
+    assert.match(run.stdout, /Local log:\s+.*comment-box-metrics\.ndjson/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

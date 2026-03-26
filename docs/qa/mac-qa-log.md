@@ -1,8 +1,36 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:10 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R229 shipped one tiny npx onboarding/docs reliability cleanup
+**Last updated:** Thursday, March 26th, 2026 — 3:18 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R230 shipped one tiny saved-config inline-comment parsing polish
+
+## Cycle R230 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny saved-config parsing reliability polish only, with no auth/ingest changes, no packaging changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- IdleWatch now accepts persisted `idlewatch.env` values with trailing inline comments, including quoted values like `IDLEWATCH_DEVICE_NAME="My Mac" # hand-edited note`.
+- That keeps `status` and `configure --no-tui` calm and reliable if a user lightly annotates the saved config instead of keeping it perfectly machine-only.
+- No auth, ingest, packaging, launch-agent, or telemetry behavior changed.
+
+### R230 implementation
+#### [x] L23 — Saved config parsing tolerates trailing inline comments
+- Taught both the CLI and enrollment saved-config parsers to ignore trailing inline comments on unquoted values.
+- Also taught quoted saved values to keep working when a trailing inline comment appears after the closing quote.
+- Kept the change scoped to persisted config parsing so runtime env handling and the working telemetry path stay untouched.
+- Added focused coverage for:
+  - `configure --no-tui` reusing and updating saved config lines with inline comments
+  - `status` reading saved config lines with inline comments
+  - Existing quoted/export/BOM saved-config behavior still passing alongside the new case
+
+### Spot-check coverage for R230
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'inline comments|UTF-8 BOM|prefixed with export|quoted saved config values like normal values'`
+
+### Acceptance notes
+- Hand-edited saved config stays forgiving instead of brittle.
+- Setup/reconfigure/status flows remain minimal and predictable.
+- The working telemetry path remains untouched.
 
 ## Cycle R229 Status: CLOSED ✅
 
