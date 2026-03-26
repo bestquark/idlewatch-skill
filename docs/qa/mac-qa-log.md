@@ -1,8 +1,87 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:38 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R286 re-checked the active polish lane; no new product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 9:52 AM (America/Toronto)  
+**Status:** ACTIVE ⚠️ - R287 found one small source-checkout command-shape consistency issue worth fixing
+
+## Cycle R287 Status: ACTIVE ⚠️
+
+This pass re-ran the active polish lane from the current checkout instead of relying on the stale cron payload path, with emphasis on setup/help scanability, config persistence + reload guidance, launch-agent install-before-setup behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Found one small but real polish seam worth fixing: source-checkout setup/help/install/status surfaces still mix `idlewatch ...` and `node bin/idlewatch-agent.js ...` in the same user-facing flow.
+- Everything else in this pass still reads calm and low-friction across clean-home `status`, install-before-setup, local-only `quickstart --no-tui`, rename + metric-toggle persistence, clean-home `--test-publish`, and `npm exec` durable-install guidance.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [ ] L37 — source-checkout setup/help/install/status flow still mixes two command shapes for the same next step
+**Why it matters:** This is small, but it hits exactly when someone is scanning for the next command to copy/paste. The current source-checkout flow already tries to present the calmer product-facing `idlewatch ...` command shape in help usage lines, then flips back to `node bin/idlewatch-agent.js ...` in nearby titles and next-step guidance. That back-and-forth adds a needless seam and makes the setup path feel slightly more technical than it needs to.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js configure --help`
+3. Observe mixed command shapes in the same help block:
+   - title line: `node bin/idlewatch-agent.js configure — Re-open setup`
+   - usage line: `Usage:  idlewatch configure --no-tui`
+4. `node bin/idlewatch-agent.js status --help`
+5. Observe the same mixed shape again:
+   - title line: `node bin/idlewatch-agent.js status — Show device config and background mode state`
+   - usage line: `Usage:  idlewatch status --no-tui`
+6. `TMPHOME=$(mktemp -d)`
+7. `FAKEBIN=$(mktemp -d)`
+8. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. Observe mixed next-step wording in one install handoff:
+    - `Save setup:   idlewatch quickstart --no-tui`
+    - `Run now:      node bin/idlewatch-agent.js run`
+    - `Then start:   node bin/idlewatch-agent.js install-agent`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. Observe mixed follow-up guidance again:
+    - `Change:   node bin/idlewatch-agent.js configure --no-tui`
+    - `Start:    node bin/idlewatch-agent.js install-agent`
+    while nearby help/setup surfaces already prefer the calmer `idlewatch ...` usage shape.
+
+**Acceptance criteria**
+- Source-checkout help titles, usage lines, and next-step handoffs should tell one consistent copy/paste story instead of mixing `idlewatch ...` and `node bin/idlewatch-agent.js ...` in the same product-facing moment.
+- Prefer the calmer product-shaped command style already used in the polished help usage lines, unless a surface truly must explain a source-checkout-only invocation detail.
+- Keep behavior unchanged: this is wording/command-handoff polish only.
+- Keep npm/npx durable-install guidance exactly as-is.
+
+### Spot-check coverage for R287
+- [x] Main `--help`
+- [x] `quickstart --help`
+- [x] `configure --help`
+- [x] `status --help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `--test-publish` in a clean HOME
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+
+### Acceptance notes
+- Config persistence, reload guidance, launch-agent behavior, local-only verify flow, device identity continuity, metric-toggle persistence, and npm/npx install-path clarity all still look good in this pass.
+- Only one issue cleared the bar, and it is presentation-only: source-checkout command-shape consistency during setup/help/install/status handoff.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R286 Status: COMPLETE ✅
 
