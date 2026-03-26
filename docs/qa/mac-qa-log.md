@@ -42,20 +42,21 @@ No confusing, repetitive, visually noisy, or unnecessarily technical copy surfac
 **Acceptance criteria**
 Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
 
-#### [ ] P2 — QA cron payload still points at stale workspace paths
+#### [x] P2 — QA/implementer cron payloads now point at the live checkout paths
 **Repro**
-1. Inspect the incoming QA cron payload for this cycle
-2. Observe that it references `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace/idlewatch-cron-polish-plan.md`
-3. Compare with the live checkout on disk: `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` and `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-cron-polish-plan.md`
+1. Inspect the IdleWatch installer implementer cron payload
+2. Inspect the IdleWatch installer QA cron payload
+3. Confirm both now reference `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+4. Confirm both now read the plan from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill/idlewatch-cron-polish-plan.md`
 
 **Observed**
-The QA pass still needs manual path discovery before any actual verification starts.
+Both cron jobs now start in the live checkout directly instead of forcing manual path discovery first.
 
 **Acceptance criteria**
-Update the cron payload to the live checkout path so future polish runs start directly in the correct repo and plan file.
+Keep both cron payloads aligned with the live checkout path so future polish runs start in the correct repo and plan file.
 
-**Last updated:** Thursday, March 26th, 2026 — 6:40 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - no new product-facing polish issue found; stale cron path still worth fixing operationally
+**Last updated:** Thursday, March 26th, 2026 — 6:52 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found; stale cron paths fixed operationally
 
 ## Cycle R366 Status: COMPLETE ✅
 
