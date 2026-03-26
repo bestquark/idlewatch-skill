@@ -959,7 +959,7 @@ test('reconfigure help stays clean in non-TTY mode', () => {
   assert.doesNotMatch(run.stdout, /Re-opens the setup wizard to change mode, API key, device name, or metrics\./)
 })
 
-test('status help matches the calmer saved-config refresh wording', () => {
+test('status help keeps the calmer background-mode wording and saved-config refresh hint', () => {
   const run = spawnSync(process.execPath, [BIN, 'status', '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
     encoding: 'utf8',
@@ -967,8 +967,10 @@ test('status help matches the calmer saved-config refresh wording', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Displays device config, publish mode, enabled metrics, last sample age,\nand background mode state\./)
   assert.match(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)
   assert.match(run.stdout, /If background mode is already enabled, re-run .* install-agent to refresh it with the saved config\./)
+  assert.doesNotMatch(run.stdout, /background LaunchAgent state\./)
   assert.doesNotMatch(run.stdout, /If the background agent is already running, re-run .* install-agent to restart it\./)
 })
 

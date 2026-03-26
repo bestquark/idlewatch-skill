@@ -986,7 +986,7 @@ If background mode is already enabled, re-run ${backgroundInstallCommand} to ref
 Usage:  ${statusCommand}
 
 Displays device config, publish mode, enabled metrics, last sample age,
-and background LaunchAgent state.
+and background mode state.
 Config changes saved by quickstart/configure apply on the next start.
 If background mode is already enabled, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics

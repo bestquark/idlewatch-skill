@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 11:18 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - R193 spot-check found no new product-facing polish issue
+**Last updated:** Wednesday, March 25th, 2026 — 11:29 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - R194 shipped one tiny status-help wording cleanup
+
+---
+
+## Cycle R194 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny status-help wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `status --help` no longer says `background LaunchAgent state` in its first summary line.
+- It now says:
+  - `background mode state`
+- This keeps the help text aligned with the calmer product framing already used across setup, install, uninstall, and saved-config refresh guidance, while leaving the underlying macOS LaunchAgent behavior unchanged and still visible in runtime status output.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R194 implementation
+#### [x] L59 — `status --help` now leads with background-mode wording instead of LaunchAgent wording
+- Reworded the `status --help` summary from `background LaunchAgent state` to `background mode state`.
+- Kept the actual runtime status output unchanged, so the macOS-specific LaunchAgent detail still appears where it matters.
+- Added regression coverage so help keeps the calmer wording and does not slip back to the older implementation-first phrasing.
+
+### Exact validation run
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'status help keeps the calmer background-mode wording and saved-config refresh hint|status command keeps running-agent apply hint aligned with saved-config wording'`
+- [x] `npm run validate:onboarding --silent`
+
+### Why it matters
+This is tiny, but it lands in a scan-first help moment. The CLI already mostly talks in product terms — background mode, saved config, optional cloud link — and this was one of the last little places where the help text still surfaced the macOS implementation detail before the user-facing behavior.
 
 ---
 
