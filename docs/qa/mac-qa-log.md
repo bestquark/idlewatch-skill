@@ -2,6 +2,60 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R362 Status: COMPLETE ✅
+
+This pass re-ran the exact requested installer/CLI polish lane from the live checkout and stayed disciplined about only logging something if it still felt genuinely confusing, verbose, repetitive, visually noisy, or unnecessarily technical for an end user.
+
+### Outcome
+- Re-ran the focused installer/CLI regression lane and it still passes cleanly: **88 passed, 0 failed**.
+- Fresh clean-home lifecycle spot checks still read like one neat product across first-run `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-configure `status`, runtime `uninstall-agent`, clean-home `--test-publish`, and `npm exec --yes -- idlewatch --help`.
+- The requested polish areas still hold up in this checkout: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity continuity, metric-toggle persistence, and npm/npx one-off-vs-durable-install clarity.
+- No new small, low-risk product-facing polish issue in the requested lane cleared the bar for a worthwhile change this cycle.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** The current setup/install/reconfigure/background-mode story is already on the right side of simple. Another micro-tweak here would be more likely to add churn than remove friction.
+
+**Verified**
+- Main help still keeps the happy path short and scan-friendly
+- First-run `status` still previews setup without implementation-detail sprawl
+- Install-before-setup still frames background mode as reversible and not yet running
+- `quickstart --no-tui` / `configure --no-tui` still keep the next step short and honest
+- Post-configure `status` still presents rename + stable device identity cleanly
+- Runtime `uninstall-agent` still stays calm about kept config/logs and the recovery command
+- `--test-publish` still stays short, explicit, and non-noisy on the happy path
+- `npx` guidance still clearly separates one-off use from the durable install path for background mode
+
+### Spot-check coverage for R362
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] Clean-home lifecycle spot check: `install-agent` → `quickstart --no-tui` → `configure --no-tui` → `status` → `uninstall-agent`
+- [x] Clean-home `--test-publish`
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **88 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+4. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+6. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+7. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+8. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+9. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+10. `PATH="$(mktemp -d):$PATH" HOME="$TMPHOME3" npm exec --yes -- idlewatch --help`
+11. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- No user-facing copy or behavior in the requested polish lane currently looks worth changing just to create motion.
+- The setup/install/reconfigure/background-mode story remains concise, low-friction, and consistent across source-checkout and `npx` surfaces.
+- If this cron lane keeps running, the highest-value housekeeping item is still outside product UX: update the scheduled repo path to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new worthwhile product-facing polish issue found in this pass
+
 ## Cycle R361 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and only shipped one low-risk validation-message polish fix that still helps in the setup automation lane.
