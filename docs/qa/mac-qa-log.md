@@ -2,6 +2,58 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R342 Status: COMPLETE ✅
+
+This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt genuinely user-facing, slightly confusing, visually noisy, repetitive, or more technical than the surrounding setup flow.
+
+### Outcome
+- Targeted installer/CLI regression coverage still passes cleanly: **87 passed, 0 failed**.
+- Fresh runtime spot checks still read like one calm product across main `--help`, install/uninstall/status help, first-run `status`, and clean-home `--test-publish`.
+- The recently polished nearby help surfaces (`run`, `create`, `dashboard`, `menubar`) still keep the calmer `idlewatch ...` command story.
+- The requested polish lanes still hold up in the live checkout: setup wizard quality, saved-config persistence/reload wording, launch-agent install/uninstall behavior, explicit test-publish messaging, device identity continuity, metric-toggle persistence, and the npm/npx one-off-vs-durable-install split.
+- No new small, low-risk product-facing issue in the requested lane cleared the bar for a worthwhile change in this cycle.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** This surface is already on the right side of simple. Forcing another tweak here would be more likely to add noise than remove it.
+
+**Verified**
+- Main help still keeps the happy path short and scannable
+- Install/uninstall/status help still stays calm and copy-pasteable
+- First-run `status` still previews setup without implementation-detail sprawl
+- `--test-publish` still stays short and explicit on the happy path
+- Nearby `run` / `create` / `dashboard` / `menubar` help still keeps the calmer command story
+- Saved device identity and metric selection still persist the way users expect
+- `npx` help still keeps one-off use explicit while reserving durable-install guidance for background mode
+
+### Spot-check coverage for R342
+- [x] Main `--help`
+- [x] `install-agent --help`
+- [x] `uninstall-agent --help`
+- [x] `status --help`
+- [x] First-run `status` in a clean HOME
+- [x] `--test-publish` in a clean HOME
+- [x] Targeted `openclaw-env` regression subset including `run` / `create` / `dashboard` / `menubar` help
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `node bin/idlewatch-agent.js install-agent --help`
+4. `node bin/idlewatch-agent.js uninstall-agent --help`
+5. `node bin/idlewatch-agent.js status --help`
+6. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+7. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+8. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- No confusing, repetitive, visually noisy, or unnecessarily technical new copy surfaced in this pass.
+- No auth, ingest, packaging, launch-agent, or telemetry-path redesign is justified by current evidence.
+- The main remaining seam in this cron lane is operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new worthwhile polish issue found in this pass
+
 ## Cycle R341 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and kept the same installer/CLI polish lane strict: only ship something if it removes a little product noise without changing setup, saved-config behavior, launch-agent behavior, or the now-working telemetry path.
