@@ -1314,7 +1314,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
       const installError = launchctlOutput(load) || 'unknown error'
       console.error('Background mode install failed.')
       if (alreadyLoaded && /bootstrap failed:\s*5\b|input\/output error/i.test(installError)) {
-        console.error('IdleWatch stopped the old background agent, but macOS did not finish reloading it in time.')
+        console.error('IdleWatch turned background mode back on, but macOS did not finish reloading it in time.')
         console.error(`Please wait a moment, then run: ${installAgentCommand}`)
       } else {
         console.error(installError)

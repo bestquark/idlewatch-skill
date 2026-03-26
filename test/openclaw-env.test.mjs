@@ -2750,3 +2750,69 @@ exit 7
     rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('install-agent reload timeout keeps the refresh failure wording on background mode', () => {
+  if (process.platform !== 'darwin') return
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-reload-timeout-home-'))
+  const fakeBin = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-reload-timeout-bin-'))
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), [
+      'IDLEWATCH_DEVICE_NAME=Refresh Box',
+      'IDLEWATCH_DEVICE_ID=refresh-box',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+      'IDLEWATCH_OPENCLAW_USAGE=off'
+    ].join('\n') + '\n')
+
+    fs.mkdirSync(path.join(tempHome, 'Library', 'LaunchAgents'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
+    fs.writeFileSync(path.join(tempHome, 'launchctl-state'), 'loaded\n')
+
+    fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+state_file="${tempHome}/launchctl-state"
+count_file="${tempHome}/launchctl-bootstrap-count"
+if [[ "\$cmd" == "print" ]]; then
+  if [[ -f "\$state_file" ]]; then
+    echo 'pid = 123'
+    exit 0
+  fi
+  exit 1
+fi
+if [[ "\$cmd" == "bootout" ]]; then
+  rm -f "\$state_file"
+  exit 0
+fi
+if [[ "\$cmd" == "enable" ]]; then
+  exit 0
+fi
+if [[ "\$cmd" == "bootstrap" ]]; then
+  count=0
+  if [[ -f "\$count_file" ]]; then
+    count=$(cat "\$count_file")
+  fi
+  count=$((count + 1))
+  printf '%s' "\$count" > "\$count_file"
+  echo 'bootstrap failed: 5: Input/output error' >&2
+  exit 5
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: { ...process.env, HOME: tempHome, PATH: `${fakeBin}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.notEqual(run.status, 0, 'install should fail when launchctl does not finish reloading')
+    assert.match(run.stderr, /IdleWatch turned background mode back on, but macOS did not finish reloading it in time\./)
+    assert.match(run.stderr, /Please wait a moment, then run: .* install-agent/)
+    assert.doesNotMatch(run.stderr, /old background agent/)
+  } finally {
+    rmSync(fakeBin, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})

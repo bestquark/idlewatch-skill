@@ -1,8 +1,33 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 7:52 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R273 found no new product-facing polish regressions
+**Last updated:** Thursday, March 26th, 2026 — 7:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R274 shipped one tiny installer wording polish fix
+
+## Cycle R274 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny: one user-facing installer refresh-failure wording polish fix plus regression coverage, with no auth, ingest, packaging, or telemetry-path changes.
+
+### Outcome
+- `install-agent` reload-time failures no longer fall back to the slightly older `old background agent` phrasing in the exact re-enable path where the rest of the CLI already says `background mode`.
+- The refresh-time retry hint stays short and useful: wait a moment, then run `install-agent` again.
+- Added regression coverage for the already-loaded `launchctl bootstrap failed: 5: Input/output error` path so this wording does not drift back.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L93 — install-agent reload-time failure now stays on `background mode` wording
+- **Why it matters:** This is a tiny paper cut, but it lands in a high-trust repair moment. Most of the installer flow now frames background startup as `background mode`; the reload-time failure branch briefly slipped back to `old background agent`, which felt more implementation-ish than the rest of the product.
+- **What shipped:**
+  - Reworded the reload-time failure line from:
+    - `IdleWatch stopped the old background agent, but macOS did not finish reloading it in time.`
+  - To:
+    - `IdleWatch turned background mode back on, but macOS did not finish reloading it in time.`
+  - Added regression coverage for the already-loaded refresh path that hits `bootstrap failed: 5: Input/output error`.
+
+### Spot-check coverage for R274
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent reload timeout keeps the refresh failure wording on background mode'`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent reports launchctl exit status when launchctl fails silently|install-agent reload timeout keeps the refresh failure wording on background mode'`
 
 ## Cycle R273 Status: COMPLETE ✅
 
