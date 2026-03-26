@@ -1139,6 +1139,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /✅ Background mode installed\./)
     assert.match(run.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart command')
@@ -1223,7 +1224,7 @@ test('install-agent does not claim background is running when launchd still repo
     })
 
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /✅ LaunchAgent installed\./)
+    assert.match(install.stdout, /✅ Background mode installed\./)
     assert.match(install.stdout, /Saved config is ready, but background collection is not loaded yet\./)
     assert.ok(install.stdout.includes(`Start:        ${SOURCE_CMD} install-agent`), 'should show a start hint for the current install path when the agent is installed but not loaded')
     assert.ok(!install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh re-enable')
@@ -1259,7 +1260,7 @@ test('install-agent refresh confirmation stays on background-mode wording', () =
     })
 
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /✅ LaunchAgent refreshed — IdleWatch is running in the background\./)
+    assert.match(install.stdout, /✅ Background mode refreshed — IdleWatch is running in the background\./)
     assert.match(install.stdout, /Background mode refreshed with the saved config\./)
     assert.doesNotMatch(install.stdout, /Existing background agent refreshed with the saved config\./)
     assert.doesNotMatch(install.stdout, /restarted with the latest config/)
@@ -2395,7 +2396,7 @@ exit 7
     })
 
     assert.notEqual(run.status, 0, 'install should fail when launchctl bootstrap fails')
-    assert.match(run.stderr, /LaunchAgent install failed\./)
+    assert.match(run.stderr, /Background mode install failed\./)
     assert.match(run.stderr, /launchctl exited with status 7/)
     assert.doesNotMatch(run.stderr, /unknown error/)
   } finally {

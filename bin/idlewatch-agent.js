@@ -1160,7 +1160,7 @@ const subcommandPromise = (async () => {
     }
 
     if (!shouldStartImmediately) {
-      console.log('✅ LaunchAgent installed.')
+      console.log('✅ Background mode installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
       console.log(`   Save setup:   ${quickstartCommand}`)
       console.log(`   Run now:      ${runCommand}`)
@@ -1178,12 +1178,12 @@ const subcommandPromise = (async () => {
       const backgroundAgentRunning = launchAgentState.state === 'running' || launchAgentState.state === 'loaded'
 
       if (backgroundAgentRunning) {
-        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
+        console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
         if (alreadyLoaded) {
           console.log('   Background mode refreshed with the saved config.')
         }
       } else {
-        console.log(`✅ LaunchAgent ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
+        console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
         console.log('   Saved config is ready, but background collection is not loaded yet.')
         console.log(`   Start:        ${installAgentCommand}`)
       }
@@ -1192,7 +1192,7 @@ const subcommandPromise = (async () => {
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
     } else {
       const installError = launchctlOutput(load) || 'unknown error'
-      console.error('LaunchAgent install failed.')
+      console.error('Background mode install failed.')
       if (alreadyLoaded && /bootstrap failed:\s*5\b|input\/output error/i.test(installError)) {
         console.error('IdleWatch stopped the old background agent, but macOS did not finish reloading it in time.')
         console.error(`Please wait a moment, then run: ${installAgentCommand}`)

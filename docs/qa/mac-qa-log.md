@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 3:42 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R236 found no new product-facing polish issue worth opening
+**Last updated:** Thursday, March 26th, 2026 — 3:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R237 shipped one tiny install-agent runtime copy cleanup
+
+## Cycle R237 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny `install-agent` runtime copy cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `install-agent` runtime success/failure copy no longer leads with raw `LaunchAgent ...` phrasing in the user-facing install moment.
+- The install/install-refresh headlines now stay aligned with the calmer product framing already used by help, status, setup, and uninstall:
+  - `✅ Background mode installed.`
+  - `✅ Background mode refreshed — IdleWatch is running in the background.`
+  - `Background mode install failed.`
+- Kept the actual launchctl behavior, saved-config handling, startup/install flow, and working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R237 implementation
+#### [x] L76 — `install-agent` runtime copy now says `background mode`, not `LaunchAgent`, in the main success/failure headlines
+- Reworded the install-before-setup success headline from `✅ LaunchAgent installed.` to `✅ Background mode installed.`
+- Reworded the running install/refresh success headline from `✅ LaunchAgent ...` to `✅ Background mode ...`.
+- Reworded the silent-launchctl failure headline from `LaunchAgent install failed.` to `Background mode install failed.` while keeping the surfaced launchctl status/error detail intact.
+- Added regression coverage so the calmer runtime wording sticks across install-before-setup, installed-but-not-loaded, refresh, and silent launchctl failure paths.
+
+### Spot-check coverage for R237
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'install-agent follow-up uses source checkout command path|install-agent does not claim background is running when launchd still reports not loaded|install-agent refresh confirmation stays on background-mode wording|install-agent reports launchctl exit status when launchctl fails silently'`
+- [x] `npm run validate:onboarding --silent`
+- [x] `npm test --silent`
+
+### Acceptance notes
+- `install-agent` now sounds like the product in the exact setup/start moment users see most.
+- This is output polish only; launch-agent behavior, saved-config handling, startup/install flow, and the working telemetry path remain unchanged.
 
 ## Cycle R236 Status: CLOSED ✅
 
