@@ -1,8 +1,33 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 4:45 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R245 shipped one small setup validation polish fix
+**Last updated:** Thursday, March 26th, 2026 — 4:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R246 shipped one small reconfigure recovery-copy polish fix
+
+## Cycle R246 Status: COMPLETE ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny reconfigure-lane recovery-copy improvement only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in configure/reconfigure failure recovery copy.
+- When `configure`/`reconfigure` saves settings but the verification publish fails, the redo guidance now keeps the user on `configure` instead of unnecessarily sending them back through `quickstart`.
+- This removes a little setup friction at exactly the moment a person is already retrying a fix.
+- Kept saved-config handling, install/reconfigure flow shape, startup/install quality of life, and the working telemetry path unchanged.
+- The cron payload path mismatch remains external to the product itself: this pass still used `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### R246 implementation
+#### [x] H81 — configure/reconfigure failure redo guidance now stays on `configure`
+- Changed failed verification copy from `Redo: ... quickstart` to `Redo: ... configure` when the active flow is `configure`/`reconfigure`.
+- Kept the existing one-shot retry guidance on `--once` / `--test-publish`.
+- Added regression coverage so reconfigure users are not routed back through the first-run command unnecessarily.
+
+### Spot-check coverage for R246
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart failure|configure failure keeps redo guidance)'`
+
+### Acceptance notes
+- Reconfigure recovery copy is now more direct and lower-friction.
+- The change is tiny, local to setup failure messaging, and does not affect saved config, runtime collection, or cloud publish behavior.
+- The working telemetry path remains untouched.
 
 ## Cycle R245 Status: COMPLETE ✅
 

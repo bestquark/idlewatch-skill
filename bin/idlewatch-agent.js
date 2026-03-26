@@ -1356,7 +1356,7 @@ ${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
       console.error(`     • Check your API key is valid at idlewatch.com/api`)
       console.error(`     • Verify internet connectivity`)
       console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
-      console.error(`   Redo:   ${preferredSetupCommand('quickstart')}`)
+      console.error(`   Redo:   ${preferredSetupCommand(isReconfigure ? 'configure' : 'quickstart')}`)
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {

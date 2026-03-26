@@ -644,6 +644,58 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
   }
 })
 
+test('configure failure keeps redo guidance on configure instead of sending people back through quickstart', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-retry-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-retry-root-'))
+  const rejectServer = path.join(tempRoot, 'reject-server.mjs')
+  const port = 47933
+
+  fs.writeFileSync(rejectServer, `
+    import http from 'node:http'
+    const port = Number(process.argv[2])
+    const server = http.createServer((req, res) => {
+      req.resume()
+      req.on('end', () => {
+        res.writeHead(401, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ error: 'invalid_api_key' }))
+      })
+    })
+    server.listen(port, '127.0.0.1')
+  `)
+
+  const serverProc = spawn(process.execPath, [rejectServer, String(port)], {
+    stdio: 'ignore'
+  })
+  sleep(150)
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'configure'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'production',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Retry Box',
+        IDLEWATCH_CLOUD_API_KEY: 'iwk_abcdefghijklmnopqrstuvwxyz123456',
+        IDLEWATCH_CLOUD_INGEST_URL: `http://127.0.0.1:${port}/api/ingest`,
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8'
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
+    assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should keep the one-shot retry command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} configure --no-tui`), 'should keep redo guidance on configure')
+    assert.doesNotMatch(run.stderr, /Redo:\s+.*quickstart/, 'should not send reconfigure users back through quickstart')
+  } finally {
+    serverProc.kill('SIGTERM')
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 test('accepts OpenClaw JSON from stderr payload on non-zero-exit command', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-openclaw-stderr-'))
   const mockBin = path.join(tempDir, 'openclaw-mock.sh')
