@@ -1,8 +1,98 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:41 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R168 found no new end-user polish issue worth opening
+**Last updated:** Wednesday, March 25th, 2026 — 8:58 PM (America/Toronto)  
+**Status:** OPEN ⚠️ - R169 found one docs-path clarity issue worth fixing
+
+---
+
+## Cycle R169 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Core installer/CLI flow still feels calm in the main user-facing paths: first-run help, local-only quickstart, install-before-setup, saved-config reconfigure, device-ID continuity, metric toggle persistence, and `npx` refusal for background mode.
+- One docs-path seam still cleared the bar for an issue: the repo's own `skill/SKILL.md` install/run examples are now out of sync with the polished product path shown by `README.md`, `package.json`, and runtime help.
+- This is narrow and fixable as docs/copy only. No auth, ingest, packaging, or background-agent redesign is recommended.
+
+### R169 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- [x] Clean-HOME `install-agent` before setup
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Non-interactive `configure --no-tui` rename + metric toggle persistence
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] `README.md` install/background docs review
+- [x] `skill/SKILL.md` install/run docs review
+
+### Prioritized findings
+
+#### [ ] M8 — `skill/SKILL.md` still advertises the wrong npm/npx command path and an outdated Firestore-first product story
+**Why it matters:** The main CLI and README now tell a neat story: package name `idlewatch`, foreground trial via `npx idlewatch ...`, durable install via `npm install -g idlewatch`, then `idlewatch install-agent` for background mode. But the repo's own skill-facing doc still says `npx idlewatch-skill --help`, `idlewatch-agent`, and frames the product around Firebase/Firestore instead of the calmer local-first / optional cloud-link shape. That reintroduces exactly the install-path confusion the rest of the polish work has been removing.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Compare the package + main docs + runtime help:
+   ```bash
+   cat package.json | sed -n '1,80p'
+   sed -n '1,80p' README.md
+   npm exec --yes -- idlewatch --help
+   ```
+3. Then inspect the skill doc:
+   ```bash
+   sed -n '1,120p' skill/SKILL.md
+   ```
+
+**Observed**
+- `package.json` publishes package name `idlewatch` and exposes `idlewatch` / `idlewatch-agent` bins.
+- `README.md` correctly teaches:
+  - `npm install -g idlewatch`
+  - `npx idlewatch quickstart`
+  - `idlewatch install-agent`
+- Runtime help matches that shape.
+- But `skill/SKILL.md` still says:
+  - `npx idlewatch-skill --help`
+  - `idlewatch-agent`
+  - `Dry-run once (no Firestore write)`
+  - description: `stream to Firebase Firestore`
+
+**Why this feels off**
+- It creates two product stories inside one repo.
+- `idlewatch-skill` is the wrong package name, so a copy-paste install attempt from that doc is likely to fail or at least send the user down the wrong path.
+- The Firestore-first wording makes the product feel more technical and less polished than the actual setup flow now is.
+- This is especially avoidable because the main README/help are already cleaner.
+
+**Acceptance criteria**
+- `skill/SKILL.md` should use the same install/run path as the current package/help:
+  - `npx idlewatch ...` for one-off usage
+  - `npm install -g idlewatch` for durable install
+  - `idlewatch install-agent` for background mode where relevant
+- Prefer `idlewatch` as the primary command name; only mention `idlewatch-agent` if there is a deliberate compatibility reason.
+- Remove or soften outdated Firestore-first wording so the doc matches the current local-first / optional cloud-link mental model.
+- Keep the doc short, calm, and copy-paste correct.
+
+### Acceptance notes
+- Main help, README install guidance, `npx` refusal for background mode, install-before-setup behavior, rename continuity, and metric persistence still look good from this pass.
+- The issue found here is doc drift, not runtime behavior drift.
+- The stale cron payload path remains external to the product itself: this pass again had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+4. `TMP_HOME=$(mktemp -d) && HOME="$TMP_HOME" node bin/idlewatch-agent.js install-agent`
+5. `TMP_HOME=$(mktemp -d) && HOME="$TMP_HOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Mac Mini Alpha' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu,temperature' node bin/idlewatch-agent.js quickstart --no-tui`
+6. `TMP_HOME=$(mktemp -d) && HOME="$TMP_HOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='Mac Mini Alpha' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu,temperature' node bin/idlewatch-agent.js quickstart --no-tui >/dev/null && HOME="$TMP_HOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Mac Mini Beta' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js configure --no-tui`
+7. `npm exec --yes -- idlewatch --help`
+8. `npm exec --yes -- idlewatch install-agent`
+9. `sed -n '1,80p' README.md`
+10. `sed -n '1,120p' skill/SKILL.md`
+11. `cat package.json | sed -n '1,80p'`
+
+### Notes
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 
