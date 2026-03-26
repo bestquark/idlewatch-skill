@@ -1759,20 +1759,23 @@ if (statusRequested) {
   const envFile = defaultPersistedEnvFilePath()
   const hasConfig = fs.existsSync(envFile)
   const publishMode = getPublishModeLabel()
+  const printStatusField = (label, value) => {
+    console.log(`  ${(label + ':').padEnd(19)}${value}`)
+  }
 
   console.log('IdleWatch status')
   console.log('')
   if (!hasConfig) {
-    console.log('  Setup:        not completed yet')
+    printStatusField('Setup', 'not completed yet')
   }
-  console.log(`  ${hasConfig ? 'Device:' : 'Device preview:'} ${DEVICE_NAME}`)
+  printStatusField(hasConfig ? 'Device' : 'Device preview', DEVICE_NAME)
   if (hasConfig && deviceIdentityPreservedAcrossRename(DEVICE_NAME, DEVICE_ID)) {
-    console.log(`  Device ID:    ${DEVICE_ID} (kept from original setup for continuity)`)
+    printStatusField('Device ID', `${DEVICE_ID} (kept from original setup for continuity)`)
   }
-  console.log(`  ${hasConfig ? 'Publish mode:' : 'Publish preview:'} ${publishMode}`)
+  printStatusField(hasConfig ? 'Publish mode' : 'Publish preview', publishMode)
   if (hasCloudConfig) {
-    console.log(`  Cloud link:   ${CLOUD_INGEST_URL}`)
-    console.log(`  API key:      ${CLOUD_API_KEY.slice(0, 8)}..${CLOUD_API_KEY.slice(-4)}`)
+    printStatusField('Cloud link', CLOUD_INGEST_URL)
+    printStatusField('API key', `${CLOUD_API_KEY.slice(0, 8)}..${CLOUD_API_KEY.slice(-4)}`)
   }
   const friendlyMetricLabels = {
     cpu: 'CPU',
@@ -1786,34 +1789,34 @@ if (statusRequested) {
   }
   const metricLabels = [...MONITOR_TARGETS].map((t) => friendlyMetricLabels[t] || t)
   if (hasConfig) {
-    console.log(`  Metrics:      ${metricLabels.join(', ')}`)
+    printStatusField('Metrics', metricLabels.join(', '))
   } else {
     const defaultMetricPreview = ['CPU', 'Memory', 'GPU', 'Temperature']
     const extraPreview = ['OpenClaw activity', 'OpenClaw tokens', 'OpenClaw runtime', 'Provider quota']
       .filter((label) => metricLabels.includes(label))
-    console.log(`  Default metrics: ${defaultMetricPreview.join(', ')}`)
+    printStatusField('Default metrics', defaultMetricPreview.join(', '))
     if (extraPreview.length > 0) {
-      console.log(`  Extras available: ${extraPreview.join(', ')}`)
+      printStatusField('Extras available', extraPreview.join(', '))
     }
   }
-  console.log(`  ${hasConfig ? 'Local log:' : 'Local log preview:'} ${LOCAL_LOG_PATH || '(none)'}`)
-  console.log(`  Config:       ${hasConfig ? envFile : `${envFile} (not saved yet)`}`)
+  printStatusField(hasConfig ? 'Local log' : 'Local log preview', LOCAL_LOG_PATH || '(none)')
+  printStatusField('Config', hasConfig ? envFile : `${envFile} (not saved yet)`)
 
   // LaunchAgent state
   if (process.platform === 'darwin') {
     const launchAgent = probeOwnedLaunchAgentState()
     if (launchAgent.state === 'running') {
-      console.log(`  Background:   running in background (pid ${launchAgent.pid})`)
+      printStatusField('Background', `running in background (pid ${launchAgent.pid})`)
     } else if (launchAgent.state === 'loaded') {
-      console.log('  Background:   on (waiting for next check)')
+      printStatusField('Background', 'on (waiting for next check)')
     } else if (launchAgent.state === 'installed-not-loaded') {
       if (hasConfig) {
-        console.log('  Background:   installed but not running')
+        printStatusField('Background', 'installed but not running')
       } else {
-        console.log('  Background:   waiting for setup')
+        printStatusField('Background', 'waiting for setup')
       }
     } else {
-      console.log('  Background:   off')
+      printStatusField('Background', 'off')
     }
   }
 
@@ -1822,22 +1825,22 @@ if (statusRequested) {
     if (quotaCache?.providerConnections?.length) {
       const ageMs = quotaCache.updatedAtMs ? Math.max(0, Date.now() - quotaCache.updatedAtMs) : null
       const ageLabel = Number.isFinite(ageMs) ? `${Math.round(ageMs / 60000)}m ago` : 'unknown'
-      console.log(`  Provider sync: ${quotaCache.providerConnections.length} provider${quotaCache.providerConnections.length === 1 ? '' : 's'} • ${ageLabel}`)
+      printStatusField('Provider sync', `${quotaCache.providerConnections.length} provider${quotaCache.providerConnections.length === 1 ? '' : 's'} • ${ageLabel}`)
       quotaCache.providerConnections.forEach((providerConnection) => {
         console.log(`    - ${formatProviderConnectionSummaryLine(providerConnection)}`)
       })
     } else {
-      console.log('  Provider sync: waiting for first provider status')
+      printStatusField('Provider sync', 'waiting for first provider status')
     }
     if (quotaCache?.providerQuotas?.length) {
       const ageMs = quotaCache.updatedAtMs ? Math.max(0, Date.now() - quotaCache.updatedAtMs) : null
       const ageLabel = Number.isFinite(ageMs) ? `${Math.round(ageMs / 60000)}m ago` : 'unknown'
-      console.log(`  Quota cache:  ${quotaCache.providerQuotas.length} provider${quotaCache.providerQuotas.length === 1 ? '' : 's'} • ${ageLabel}`)
+      printStatusField('Quota cache', `${quotaCache.providerQuotas.length} provider${quotaCache.providerQuotas.length === 1 ? '' : 's'} • ${ageLabel}`)
       quotaCache.providerQuotas.forEach((providerQuota) => {
         console.log(`    - ${formatProviderQuotaSummaryLine(providerQuota)}`)
       })
     } else {
-      console.log('  Quota cache:  waiting for first provider snapshot')
+      printStatusField('Quota cache', 'waiting for first provider snapshot')
     }
   }
 
@@ -1851,20 +1854,20 @@ if (statusRequested) {
       const logLabel = rotatedBytes > 0
         ? `${formatBytes(activeBytes)} (+ ${formatBytes(rotatedBytes)} rotated)`
         : formatBytes(activeBytes)
-      console.log(`  Log size:     ${logLabel}`)
+      printStatusField('Log size', logLabel)
       const rows = parseLocalRows(LOCAL_LOG_PATH, 1)
       if (rows.length > 0 && rows[0].ts) {
         hasSamples = true
         const ageMs = Date.now() - Number(rows[0].ts)
         const ageSec = Math.round(ageMs / 1000)
         const agoText = ageSec < 60 ? `${ageSec}s ago` : ageSec < 3600 ? `${Math.round(ageSec / 60)}m ago` : ageSec < 86400 ? `${Math.round(ageSec / 3600)}h ago` : `${Math.round(ageSec / 86400)}d ago`
-        console.log(`  Last sample:  ${agoText}`)
+        printStatusField('Last sample', agoText)
       } else {
-        console.log('  Last sample:  (none yet)')
+        printStatusField('Last sample', '(none yet)')
       }
     } catch { /* ignore stat errors */ }
   } else if (hasConfig) {
-    console.log('  Last sample:  (none yet)')
+    printStatusField('Last sample', '(none yet)')
   }
 
   // Hint if device name looks like a placeholder

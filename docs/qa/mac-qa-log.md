@@ -12518,3 +12518,26 @@ This pass stayed intentionally tiny: one packaged-installer wording polish fix p
 **What shipped**
 - Reworded `docs/packaging/macos-launch-agent.md` from `refresh the background agent with the saved config` to `refresh background mode with the saved config`.
 - Left the actual LaunchAgent/install semantics unchanged.
+
+## Cycle R114 Status: CLOSED
+
+This pass stayed intentionally tiny: one scan-first `status` layout polish fix, with no setup-flow, saved-config, auth, ingest, or packaging behavior changes.
+
+### Outcome
+- `idlewatch status` now prints its field labels with consistent padding, including the first-run preview rows.
+- That makes setup/reconfigure checks a little calmer to scan: `Default metrics`, `Extras available`, `Local log preview`, and the background-state lines now line up with the rest of the status surface instead of looking slightly jagged.
+- Telemetry behavior, saved-config loading, and background-mode behavior are unchanged.
+
+### R114 spot-check coverage
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='first-run status keeps the metric preview lightweight|status stays honest after install-agent without saved config|status command keeps running-agent apply hint aligned with saved-config wording|status command says background is on while waiting for the next check when launchd has it loaded|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded'`
+
+### Prioritized findings
+
+#### [x] L25 — first-run `status` preview rows now align cleanly with the rest of the status surface
+**Why it matters:** This is tiny, but it lands exactly where cautious users pause during setup and reconfigure. The status screen had already become calmer and more product-shaped; a few remaining unaligned preview rows (`Default metrics`, `Extras available`, `Local log preview`) made the first-run surface feel just a bit rougher than the saved-config path.
+
+**What shipped**
+- Introduced a tiny shared status-field printer for the `status` surface so labels pad consistently.
+- Applied it to first-run preview rows and existing background/sample lines without changing the underlying content.
+- Added regression coverage so these scan-first status states stay aligned while preserving the current wording and behavior.

@@ -1564,6 +1564,8 @@ test('first-run status keeps the metric preview lightweight', () => {
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Default metrics:\s+CPU, Memory, GPU, Temperature/)
     assert.match(run.stdout, /Extras available:\s+OpenClaw activity, OpenClaw tokens, OpenClaw runtime/)
+    assert.match(run.stdout, /^  Default metrics:\s{3}CPU, Memory, GPU, Temperature$/m)
+    assert.match(run.stdout, /^  Extras available:\s+OpenClaw activity, OpenClaw tokens, OpenClaw runtime$/m)
     assert.doesNotMatch(run.stdout, /Metrics preview:/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
@@ -2633,7 +2635,7 @@ exit 0
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.ok(run.stdout.includes('Background:   running in background (pid 4242)'), 'should report the running background state')
+    assert.match(run.stdout, /Background:\s+running in background \(pid 4242\)/, 'should report the running background state')
     assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the running-agent apply hint on the calmer product command in source checkouts')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
   } finally {
@@ -2680,7 +2682,7 @@ exit 0
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.ok(run.stdout.includes('Background:   on (waiting for next check)'), 'should describe the loaded-but-idle background state in plain language')
+    assert.match(run.stdout, /Background:\s+on \(waiting for next check\)/, 'should describe the loaded-but-idle background state in plain language')
     assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the apply hint on the calmer product command for the loaded background state in source checkouts')
     assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
@@ -2722,7 +2724,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('(none yet)'), 'should still show no samples yet')
-    assert.ok(run.stdout.includes('Background:   installed but not running'), 'should report the installed-not-loaded state')
+    assert.match(run.stdout, /Background:\s+installed but not running/, 'should report the installed-not-loaded state')
     assert.ok(run.stdout.includes('Start:    idlewatch install-agent'), 'should keep the start hint on the calmer product command for the saved background agent in source checkouts')
     assert.ok(!run.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh enable')
     assert.ok(!run.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not look like a first-time install path')
