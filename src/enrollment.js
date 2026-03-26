@@ -189,6 +189,21 @@ function normalizeCloudApiKey(raw) {
   return trimmed.replace(/^['"]|['"]$/g, '')
 }
 
+function normalizeEnrollmentMode(raw) {
+  const value = String(raw || '').trim().toLowerCase()
+  if (!value) return ''
+
+  if (['production', 'cloud', 'cloud-link', 'cloud_link'].includes(value)) {
+    return 'production'
+  }
+
+  if (['local', 'local-only', 'local_only'].includes(value)) {
+    return 'local'
+  }
+
+  return value
+}
+
 function looksLikeCloudApiKey(value) {
   return /^iwk_[A-Za-z0-9_-]{20,}$/.test(String(value || '').trim())
 }
@@ -417,9 +432,9 @@ export async function runEnrollmentWizard(options = {}) {
     existingConfig = parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName: machineName() })
   }
 
-  let mode = options.mode || process.env.IDLEWATCH_ENROLL_MODE || null
+  let mode = normalizeEnrollmentMode(options.mode || process.env.IDLEWATCH_ENROLL_MODE || null)
   if (!mode && nonInteractive && existingConfig?.mode) {
-    mode = existingConfig.mode
+    mode = normalizeEnrollmentMode(existingConfig.mode)
   }
   let cloudApiKey = normalizeCloudApiKey(options.cloudApiKey || process.env.IDLEWATCH_CLOUD_API_KEY || null)
   let cloudIngestUrl = options.cloudIngestUrl || process.env.IDLEWATCH_CLOUD_INGEST_URL || 'https://api.idlewatch.com/api/ingest'
@@ -484,7 +499,7 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (!mode) mode = 'production'
   if (!['production', 'local'].includes(mode)) {
-    throw new Error(`Invalid enrollment mode: ${mode}. Choose "production" (cloud) or "local" (local-only).`)
+    throw new Error(`Invalid enrollment mode: ${mode}. Choose "cloud" or "local-only".`)
   }
 
   if ((mode === 'production') && !cloudApiKey) {

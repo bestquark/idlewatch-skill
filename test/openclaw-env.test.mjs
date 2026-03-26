@@ -1648,8 +1648,57 @@ test('quickstart names the valid enrollment modes when non-interactive mode is i
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Invalid enrollment mode: cloudy\./)
-    assert.match(run.stderr, /Choose "production" \(cloud\) or "local" \(local-only\)\./)
+    assert.match(run.stderr, /Choose "cloud" or "local-only"\./)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('quickstart accepts cloud/local-only enrollment mode aliases in non-interactive mode', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-mode-aliases-'))
+  try {
+    const localRun = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local-only',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Alias Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(localRun.status, 0, localRun.stderr)
+    assert.match(localRun.stdout, /✅ Setup complete for "Alias Box"\./)
+    assert.match(localRun.stdout, /Mode:\s+local-only/)
+
+    const cloudRun = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'cloud',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Alias Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_CLOUD_API_KEY: 'iwk_12345678901234567890alias',
+        IDLEWATCH_CLOUD_INGEST_URL: 'https://example.com/api/ingest'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.notEqual(cloudRun.status, 0)
+    assert.doesNotMatch(cloudRun.stderr, /Invalid enrollment mode:/)
+    assert.match(cloudRun.stderr, /Setup saved, but the test sample failed to publish\./)
+
+    const saved = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(saved, /IDLEWATCH_CLOUD_API_KEY=iwk_12345678901234567890alias/)
+    assert.match(saved, /IDLEWATCH_REQUIRE_CLOUD_WRITES=1/)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }
