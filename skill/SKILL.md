@@ -39,7 +39,7 @@ idlewatch install-agent   # enable background mode on macOS
 - Cloud publishing is optional
 - Re-open setup later with `idlewatch configure`
 - Saved changes apply on the next start
-- If background mode is already enabled, re-run `idlewatch install-agent` to refresh it with the saved config
+- If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config
 
 ## Environment
 

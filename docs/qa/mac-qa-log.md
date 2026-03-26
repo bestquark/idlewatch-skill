@@ -1,8 +1,38 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 8:20 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R276 shipped one tiny setup/help reliability polish fix
+**Last updated:** Thursday, March 26th, 2026 — 8:17 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R277 shipped one tiny setup/reconfigure docs consistency polish fix
+
+## Cycle R277 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and product-facing: one low-risk docs consistency polish only, with no auth/ingest redesign, no packaging rewrite, no launch-agent behavior change, and no telemetry-path change.
+
+### Outcome
+- Shipped one small, low-risk polish improvement in the setup/reconfigure guidance people scan first in docs.
+- `README.md` and `skill/SKILL.md` no longer fall back to the slightly more toggle-ish `already enabled` wording in their saved-config refresh hint.
+- Those docs now match the calmer product wording already used by current CLI help and status surfaces:
+  - `If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config.`
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, startup/install quality of life, and the working telemetry path unchanged.
+
+### Prioritized findings
+
+#### [x] L95 — README and skill docs now say `already on`, not `already enabled`, in the saved-config refresh hint
+- **Why it matters:** This is tiny, but it sits in exactly the scan-first setup/reconfigure moment where people compare README, skill docs, and CLI help. The product had already converged on `already on`; leaving docs on `already enabled` reintroduced a small wording wobble for no gain.
+- **What shipped:**
+  - Reworded the saved-config refresh hint in `README.md` from `already enabled` to `already on`.
+  - Reworded the same hint in `skill/SKILL.md` so external usage guidance matches README and CLI help.
+  - Avoided any auth, telemetry, packaging, install, or launch-agent changes.
+
+### Spot-check coverage for R277
+- [x] `grep -n "already on\|already enabled" README.md skill/SKILL.md`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node bin/idlewatch-agent.js status --help`
+
+### Acceptance notes
+- README, skill docs, and current CLI help now tell the same calmer saved-config refresh story.
+- This is docs consistency polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R276 Status: COMPLETE ✅
 

@@ -34,7 +34,7 @@ To change settings later, run:
 idlewatch configure
 ```
 
-Saved changes apply on the next start. If background mode is already enabled, re-run `idlewatch install-agent` to refresh it with the saved config.
+Saved changes apply on the next start. If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config.
 
 Use `--no-tui` for plain-text prompts if the TUI isn't available.
 
