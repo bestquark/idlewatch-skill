@@ -1,8 +1,70 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 9:26 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R285 re-checked the active polish lane; no new product-facing issues cleared the bar
+**Last updated:** Thursday, March 26th, 2026 — 9:38 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - R286 re-checked the active polish lane; no new product-facing issues cleared the bar
+
+## Cycle R286 Status: COMPLETE ✅
+
+This pass re-ran the active polish lane from the current checkout instead of relying on the cron payload path: setup/help scanability, clean-home `status`, install-before-setup behavior, local-only text setup, saved-config follow-up guidance, clean-home `--test-publish`, and the current source-checkout command handoff shape.
+
+### Outcome
+- No new confusing, repetitive, overly technical, or unnecessarily step-heavy product-facing issue cleared the bar for an implementation ticket in this pass.
+- Fresh spot checks still read like one calm product across main help, `quickstart --help`, `configure --help`, `reconfigure --help`, `status --help`, clean-home `status`, install-before-setup, local-only non-interactive `quickstart --no-tui`, post-setup `status`, and clean-home `--test-publish`.
+- The working telemetry path remains intact and untouched.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+- None. No product-facing polish regression was worth opening from this cycle.
+
+### Spot-check coverage for R286
+- [x] Main `--help`
+- [x] `quickstart --help`
+- [x] `configure --help`
+- [x] `reconfigure --help`
+- [x] `status --help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `--test-publish` in a clean HOME
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `node bin/idlewatch-agent.js quickstart --help`
+4. `node bin/idlewatch-agent.js configure --help`
+5. `node bin/idlewatch-agent.js reconfigure --help`
+6. `node bin/idlewatch-agent.js status --help`
+7. `TMPHOME=$(mktemp -d)`
+8. `FAKEBIN=$(mktemp -d)`
+9. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+10. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+
+### Acceptance notes
+- Setup/install/background guidance still keeps one-off runs and durable background mode clearly separated without extra theory.
+- Help/status/setup surfaces still keep the calmer local-first / optional-cloud framing.
+- Install-before-setup and installed-but-not-running states still stay honest and low-friction.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R285 Status: COMPLETE ✅
 
