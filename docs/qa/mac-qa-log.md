@@ -14539,3 +14539,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Any other answer now stays in the prompt loop and shows:
   - `Choose 1 for Cloud link or 2 for Local-only.`
 - Added regression coverage for the mode resolver so this setup-choice seam stays explicit and predictable.
+## Cycle R116 Status: CLOSED
+
+### Outcome
+- Non-interactive setup metric validation now keeps the last odd internal token a little calmer.
+- When `provider_quota` is unavailable, the error now says `provider quota (provider_quota)` instead of only the raw underscored id.
+- This keeps setup/reconfigure validation a bit more human-readable without hiding the exact token people may need for automation.
+- The working telemetry path remains untouched.
+
+### R116 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern '^quickstart names requested metrics that are unavailable on this machine$'`
+- [x] `HOME="$(mktemp -d)" PATH='/usr/bin:/bin' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='provider_quota' /opt/homebrew/bin/node bin/idlewatch-agent.js quickstart --no-tui`
+
+### Prioritized findings
+
+#### [x] L27 — unavailable metric validation no longer leaves `provider_quota` as a bare internal-looking token
+**Why it matters:** This is tiny, but it lands in a setup validation moment where the product should feel calm and obvious. Most metric names already read cleanly enough. `provider_quota` was the one remaining validation surface that still looked more like an implementation detail than a product option.
+
+**What shipped**
+- Reused the existing friendly metric-label formatter in the `Not available here:` validation hint.
+- `provider_quota` now renders as `provider quota (provider_quota)` in that error path.
+- Kept the exact token visible for copy/paste and automation, while making the human-facing phrasing less abrupt.

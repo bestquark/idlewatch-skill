@@ -136,7 +136,9 @@ function preferredMonitorTargetChoices(available) {
 
 function formatMonitorTargetChoice(choice) {
   const label = FRIENDLY_MONITOR_TARGET_LABELS[choice] || choice
-  return label.toLowerCase() === choice.toLowerCase() ? choice : `${choice} (${label})`
+  if (label.toLowerCase() === choice.toLowerCase()) return choice
+  if (choice.includes('_')) return `${label.toLowerCase()} (${choice})`
+  return `${choice} (${label})`
 }
 
 function ensureMonitorTargetsOrThrow(raw, available) {
@@ -169,7 +171,7 @@ function ensureMonitorTargetsOrThrow(raw, available) {
     ? ` Unknown: ${invalidRequested.join(', ')}.`
     : ''
   const unavailableHint = unavailableRequested.length > 0
-    ? ` Not available here: ${unavailableRequested.join(', ')}.`
+    ? ` Not available here: ${unavailableRequested.map((item) => formatMonitorTargetChoice(item)).join(', ')}.`
     : ''
   throw new Error(`No valid metrics were selected.${invalidHint}${unavailableHint} Choose one or more of: ${availableList}.`)
 }

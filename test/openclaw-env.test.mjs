@@ -1648,8 +1648,9 @@ test('quickstart names requested metrics that are unavailable on this machine', 
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /No valid metrics were selected\./)
-    assert.match(run.stderr, /Not available here: provider_quota\./)
+    assert.match(run.stderr, /Not available here: provider quota \(provider_quota\)\./)
     assert.match(run.stderr, /Choose one or more of:/)
+    assert.doesNotMatch(run.stderr, /Choose one or more of: .*provider_quota \(Provider quota\)/)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
