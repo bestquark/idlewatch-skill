@@ -1,8 +1,35 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 10:20 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R292 spot-checked the active polish lane again and found no new product-facing issues worth opening
+**Last updated:** Thursday, March 26th, 2026 — 10:35 AM (America/Toronto)  
+**Status:** CLOSED ✅ - R293 shipped one last tiny packaged-install wording cleanup; no broader product-facing issues remain open
+
+## Cycle R293 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and low-risk: one packaged macOS install-script wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Closed one last small wording seam in the packaged macOS install-before-setup handoff.
+- `scripts/install-macos-launch-agent.sh` no longer says `background collection stays off for now` in the no-saved-setup branch.
+- That line now matches the calmer product framing already used across CLI help, status, setup, install, and uninstall surfaces:
+  - `Setup is not finished yet, so background mode stays off for now.`
+- Added regression coverage so the packaged no-setup handoff stays on `background mode` wording.
+- Kept packaged install behavior, saved-config handling, startup/install quality of life, and the working telemetry path unchanged.
+- The stale cron payload path remains external to the product itself: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [x] L41 — packaged macOS install-before-setup handoff now says `background mode`, not `background collection`
+**What shipped**
+- Reworded the packaged install script’s no-setup line from `Setup is not finished yet, so background collection stays off for now.` to `Setup is not finished yet, so background mode stays off for now.`
+- Updated the packaged-script regression test to lock this calmer wording in place.
+
+### Spot-check coverage for R293
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+
+### Acceptance notes
+- The packaged install-before-setup handoff now stays on the same calmer `background mode` story as the rest of the product.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the working telemetry path remain unchanged.
 
 ## Cycle R292 Status: COMPLETE ✅
 

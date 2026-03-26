@@ -108,7 +108,7 @@ test('packaged macOS install script keeps the no-setup status hint config-first'
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /Setup is not finished yet, so background collection stays off for now\./)
+    assert.match(install.stdout, /Setup is not finished yet, so background mode stays off for now\./)
     assert.match(install.stdout, /\bidlewatch quickstart --no-tui\b/)
     assert.match(install.stdout, /quickstart --no-tui/)
     assert.doesNotMatch(install.stdout, /\bidlewatch quickstart\b(?! --no-tui)/)
