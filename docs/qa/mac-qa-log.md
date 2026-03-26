@@ -1,8 +1,112 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 11:25 AM (America/Toronto)  
-**Status:** CLOSED ✅ - R303 closed one tiny README wording seam; no further product-facing polish regressions worth opening from this pass
+**Last updated:** Thursday, March 26th, 2026 — 11:43 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - one small source-checkout install-before-setup command-handoff regression is worth fixing
+
+## Cycle R304 Status: OPEN ⚠️
+
+This pass re-ran the active polish lane from the live checkout with fresh command-level spot checks across setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish`, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Most of the current setup/help/status surface still reads calm and low-friction across main `--help`, first-run `status`, local-only non-interactive `quickstart --no-tui`, post-setup `status`, device rename continuity, metric-toggle persistence, clean-home `--test-publish`, and `npm exec` durable-install guidance.
+- One small source-checkout regression is worth reopening: `install-agent` before saved setup has slipped back to a mixed, more implementation-looking next-step block that tells people to copy raw `node bin/idlewatch-agent.js ...` commands.
+- That is tiny, but it lands in the exact moment a person is deciding what to run next after background mode install succeeds.
+- The stale cron payload path remains external to the product itself in this pass too: the active checkout was still `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [ ] L44 — source-checkout `install-agent` before setup should not fall back to a raw `node bin/...` copy-paste block
+**Why it matters:** The product has spent many recent polish cycles converging on a calmer `idlewatch ...` command story in help, status, setup, and docs. The source-checkout install-before-setup success block has regressed back to a more implementation-first handoff:
+- `Save setup:   node bin/idlewatch-agent.js quickstart --no-tui`
+- `Run now:      node bin/idlewatch-agent.js run`
+- `Then start:   node bin/idlewatch-agent.js install-agent`
+- `Check:        node bin/idlewatch-agent.js status`
+- `Remove:       node bin/idlewatch-agent.js uninstall-agent`
+
+That is still functionally correct, but it feels noisier and less product-shaped than the surrounding surfaces, especially because first-run `status` and main help in the same checkout already prefer calmer `idlewatch ...` guidance.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `FAKEBIN=$(mktemp -d)`
+4. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+5. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+6. Observe the source-checkout install-before-setup success block falls back to raw launcher paths for every next step.
+7. Compare with nearby calmer surfaces from the same pass:
+   - `node bin/idlewatch-agent.js --help`
+   - `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+   - both already frame the next step with `idlewatch ...`.
+
+**Acceptance criteria**
+- The source-checkout install-before-setup next-step block should tell one calmer product-shaped command story instead of dropping back to a raw `node bin/idlewatch-agent.js ...` copy-paste block.
+- Keep the guidance short and copy-pasteable in the exact moment users decide what to run next.
+- Keep behavior unchanged: this is command-handoff wording polish only.
+- Keep npm/npx durable-install guidance exactly as-is.
+
+### Spot-check coverage for R304
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] Post-setup `status`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] `--test-publish` in a clean HOME
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+13. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+14. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+15. `PATH="$(mktemp -d):$PATH" HOME="$TMPHOME3" npm exec --yes -- idlewatch --help`
+16. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+
+### Acceptance notes
+- Main help, first-run status, post-setup status, device rename continuity, metric-toggle persistence, `--test-publish`, and npm/npx durable-install guidance still feel calm and low-friction in this pass.
+- One small source-checkout install-before-setup wording regression remains worth fixing before calling this lane fully closed again.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R303 Status: COMPLETE ✅
 
