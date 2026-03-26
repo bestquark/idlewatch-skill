@@ -2,6 +2,55 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R354 Status: COMPLETE ✅
+
+This pass stayed disciplined: re-check the requested installer/CLI polish lane, only log something if it still felt like real end-user friction, and avoid inventing churn.
+
+### Outcome
+- Re-ran the focused installer/CLI regression lane and it still passes cleanly: **87 passed, 0 failed**.
+- Fresh help-surface spot checks still read like one calm product across main help plus `status`, `configure`, `install-agent`, and `uninstall-agent` help.
+- The requested polish areas still hold up in this checkout: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity continuity, metric-toggle persistence, and npm/npx one-off-vs-durable-install clarity.
+- No new small, low-risk product-facing polish issue in the requested lane cleared the bar for a worthwhile change this cycle.
+- Operational note only: the cron payload path is still stale. This pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] No new small, low-risk product-facing polish issue found in the requested lane
+**Why it matters:** The setup/install/status surfaces are already on the right side of simple. Another tiny copy tweak here would be more likely to add churn than remove friction.
+
+**Verified**
+- Main help still keeps the happy path short and scan-friendly
+- `status --help` still keeps saved-config refresh wording honest and minimal
+- `configure --help` still keeps the reconfigure story calm and copy-pasteable
+- Install/uninstall help still frames background mode as reversible without unnecessary technical detail
+- `--test-publish` still stays explicit and lightweight on the happy path
+- Existing saved-config, device-ID, metric-toggle, and npm/npx durable-install checks remain green in the targeted regression subset
+
+### Spot-check coverage for R354
+- [x] Main `--help`
+- [x] `status --help`
+- [x] `configure --help`
+- [x] `install-agent --help`
+- [x] `uninstall-agent --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **87 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js --help`
+3. `node bin/idlewatch-agent.js status --help`
+4. `node bin/idlewatch-agent.js configure --help`
+5. `node bin/idlewatch-agent.js install-agent --help`
+6. `node bin/idlewatch-agent.js uninstall-agent --help`
+7. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+
+### Acceptance notes
+- No user-facing polish regression found in the requested lane.
+- The current setup/reconfigure/install story stays neat, minimal, and low-friction.
+- No auth, ingest, or packaging redesigns were introduced.
+
+**Last updated:** Thursday, March 26th, 2026 — 5:00 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
+
 ## Cycle R353 Status: COMPLETE ✅
 
 This pass stayed intentionally tiny and only shipped one remaining help-surface consistency fix that still felt product-facing in the requested setup/reconfigure lane.
