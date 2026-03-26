@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R369 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing polish issue in the requested lane worth opening. The current setup/install/reconfigure/status path remains pleasantly low-friction and product-shaped, and another micro-tweak here would be more likely to add churn than remove it.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx)'`
+- Result: **89 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js --test-publish`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live spot checks listed above with a clean HOME
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical copy surfaced in the requested areas. In particular, the current build still keeps:
+- first-run status short and preview-shaped
+- main help calm and command-oriented
+- `--test-publish` explicit without turning into a second workflow
+- one-off `npx` guidance clearly separate from durable background install guidance
+- setup/reconfigure/install/status wording aligned on the calmer `idlewatch ...` command story
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 6:46 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R368 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.

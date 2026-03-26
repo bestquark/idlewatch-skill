@@ -39,14 +39,15 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 81 - COMPLETE ✅
+## Cycle Status: Cycle 82 - COMPLETE ✅
 
-**Finding:** No new product-facing polish fix cleared the bar; the remaining operational path mismatch is now closed.
-- The installer/CLI polish lane still looks settled: setup/reconfigure usability, validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior all remain in good shape
+**Finding:** No new product-facing polish fix cleared the bar in the live checkout, and the installer/CLI lane still looks settled.
+- The setup/reconfigure/status/install story still feels neat, minimal, and low-friction instead of tool-shaped
+- Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior all remain in good shape
 - The now-working telemetry path remains untouched
-- Both IdleWatch cron jobs now point at the live checkout path and in-repo polish plan file, so future runs start in the right place without manual path discovery
+- Fresh focused regression coverage still passes cleanly: **89 passed, 0 failed**
 
-**Last updated:** Thursday, March 26th, 2026 — 6:52 PM (America/Toronto)
+**Last updated:** Thursday, March 26th, 2026 — 6:46 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
