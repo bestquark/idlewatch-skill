@@ -37,7 +37,9 @@ idlewatch install-agent   # enable background mode on macOS
 - Setup saves config to `~/.idlewatch/idlewatch.env`
 - Local-only mode works without any cloud key
 - Cloud publishing is optional
-- If you change settings later, saved changes apply on the next start
+- Re-open setup later with `idlewatch configure`
+- Saved changes apply on the next start
+- If background mode is already enabled, re-run `idlewatch install-agent` to refresh it with the saved config
 
 ## Environment
 

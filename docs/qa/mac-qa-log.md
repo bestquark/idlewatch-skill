@@ -1,8 +1,51 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 8:50 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R171 found no new product-facing polish issues
+**Last updated:** Wednesday, March 25th, 2026 — 9:05 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R172 shipped one small docs-path polish improvement
+
+---
+
+## Cycle R172 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one docs-only setup/reconfigure clarity improvement, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- `README.md` and `skill/SKILL.md` now show the reconfigure path as clearly as the CLI itself.
+- The docs now make two calm things explicit:
+  - `idlewatch configure` is the normal way to re-open setup later
+  - if background mode is already enabled, re-run `idlewatch install-agent` to refresh it with the saved config
+- This removes one subtle docs seam where the CLI already had a neat saved-config / refresh story, but the repo docs stopped just short of telling it.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R172 spot-check coverage
+- [x] `sed -n '1,120p' README.md`
+- [x] `sed -n '1,120p' skill/SKILL.md`
+- [x] `npm run validate:onboarding --silent`
+- [x] Help/status/setup regression slice still passing:
+  - `node --test test/openclaw-env.test.mjs --test-name-pattern 'main help matches the current source-checkout invocation path|quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|status help matches the calmer saved-config refresh wording|install-agent help keeps the durable setup path short and clear|uninstall-agent help reassures that config and logs are kept'`
+
+### Prioritized findings
+
+#### [x] L49 — README and skill docs now show the re-open-setup + refresh-background path directly
+**Why it matters:** The runtime/help surfaces already tell one calm story: saved config lives in `~/.idlewatch/idlewatch.env`, `configure` re-opens setup, and `install-agent` is how you refresh an already-enabled background agent with the saved config. But the repo docs still mostly stopped at first-run setup, which left the ongoing setup/reconfigure path a little more implicit than it needed to be.
+
+**What shipped**
+- Added an explicit `idlewatch configure` reconfigure step to `README.md`.
+- Added the same re-open-setup guidance to `skill/SKILL.md`.
+- Added the saved-config refresh note in both places:
+  - `If background mode is already enabled, re-run idlewatch install-agent to refresh it with the saved config.`
+- Kept the wording short, copy-pasteable, and aligned with existing CLI help.
+
+### Acceptance notes
+- The docs now better match the actual product flow after first-time setup.
+- This is docs-only; runtime behavior, validation, saved-config handling, launch-agent behavior, and telemetry remain unchanged.
+- The stale cron payload path remains external to the product itself: this pass still had to use `~/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Notes
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+- No auth, ingest, packaging, or background-agent redesign is recommended from this cycle.
 
 ---
 

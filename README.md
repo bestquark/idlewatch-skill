@@ -28,7 +28,13 @@ Pick a device name, choose local-only or cloud, and you’re done.
 
 The wizard saves config to `~/.idlewatch/idlewatch.env` and sends a first sample right away. Local-only mode works without an API key. If you want cloud publishing, the wizard will ask for an API key from [idlewatch.com/api](https://idlewatch.com/api).
 
-Config is auto-loaded when IdleWatch starts. If you change settings later, they apply on the next start.
+To change settings later, run:
+
+```bash
+idlewatch configure
+```
+
+Saved changes apply on the next start. If background mode is already enabled, re-run `idlewatch install-agent` to refresh it with the saved config.
 
 Use `--no-tui` for plain-text prompts if the TUI isn't available.
 
