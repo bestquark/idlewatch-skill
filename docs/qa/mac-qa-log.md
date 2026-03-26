@@ -2,6 +2,46 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R343 Status: COMPLETE ✅
+
+This pass stayed intentionally tiny and only shipped one scan-first wording cleanup that still felt worth doing in the installer/CLI polish lane.
+
+### Outcome
+- Found one remaining small shorthand seam in `status --help`: `quickstart/configure` read slightly more like internal slash notation than normal user-facing setup wording.
+- Updated that line to the calmer, plainer `quickstart or configure`.
+- Kept behavior unchanged: this is help-copy polish only.
+- Preserved the now-working telemetry path.
+- Re-ran the focused regression plus live `status --help` check and it still passes cleanly: **87 passed, 0 failed**.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L57 — `status --help` now says `quickstart or configure` instead of slash shorthand
+**Why it mattered:** This is tiny, but it sits in a scan-first help surface for setup/reconfigure users. `quickstart/configure` was understandable, yet it read a little more like internal shorthand than the surrounding calm, plain-language CLI copy.
+
+**What shipped**
+- Updated `status --help` from `Config changes saved by quickstart/configure apply on the next start.` to `Config changes saved by quickstart or configure apply on the next start.`
+- Added regression coverage so the help line stays plain-language and does not drift back
+- Kept setup/reconfigure/install/status behavior unchanged
+
+### Spot-check coverage for R343
+- [x] `status --help`
+- [x] Targeted `openclaw-env` regression test for status help wording
+- [x] Full targeted `openclaw-env` installer/CLI subset still passes cleanly in this checkout: **87 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js status --help`
+3. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='status help keeps the calmer background-mode wording and saved-config refresh hint'`
+4. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- `status --help` now keeps the saved-config refresh line in the same plain-language voice as the rest of the setup/help lane.
+- This is wording polish only; no auth, ingest, packaging, launch-agent, or telemetry-path behavior changed.
+- The main remaining seam in this cron lane is still operational rather than product-facing: the scheduled repo path should be updated to the live checkout.
+
+**Last updated:** Thursday, March 26th, 2026 — 3:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny plain-language help wording seam fixed in this pass
+
 ## Cycle R342 Status: COMPLETE ✅
 
 This pass re-ran the same narrow installer/CLI polish lane from the live checkout and stayed strict about only logging something if it still felt genuinely user-facing, slightly confusing, visually noisy, repetitive, or more technical than the surrounding setup flow.

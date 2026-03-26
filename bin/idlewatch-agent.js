@@ -1149,7 +1149,7 @@ Usage:  ${statusUsageCommand}
 
 Displays device config, publish mode, enabled metrics, last sample age,
 and background mode state.
-Config changes saved by quickstart/configure apply on the next start.
+Config changes saved by quickstart or configure apply on the next start.
 If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
