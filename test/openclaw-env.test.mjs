@@ -1088,7 +1088,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes(`Save setup:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart command')
     assert.ok(run.stdout.includes(`Run now:      ${SOURCE_CMD} run`), 'should show source-checkout foreground run command')
-    assert.ok(run.stdout.includes(`Then enable:  ${SOURCE_CMD} install-agent`), 'should show source-checkout enable command')
+    assert.ok(run.stdout.includes(`Then start:   ${SOURCE_CMD} install-agent`), 'should show source-checkout start command after pre-installing background mode')
     assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
     assert.ok(run.stdout.includes(`Check:        ${SOURCE_CMD} status`), 'should show source-checkout status command')
     assert.ok(run.stdout.includes(`Remove:       ${SOURCE_CMD} uninstall-agent`), 'should show source-checkout uninstall command')

@@ -1,8 +1,45 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Wednesday, March 25th, 2026 — 9:43 PM (America/Toronto)  
-**Status:** CLOSED ✅ - R178 spot-check found no new product-facing polish issue
+**Last updated:** Wednesday, March 25th, 2026 — 9:35 PM (America/Toronto)  
+**Status:** CLOSED ✅ - R179 shipped one tiny install-before-setup wording fix
+
+---
+
+## Cycle R179 Status: CLOSED ✅
+
+This pass stayed intentionally narrow and product-facing: one tiny install-before-setup wording cleanup only, with no setup-flow changes, no saved-config behavior changes, no launch-agent behavior changes, and no telemetry-path changes.
+
+### Outcome
+- Shipped one small, low-risk polish improvement.
+- When `install-agent` is run before setup exists, the follow-up no longer says `Then enable:` even though background mode was already installed in the previous line.
+- That step now says:
+  - `Then start: node ... install-agent`
+- This keeps the install-before-setup path a little more honest and easier to scan: install first, save setup, then start it.
+- No auth, ingest, packaging, or telemetry behavior was touched.
+
+### R179 spot-check coverage
+- [x] `status stays honest after install-agent without saved config`
+- [x] `quickstart completion stays honest when a LaunchAgent was installed before setup`
+- [x] `npm run validate:onboarding --silent`
+
+### Prioritized findings
+
+#### [x] L52 — install-before-setup follow-up now says `Then start`, not `Then enable`
+**Why it matters:** This was tiny, but it sat in a cautious-user moment. The command had already just said `✅ LaunchAgent installed.` and `background mode stays off for now.` The next line still said `Then enable: ... install-agent`, which made the state feel one notch fuzzier than it needed to be.
+
+**What shipped**
+- Reworded the install-before-setup follow-up from:
+  - `Then enable:  <install-agent command>`
+- To:
+  - `Then start:   <install-agent command>`
+- Added regression coverage for the source-checkout install-before-setup path.
+
+### Acceptance notes
+- Background install-before-setup still behaves the same: the LaunchAgent can be installed early, but it stays off until setup is saved.
+- Post-setup guidance still uses the same `Start it:` / `It will use the saved config.` wording when the agent is installed but not loaded.
+- The working telemetry path remains untouched.
+- The stale cron payload path remains external to the product itself.
 
 ---
 

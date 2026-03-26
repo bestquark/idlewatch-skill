@@ -1146,7 +1146,7 @@ const subcommandPromise = (async () => {
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
       console.log(`   Save setup:   ${quickstartCommand}`)
       console.log(`   Run now:      ${runCommand}`)
-      console.log(`   Then enable:  ${installAgentCommand}`)
+      console.log(`   Then start:   ${installAgentCommand}`)
       console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only stops background collection)`)
