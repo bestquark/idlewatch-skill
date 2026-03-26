@@ -1,8 +1,99 @@
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
-**Last updated:** Thursday, March 26th, 2026 — 6:08 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - R252 shipped one tiny uninstall off-ramp wording polish
+**Last updated:** Thursday, March 26th, 2026 — 6:37 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - R253 found one remaining external `npx` onboarding copy mismatch
+
+## Cycle R253 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish` messaging, device identity persistence, metric-toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Core CLI/runtime behavior still feels done: first-run `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, device-ID continuity, metric-toggle persistence, clean-home `--test-publish`, invalid cloud-key recovery, packaged launch-agent scripts, `npm exec` durable-install guidance, `postinstall`, and `npm run validate:onboarding --silent` all passed cleanly in this pass.
+- One small user-facing inconsistency remains in external onboarding docs: `docs/onboarding-external.md` still leads the one-off path with `npx idlewatch quickstart` instead of the calmer `npx idlewatch quickstart --no-tui` copy the CLI, README, QA flows, and postinstall now consistently prefer.
+- The stale cron payload path remains external to the product itself: this pass still had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+
+#### [L84] `docs/onboarding-external.md` still advertises the older bare `npx idlewatch quickstart` path
+- **Priority:** Low
+- **Why this matters:** The product has already converged on `npx idlewatch quickstart --no-tui` as the neatest one-off/copy-paste path. Leaving one external onboarding doc on the older bare `npx idlewatch quickstart` wording reintroduces a tiny "which setup path do you actually want me to use?" wobble right where new users decide whether the no-install path is supposed to be simple.
+- **Exact repro:**
+  1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+  2. Open `docs/onboarding-external.md`
+  3. Observe section `### 1) npx quickstart (fastest)`:
+     - code block shows `npx idlewatch quickstart`
+     - prose says `Use this path for one-off setup and foreground testing.`
+  4. Compare with current README / postinstall / QA guidance, which now prefer `npx idlewatch quickstart --no-tui` for the simplest one-off text-prompt path.
+- **Expected behavior:**
+  - External onboarding docs should tell the same one-off setup story as README, postinstall, and current QA acceptance notes.
+  - The default no-install path should stay the calmer, lowest-friction copy-paste command.
+  - The docs should avoid making users infer whether TUI vs plain-text setup is the intended default.
+- **Acceptance criteria:**
+  - `docs/onboarding-external.md` no longer leads with bare `npx idlewatch quickstart`.
+  - Its one-off setup example matches the current preferred path: `npx idlewatch quickstart --no-tui`.
+  - The surrounding wording stays short and product-shaped.
+
+### Spot-check coverage for R253
+- [x] Main `--help`
+- [x] First-run `status` in a clean HOME
+- [x] `install-agent` before setup in a clean HOME
+- [x] Local-only non-interactive `quickstart --no-tui`
+- [x] `configure --no-tui` device rename + metric toggle persistence
+- [x] Post-setup `status`
+- [x] `--test-publish` in a clean HOME
+- [x] Invalid cloud-key setup error wording
+- [x] `npm exec --yes -- idlewatch --help`
+- [x] `npm exec --yes -- idlewatch install-agent`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear|install-agent and uninstall-agent keep the macOS-only error on background-mode wording|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded|install-agent refresh confirmation stays on background-mode wording|test-publish|npx|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|uninstall-agent removes plist and keeps config and local logs'`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `npm run validate:onboarding --silent`
+- [x] Manual doc consistency check: `README.md` vs `docs/onboarding-external.md`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `TMPHOME2=$(mktemp -d)`
+4. `TMPHOME3=$(mktemp -d)`
+5. `FAKEBIN=$(mktemp -d)`
+6. Create fake `launchctl` shim that leaves the agent not loaded while allowing install commands to succeed:
+   ```bash
+   cat > "$FAKEBIN/launchctl" <<'EOF'
+   #!/usr/bin/env bash
+   set -euo pipefail
+   cmd="${1:-}"
+   if [[ "$cmd" == "print" ]]; then
+     exit 1
+   fi
+   if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+     exit 0
+   fi
+   exit 0
+   EOF
+   chmod +x "$FAKEBIN/launchctl"
+   ```
+7. `node bin/idlewatch-agent.js --help`
+8. `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+9. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+10. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+11. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='Renamed QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory,gpu' node bin/idlewatch-agent.js configure --no-tui`
+12. `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+13. `HOME="$TMPHOME2" node bin/idlewatch-agent.js --test-publish`
+14. `HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=production IDLEWATCH_ENROLL_DEVICE_NAME='Cloud Test' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu' IDLEWATCH_CLOUD_API_KEY='badkey' node bin/idlewatch-agent.js quickstart --no-tui`
+15. `npm exec --yes -- idlewatch --help`
+16. `PATH="$FAKEBIN:$PATH" HOME="$(mktemp -d)" env -u IDLEWATCH_CLOUD_API_KEY -u IDLEWATCH_ENROLL_MODE -u IDLEWATCH_ENROLL_DEVICE_NAME -u IDLEWATCH_ENROLL_MONITOR_TARGETS npm exec --yes -- idlewatch install-agent`
+17. `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear|install-agent and uninstall-agent keep the macOS-only error on background-mode wording|status command keeps no-sample background hint honest when LaunchAgent is installed but not loaded|install-agent refresh confirmation stays on background-mode wording|test-publish|npx|quickstart success summarizes setup verification instead of dumping raw telemetry JSON|uninstall-agent removes plist and keeps config and local logs'`
+18. `node --test test/macos-launch-agent-scripts.test.mjs`
+19. `node --test test/postinstall.test.mjs`
+20. `npm run validate:onboarding --silent`
+21. Open `README.md`
+22. Open `docs/onboarding-external.md`
+
+### Acceptance notes
+- Core setup/install/background behavior still reads like one calm product.
+- The remaining issue is small and docs-only: one external onboarding page still uses the older one-off `npx` command text.
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change is needed here.
 
 ## Cycle R252 Status: COMPLETE ✅
 
