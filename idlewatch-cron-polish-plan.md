@@ -39,16 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 78 - COMPLETE ✅
+## Cycle Status: Cycle 79 - COMPLETE ✅
 
-**Finding:** One small, low-risk help-text polish fix was still worth shipping in the live checkout.
-- Main `--help` no longer over-promises that `--test-publish` always publishes; it now says `Collect one sample, then exit`
-- This better matches the common local-only / unlinked flow, where the sample is collected and saved locally instead of published remotely
-- Targeted installer/CLI regression subset still passes cleanly (85 passed, 0 failed)
-- Setup/reconfigure/status/install help remains short, calm, and consistent
-- All acceptance criteria remain met
+**Finding:** No new small, low-risk installer/CLI polish fix in the requested lane cleared the bar for a worthwhile change in the live checkout.
+- Focused installer/CLI regression subset still passes cleanly (**87 passed, 0 failed**)
+- Main help, setup/reconfigure/status/install/uninstall help, saved-config reuse, launch-agent install-before-setup behavior, uninstall retention messaging, `--test-publish`, and `npx` durable-install guidance still read cleanly
+- The requested polish areas remain in good shape: setup/reconfigure usability, validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior
+- The now-working telemetry path remains untouched
+- Highest-value remaining housekeeping item is operational, not product-facing: the cron payload should point at the live checkout path
 
-**Last updated:** Thursday, March 26th, 2026 — 3:23 PM (America/Toronto)
+**Last updated:** Thursday, March 26th, 2026 — 4:45 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
