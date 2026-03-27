@@ -2,6 +2,102 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R534 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx install-agent --help` handoff alignment from the live checkout.
+
+### Priority call
+One low-risk install-path seam still cleared the bar this cycle: live `npx idlewatch install-agent` already ends with the useful one-off fallback `Run now: npx idlewatch run`, but the matching `npx idlewatch install-agent --help` block stopped one step earlier. Nothing functional was broken, yet this made the scan-first recovery/help path slightly less self-contained than the real refusal output.
+
+### What changed
+- Added `Run now:                   npx idlewatch run` to the `npx install-agent --help` handoff in `bin/idlewatch-agent.js`
+- Updated the matching assertion in `test/openclaw-env.test.mjs` so the help surface stays aligned with the real runtime refusal path
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, validation, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed: help now includes `Run now:                   npx idlewatch run`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|install-agent does not claim background is running when launchd still reports not loaded)'`
+- [x] Result: focused install-path regression slice passes cleanly
+
+### Prioritized findings
+#### [x] P1 — `npx install-agent --help` now includes the same `Run now` fallback as the real refusal path
+**Why this mattered:** This is tiny, but it lands in the exact moment where someone is deciding what to do after learning background mode belongs to the durable install path. The runtime already gave the clean one-off fallback. Letting help omit it made the quieter scan-first surface slightly less useful than the real command.
+
+**Acceptance checks**
+- `npx idlewatch install-agent --help` still starts with `Background mode needs a durable install.`
+- The same help still includes `Install once: npm install -g idlewatch`, `If setup isn't saved yet: idlewatch quickstart --no-tui`, and `Turn on background mode: idlewatch install-agent`
+- The same help now also includes `Run now: npx idlewatch run`
+- The live `npx idlewatch install-agent` refusal output remains unchanged and aligned with the same story
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 12:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅
+
+## Cycle R533 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
+
+### Priority call
+No new polish issue cleared the bar this cycle. Fresh live checks still keep the setup wizard, saved-config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-home lifecycle spot checks run with a stubbed `launchctl` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js reconfigure --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Fresh `npx` path spot checks run for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed in the live pass:
+  - install-before-setup still stays honest and low-noise (`Setup isn't saved yet, so background mode stays off for now.`)
+  - first saved setup still hands off neatly to foreground use and background mode without extra repetition
+  - configure → status still keeps renamed-device continuity explicit inline with `Device ID: qa-polish-box (kept from original setup for continuity)`
+  - metric-toggle persistence still stays obvious and quiet (`Metrics: Memory` after reconfigure)
+  - installed-but-off background guidance still stays literal and predictable (`Turn on background mode`, `It stays off until then.`, `Background mode will use the saved config.`)
+  - uninstall still keeps the reversible saved-config/local-log story short and explicit with retained concrete paths
+  - top-level `npx` help still keeps `install-agent` on the durable-install path while leaving `uninstall-agent` as the calmer macOS off-ramp
+  - `--test-publish` in local-only mode remains intentionally lightweight and does not add noisy extra workflow copy
+- [x] Focused regression command still hangs after printing `===== targeted tests =====` in this environment:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command preserves installed-but-waiting-for-setup state after install-agent ran before setup|quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup|install-agent does not claim background is running when launchd still reports not loaded|install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context|quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|status command keeps npx background hints short and durable-install oriented)'`
+  - Treat as runner behavior outside the requested product-facing polish lane unless it starts masking a real installer/CLI regression
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the clean-home lifecycle and `npx` spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Judge the exact requested lane together: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish`, device identity persistence, metric-toggle persistence, and npm-vs-npx install-path clarity
+3. Only log a new issue if it adds real user friction instead of just reflecting expected one-shot output or the currently hanging Node test runner in this environment
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest about background mode being installed but off until setup is saved and turned on
+- setup/configure success keeping renamed device continuity and metric-toggle persistence obvious inline
+- running-background/apply guidance short, literal, and predictable where relevant
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- a clean enough npm/npx one-off-vs-durable-install split, with remaining wrapper noise still coming from npm rather than IdleWatch
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 12:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R532 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny install-before-setup status-memory fix from the live checkout.

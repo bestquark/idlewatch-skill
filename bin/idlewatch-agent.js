@@ -277,7 +277,9 @@ function installAgentHelpText() {
 
 Install once:              npm install -g idlewatch
 If setup isn't saved yet:  idlewatch quickstart --no-tui
-Turn on background mode:   idlewatch install-agent`
+Turn on background mode:   idlewatch install-agent
+
+Run now:                   npx idlewatch run`
   }
 
   return `${installAgentHelpCommand} — Turn on background mode (macOS)
