@@ -34,16 +34,18 @@ test('postinstall stays CLI-first by default', () => {
   assert.doesNotMatch(run.stdout, /packaged app:/)
 })
 
-test('postinstall keeps optional menubar guidance user-facing', () => {
+test('postinstall keeps one-off and menubar guidance user-facing', () => {
   const run = runPostinstall({
     IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL: '',
     IDLEWATCH_LAUNCH_MENUBAR_ON_INSTALL: ''
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Other install paths:/)
+  assert.match(run.stdout, /Try it once:/)
+  assert.doesNotMatch(run.stdout, /Other install paths:/)
   assert.match(run.stdout, /npx idlewatch quickstart --no-tui/)
   assert.doesNotMatch(run.stdout, /npx idlewatch quickstart\n/)
-  assert.match(run.stdout, /Optional on macOS: idlewatch menubar/)
+  assert.match(run.stdout, /Optional on macOS:\n\s+idlewatch menubar/)
+  assert.doesNotMatch(run.stdout, /Optional on macOS: idlewatch menubar/)
   assert.doesNotMatch(run.stdout, /IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch/)
 })

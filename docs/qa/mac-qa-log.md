@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R401 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny postinstall handoff seam that still showed install-shaped wording in a setup/use moment. After a durable install, the postinstall message already pointed to the right commands, but the heading `Other install paths` was slightly off: it grouped one-off `npx` use and the optional menubar app under an install label even though neither line was really an install path.
+
+### What changed
+- Reworded the postinstall follow-up in `scripts/postinstall.mjs` from `Other install paths:` to the more task-shaped split:
+  - `Try it once:`
+  - `Optional on macOS:`
+- Kept the actual commands unchanged:
+  - `idlewatch quickstart --no-tui`
+  - `npx idlewatch quickstart --no-tui`
+  - `idlewatch menubar`
+- Tightened `test/postinstall.test.mjs` so this install-vs-one-off wording does not drift back.
+- Kept setup behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged.
+
+### Verification evidence
+- [x] `node scripts/postinstall.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] Result: **2 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L86 — postinstall now separates one-off use from the optional macOS menubar path instead of calling both `Other install paths`
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it sits in a real first-run install surface. `Other install paths` was slightly mislabeled and made the handoff read a little more implementation-shaped than necessary. The calmer product move is to say what each next step actually is: try it once, or optionally use the menubar app.
+- **Acceptance criteria:**
+  - Postinstall keeps `idlewatch quickstart --no-tui` as the durable setup step.
+  - The one-off `npx` handoff is labeled as one-off use, not another install path.
+  - The optional menubar hint stands on its own instead of being bundled into the same install heading.
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny postinstall wording seam fixed without changing behavior
+
 ## Cycle R400 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
