@@ -197,17 +197,21 @@ else
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
     echo "   idlewatch quickstart --no-tui"
-  else
-    echo "   $BIN_PATH quickstart --no-tui"
-  fi
-  echo ""
-  if command -v idlewatch >/dev/null 2>&1; then
+    echo ""
+    echo "Run now:"
+    echo "   idlewatch run"
+    echo ""
     echo "Turn on background mode:"
     echo "   idlewatch install-agent"
     echo ""
     echo "💡 Quick status check:"
     echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
   else
+    echo "   $BIN_PATH quickstart --no-tui"
+    echo ""
+    echo "Run now:"
+    echo "   $BIN_PATH run"
+    echo ""
     echo "Turn on background mode:"
     echo "   $BIN_PATH install-agent"
   fi

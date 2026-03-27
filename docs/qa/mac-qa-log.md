@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R537 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS no-setup handoff improvement from the live checkout.
+
+### Priority call
+One low-risk install-path seam still cleared the bar this cycle: the packaged macOS install script already kept the no-setup story honest by saying background mode stays off for now, then pointing to `quickstart --no-tui` and `install-agent`. Nothing functional was broken, but it skipped the equally useful `run once now` path that the main CLI already offers in the same moment. Adding that one line makes the packaged recovery flow more self-contained without changing behavior or adding options.
+
+### What changed
+- Added `Run now:` to the no-saved-setup branch of `scripts/install-macos-launch-agent.sh`
+- Kept the rest of the packaged handoff unchanged: finish setup first, optionally run once in the foreground, then turn on background mode when ready
+- Updated `test/macos-launch-agent-scripts.test.mjs` so the packaged no-setup branch keeps the immediate foreground-run hint and does not drift back
+- Left saved-config handling, launch-agent behavior, validation wording, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: targeted packaged-script regression slice passes cleanly after the handoff update
+- [x] Observed: the packaged macOS no-setup install path now includes `Run now: idlewatch run` when the CLI is on PATH
+- [x] Observed: the fallback packaged path also includes the exact app-binary foreground command when `idlewatch` is not on PATH yet
+
+### Prioritized findings
+#### [x] P1 — packaged macOS no-setup install handoff now includes the same immediate `Run now` path as the main CLI
+**Why this mattered:** This is tiny, but it lands in a real first-run recovery moment where someone has just turned on background mode before saving setup. The product already told them how to finish setup and how to turn background mode back on later; it should also give the shortest path to trying IdleWatch immediately in the foreground.
+
+**Acceptance checks**
+- The packaged macOS install script still says setup is not finished and background mode stays off for now
+- The same no-setup handoff still points to `quickstart --no-tui` first
+- The same handoff now also includes `Run now: idlewatch run` when the CLI is available
+- The no-CLI fallback now includes the exact app-binary `run` command too
+- Background-mode/install behavior and the telemetry path remain unchanged
+
+**Last updated:** Friday, March 27th, 2026 — 12:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS no-setup handoff improvement
+
 ## Cycle R536 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
