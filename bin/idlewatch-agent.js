@@ -289,6 +289,27 @@ If setup is already saved, background mode starts right away.
 If not, finish setup with ${quickstartCommand}, then run ${installAgentHelpCommand}.`
 }
 
+function uninstallAgentHelpText() {
+  const invocation = detectCliInvocation()
+  const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
+
+  if (invocation.kind === 'npx') {
+    return `Background mode needs a durable install.
+
+Turn it off later with: idlewatch uninstall-agent
+Turn it back on later with the durable install: idlewatch install-agent`
+  }
+
+  return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
+
+Usage:  ${uninstallAgentHelpCommand}
+
+Turns off background mode on macOS.
+Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
+Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
+Turn it back on later with idlewatch install-agent.`
+}
+
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   const invocation = detectCliInvocation()
   const installAgentCommand = preferredProductCommand('install-agent')
@@ -1181,14 +1202,7 @@ Usage:  ${createCommand}
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
     'install-agent': installAgentHelpText(),
-    'uninstall-agent': `${preferredProductCommand('uninstall-agent')} — Turn off background mode (macOS)
-
-Usage:  ${preferredProductCommand('uninstall-agent')}
-
-Turns off background mode on macOS.
-Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
-Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
-Turn it back on later with idlewatch install-agent.`,
+    'uninstall-agent': uninstallAgentHelpText(),
     menubar: `${menubarCommand} — Install macOS menu bar app
 
 Usage:  ${menubarCommand} [--launch] [--force]

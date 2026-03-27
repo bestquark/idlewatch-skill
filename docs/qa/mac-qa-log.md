@@ -4,39 +4,35 @@
 
 ## Cycle R458 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one more tiny `npx` help seam worth cleaning up from the live checkout.
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent --help` wording cleanup from the live checkout.
 
 ### Priority call
-One low-risk wording seam still clears the bar: `npx idlewatch uninstall-agent --help` reads like a normal durable-installed command even though nearby `npx` surfaces already do a good job separating one-off use from the durable background-mode path. The runtime behavior is harmless, but the help copy quietly drops the install-path clarity the product has worked to keep elsewhere.
+One low-risk wording seam still cleared the bar this pass: `npx idlewatch uninstall-agent --help` read like a normal durable-installed command even though nearby `npx` surfaces already do a good job separating one-off use from the durable background-mode path. The runtime behavior was harmless, but the help copy quietly dropped the install-path clarity the product has worked to keep elsewhere.
+
+### What changed
+- Reworked `npx uninstall-agent --help` in `bin/idlewatch-agent.js` so it now opens with `Background mode needs a durable install.` instead of presenting itself like a normal installed command
+- Kept the uninstall story short and reversible, but made the re-enable hint explicit: `Turn it back on later with the durable install: idlewatch install-agent`
+- Added focused regression coverage in `test/openclaw-env.test.mjs` so the `npx` uninstall-help off-ramp keeps the durable-install framing and does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
-- [x] Observed: help still says `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and ends with `Turn it back on later with idlewatch install-agent.`
-- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`
-- [x] Observed: neighboring help already says `Background mode needs a durable install.` and clearly frames the durable handoff
-- [x] Runtime spot check stays harmless and calm even in `npx` context:
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent`
-  - Observed: `Background mode is already off.` with saved-config/log retention notes
+- [x] Observed: help now starts with `Background mode needs a durable install.` and keeps the uninstall/re-enable handoff explicit with `Turn it off later with: idlewatch uninstall-agent` and `Turn it back on later with the durable install: idlewatch install-agent`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent help reassures that config and logs are kept|uninstall-agent --help reflects a configured custom saved-config path|uninstall-agent help in npx context keeps the durable-install framing explicit|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **95 passed, 0 failed**
 
 ### Prioritized findings
-#### [ ] L114 — `npx uninstall-agent --help` should keep the durable-install framing explicit
-**Why this matters:** This is tiny, but it sits in a real decision surface for someone using the one-off path. Right now `npx uninstall-agent --help` sounds like a first-class durable command and ends by telling the reader to turn it back on with `idlewatch install-agent`, without the same durable-install reminder already present on neighboring `npx install-agent` help. That makes the install-path story slightly blurrier than it needs to be.
+#### [x] L114 — `npx uninstall-agent --help` now keeps the durable-install framing explicit
+**Why this mattered:** This is tiny, but it sits in a real decision surface for someone using the one-off path. `npx uninstall-agent --help` should not sound like a first-class durable command when neighboring `npx` help already makes the durable-install context explicit. Tightening that one off-ramp keeps the install-path story neat and predictable.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
-3. Observe the surface reads like a normal durable command: `npx idlewatch uninstall-agent — Turn off background mode (macOS)`
-4. Observe the closing line still says `Turn it back on later with idlewatch install-agent.`
-5. Compare with `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`, which already says `Background mode needs a durable install.` and points clearly into the durable path
-
-**Acceptance criteria**
+**Acceptance checks**
 - `npx uninstall-agent --help` keeps the same calm reversible uninstall story
-- The `npx` help surface also makes the durable-install context explicit, instead of reading like a normal durable command
-- Any re-enable hint in `npx` context names the durable-install handoff clearly enough that one-off users are not left guessing
-- No auth, ingest, packaging, or launch-agent behavior changes
+- The `npx` help surface now makes the durable-install context explicit instead of reading like a normal durable command
+- The re-enable hint in `npx` context now names the durable-install handoff clearly enough that one-off users are not left guessing
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
 
-**Last updated:** Friday, March 27th, 2026 — 5:00 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - one tiny `npx uninstall-agent --help` wording seam documented for follow-up
+**Last updated:** Friday, March 27th, 2026 — 5:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent --help` durable-install wording cleanup
 
 ## Cycle R457 Status: COMPLETE ✅
 

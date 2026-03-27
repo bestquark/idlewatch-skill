@@ -1192,6 +1192,28 @@ test('uninstall-agent --help reflects a configured custom saved-config path', ()
   }
 })
 
+test('uninstall-agent help in npx context keeps the durable-install framing explicit', () => {
+  const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^Background mode needs a durable install\./)
+  assert.match(run.stdout, /Turn it off later with: idlewatch uninstall-agent/)
+  assert.match(run.stdout, /Turn it back on later with the durable install: idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /^npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/m)
+  assert.doesNotMatch(run.stdout, /Saved config stays at .* when setup has been saved\./)
+})
+
 test('uninstall-agent runtime output keeps the saved-config wording calm', () => {
   if (process.platform !== 'darwin') {
     return
