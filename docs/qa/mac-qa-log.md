@@ -20824,3 +20824,28 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the `idlewatch install-agent` comment in `skill/SKILL.md` from `enable background mode on macOS` to `turn on background mode on macOS`.
 - Reworded the saved-config timing note from `Saved changes apply on the next start` to `Saved changes apply next time IdleWatch starts`.
 - Left install paths, config behavior, and telemetry behavior unchanged.
+
+## Cycle R352 Status: CLOSED ✅
+
+### Outcome
+- Found one small but real help-text contradiction still present in the live checkout.
+- Non-TTY `quickstart --help`, `configure --help`, and `reconfigure --help` had drifted back to `Uses simple prompts.` even though those help paths already show `--no-tui` usage.
+- They now consistently say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- This keeps headless setup/reconfigure copy honest without changing setup behavior, saved-config handling, background/install behavior, or the working telemetry path.
+
+### R352 spot-check coverage
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+- [x] Targeted regression slice still passes locally (`96/96`).
+
+### Prioritized findings
+
+#### [x] L35 — non-TTY setup help no longer slips back to `Uses simple prompts.`
+**Why it matters:** This is tiny, but it lands right in a copy-paste moment. Once help is already showing `quickstart --no-tui`, `configure --no-tui`, or `reconfigure --no-tui`, saying `Uses simple prompts.` makes the headless path sound more interactive than it really is.
+
+**What shipped**
+- Reworded the non-TTY prompt hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs`.
+- Re-ran the targeted help regression slice and confirmed it still passes cleanly.
