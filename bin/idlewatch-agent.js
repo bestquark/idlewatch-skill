@@ -369,7 +369,7 @@ function printHelp() {
     ['configure', 'Update setup (name, metrics, optional cloud link)'],
     ['status', 'Show device config and background mode state'],
     ['run', 'Run the collector in the foreground'],
-    ['create', 'Create a custom telemetry metric'],
+    ['create', 'Manage custom telemetry metrics'],
     ['dashboard', 'Launch local telemetry dashboard'],
     ['install-agent', installAgentSummary],
     ['uninstall-agent', 'Disable background mode (macOS)'],

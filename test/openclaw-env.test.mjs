@@ -236,6 +236,7 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.doesNotMatch(run.stdout, /Get started:\s+node .*quickstart --no-tui/)
   assert.match(run.stdout, /quickstart/)
   assert.match(run.stdout, /run\s+Run the collector in the foreground/)
+  assert.match(run.stdout, /create\s+Manage custom telemetry metrics/)
   assert.match(run.stdout, /install-agent\s+Enable background mode \(macOS\)/)
   assert.match(run.stdout, /uninstall-agent\s+Disable background mode \(macOS\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s{1,2}Enable background mode \(macOS\)/)
@@ -1116,6 +1117,10 @@ test('run/create/dashboard/menubar help keeps the calmer idlewatch command story
     assert.match(run.stdout, new RegExp(`^idlewatch ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
     assert.doesNotMatch(run.stdout, /^node .*idlewatch-agent\.js/m)
     assert.doesNotMatch(run.stdout, new RegExp(`Usage:\\s+node .* ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    if (command === 'create') {
+      assert.match(run.stdout, /Manage custom telemetry metrics/)
+      assert.doesNotMatch(run.stdout, /Create a custom telemetry metric/)
+    }
   }
 })
 

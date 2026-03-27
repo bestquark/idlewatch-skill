@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R381 Status: COMPLETE ✅
+
+One tiny help-summary seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small CLI help polish seam in the main command list.
+- Main `idlewatch --help` now says `create` **manages** custom telemetry metrics instead of implying it only creates one.
+- That keeps the command summary aligned with the actual `create` wizard, which can create, edit, and delete saved metrics.
+- Kept setup/reconfigure/install behavior, saved-config handling, startup behavior, and the now-working telemetry path unchanged.
+- Re-ran the focused installer/CLI regression subset and nearby help spot checks; they still pass cleanly: **90 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L71 — main help now says `Manage custom telemetry metrics` for `create`
+**Why it mattered:** Tiny, but this lands right in first-run command discovery. Saying `create` only creates a metric made the main help a little less honest than the wizard itself, which already supports create/edit/delete. The calmer product move here is to clarify the existing behavior, not add another command.
+
+**What shipped**
+- Updated the main `--help` command summary for `create` to say `Manage custom telemetry metrics`.
+- Added regression coverage so main help and `create --help` stay aligned with the wizard’s full scope.
+- Kept runtime behavior unchanged.
+
+### Spot-check coverage for R381
+- [x] Focused `openclaw-env` installer/CLI regression subset: **90 passed, 0 failed**
+- [x] Main `--help`
+- [x] `create --help`
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help keeps the happy path above advanced env tuning noise|run/create/dashboard/menubar help keeps the calmer idlewatch command story)'`
+3. `node bin/idlewatch-agent.js --help`
+4. `node bin/idlewatch-agent.js create --help`
+
+### Acceptance notes
+- Main command discovery now matches the existing create/edit/delete metric wizard instead of understating it.
+- This is copy polish only; no auth, ingest, packaging, startup/install flow, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 10:02 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny main-help command-summary seam fixed in this pass
+
+
 ## Cycle R380 Status: COMPLETE ✅
 
 One tiny packaged uninstall-script command-story seam got cleaned up from the live checkout.
