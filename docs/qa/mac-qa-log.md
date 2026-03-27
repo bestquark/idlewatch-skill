@@ -1,3 +1,71 @@
+## Cycle R598 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The highest-risk seams from this lane still read well in practice: setup stays minimal, saved-config/apply guidance stays literal, launch-agent install/uninstall behavior stays reversible and low-noise, local-only `--test-publish` remains intentionally lightweight, device identity continuity still reads clearly after rename/reconfigure, metric toggles persist cleanly in `status`, and the real-`npx` path still keeps one-off commands separate from the durable install handoff.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-home lifecycle spot checks with a stubbed `launchctl` for:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+- [x] Fresh loaded-background apply spot checks with the same stubbed `launchctl` for:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` spot checks for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME3" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME3" node bin/idlewatch-agent.js install-agent`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" node bin/idlewatch-agent.js status`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" node bin/idlewatch-agent.js status`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Observed in the live pass:
+  - first-run `status` still stays preview-shaped instead of implementation-shaped
+  - install-before-setup still stays honest and low-noise (`Setup isn't saved yet, so background mode stays off for now.`)
+  - install-before-setup `status` still preserves installed memory cleanly (`Background: installed but waiting for setup`) and keeps both `Finish setup` and `Run now`
+  - setup/configure success still keeps renamed-device continuity and metric-toggle persistence explicit inline (`Device ID: qa-polish-box (kept from original setup for continuity)`, then `Metrics: Memory` in `status`)
+  - saved-setup installed-but-not-running states still keep the calmer `Start background mode` wording instead of sounding like a fresh install step
+  - loaded-background happy path still stays calm after install (`Background: on (waiting for next check)`, then `Background: already on`)
+  - loaded-background reconfigure still keeps the saved-config apply story short and truthful (`Apply saved config:  re-run idlewatch install-agent to apply the saved config`)
+  - local-only `--test-publish` remains intentionally lightweight and does not turn into a second workflow
+  - uninstall still keeps the reversible saved-config/local-log story short and explicit with friendly retained paths
+  - true `npx` help/runtime/setup/status still keep the one-off foreground path clearly separate from the durable background-mode handoff:
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+  - true `npx` saved-setup `status` and `configure --no-tui` still keep the same literal split without drifting back to plain `idlewatch ...` commands for one-off run/configure steps
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after a fresh live pass
+**Why this matters:** This lane is explicitly about removing friction, not manufacturing churn. When the live product already feels neat, minimal, and copy-safe across setup, reconfigure, uninstall, and true-`npx` use, the right move is to log that verification cleanly and avoid speculative edits.
+
+**Acceptance checks**
+- Setup remains minimal and literal in first-run, installed-before-setup, saved-setup, and loaded-background paths
+- Device IDs still persist through rename/reconfigure and stay visible inline where continuity matters
+- Metric toggles still persist cleanly and show up clearly in saved-setup `status`
+- Launch-agent install/uninstall behavior remains clear, reversible, and low-noise
+- Local-only `--test-publish` stays intentionally lightweight rather than growing into a second setup flow
+- True-`npx` setup/status/configure surfaces keep one-off-safe `npx idlewatch ...` commands while background mode stays on the explicit durable-install handoff
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced in this verification-only pass
+
+**Last updated:** Friday, March 27th, 2026 — 6:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
 # IdleWatch Installer QA Log
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
