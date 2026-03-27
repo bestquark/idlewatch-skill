@@ -2,6 +2,51 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R429 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. The current setup/install/reconfigure/status path still feels neat, intentionally minimal, and product-shaped instead of drifting back toward implementation chatter, repetitive recovery copy, or visually noisy install guidance.
+
+### Verification evidence
+- Targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **94 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Current live spot-check highlights:
+  - main help still stays short and scan-friendly
+  - first-run `status` still previews setup without implementation-detail sprawl
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - npm/npx one-off-vs-durable-install guidance still stays clean, with only npm's own update banner adding noise
+  - the requested persistence/reload/install lane remains covered by the still-green targeted regression subset
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the fresh live spot checks listed above
+3. Re-check the setup/configure/status/install/uninstall/device/metric/npx lane through the targeted regression subset rather than inventing a bigger manual matrix when the exact requested coverage is already green
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- explicit local-only `--test-publish` wording without turning it into a second workflow
+- durable saved-config, device identity persistence, metric-toggle persistence, and reload/apply guidance covered by the still-green targeted regression lane
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 3:07 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R428 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny postinstall handoff fix from the live checkout.
