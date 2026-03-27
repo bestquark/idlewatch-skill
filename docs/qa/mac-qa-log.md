@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R517 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent` top-level help alignment from the live checkout.
+
+### Priority call
+One low-risk npm/npx seam still cleared the bar: top-level `npx idlewatch --help` had drifted stricter than the actual off-ramp by listing `uninstall-agent   Turn off background mode (requires durable install)` even though the matching command-specific help and live runtime both already behave like a harmless macOS off-ramp. Nothing functional was broken, but that first command list was making the one-off story feel slightly less crisp than the real behavior.
+
+### What changed
+- Reworked the top-level `npx` command summary in `bin/idlewatch-agent.js` so `uninstall-agent` now reads `Turn off background mode (macOS)` instead of `Turn off background mode (requires durable install)`
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs` so the top-level `npx` help surface stays aligned with the existing command-specific help + runtime off-ramp
+- Kept `npx install-agent` on the durable-install-only path, and left setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+- [x] Observed: top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help still starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and still says `If background mode is already off, this still keeps the saved config and local logs in place.`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Observed: live runtime still cleanly says `Background mode is already off.` and keeps the saved-config/local-log reassurance intact
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help preserves one-off command hints under npm exec|install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context)'`
+- [x] Result: **97 passed, 0 failed** in the focused npm/npx help regression slice
+
+### Prioritized findings
+#### [x] L145 — top-level `npx` help no longer overstates a durable-install requirement for `uninstall-agent`
+**Why this mattered:** This is tiny, but it lands in the exact scan-first moment where someone is deciding what they can safely do from a one-off `npx` run. If the real command and command-specific help already behave like a harmless off-ramp, the top-level list should not tell a stricter story than the actual product.
+
+**Acceptance checks**
+- Top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- The same top-level help no longer lists `uninstall-agent   Turn off background mode (requires durable install)`
+- `npx uninstall-agent --help` and live `npx uninstall-agent` stay otherwise unchanged and aligned with the same off-ramp story
+- `npx install-agent` still keeps the durable-install-only protection unchanged
+- No auth, ingest, launch-agent behavior, or packaging flow changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny top-level `npx uninstall-agent` help alignment
+
 ## Cycle R516 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny but still-real `npx` off-ramp mismatch in the live checkout.
