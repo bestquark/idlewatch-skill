@@ -306,6 +306,7 @@ Usage:  ${uninstallAgentHelpCommand}
 
 Turns off background mode on macOS.
 If background mode is already off, this still keeps the saved config and local logs in place.
+Install once:  npm install -g idlewatch
 Turn background mode back on later with idlewatch install-agent.`
   }
 

@@ -4,39 +4,37 @@
 
 ## Cycle R535 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one tiny but real `npx uninstall-agent --help` install-path regression in the live checkout.
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent --help` durable-install handoff restoration from the live checkout.
 
 ### Priority call
-One low-risk one-off off-ramp seam cleared the bar this cycle: command-specific `npx idlewatch uninstall-agent --help` currently behaves like a normal macOS help page again, but it no longer includes the explicit `Install once: npm install -g idlewatch` step that earlier polish passes had restored for durable-path clarity. Nothing functional is broken, yet this leaves the one-off help slightly less self-contained than `npx install-agent --help` and makes the recovery path a little more guessy than it should be.
+One low-risk one-off off-ramp seam still cleared the bar this cycle: command-specific `npx idlewatch uninstall-agent --help` already behaved like a calm macOS help page again, but it had dropped the explicit `Install once: npm install -g idlewatch` step that made the durable-path recovery story self-contained. Nothing functional was broken, yet that missing line made the help slightly less copy-pasteable than nearby `npx install-agent --help`.
+
+### What changed
+- Restored `Install once: npm install -g idlewatch` to the `npx uninstall-agent --help` branch in `bin/idlewatch-agent.js`
+- Updated the matching `test/openclaw-env.test.mjs` assertions so the one-off uninstall help keeps the durable-install step visible and does not drift back
+- Kept the calm macOS off-ramp framing, saved-config/local-log reassurance, launch-agent behavior, setup/reconfigure flow, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
 - [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
-- [x] Observed: help still starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and still reassures that saved config/local logs stay in place
-- [x] Observed: the same help no longer includes `Install once: npm install -g idlewatch`
-- [x] `grep -n "Install once:.*npm install -g idlewatch\|uninstall-agent help in npx context" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
-- [x] Observed: current `test/openclaw-env.test.mjs` assertions now explicitly expect the `npx uninstall-agent --help` surface to omit the `Install once` step
+- [x] Observed: help still starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and now includes `Install once: npm install -g idlewatch`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `git diff -- bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: this pass only restores the missing durable-install handoff line and updates the matching regression expectations
 
 ### Prioritized findings
-#### [ ] P1 — `npx uninstall-agent --help` has regressed and no longer includes the explicit `Install once` durable-install step
-**Why this matters:** This is tiny, but it lands in a real recovery/setup moment where someone is asking the one-off path what to do next. If the answer points them back to the durable `idlewatch install-agent` path later, the help should also remind them how to get that durable command first. Without the install step, the surface is still understandable, just slightly less polished and slightly less copy-pasteable than the nearby `npx install-agent --help` story.
-
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
-3. Observe the help starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and still says saved config/local logs stay in place
-4. Observe it no longer includes `Install once: npm install -g idlewatch`
-5. Compare with `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`, which still includes the explicit `Install once` durable-path handoff
+#### [x] P1 — `npx uninstall-agent --help` has regressed and no longer includes the explicit `Install once` durable-install step
+**Why this mattered:** This is tiny, but it lands in a real recovery/setup moment where someone is asking the one-off path what to do next. If the answer points them back to the durable `idlewatch install-agent` path later, the help should also remind them how to get that durable command first. Without the install step, the surface was still understandable, just slightly less polished and slightly less copy-pasteable than the nearby `npx install-agent --help` story.
 
 **Acceptance checks**
 - `npx idlewatch uninstall-agent --help` keeps the current calm macOS off-ramp framing
-- The same help also restores `Install once: npm install -g idlewatch`
+- The same help restores `Install once: npm install -g idlewatch`
 - The rest of the command-specific off-ramp story stays short and unchanged: saved config/local logs remain in place, and background mode can be turned back on later with the durable install
 - Matching assertions in `test/openclaw-env.test.mjs` are updated so this does not drift again
 - No auth, ingest, launch-agent behavior, or packaging changes are introduced
 
-**Last updated:** Friday, March 27th, 2026 — 1:10 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny current `npx uninstall-agent --help` install-path regression for the next polish pass
+**Last updated:** Friday, March 27th, 2026 — 12:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent --help` durable-install handoff restoration
 
 ## Cycle R534 Status: COMPLETE ✅
 
