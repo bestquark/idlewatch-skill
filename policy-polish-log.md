@@ -1,5 +1,5 @@
 # IdleWatch Installer Polish Log
-**Repo:** `/Users/luismantilla/.openclaw/workspace/idlewatch-skill` 
+**Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` 
 
 ---
 ## 2026-03-24 QA Cycle: IdleWatch Installer Polish (COMPLETE)

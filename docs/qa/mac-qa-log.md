@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R477 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny repo-owned stale-path cleanup from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI issue in the requested lane cleared the bar this pass. The only small, low-risk fix still worth shipping was operational: two repo-owned polish handoff docs still pointed at the old `workspace/idlewatch-skill` path even though this lane now runs from `workspace.bak/idlewatch-skill`. The product behavior was already right; this just removes one more needless path-discovery detour before setup/install QA work even starts.
+
+### What changed
+- Updated `policy-polish-log.md` so its top-level repo path now points at `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- Updated `POLISH_CYCLE_2026-03-24.md` so its plan + QA log links now point at the live `workspace.bak` checkout
+- Kept setup/reconfigure behavior, validation messages, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "workspace/idlewatch-skill\|workspace/idlewatch-cron-polish-plan.md" policy-polish-log.md POLISH_CYCLE_2026-03-24.md idlewatch-cron-polish-plan.md`
+- [x] Result: no stale `workspace/idlewatch-skill` or old plan-path references remain in the touched repo-owned handoff docs
+- [x] `git diff -- policy-polish-log.md POLISH_CYCLE_2026-03-24.md`
+- [x] Result: only the tiny repo-path/link cleanup above changed in this pass
+
+### Prioritized findings
+#### [x] P2 — repo-owned polish handoff docs now point at the live checkout path
+**Why this mattered:** This is tiny, but it removes real friction in a scan-first operational moment. When the handoff docs themselves point at the wrong checkout, every polish pass starts with path correction instead of product verification. Keeping these repo-owned references aligned makes the setup/reconfigure QA lane feel cleaner without touching runtime behavior.
+
+**Acceptance checks**
+- `policy-polish-log.md` now names `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- `POLISH_CYCLE_2026-03-24.md` now links to the live `workspace.bak` plan and QA log paths
+- The touched docs no longer send the next pass through a stale repo path first
+
+**Last updated:** Friday, March 27th, 2026 — 6:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - repo-owned stale-path handoff docs fixed; product behavior unchanged
+
+
 ## Cycle R476 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

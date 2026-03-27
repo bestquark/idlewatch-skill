@@ -4,7 +4,7 @@
 
 ## Summary
 
-The [idlewatch-cron-polish-plan.md](/Users/luismantilla/.openclaw/workspace/idlewatch-skill/idlewatch-cron-polish-plan.md) has been reviewed along with the [mac-qa-log.md](/Users/luismantilla/.openclaw/workspace/idlewatch-skill/docs/qa/mac-qa-log.md). 
+The [idlewatch-cron-polish-plan.md](/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill/idlewatch-cron-polish-plan.md) has been reviewed along with the [mac-qa-log.md](/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill/docs/qa/mac-qa-log.md). 
 
 All 8 polish items verified in Round 71 QA pass:
 
