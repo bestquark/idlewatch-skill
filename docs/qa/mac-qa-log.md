@@ -2,6 +2,60 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R478 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. The setup wizard, saved-config persistence/apply story, launch-agent install/uninstall behavior, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split still feel calm, minimal, and low-friction rather than repetitive, implementation-shaped, or visually noisy.
+
+### Verification evidence
+- Targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **96 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Current live spot-check highlights:
+  - main help still stays short and scan-friendly
+  - setup/configure/install/uninstall help still keeps the calmer product-shaped command story
+  - first-run `status` still previews setup cleanly without implementation-detail sprawl
+  - saved-config apply guidance still stays short, explicit, and consistent in help + lifecycle surfaces
+  - local-only `--test-publish` still stays lightweight and explicit
+  - device rename continuity and metric-toggle persistence remain covered by the still-green regression lane
+  - `npx` help still keeps one-off use clearly separate from the durable install path, with remaining noise coming from npm itself rather than IdleWatch
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live help / clean-home spot checks listed above
+3. Re-check the requested setup wizard / config persistence / launch-agent / test-publish / device identity / metric-toggle / npm-npx lane together rather than broadening into unrelated surfaces
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- predictable saved-config apply/reload guidance in the current help and lifecycle surfaces
+- install-before-setup honest about background mode being installed but not running yet
+- saved device identity continuity and metric-toggle persistence obvious in the configure → status follow-up
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- clean npm/npx one-off-vs-durable-install guidance, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 6:51 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R477 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny repo-owned stale-path cleanup from the live checkout.
