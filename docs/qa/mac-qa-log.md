@@ -2,6 +2,62 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R427 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. The current setup/install/reconfigure/status path still feels deliberate and low-friction: it stays on a simple product story instead of drifting back toward launchd jargon, implementation-detail sprawl, or noisy recovery copy.
+
+### Verification evidence
+- Targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **94 passed, 0 failed**
+- Fresh live clean-home spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - clean-home lifecycle spot check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+    - `node bin/idlewatch-agent.js configure --no-tui`
+    - `node bin/idlewatch-agent.js status`
+    - `node bin/idlewatch-agent.js uninstall-agent`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Current live spot-check highlights:
+  - main help still stays short and scan-friendly
+  - first-run `status` still previews setup without implementation-detail sprawl
+  - install-before-setup still stays honest about background mode being installed but not running yet
+  - configure → status still keeps renamed device identity and metric-toggle persistence obvious inline
+  - running-background apply/reload guidance still stays short and predictable
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - npm/npx one-off-vs-durable-install guidance still stays clean, with only npm's own update banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live help / clean-home spot checks listed above
+3. For install-before-setup coverage, use a stubbed `launchctl` that exits non-zero for `print` so the background agent stays in the intended installed-but-not-running state
+4. Re-check the `npx` durable-install help surface and the local-only `--test-publish` path
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest about background mode being installed but not running yet
+- saved device identity continuity and metric-toggle persistence obvious in the configure → status follow-up
+- running-agent apply/reload guidance explicit without turning launchd-shaped
+- `--test-publish` explicit without becoming a second workflow
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, explicit test-publish wording, clear apply/reload guidance, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 2:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R426 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
