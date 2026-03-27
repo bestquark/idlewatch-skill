@@ -2,6 +2,47 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R514 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-worth-fixing runtime/help wording seam in the live checkout.
+
+### Priority call
+One low-risk uninstall seam still clears the bar: `uninstall-agent --help` already ends with the calmer, literal `Turn background mode back on later with idlewatch install-agent.` line, but successful live `uninstall-agent` runtime output still falls back to the shorter `Turn it back on: idlewatch install-agent`. Nothing functional is broken, but this lands in the exact reversible off-ramp moment where the product should name the thing directly and stay aligned across help + runtime.
+
+### Verification evidence
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: help ends with `Turn background mode back on later with idlewatch install-agent.`
+- [x] Clean-home lifecycle spot check with a stubbed `launchctl` from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js install-agent`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+- [x] Observed: successful uninstall runtime still ends with `Turn it back on: idlewatch install-agent`
+- [x] `grep -RIn "Turn it back on:" bin test scripts docs/qa/mac-qa-log.md || true`
+- [x] Observed: the shorter runtime label is still wired in `bin/idlewatch-agent.js`, related test assertions, and the macOS uninstall helper script
+
+### Prioritized findings
+#### [ ] L143 — successful uninstall runtime should match the calmer `background mode` wording already used by uninstall help
+**Why this matters:** This is tiny, but it lands in a real recovery moment right after someone turns background mode off. The help surface now sounds calmer and more literal than the live runtime. Letting runtime keep the older `it` phrasing makes the product feel just a bit less finished than it already is elsewhere in this lane.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits zero for `bootstrap` / `bootout` and non-zero for `print`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+6. Observe the final line still says `Turn it back on: idlewatch install-agent`
+7. Compare with `node bin/idlewatch-agent.js uninstall-agent --help`, which already says `Turn background mode back on later with idlewatch install-agent.`
+
+**Acceptance checks**
+- Successful `idlewatch uninstall-agent` runtime output ends with `Turn background mode back on later with idlewatch install-agent.` or equivalently explicit `background mode` wording
+- The same runtime output no longer says `Turn it back on: idlewatch install-agent`
+- `uninstall-agent --help` stays aligned with the same calmer wording
+- Matching assertions in `test/openclaw-env.test.mjs`, `test/macos-launch-agent-scripts.test.mjs`, and any helper scripts stay aligned
+- No auth, ingest, packaging, or launch-agent behavior changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 10:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny uninstall runtime/help wording mismatch still worth fixing
+
 ## Cycle R513 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny uninstall-help wording cleanup from the live checkout.
