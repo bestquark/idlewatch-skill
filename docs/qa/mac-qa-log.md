@@ -1957,39 +1957,39 @@ One low-risk uninstall wording seam still cleared the bar this pass: top-level h
 Fresh installer/CLI polish pass found one more tiny wording seam still worth cleaning up from the live checkout.
 
 ### Priority call
-One low-risk uninstall wording seam still clears the bar: top-level help and `uninstall-agent --help` still say `Disable background mode` even though the rest of the setup/install lane has already converged on the calmer, more literal `Turn on background mode` / `Turn off background mode` story. The behavior is already right; this is just one last older label in a real install/uninstall decision surface.
+This one is closed: top-level help and `uninstall-agent --help` now stay on the calmer `Turn off background mode` wording that matches the rest of the setup/install lane. The behavior stayed the same; the remaining work here was just making the QA log stop implying this older label was still live.
 
 ### Verification evidence
 - [x] `node bin/idlewatch-agent.js --help`
-- [x] Observed: main help still shows `uninstall-agent   Disable background mode (macOS)`
+- [x] Observed: main help shows `uninstall-agent   Turn off background mode (macOS)`
 - [x] `node bin/idlewatch-agent.js uninstall-agent --help`
-- [x] Observed: command help still says `idlewatch uninstall-agent — Disable background mode (macOS)` and `Disables background mode on macOS.`
+- [x] Observed: command help says `idlewatch uninstall-agent — Turn off background mode (macOS)` and `Turns off background mode on macOS.`
 - [x] `grep -RIn "Disable background mode\\|Disable background" bin README.md docs scripts test package.json || true`
-- [x] Observed live hits in product/test surfaces, including `bin/idlewatch-agent.js` and matching assertions in `test/openclaw-env.test.mjs`
+- [x] Observed: remaining hits are historical QA notes and negative regression assertions, not live product wording
 - [x] Fresh live spot checks still look good otherwise:
   - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
   - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
   - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
 
 ### Prioritized findings
-#### [ ] L113 — uninstall help surfaces should say `Turn off background mode` instead of `Disable background mode`
-**Why this matters:** This is tiny, but it sits right next to the now-cleaner `Turn on background mode` install language. `Disable background mode` is understandable, yet it is a little more tool-shaped and less symmetrical than the calmer product wording now used elsewhere. `Turn off background mode` would make install/uninstall read like a matched pair.
+#### [x] L113 — uninstall help surfaces now say `Turn off background mode` instead of `Disable background mode`
+**Why this mattered:** This is tiny, but it sits right next to the now-cleaner `Turn on background mode` install language. `Disable background mode` was understandable, yet it was a little more tool-shaped and less symmetrical than the calmer product wording now used elsewhere. `Turn off background mode` makes install/uninstall read like a matched pair.
 
 **Exact repro**
 1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
 2. Run `node bin/idlewatch-agent.js --help`
-3. Observe the command list still says `uninstall-agent   Disable background mode (macOS)`
+3. Observe the command list says `uninstall-agent   Turn off background mode (macOS)`
 4. Run `node bin/idlewatch-agent.js uninstall-agent --help`
-5. Observe the title/body still say `Disable background mode (macOS)` / `Disables background mode on macOS.`
+5. Observe the title/body say `Turn off background mode (macOS)` / `Turns off background mode on macOS.`
 
 **Acceptance criteria**
-- Main help says `uninstall-agent   Turn off background mode (macOS)`
-- `uninstall-agent --help` says `idlewatch uninstall-agent — Turn off background mode (macOS)`
-- `uninstall-agent --help` body says `Turns off background mode on macOS.`
-- Matching regression assertions update so the calmer wording does not drift back
-- No auth, ingest, packaging, or launch-agent behavior changes
+- [x] Main help says `uninstall-agent   Turn off background mode (macOS)`
+- [x] `uninstall-agent --help` says `idlewatch uninstall-agent — Turn off background mode (macOS)`
+- [x] `uninstall-agent --help` body says `Turns off background mode on macOS.`
+- [x] Matching regression assertions update so the calmer wording does not drift back
+- [x] No auth, ingest, packaging, or launch-agent behavior changes
 
-**Last updated:** Friday, March 27th, 2026 — 4:55 AM (America/Toronto)  
+**Last updated:** Friday, March 27th, 2026 — 9:15 AM (America/Toronto)  
 **Status:** COMPLETE ✅ - one tiny uninstall/help wording seam documented for follow-up
 
 

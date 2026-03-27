@@ -54,7 +54,7 @@ For background mode:
 
 ```bash
 npm install -g idlewatch  # install once
-idlewatch install-agent   # then turn on background mode
+idlewatch install-agent   # turn on background mode
 idlewatch menubar         # optional menu bar app for quick status
 ```
 
