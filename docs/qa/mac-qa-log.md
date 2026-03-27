@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R430 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny README setup-note cleanup from the live checkout.
+
+### Priority call
+One low-risk doc seam still cleared the bar this pass: the top README already points people to `--no-tui` for the simplest setup path, but the note still said `text-prompt setup path`. That wording was understandable, but a touch more mechanical than the calmer product language already used across the CLI and nearby docs.
+
+### What changed
+- Reworded the README note from `Add --no-tui any time you want the simplest text-prompt setup path.` to `Add --no-tui any time you want the simplest setup path.`
+- Kept the command story unchanged: `idlewatch quickstart --no-tui` is still the recommended minimal setup flow
+- Kept saved-config handling, startup/install behavior, validation messaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "simplest setup path\|text-prompt setup path" README.md`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: focused installer/CLI regression lane still passes cleanly
+
+### Prioritized findings
+#### [x] L100 — README now says `simplest setup path` instead of `simplest text-prompt setup path`
+**Why this mattered:** This is tiny, but it lands in a scan-first install/setup note. `Text-prompt setup path` worked, yet it read a notch more tool-shaped than the calmer `simple prompts` / `simplest setup path` story already used elsewhere.
+
+**Acceptance notes**
+- README still points people to `--no-tui` for the simplest setup flow
+- The note is now shorter and less implementation-shaped
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changed
+
+**Last updated:** Friday, March 27th, 2026 — 2:36 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny README setup-note seam fixed in this pass
+
 ## Cycle R429 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

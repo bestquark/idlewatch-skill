@@ -16,7 +16,7 @@ npx idlewatch quickstart --no-tui
 
 Use the `npx` path when you want to try IdleWatch without installing it first.
 
-> **Note:** Add `--no-tui` any time you want the simplest text-prompt setup path.
+> **Note:** Add `--no-tui` any time you want the simplest setup path.
 
 ## Quickstart
 
