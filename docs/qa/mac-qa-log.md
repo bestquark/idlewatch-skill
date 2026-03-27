@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R432 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS install-script wording cleanup from the live checkout.
+
+### Priority call
+One low-risk seam still cleared the bar this pass: the packaged macOS install script had one rare collision warning that still explained the problem in `launchd` terms instead of the calmer `background mode` product story already used across the rest of the setup/install lane. The behavior was correct; only the wording lagged behind.
+
+### What changed
+- Reworded the packaged macOS default-label collision warning in `scripts/install-macos-launch-agent.sh` from `LaunchAgent` / `launchd` / `already-loaded IdleWatch agent` framing to calmer `background-mode label` wording
+- Kept the safety behavior unchanged: the script still refuses to reuse the default label with a custom app path or plist root so side-by-side QA/dev installs do not collide
+- Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs` so that warning stays on the simpler product wording and does not drift back toward `launchd` internals
+- Kept setup flow, saved-config handling, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **7 passed, 0 failed**
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L101 — packaged macOS default-label collision warning now stays on `background mode` wording instead of `launchd` internals
+**Why this mattered:** This is tiny, but it sits in a real setup/install guardrail. The script should warn clearly without pulling people into platform mechanics when the product already has a calmer `background mode` story everywhere else.
+
+**Acceptance notes**
+- The collision warning now says `default background-mode label`, not `default LaunchAgent label`
+- The follow-up explains that it could replace another IdleWatch background-mode install, not an `already-loaded` agent via `launchd`
+- The safety check itself stays unchanged
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged install-script warning seam fixed in this pass
+
 ## Cycle R431 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

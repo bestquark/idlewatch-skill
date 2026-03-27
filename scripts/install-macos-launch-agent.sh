@@ -63,8 +63,8 @@ fi
 
 if [[ "$PLIST_LABEL" == "$DEFAULT_PLIST_LABEL" ]] && \
    [[ "$PLIST_ROOT" != "$DEFAULT_PLIST_ROOT" || $is_standard_app_path -ne 1 ]]; then
-  echo "Refusing to reuse the default LaunchAgent label ($DEFAULT_PLIST_LABEL) with a custom app path or plist root." >&2
-  echo "launchd uses the label as the real identity, so this could replace your already-loaded IdleWatch agent." >&2
+  echo "Refusing to reuse the default background-mode label ($DEFAULT_PLIST_LABEL) with a custom app path or plist root." >&2
+  echo "That could replace another IdleWatch background-mode install that already uses the default label." >&2
   echo "Use IDLEWATCH_LAUNCH_AGENT_LABEL to pick a different label for side-by-side QA/dev installs." >&2
   exit 1
 fi

@@ -192,6 +192,37 @@ test('packaged macOS install script preserves special characters in plist paths'
   }
 })
 
+test('packaged macOS install script keeps the default-label collision warning on background-mode wording', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-default-label-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-default-label-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'IdleWatch QA.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 1)
+    assert.match(install.stderr, /Refusing to reuse the default background-mode label \(com\.idlewatch\.agent\) with a custom app path or plist root\./)
+    assert.match(install.stderr, /That could replace another IdleWatch background-mode install that already uses the default label\./)
+    assert.doesNotMatch(install.stderr, /launchd uses the label as the real identity/)
+    assert.doesNotMatch(install.stderr, /already-loaded IdleWatch agent/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS install script keeps background-mode wording for custom config paths', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-bin-'))
