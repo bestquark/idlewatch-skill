@@ -2,6 +2,49 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R570 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny npm-context detection hardening from the live checkout.
+
+### Priority call
+One low-risk setup/status reliability seam still cleared the bar: the CLI treated `npm_command=exec` by itself as enough to flip into `npx` wording. Nothing functional was broken in the main happy path, but that detection was a bit too eager and could leak one-off `npx idlewatch ...` copy into source-checkout/status surfaces when a stray npm exec env var was hanging around. Tightening that heuristic keeps the product copy calmer and more literal without changing the real `npx` flow.
+
+### What changed
+- Hardened `detectCliInvocation()` in `bin/idlewatch-agent.js` so `npm_command=exec` only counts as `npx` when it is backed by real npm context (`npm_execpath` or npm user-agent), instead of by itself
+- Added a focused regression in `test/openclaw-env.test.mjs` covering the stray-env case so source-checkout status keeps the normal `idlewatch ...` wording there
+- Kept the real one-off `npx` onboarding flow unchanged: `quickstart --no-tui` still says `npx idlewatch run` immediately and keeps the durable background-mode handoff separate
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Stray-env source-checkout spot check:
+  - `HOME="$TMPHOME1" PATH="$PATH" npm_command=exec node bin/idlewatch-agent.js status`
+- [x] Observed: first-run source-checkout `status` stays on the normal product wording:
+  - `Get started:  idlewatch quickstart --no-tui`
+  - no accidental `npx idlewatch ...` hints appear
+- [x] Real npm-exec spot check still keeps the one-off path literal:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" PATH="$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] Observed: real npm-exec `quickstart --no-tui` still says:
+  - `Run now:`
+  - `  npx idlewatch run   Run in the foreground`
+  - `For background mode:`
+  - `  Install once: npm install -g idlewatch`
+  - `  Turn on background mode: idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — stray `npm_command=exec` env no longer flips source-checkout surfaces into `npx` wording by itself
+**Why this mattered:** This is tiny, but it lands in exactly the kind of environment-shaped edge case that makes polish feel flaky when it happens. The one-off `npx` path should stay literal when it is truly in play, but normal source-checkout/status surfaces should not drift just because one npm env var leaked into the shell.
+
+**Acceptance checks**
+- Source-checkout `status` with only `npm_command=exec` set keeps the normal `idlewatch quickstart --no-tui` handoff
+- The same stray-env source-checkout surface does not print accidental `npx idlewatch ...` hints
+- Real npm-exec / `npx` setup still keeps `Run now:  npx idlewatch run`
+- The durable background-mode handoff in real npm-exec stays unchanged on `idlewatch install-agent`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny npm-context detection hardening pass
+
 ## Cycle R569 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one real `npx` next-step regression in the live checkout.

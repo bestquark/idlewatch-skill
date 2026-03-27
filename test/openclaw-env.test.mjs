@@ -2063,6 +2063,28 @@ test('quickstart gives a calmer non-interactive error when cloud mode is missing
   }
 })
 
+test('source checkout does not drift into npx wording from a stray npm_command env alone', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-source-stray-npm-exec-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        npm_command: 'exec'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(run.stdout, /npx idlewatch/)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart and configure keep one-off runs honest about background install under npm exec env', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-npx-env-'))
   try {

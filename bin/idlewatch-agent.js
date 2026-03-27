@@ -61,7 +61,7 @@ function detectCliInvocation() {
   const npmLifecycleEvent = String(process.env.npm_lifecycle_event || '').toLowerCase()
   const looksLikeRepoScript = scriptBase === 'idlewatch-agent.js' && /(?:^|\/)bin\/idlewatch-agent\.js$/.test(scriptArg)
   const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
-  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || npmCommand === 'exec' || npmLifecycleEvent === 'npx' || (userAgent.includes('npm/') && execArgv.includes('exec'))
+  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || npmLifecycleEvent === 'npx' || (npmCommand === 'exec' && (npmExecPath.includes('npm') || userAgent.includes('npm/'))) || (userAgent.includes('npm/') && execArgv.includes('exec'))
 
   if (looksLikeNpx) return { kind: 'npx', base: 'npx idlewatch' }
   if (looksLikeGlobalShim) return { kind: 'global', base: 'idlewatch' }
