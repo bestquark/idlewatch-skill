@@ -2,7 +2,7 @@
 
 IdleWatch ships an `.app` scaffold in `dist/` and a DMG installer pipeline.
 Signing/notarization are optional but available when Apple credentials are configured.
-The `scripts/` folder now includes packaging, runtime, and launch lifecycle helpers for
+The `scripts/` folder now includes packaging, runtime, and background-mode helpers for
 local testing and release preparation.
 
 ## Prerequisites

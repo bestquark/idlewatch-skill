@@ -57,10 +57,10 @@ DMG release scaffolding is included:
   - Runtime copy is now limited to `bin`, `lib`, and `include` directories (with symlink dereference) to keep runtime payloads portable and avoid noise from host-specific completion symlinks.
 - Bundled-runtime packaging gate via `npm run validate:packaged-bundled-runtime` (repackages with a bundled runtime and verifies launcher dry-run succeeds with `PATH=/usr/bin:/bin` where `node` is absent).
 - `IdleWatch.app` now opens as a native menu bar app on macOS while still preserving CLI passthrough when you execute `Contents/MacOS/IdleWatch` with arguments such as `--dry-run`.
-- Background execution lifecycle helpers:
+- Background mode helpers:
   - `scripts/install-macos-launch-agent.sh`
   - `scripts/uninstall-macos-launch-agent.sh`
-  - Install an auto-starting `LaunchAgent` via `IDLEWATCH_APP_PATH`, `IDLEWATCH_LAUNCH_AGENT_LABEL`, `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT`, and `IDLEWATCH_LAUNCH_AGENT_LOG_DIR`.
+  - Turn background mode on for the current user via `IDLEWATCH_APP_PATH`, `IDLEWATCH_LAUNCH_AGENT_LABEL`, `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT`, and `IDLEWATCH_LAUNCH_AGENT_LOG_DIR`.
 
 Strict packaging mode:
 - Set `IDLEWATCH_REQUIRE_TRUSTED_DISTRIBUTION=1` to hard-fail packaging unless trust prerequisites are configured.

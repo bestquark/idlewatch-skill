@@ -2,6 +2,47 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R473 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+One last low-risk wording seam still cleared the bar this pass: a pair of scan-first packaging/validation docs still framed the macOS durable path as `launch lifecycle` / `LaunchAgent` mechanics even though the product itself has already converged on the calmer `background mode` story. The behavior was already right; this just keeps two real setup/install references aligned with the setup voice people now see everywhere else.
+
+### What changed
+- Reworded the opening helper summary in `docs/packaging/macos-dmg.md` from `launch lifecycle helpers` to `background-mode helpers`
+- Reworded the matching helper section in `docs/VALIDATION.md` from `Background execution lifecycle helpers` / `Install an auto-starting LaunchAgent` to `Background mode helpers` / `Turn background mode on for the current user`
+
+### Verification evidence
+- [x] `grep -n "background-mode helpers\|launch lifecycle helpers" docs/packaging/macos-dmg.md`
+- [x] `grep -n "Background mode helpers\|Background execution lifecycle helpers\|Turn background mode on for the current user" docs/VALIDATION.md`
+- [x] Result: the touched packaging/validation surfaces now stay on the product-shaped `background mode` wording instead of briefly reverting to implementation-first lifecycle framing
+
+### Prioritized findings
+#### [x] L123 — packaging/validation helper summaries now stay on `background mode` wording instead of `launch lifecycle` / `LaunchAgent` framing
+**Why this mattered:** This is tiny, but these are still real installer-adjacent references that people can scan while deciding how the packaged macOS path works. Leaving them on `launch lifecycle` / `Install an auto-starting LaunchAgent` made the docs feel slightly older and more platform-shaped than the actual setup/reconfigure flow.
+
+**Repro**
+1. Open `docs/packaging/macos-dmg.md`
+2. Read the opening helper summary near the top of the file
+3. Open `docs/VALIDATION.md`
+4. Read the helper bullet list in the macOS packaging/DMG section
+
+**Expected**
+- The docs describe the user-facing helper lane as `background mode`
+- They do not lead with `launch lifecycle helpers` or `Install an auto-starting LaunchAgent`
+
+**Actual (before fix)**
+- `docs/packaging/macos-dmg.md` said `launch lifecycle helpers`
+- `docs/VALIDATION.md` said `Background execution lifecycle helpers` and `Install an auto-starting LaunchAgent`
+
+**Fix shipped**
+- Updated both doc surfaces to keep the calmer product wording aligned with the rest of the current installer/setup story
+
+**Risk / scope**
+- Docs-only wording cleanup
+- No setup-flow, saved-config, install/uninstall, packaging behavior, or telemetry-path changes
+
 ## Cycle R472 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
