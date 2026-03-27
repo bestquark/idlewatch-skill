@@ -20,7 +20,7 @@ Use this path for the simplest one-off setup and foreground testing.
 Wizard output:
 - Prompts for a device name, API key, and which metrics to collect.
 - Generates an env file (`idlewatch.env`) under the user config directory.
-- Saves local config so later runs auto-load without manually sourcing the env file.
+- Saves local config so later runs use the saved setup without manually sourcing the env file.
 - Sends a first sample so the device can link right away.
 
 ### 2) Signed DMG install (managed rollout)
@@ -33,7 +33,7 @@ Wizard output:
 3. User drags app into Applications and launches.
 4. On first run, user executes quickstart from packaged app terminal context to link the device with an API key.
 
-### Optional: background startup on macOS
+### Optional: background mode on macOS
 
 Background mode needs a durable install. `npx idlewatch ...` is for one-off runs, not background-mode setup.
 

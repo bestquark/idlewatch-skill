@@ -128,9 +128,9 @@ Optional environment variables:
 - `npm run package:release`
   - Runs `package:trusted` and checksum validation in one command (safe for production-ready artifact preparation)
 - `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh`
-  - Packaged-app path for enabling background startup on a normal installed app
+  - Packaged-app path for turning on background mode on a normal installed app
 - `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/uninstall-macos-launch-agent.sh`
-  - Packaged-app path for removing the background startup agent later
+  - Packaged-app path for turning background mode off later
 - `scripts/install-macos-launch-agent.sh`
   - Writes `~/Library/LaunchAgents/<label>.plist`
   - Loads `LaunchAgent` under current user sandbox, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s), background mode, stdout/stderr logs

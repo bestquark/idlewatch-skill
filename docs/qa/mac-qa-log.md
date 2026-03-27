@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R412 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining wording seam in external onboarding/install docs. The CLI and nearby setup surfaces already tell the calmer `saved setup` / `background mode` story, but `docs/onboarding-external.md` still said `auto-load` and `background startup`, and `docs/packaging/macos-dmg.md` still referred to `background startup` in its packaged-app script references.
+
+### What changed
+- Reworded `docs/onboarding-external.md` so later runs `use the saved setup` instead of `auto-load`ing, which keeps the onboarding story calmer and less implementation-shaped
+- Reworded the onboarding section heading from `Optional: background startup on macOS` to `Optional: background mode on macOS`
+- Reworded the packaged-app script bullets in `docs/packaging/macos-dmg.md` from `background startup` / `background startup agent` to `background mode`
+- Kept setup behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "use the saved setup\|background mode on macOS\|turning on background mode\|turning background mode off\|background startup" docs/onboarding-external.md docs/packaging/macos-dmg.md`
+- [x] Result: the touched onboarding/packaging surfaces now use the calmer `saved setup` / `background mode` wording and no longer use `background startup`
+
+### Prioritized findings
+#### [x] L92 — external onboarding/docs now keep the calmer `saved setup` / `background mode` wording
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but these are still real setup/install decision surfaces. The product already converged on `saved config` / `background mode` elsewhere; leaving `auto-load` and `background startup` here made the external onboarding path feel slightly older and more mechanical than the actual setup story.
+- **Acceptance criteria:**
+  - `docs/onboarding-external.md` says later runs `use the saved setup`, not `auto-load`
+  - `docs/onboarding-external.md` uses `background mode on macOS`, not `background startup on macOS`
+  - `docs/packaging/macos-dmg.md` refers to turning `background mode` on/off, not `background startup`
+  - No runtime/setup/install behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 1:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny external onboarding/install wording seam fixed without changing behavior
+
 ## Cycle R411 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
