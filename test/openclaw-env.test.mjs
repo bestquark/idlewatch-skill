@@ -2676,7 +2676,7 @@ test('status command keeps npx background hints short and durable-install orient
     })
 
     assert.equal(noSamples.status, 0, noSamples.stderr)
-    assert.match(noSamples.stdout, /Start:\s+npx idlewatch run/)
+    assert.match(noSamples.stdout, /Run now:\s+npx idlewatch run/)
     assert.match(noSamples.stdout, /Install once:\s+npm install -g idlewatch/)
     assert.match(noSamples.stdout, /Turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(noSamples.stdout, /Then enable:\s+idlewatch install-agent/)

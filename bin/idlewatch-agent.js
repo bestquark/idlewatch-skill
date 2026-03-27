@@ -1929,7 +1929,7 @@ if (statusRequested) {
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
-      console.log(`  Start:    ${inferCliCommand('run')}`)
+      console.log(`  Run now:  ${inferCliCommand('run')}`)
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')
@@ -1940,7 +1940,7 @@ if (statusRequested) {
         console.log('  Turn on background mode:  idlewatch install-agent')
       }
     } else {
-      console.log(`  Start:    ${inferCliCommand('run')}`)
+      console.log(`  Run now:  ${inferCliCommand('run')}`)
       if (process.platform === 'darwin') {
         const launchAgent = probeOwnedLaunchAgentState()
         const installAgentCommand = preferredProductCommand('install-agent')

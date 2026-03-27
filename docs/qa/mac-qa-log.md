@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R498 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `status` foreground-hint wording cleanup from the live checkout.
+
+### Priority call
+One low-risk scan-first seam still cleared the bar this pass: in the `status` follow-up branch with saved setup but no samples yet, the product still used the clipped `Start:` label before the foreground `run` command. The behavior was already right, but nearby setup/install surfaces had already converged on calmer `Run now` / `Use it now` wording. Tightening that label makes the first-run status handoff feel a little more literal and less tool-shaped.
+
+### What changed
+- Reworded the `status` follow-up in `bin/idlewatch-agent.js` from `Start: ... run` to `Run now: ... run` in both normal and `npx` invocation paths
+- Updated the matching regression coverage in `test/openclaw-env.test.mjs` so the calmer status handoff does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command shows contextual next-step hints|status command keeps npx background hints short and durable-install oriented|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] Fresh live status spot checks still pass from the live checkout for both:
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js status`
+
+### Prioritized findings
+#### [x] L133 — `status` now says `Run now` instead of `Start` before the foreground `run` command
+**Why this mattered:** This is tiny, but it lands in a real first-run/status moment where the product is suggesting the simplest next step. `Start:` worked, yet it was a bit clipped next to the calmer `Use it now` / `Run now` wording already used elsewhere nearby.
+
+**Acceptance checks**
+- `status` now says `Run now:  ... run` in the no-samples follow-up branch
+- The same status branch no longer says `Start:    ... run`
+- The `npx` status path now says `Run now:  npx idlewatch run`
+- Matching regression assertions were updated so the calmer wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `status` foreground-hint wording cleanup
+
 ## Cycle R497 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
