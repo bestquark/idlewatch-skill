@@ -720,6 +720,44 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R613 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny custom-saved-config setup truthfulness fix from the live checkout.
+
+### Priority call
+One small but clearly product-facing seam cleared the bar: `IDLEWATCH_CONFIG_ENV_PATH` had already become part of nearby follow-up commands and status surfaces, but the actual setup flow still wrote the saved env file to the default `~/.idlewatch/idlewatch.env` path. That made the product quietly contradict itself in the exact setup/check-your-work moment where it should feel most literal. The fix was intentionally tiny: make setup itself honor the configured saved-config path so the file, the success screen, and the next command all point to the same place.
+
+### What changed
+- Taught `runEnrollmentWizard()` in `src/enrollment.js` to use `IDLEWATCH_CONFIG_ENV_PATH` as the default saved env location when no narrower `outputEnvFile` override is provided
+- Kept the existing precedence intact: explicit `options.outputEnvFile` / `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE` still win when present
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for a custom-path `quickstart --no-tui` flow, including the same-shell `status` follow-up
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check src/enrollment.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh custom-config source-checkout spot check now shows:
+  - `Config: ~/configs/idlewatch custom.env`
+  - the configured custom env file is created
+  - the default `~/.idlewatch/idlewatch.env` file is not created as a shadow copy
+- [x] Fresh same-shell custom-config `status` spot check now shows saved setup instead of falling back to `Setup: not completed yet`
+- [x] Observed: nearby custom-path follow-up commands remain literal and copy-safe, and local-only verification / background-mode hints keep the existing calmer wording
+
+### Prioritized findings
+#### [x] P1 — setup now writes the saved env file to `IDLEWATCH_CONFIG_ENV_PATH` when that custom path is configured
+**Why this mattered:** This is tiny, but it lands in a trust-sensitive moment. Once the CLI starts showing a custom config path in its follow-up commands, setup has to actually write that file there. Otherwise the success screen, filesystem, and next command drift apart and make setup look flaky when it is really just inconsistent.
+
+**Acceptance checks**
+- `quickstart` honors `IDLEWATCH_CONFIG_ENV_PATH` for the actual saved env file when no narrower output-file override is set
+- Setup success prints the same custom config path that was actually written
+- The configured custom env file is created, and the default `~/.idlewatch/idlewatch.env` is not silently written instead
+- A same-shell `status` immediately after setup recognizes the saved setup at the custom path instead of falling back to `Setup: not completed yet`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny custom-saved-config setup truthfulness fix
+
 ## Cycle R612 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real custom-saved-config setup regression in the live checkout.

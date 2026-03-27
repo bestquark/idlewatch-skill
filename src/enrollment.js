@@ -486,7 +486,13 @@ export async function runEnrollmentWizard(options = {}) {
   const nonInteractive = options.nonInteractive || process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE === '1'
   const noTui = options.noTui || process.env.IDLEWATCH_NO_TUI === '1'
   const configDir = path.resolve(options.configDir || process.env.IDLEWATCH_ENROLL_CONFIG_DIR || defaultConfigDir())
-  const outputEnvFile = path.resolve(options.outputEnvFile || process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || path.join(configDir, 'idlewatch.env'))
+  const configuredPersistedEnvFile = String(process.env.IDLEWATCH_CONFIG_ENV_PATH || '').trim()
+  const outputEnvFile = path.resolve(
+    options.outputEnvFile ||
+    process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE ||
+    configuredPersistedEnvFile ||
+    path.join(configDir, 'idlewatch.env')
+  )
 
   // Load existing saved config for reconfigure defaults
   let existingConfig = null

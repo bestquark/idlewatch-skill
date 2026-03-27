@@ -24,6 +24,16 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+function formatHomeRelative(homeDir, targetPath) {
+  const resolvedHome = path.resolve(homeDir)
+  const resolvedTarget = path.resolve(targetPath)
+  if (resolvedTarget === resolvedHome) return '~'
+  if (resolvedTarget.startsWith(resolvedHome + path.sep)) {
+    return `~/${path.relative(resolvedHome, resolvedTarget)}`
+  }
+  return resolvedTarget
+}
+
 function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
@@ -3305,6 +3315,51 @@ test('status command shows contextual next-step hints', () => {
       assert.ok(withSamples.stdout.includes(`Background mode on macOS:  ${SOURCE_CMD} install-agent`), 'should keep the non-macOS background-mode hint on the calmer product wording when samples exist')
       assert.ok(!withSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not fall back to the older Enable wording on non-macOS when samples exist')
     }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('quickstart honors custom saved-config path for the actual setup file', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-config-path-'))
+  try {
+    const configRoot = path.join(tempDir, 'configs')
+    fs.mkdirSync(configRoot, { recursive: true })
+    const customConfigPath = path.join(configRoot, 'idlewatch custom.env')
+
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        IDLEWATCH_CONFIG_ENV_PATH: customConfigPath,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Custom Path Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+    assert.equal(fs.existsSync(customConfigPath), true, 'should create the configured custom saved env file')
+    assert.equal(fs.existsSync(path.join(tempDir, '.idlewatch', 'idlewatch.env')), false, 'should not also write the default saved env file')
+    assert.match(quickstart.stdout, new RegExp(`Config:\\s+${escapeRegex(formatHomeRelative(tempDir, customConfigPath))}`))
+
+    const savedEnv = fs.readFileSync(customConfigPath, 'utf8')
+    assert.match(savedEnv, /IDLEWATCH_DEVICE_NAME=Custom Path Box/)
+    assert.match(savedEnv, /IDLEWATCH_DEVICE_ID=custom-path-box/)
+
+    const status = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, IDLEWATCH_CONFIG_ENV_PATH: customConfigPath, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(status.status, 0, status.stderr)
+    assert.doesNotMatch(status.stdout, /Setup:\s+not completed yet/)
+    assert.match(status.stdout, /Device:\s+Custom Path Box/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
