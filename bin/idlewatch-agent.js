@@ -331,14 +331,14 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     } else {
       console.log(`   Apply saved config:  re-run ${backgroundInstallCommand} to apply the saved config`)
     }
-    console.log(`   Or run now:       ${runCommand}   Run in the foreground`)
+    console.log(`   Run now:         ${runCommand}   Run in the foreground`)
     return
   }
 
   if (backgroundAgentInstalledNeedsRefresh) {
     console.log('\n   Background mode is installed and not running yet.')
     console.log(`   Turn on background mode:  ${backgroundInstallCommand}`)
-    console.log(`   It stays off until you run ${backgroundInstallCommand}.`)
+    console.log('   It stays off until then.')
     console.log('   Background mode will use the saved config.')
     if (invocation.kind === 'npx') {
       console.log('   This npx run saved the config, but background mode still uses the durable install.')

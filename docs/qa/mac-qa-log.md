@@ -2,6 +2,73 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R504 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny reconfigure follow-up wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar this pass: when settings were saved while background mode was already running, completion output still said `Or run now:` before the foreground `run` command. The behavior was already right, but that leading `Or` made the handoff feel slightly more conversational and slightly less scan-clean than the calmer `Run now` / `Use it now` wording already used everywhere else nearby.
+
+### What changed
+- Reworded the already-running setup/reconfigure follow-up in `bin/idlewatch-agent.js` from `Or run now: ... run` to `Run now: ... run`
+- Tightened the matching regression coverage in `test/openclaw-env.test.mjs` so the running-background branch keeps the lower-noise wording and does not drift back
+- Kept setup flow behavior, saved-config handling, launch-agent install semantics, device identity continuity, metric-toggle persistence, and telemetry behavior unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(configure success says to refresh an already-running background agent|quickstart and configure keep one-off runs honest about background install under npm exec env|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|test-publish|npx|help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] Observed: the already-running setup/reconfigure branch now says `Run now: ... run   Run in the foreground`
+- [x] Observed: the same branch no longer says `Or run now:`
+
+### Prioritized findings
+#### [x] L137 — already-running setup/reconfigure handoff now says `Run now` instead of `Or run now`
+**Why this mattered:** This is tiny, but it lands right after a successful settings change where the product should feel crisp and copy-paste friendly. `Or run now:` was understandable, yet the extra conjunction made the handoff read slightly more like narration than a clean next step.
+
+**Acceptance checks**
+- The already-running setup/reconfigure branch now says `Run now:  ... run   Run in the foreground`
+- The same branch no longer says `Or run now:`
+- Matching regression assertions were updated so this lower-noise wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny running-background handoff wording cleanup
+
+## Cycle R503 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny installed-but-off handoff cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar this pass: in the installed-but-not-running branch right after setup or settings changes, the product showed `Turn on background mode: idlewatch install-agent` and then immediately repeated the same command idea in the next sentence with `It stays off until you run idlewatch install-agent.` The behavior was already right, but in a scan-first moment that second line felt slightly repetitive and noisier than it needed to be.
+
+### What changed
+- Tightened the installed-but-off setup/reconfigure follow-up in `bin/idlewatch-agent.js` from `It stays off until you run idlewatch install-agent.` to the calmer `It stays off until then.`
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the installed-but-off branch keeps the lower-noise wording and does not drift back
+- Kept setup behavior, saved-config persistence, launch-agent install semantics, device identity continuity, metric-toggle persistence, and telemetry behavior unchanged
+
+### Verification evidence
+- [x] Fresh live clean-home lifecycle pass from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` with a stubbed `launchctl` for:
+  - `node bin/idlewatch-agent.js install-agent`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js status`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+- [x] Observed: the installed-but-off post-setup and post-configure handoff now says `It stays off until then.` right below `Turn on background mode:  idlewatch install-agent`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup|install-agent does not claim background is running when launchd still reports not loaded|quickstart and configure keep one-off runs honest about background install under npm exec env|quickstart|configure|status|install-agent|uninstall-agent|test-publish|npx|help)'`
+- [x] Result: **97 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L136 — installed-but-off setup/reconfigure handoff no longer repeats `idlewatch install-agent` twice in a row
+**Why this mattered:** This is tiny, but it lands in the exact copy-paste moment after setup where the product should feel crisp and finished. The command was already explicit in the line above. Repeating it again immediately after made the handoff read slightly more repetitive than helpful.
+
+**Acceptance checks**
+- The installed-but-off setup/reconfigure branch still says `Turn on background mode:  idlewatch install-agent`
+- The follow-up line now says `It stays off until then.`
+- The same branch no longer says `It stays off until you run idlewatch install-agent.`
+- Matching regression assertions were updated so this lower-noise wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:31 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-but-off handoff repetition cleanup
+
 ## Cycle R502 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny npm postinstall install-path cleanup from the live checkout.
