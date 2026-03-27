@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R386 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing installer/CLI polish issue in scope worth opening. The current setup/install/reconfigure/status story remains neat, low-friction, and product-shaped, and the remaining copy in the checked help surfaces still feels calmer than another forced tweak would.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output names a custom retained local log path|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- Result: **90 passed, 0 failed**
+- Fresh live help spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the fresh help spot checks listed above from the live checkout
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status help aligned on the calmer saved-config story
+- install/uninstall help honest without overexplaining background internals
+- `--test-publish` explicit without turning it into a second workflow
+- saved device identity continuity and metric-toggle persistence covered by the still-green regression lane
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own banner adding noise when it appears
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:08 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R385 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
