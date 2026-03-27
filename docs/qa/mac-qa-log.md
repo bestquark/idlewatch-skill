@@ -2,6 +2,58 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R466 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. The current setup wizard, saved-config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split still feel calm, direct, and low-friction in real command output.
+
+### Verification evidence
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - Clean-home install/setup/configure/status/uninstall lane with a fake `launchctl` shim that keeps background mode installed-but-not-running honest
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch quickstart --no-tui`
+- Current live spot-check highlights:
+  - first-run `status` still previews setup cleanly without spilling launch-agent mechanics into the main scan path
+  - `--test-publish` still stays lightweight and explicit on the local-only happy path
+  - `quickstart` / `configure` help still keeps the calmer `Uses simple prompts` wording and the optional-cloud setup story
+  - installed-but-not-running setup and reconfigure follow-ups still stay explicit about background mode staying off until `install-agent` is run
+  - renamed-device flow still keeps stable device identity visible inline instead of silently mutating it
+  - uninstall output still stays short, reversible, and clear that saved config + local logs remain
+  - `npx` help and `npx quickstart` still keep one-off use clearly separate from the durable install path, with only npm's own update banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. In particular, repeat the clean-home install/setup/configure/status/uninstall sequence with a fake `launchctl` shim so the installed-but-not-running messaging is exercised directly
+3. Re-check the requested setup wizard / config persistence / launch-agent / test-publish / device identity / metric-toggle / npm-npx lane together rather than broadening into unrelated surfaces
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- first-run `status` preview-shaped instead of implementation-shaped
+- saved-config apply/reload guidance predictable across help, setup, configure, install, and status
+- install-before-setup and installed-but-not-running handoffs honest without getting verbose
+- device rename continuity explicit, with stable device identity called out at the moment it matters
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- clean npm/npx one-off-vs-durable-install guidance, with the remaining output noise coming from npm itself rather than IdleWatch
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 5:50 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R465 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny installed-but-not-running saved-config wording cleanup from the live checkout.
