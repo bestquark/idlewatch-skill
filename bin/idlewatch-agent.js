@@ -2023,10 +2023,14 @@ if (statusRequested) {
     }
   } else {
     const installAgentCommand = preferredProductCommand('install-agent')
+    const invocation = detectCliInvocation()
+    const runCommand = invocation.kind === 'npx'
+      ? inferCliCommand('run')
+      : preferredProductCommand('run')
     console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
-    console.log(`  Run now:  ${preferredProductCommand('run')}`)
+    console.log(`  Run now:  ${runCommand}`)
 
-    if (detectCliInvocation().kind === 'npx') {
+    if (invocation.kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')

@@ -1,3 +1,42 @@
+## Cycle R601 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny true-`npx` saved-status follow-up fix from the live checkout.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: in a real `npx` context, saved-setup `status` with existing samples had drifted back to plain `idlewatch run` even though the nearby `Change` action and the no-sample path already stayed literal on `npx idlewatch ...`. Nothing functional was broken, yet this lands exactly where people copy commands verbatim. Keeping `Run now` literally runnable there removes one subtle assumption about a global install without changing the durable background-mode handoff.
+
+### What changed
+- Reworked the saved-setup/with-samples `status` action block in `bin/idlewatch-agent.js` so `Run now` now uses the invocation-aware command instead of the generic product command
+- In practice, true-`npx` saved status now says `Run now: npx idlewatch run` while source/global-install surfaces stay on the calmer `idlewatch run`
+- Left setup/reconfigure flows, saved-config semantics, launch-agent behavior, packaging, auth, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` saved-setup status spot check now shows:
+  - `Change:   npx idlewatch configure --no-tui`
+  - `Run now:  npx idlewatch run`
+  - `For background mode:`
+  - `    Install once:            npm install -g idlewatch`
+  - `    Turn on background mode: idlewatch install-agent`
+- [x] Observed: the true-`npx` with-samples status surface no longer falls back to plain `idlewatch run`
+- [x] Focused `node --test` slices still exhibit the previously logged sticky runner behavior in this environment, so this pass used syntax validation plus direct live repro/verification for the changed surface
+
+### Prioritized findings
+#### [x] P1 — true-`npx` saved-setup `status` now keeps `Run now` literally runnable after samples already exist
+**Why this mattered:** This is tiny, but it lands in the exact “status looks good, let me copy the next command” moment. Showing plain `idlewatch run` there quietly assumed a global install even though the surrounding surface already knew it was in a one-off `npx` context.
+
+**Acceptance checks**
+- True-`npx` saved-setup `status` with samples now says `Change: npx idlewatch configure --no-tui`
+- That same surface now says `Run now: npx idlewatch run`
+- The same surface still keeps the durable background-mode split under `For background mode:` with `npm install -g idlewatch` then `idlewatch install-agent`
+- Source/global-install status surfaces remain unchanged on the calmer `idlewatch run`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:58 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` saved-status `Run now` literalness fix
+
 ## Cycle R600 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` literalness regression in the live checkout.
