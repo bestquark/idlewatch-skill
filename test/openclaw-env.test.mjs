@@ -1186,23 +1186,29 @@ test('run/create/dashboard/menubar help keeps the calmer idlewatch command story
 })
 
 test('uninstall-agent help reassures that config and logs are kept', () => {
-  const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
-    env: { ...process.env, PATH: process.env.PATH },
-    encoding: 'utf8',
-    timeout: 10000
-  })
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-help-defaults-'))
 
-  assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
-  assert.match(run.stdout, /Turns off background mode on macOS\./)
-  assert.doesNotMatch(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
-  assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)
-  assert.match(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs when local logging is on, so you can re-enable background mode later\./)
-  assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
-  assert.doesNotMatch(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch/)
-  assert.doesNotMatch(run.stdout, /Remove background LaunchAgent \(macOS\)/)
-  assert.doesNotMatch(run.stdout, /Stops and removes the IdleWatch LaunchAgent\./)
-  assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
+    assert.match(run.stdout, /Turns off background mode on macOS\./)
+    assert.doesNotMatch(run.stdout, /Stops and removes the LaunchAgent for background mode\./)
+    assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)
+    assert.match(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs when local logging is on, so you can re-enable background mode later\./)
+    assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
+    assert.doesNotMatch(run.stdout, /Saved config and local logs stay in ~\/\.idlewatch/)
+    assert.doesNotMatch(run.stdout, /Remove background LaunchAgent \(macOS\)/)
+    assert.doesNotMatch(run.stdout, /Stops and removes the IdleWatch LaunchAgent\./)
+    assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
 })
 
 test('uninstall-agent --help reflects a configured custom saved-config path', () => {

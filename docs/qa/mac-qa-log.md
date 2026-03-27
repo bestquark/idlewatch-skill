@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R521 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny regression-test isolation fix from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI issue cleared the bar in the requested lane. The only small, low-risk fix worth shipping was the stale uninstall-help regression assertion called out in R520: the default retention-copy test was reading the real machine HOME, so a saved local-log path in `~/.idlewatch/idlewatch.env` could make the assertion fail even though the product output was correct.
+
+### What changed
+- Isolated `uninstall-agent help reassures that config and logs are kept` in `test/openclaw-env.test.mjs` behind a fresh temp `HOME`
+- Kept the intent of the test the same: it still verifies the default retained config path and generic default local-log-directory wording when no saved custom local-log target exists
+- Left product copy, setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `grep -n "uninstall-agent help reassures that config and logs are kept" test/openclaw-env.test.mjs`
+- [x] Observed: the default uninstall-help retention test now sets a temp `HOME` and cleans it up after the assertion
+- [x] `grep -n "Local logs stay in ~/.idlewatch/logs\|Local log stays at" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: product behavior still supports both stories intentionally — generic default-directory wording when no saved custom target exists, concrete retained-path wording when one does
+- [x] Focus for this pass stayed intentionally narrow: regression-test drift only, with no user-facing output changes
+
+### Prioritized findings
+#### [x] L147 — default uninstall-help retention test no longer inherits machine-local saved log paths
+**Why this mattered:** This is tiny, but it was the highest-priority remaining low-risk fix in the requested lane because it made the focused regression slice look red for the wrong reason. The product output was already doing the right thing; the test just was not isolated from real saved config on the host.
+
+**Acceptance checks**
+- The default uninstall-help retention test now runs under a clean temp `HOME`
+- It still asserts the default retained config path `~/.idlewatch/idlewatch.env`
+- It still asserts the generic default local-log-directory wording `Local logs stay in ~/.idlewatch/logs ...` for the no-saved-custom-path case
+- The separate custom-local-log test still covers the `Local log stays at ...` branch
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall-help regression-test isolation fix
+
 ## Cycle R520 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
