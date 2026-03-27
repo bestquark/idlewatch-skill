@@ -720,6 +720,53 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R612 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real custom-saved-config setup regression in the live checkout.
+
+### Priority call
+One small but clearly product-facing seam still clears the bar: `IDLEWATCH_CONFIG_ENV_PATH` now affects many follow-up commands, but the actual setup flow still writes the saved env file to the default `~/.idlewatch/idlewatch.env` path instead of the configured custom path. Nothing auth- or ingest-related is wrong, yet this quietly breaks the exact copy/paste contract the surrounding CLI now implies. In practice the setup-success screen can show prefixed commands for a custom config that was never actually written there, and a follow-up `status` in the same shell can still say `Setup: not completed yet`. That is subtle, confusing, and higher-friction than the surrounding polished surfaces.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh custom-config source-checkout repro:
+  - `HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Custom Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] Fresh true-`npx` custom-config repro with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Custom Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - setup success still says `Config: ~/.idlewatch/idlewatch.env` even when `IDLEWATCH_CONFIG_ENV_PATH` points somewhere else
+  - the default env file is the one actually written
+  - the configured custom env file is not created at all
+  - true-`npx` quickstart then prints one-off follow-up commands prefixed with `IDLEWATCH_CONFIG_ENV_PATH=...`, even though that prefixed file does not exist yet
+  - true-`npx` `status` in that same shell can still fall back to `Setup: not completed yet` because it correctly looks at the custom path and finds nothing there
+
+### Prioritized findings
+#### [x] P1 — custom saved-config setup currently writes to the default env file instead of the configured custom path
+**Why this matters:** This is still polish work, not architecture work, but it lands in a trust-sensitive moment. The product has already become more literal about custom config paths in nearby status/help surfaces. If setup itself ignores that path, the CLI starts contradicting itself: the success screen implies one thing, the filesystem does another, and the next command can make setup look unsaved again.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Pick a custom env path, e.g. `CUSTOM_CONFIG="$TMPHOME/configs/idlewatch custom.env"`
+3. Run either of these setup flows:
+   - Source/global-style: `HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$CUSTOM_CONFIG" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Custom Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+   - True `npx`-style: `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$CUSTOM_CONFIG" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Custom Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' node bin/idlewatch-agent.js quickstart --no-tui`
+4. Inspect both paths:
+   - `~/.idlewatch/idlewatch.env`
+   - `"$CUSTOM_CONFIG"`
+5. Observe that setup currently writes only the default path, not the configured custom path; in the true-`npx` repro, `status` can then still say setup is not completed because it checks the custom path that was never created
+
+**Acceptance criteria**
+- `quickstart` and `configure` should honor `IDLEWATCH_CONFIG_ENV_PATH` for the actual saved env file, not just for nearby follow-up commands
+- Setup success should print the same custom config path that was actually written
+- The configured custom env file should be created, and the default `~/.idlewatch/idlewatch.env` should not be silently written instead
+- In true `npx` mode, the follow-up commands should remain literal, but they must point at a file that setup really created
+- A same-shell `status` immediately after setup should recognize the saved setup at the custom path instead of falling back to `Setup: not completed yet`
+- No auth, ingest, or major packaging flow changes should be introduced beyond making custom saved-config handling truthful and consistent
+
+**Last updated:** Friday, March 27th, 2026 — 7:57 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real custom-saved-config setup regression from a fresh live pass
+
 ## Cycle R611 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny custom-saved-config follow-up command fix from the live checkout.
