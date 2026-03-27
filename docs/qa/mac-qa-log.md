@@ -2,6 +2,67 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R502 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny npm postinstall handoff finding from the live checkout.
+
+### Priority call
+One low-risk npm/npx install-path seam still clears the bar this pass: the npm postinstall message is already running in a durable-install context, but it still follows `idlewatch quickstart --no-tui` with a `Try it once: npx idlewatch quickstart --no-tui` line. That command is valid, but in this exact moment it adds a second setup path the user does not need and slightly blurs the otherwise polished split between one-off `npx` use and the durable `idlewatch` path.
+
+### Verification evidence
+- Targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **97 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+  - `node scripts/postinstall.mjs`
+- Current live spot-check highlights:
+  - main help, first-run status, setup/reconfigure help, install/uninstall help, and `--test-publish` still stay calm and product-shaped
+  - durable-vs-`npx` guidance still holds up well in the CLI itself
+  - the remaining mismatch is specifically the postinstall banner, which reintroduces `npx` right after a durable install instead of staying on the cleaner installed-command path
+
+### Prioritized findings
+#### [ ] L135 — npm postinstall still suggests `npx idlewatch quickstart --no-tui` immediately after a durable install
+**Why this matters:** This is tiny, but it lands in the exact copy-paste moment after `npm install -g idlewatch`. The rest of the product has already converged on a neat story: use `npx idlewatch ...` when you want a one-off try, and use `idlewatch ...` once IdleWatch is durably installed. Reintroducing `npx` in the postinstall banner right after a successful durable install adds one unnecessary decision and makes the install path feel a bit less crisp.
+
+**Repro**
+1. From `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, run:
+   - `node scripts/postinstall.mjs`
+2. Read the resulting banner.
+3. Notice that it prints both:
+   - `idlewatch quickstart --no-tui`
+   - `npx idlewatch quickstart --no-tui`
+4. Compare that with the otherwise cleaner help/runtime guidance, which already keeps one-off `npx` usage separate from the durable-install path.
+
+**Observed**
+The postinstall banner currently says:
+- `Set up this device:` → `idlewatch quickstart --no-tui`
+- `Try it once:` → `npx idlewatch quickstart --no-tui`
+
+That second line is technically valid, but it is redundant and slightly confusing in a postinstall context where the product already knows the durable `idlewatch` command is available.
+
+**Acceptance criteria**
+- The npm postinstall banner should stay on the durable-install path after `npm install -g idlewatch`.
+- Do not suggest `npx idlewatch quickstart --no-tui` in that postinstall moment.
+- Keep the handoff minimal and useful, for example by focusing on:
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch install-agent`
+  - `idlewatch menubar` where relevant
+- Preserve the broader product rule that `npx` remains the one-off path in docs/help meant for people who have not installed IdleWatch yet.
+
+**Last updated:** Friday, March 27th, 2026 — 9:36 AM (America/Toronto)  
+**Status:** OPEN - one tiny npm postinstall install-path clarity issue found
+
 ## Cycle R501 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
