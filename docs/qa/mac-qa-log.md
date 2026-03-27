@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R527 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny setup/reconfigure handoff wording alignment from the live checkout.
+
+### Priority call
+One low-risk setup-success seam still cleared the bar: after `quickstart --no-tui` or `configure --no-tui`, the immediate foreground handoff still said `Use it now:` even though nearby status, reconfigure, and already-running apply surfaces had already converged on the cleaner `Run now:` label. Nothing functional was broken, but this was a small scan-first inconsistency right at the moment where people copy the next command.
+
+### What changed
+- Reworded the setup/configure foreground handoff in `bin/idlewatch-agent.js` from `Use it now:` to `Run now:`
+- Kept the existing next-step structure unchanged: foreground command first, then the separate background-mode block
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so setup/configure completion copy does not drift back
+- Kept saved-config handling, install/reconfigure behavior, validation messaging, startup flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='Use it now|installed and not running yet|npx configure|QA Box'`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+- [x] Observed live runtime now says `Run now:` in both the clean-home local-only quickstart and follow-up configure success flows
+- [x] Observed the foreground handoff still stays visually separate from the background-mode block and keeps the same `idlewatch run   Run in the foreground` command story
+
+### Prioritized findings
+#### [x] P1 — setup/configure success now uses the cleaner `Run now:` handoff instead of `Use it now:`
+**Why it matters:** This is tiny, but it lands at the exact copy-paste moment after setup succeeds. `Use it now:` was understandable, yet slightly more conversational and slightly less consistent than the `Run now:` wording already used elsewhere in the product. Tightening that label makes the immediate next step scan faster and keeps setup/reconfigure/status feeling like one polished command story.
+
+**Acceptance criteria**
+- `quickstart --no-tui` success says `Run now:` before the foreground command
+- `configure --no-tui` success says `Run now:` before the foreground command
+- The same branches no longer say `Use it now:`
+- Background-mode guidance remains a separate block and keeps the saved-config / install behavior unchanged
+
+**Last updated:** Friday, March 27th, 2026 — 12:24 PM (America/Toronto)  
+**Status:** COMPLETE ✅
+
 ## Cycle R526 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
