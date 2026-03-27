@@ -39,15 +39,15 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 91 - COMPLETE ✅
+## Cycle Status: Cycle 92 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny real-`npx status` presentation fix still cleared the bar in the live checkout.
-- In real `npx` status screens, the durable-install commands now sit as visibly nested lines under `For background mode:` instead of reading like a flatter sibling list
-- This keeps the one-off `Run now: npx idlewatch run` path visually separate from the durable `npm install -g idlewatch` → `idlewatch install-agent` path at the exact status/check-your-work moment where copy-paste clarity matters most
+**Finding:** One more genuinely tiny source-checkout `status` literalness fix still cleared the bar in the live checkout.
+- In saved-setup `status` with no samples yet, the `Test:` hint now stays on the same calmer product-command shape as the rest of the screen: `idlewatch --once`
+- That removes the last raw repo-script fallback from this no-sample status block, so `Test`, `Run now`, and background-mode hints now read as one neat product-shaped group instead of mixing `node bin/idlewatch-agent.js --once` with calmer `idlewatch ...` commands
 - The change is output-only: no setup behavior, saved-config handling, launch-agent behavior, packaging shape, auth flow, or the now-working telemetry path changed
-- Matching `status` regressions now assert the nested two-line block in both the no-sample and saved-sample real-`npx` paths so this visual hierarchy does not quietly drift back
+- Matching `status` regression coverage now asserts the calmer no-sample `Test:` hint in source checkouts so this small copy seam does not drift back
 
-**Last updated:** Friday, March 27th, 2026 — 5:50 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 6:15 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

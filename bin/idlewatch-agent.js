@@ -1991,7 +1991,7 @@ if (statusRequested) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
     }
   } else if (!hasSamples) {
-    console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
+    console.log(`  Test:     ${preferredProductCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Run now:  ${inferCliCommand('run')}`)
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null

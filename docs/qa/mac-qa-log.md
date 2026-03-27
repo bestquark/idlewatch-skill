@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R593 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one genuinely tiny no-sample status copy cleanup from the live checkout.
+
+### Priority call
+One low-risk status seam still cleared the bar this cycle: in a source checkout with saved setup but no samples yet, `idlewatch status` already kept `Run now:` and background-mode hints on the calmer product-command shape, but `Test:` still fell back to the raw repo command (`node bin/idlewatch-agent.js --once`). Nothing functional was broken, yet that single machine-shaped command added avoidable visual noise right in the scan-first “what should I do next?” moment.
+
+### What changed
+- Reworked the no-sample `status` test hint in `bin/idlewatch-agent.js` so it now uses `preferredProductCommand('--once')` instead of the raw invocation command
+- In practice that means source-checkout `status` now says `Test: idlewatch --once (alias: --test-publish)` instead of mixing one repo-script command into an otherwise calmer product-shaped block
+- Updated the matching source-checkout regression in `test/openclaw-env.test.mjs` so this no-sample status hint does not drift back to `node bin/idlewatch-agent.js --once`
+- Left setup/reconfigure behavior, saved-config handling, launch-agent flow, packaging, auth, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live no-sample source-checkout spot check now shows:
+  - `Test:     idlewatch --once  (alias: --test-publish)`
+  - `Run now:  idlewatch run`
+  - `Turn on background mode:  idlewatch install-agent`
+- [x] Observed: the no-sample status block no longer mixes in `node bin/idlewatch-agent.js --once`
+
+### Prioritized findings
+#### [x] P1 — source-checkout no-sample `status` now keeps the one-shot test hint on the same calmer product command shape as the rest of the screen
+**Why this mattered:** This is tiny, but it lands in the exact setup/check-your-work moment where the product should read like one coherent surface. `Run now:` and background-mode hints had already been cleaned up. Leaving `Test:` on the raw repo-script command made the no-sample status block feel slightly more machine-shaped than it needed to be.
+
+**Acceptance checks**
+- Source-checkout `status` with saved setup and no samples now says `Test: idlewatch --once (alias: --test-publish)`
+- The same surface no longer falls back to `node bin/idlewatch-agent.js --once`
+- `Run now:` and background-mode hints remain unchanged on the calmer product command shape
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny no-sample status test-hint cleanup
+
 ## Cycle R592 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` literalness regression spanning the highest-friction copy/paste surfaces in the live checkout.
