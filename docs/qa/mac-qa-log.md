@@ -4,53 +4,36 @@
 
 ## Cycle R486 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one small real regression in the exact requested setup-help lane.
+Fresh installer/CLI polish pass shipped one tiny non-TTY setup-help wording fix from the live checkout.
 
 ### Priority call
-One low-risk but user-facing wording regression cleared the bar this pass: non-TTY `quickstart` / `configure` help has slipped back from the calmer `Uses simple prompts...` wording to the older `Runs non-interactively...` phrasing. Nothing is broken functionally, but this is exactly the kind of tiny implementation-shaped copy drift that makes first-run help feel colder and more technical than it needs to.
+One low-risk but user-facing wording regression cleared the bar this pass: non-TTY `quickstart` / `configure` / `reconfigure` help had slipped back from the calmer `Uses simple prompts...` wording to the older `Runs non-interactively...` phrasing. Nothing functional was broken, but this is exactly the kind of tiny implementation-shaped copy drift that makes first-run help feel colder and more technical than it needs to.
+
+### What changed
+- Reworded the non-TTY setup hint in `bin/idlewatch-agent.js` back to `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.` for both quickstart and configure-derived help
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so quickstart / configure / reconfigure keep the calmer wording and do not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
 
 ### Verification evidence
-- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
-  - `node bin/idlewatch-agent.js --help`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
-  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
-  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
-- Fresh targeted regression run passed:
-  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
-  - Result: **96 passed, 0 failed**
-- Focused wording/code sweep confirms the regression is currently live and test-encoded:
-  - `grep -RInE "Runs non-interactively|Uses simple prompts" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
-  - Live hits currently include:
-    - `bin/idlewatch-agent.js:1158`
-    - `bin/idlewatch-agent.js:1164`
-    - `test/openclaw-env.test.mjs:1055-1056`
-    - `test/openclaw-env.test.mjs:1075-1076`
-    - `test/openclaw-env.test.mjs:1115-1116`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+- [x] Observed: all three help surfaces now say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `grep -n "Runs non-interactively\|Uses simple prompts" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: live help code and matching regression assertions now keep `Uses simple prompts`, with the older wording present only in negative assertions
 
 ### Prioritized findings
-#### [ ] L128 — non-TTY setup help has regressed back to `Runs non-interactively` instead of `Uses simple prompts`
-**Why this matters:** This is tiny, but it lands in the first-run / reconfigure help surface where product taste matters most. `Runs non-interactively` is accurate, yet it sounds like an implementation note. `Uses simple prompts` is calmer, less technical, and better matches the minimal low-friction setup story elsewhere in this lane.
+#### [x] L128 — non-TTY setup help now stays on `Uses simple prompts` instead of `Runs non-interactively`
+**Why this mattered:** This is tiny, but it lands in the first-run / reconfigure help surface where product taste matters most. `Runs non-interactively` was accurate, yet it sounded like an implementation note. `Uses simple prompts` is calmer, less technical, and better matches the minimal low-friction setup story elsewhere in this lane.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
-3. Observe: `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
-4. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
-5. Observe the same wording, even though the calmer saved-config line below it still reads well
-6. Confirm the regression is locked in by current assertions in `test/openclaw-env.test.mjs`
-
-**Acceptance criteria**
-- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+**Acceptance checks**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode now say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
 - The same help surfaces no longer say `Runs non-interactively...`
-- Matching regression assertions are updated so this polish does not drift back
-- No auth, ingest, packaging, setup-flow, or launch-agent behavior changes
+- Matching regression assertions were updated so this polish does not drift back
+- No auth, ingest, packaging, setup-flow, or launch-agent behavior changes were introduced
 
-**Last updated:** Friday, March 27th, 2026 — 7:55 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - one small non-TTY setup-help wording regression documented for follow-up
+**Last updated:** Friday, March 27th, 2026 — 8:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-TTY setup-help wording fix
 
 ## Cycle R485 Status: COMPLETE ✅
 
