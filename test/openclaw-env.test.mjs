@@ -1959,6 +1959,7 @@ test('quickstart accepts cloud-only/local-only enrollment mode aliases in non-in
     assert.match(localRun.stdout, /✅ Setup complete for "Alias Box"\./)
     assert.match(localRun.stdout, /Mode:\s+local-only/)
     assert.match(localRun.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(localRun.stdout, /Config saved to:/)
 
     const cloudRun = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
       env: {
@@ -2151,6 +2152,7 @@ test('configure --no-tui preserves the saved local/cloud mode when mode is omitt
     assert.equal(configure.status, 0, configure.stderr)
     assert.match(configure.stdout, /✅ Settings saved for "Renamed Box"\./)
     assert.match(configure.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(configure.stdout, /Config saved to:/)
     assert.match(configure.stdout, /✓ Local telemetry verified\./)
     assert.doesNotMatch(configure.stderr, /Missing cloud API key/)
 

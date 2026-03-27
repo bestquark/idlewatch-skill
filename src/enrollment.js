@@ -661,7 +661,6 @@ export async function runEnrollmentWizard(options = {}) {
 
   // Write config file immediately during wizard for P2 - env persistence fix
   writeSecureFile(outputEnvFile, `${envLines.join('\n')}\n`)
-  console.log(`Config saved to: ${outputEnvFile}`)
 
   const temperatureHelper = ensureTemperatureTelemetryHelper(monitorTargets, { nonInteractive })
 

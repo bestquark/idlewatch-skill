@@ -2,61 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
-## Cycle R556 Status: OPEN ⚠️
+## Cycle R556 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one genuinely small but user-visible setup-copy issue still worth fixing.
+Fresh installer/CLI polish pass shipped one genuinely tiny but user-visible setup-copy cleanup from the live checkout.
 
 ### Priority call
-One low-risk onboarding seam still feels more machine-shaped than product-shaped: non-TUI `quickstart` and `configure` print a raw `Config saved to: /absolute/path/...` line before the calmer success summary that already shows `Config: ~/.idlewatch/idlewatch.env`. Nothing functional is wrong, but it adds immediate visual noise and duplication in the exact first-run/reconfigure moment where the flow should feel neat and minimal.
+One low-risk onboarding seam still cleared the bar: non-TUI `quickstart` and `configure` were printing a raw `Config saved to: /absolute/path/...` line before the calmer success summary that already showed `Config: ~/.idlewatch/idlewatch.env`. Nothing functional was broken, but that extra line added immediate visual noise and duplication in the exact first-run/reconfigure moment where the flow should feel neat and minimal.
+
+### What changed
+- Removed the extra `Config saved to: ...` console line from `src/enrollment.js` after the config file is written
+- Kept saved-config persistence immediate and atomic; the file still writes before the verification run exactly as before
+- Added focused regression assertions in `test/openclaw-env.test.mjs` so successful non-TUI `quickstart` and `configure` keep the friendly `Config: ~/.idlewatch/idlewatch.env` summary without drifting back to the raw duplicate line
+- Left status/install/uninstall/help copy, saved-config apply behavior, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Fresh clean-home lifecycle spot checks run with a stubbed `launchctl` for:
-  - `HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
-  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
-  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
-- [x] Fresh loaded-background spot checks with the same stubbed `launchctl` still keep reload/apply copy predictable:
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
-- [x] Observed live in this pass:
-  - `quickstart --no-tui` still prints `Config saved to: /var/.../.idlewatch/idlewatch.env` before the cleaner `Config: ~/.idlewatch/idlewatch.env` summary
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|configure --no-tui preserves the saved local/cloud mode when mode is omitted)'`
+- [x] Result: **98 passed, 0 failed** in the targeted env slice
+- [x] Fresh live local-only spot checks with a stubbed `launchctl` now show:
+  - `quickstart --no-tui` prints the cleaner success block with `Config: ~/.idlewatch/idlewatch.env` and no earlier `Config saved to:` line
   - `configure --no-tui` does the same
-  - status/install/uninstall/help remain otherwise calm and product-shaped in the requested lane
-  - device identity continuity, metric-toggle persistence, `--test-publish`, and saved-config apply guidance still behave as expected
+- [x] Observed: device identity continuity, metric-toggle persistence, background-mode next steps, and local-only verification copy remain unchanged in the same flows
 
 ### Prioritized findings
-#### [ ] P1 — non-TUI setup still prints a raw absolute `Config saved to:` line before the nicer success summary
-**Why this matters:** The product already improved the main success surfaces to show the friendlier `~/.idlewatch/...` config path. Letting the wizard dump the raw absolute path one line earlier makes setup feel a little redundant and implementation-shaped again, especially in temp-home QA runs and any environment where the full path is long.
+#### [x] P1 — non-TUI setup no longer prints a raw absolute `Config saved to:` line before the nicer success summary
+**Why this mattered:** The product had already improved the main success surfaces to show the friendlier `~/.idlewatch/...` config path. Letting the wizard dump the raw absolute path one line earlier made setup feel a little redundant and implementation-shaped again, especially in temp-home QA runs and any environment where the full path is long.
 
-**Exact repro**
-1. Create a clean temp home and stub `launchctl` so install/status/setup can run without real launchd side effects
-2. Run:
-   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-3. Observe output includes both:
-   - `Config saved to: /absolute/path/to/.idlewatch/idlewatch.env`
-   - later `Config: ~/.idlewatch/idlewatch.env`
-4. Repeat with:
-   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
-5. Observe the same duplication/noise on reconfigure
-
-**Acceptance criteria**
-- `quickstart --no-tui` no longer prints a raw absolute `Config saved to:` line ahead of the existing success summary, or it formats that line in the same friendly `~/.idlewatch/...` style without duplicating noise
-- `configure --no-tui` follows the same rule
-- Saved-config persistence remains immediate and atomic; this is copy/output polish only
+**Acceptance checks**
+- `quickstart --no-tui` no longer prints a raw absolute `Config saved to:` line ahead of the existing success summary
+- `configure --no-tui` now follows the same rule
+- Saved-config persistence remains immediate and atomic; this was copy/output polish only
 - The clearer success summary stays intact: setup/configure headline, mode, friendly config path, local/cloud verification, device-ID continuity when renamed, and background-mode next steps
-- No auth, ingest, packaging, or launch-agent behavior changes are introduced
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
 
-**Last updated:** Friday, March 27th, 2026 — 3:34 PM (America/Toronto)  
-**Status:** OPEN ⚠️ - one small setup-copy polish issue remains in scope
+**Last updated:** Friday, March 27th, 2026 — 3:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-TUI setup-copy cleanup
 
 ## Cycle R555 Status: COMPLETE ✅
 
