@@ -285,7 +285,7 @@ Turn on background mode: idlewatch install-agent`
 Usage:  ${installAgentHelpCommand}
 
 Turns on background mode on macOS.
-If setup is already saved, background mode starts right away.
+If setup is already saved, background mode turns on right away.
 If not, finish setup with ${quickstartCommand}, then run ${installAgentHelpCommand}.`
 }
 

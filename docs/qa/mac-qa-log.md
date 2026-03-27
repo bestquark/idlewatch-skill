@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R460 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: `install-agent --help` still said `background mode starts right away` even though the rest of the setup/install lane has already converged on the calmer `turn on background mode` story. The behavior was already right; this just removes one last slightly more generic phrase from a real install decision surface.
+
+### What changed
+- Reworded the `install-agent --help` success line in `bin/idlewatch-agent.js` from `background mode starts right away` to `background mode turns on right away`
+- Tightened `test/openclaw-env.test.mjs` so the help surface keeps the `turn on background mode` wording and does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed: help now says `If setup is already saved, background mode turns on right away.`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help keeps the durable setup path short and clear|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: focused installer/CLI regression lane still passes cleanly
+
+### Prioritized findings
+#### [x] L115 — `install-agent --help` now says `turns on right away` instead of `starts right away`
+**Why this mattered:** This is tiny, but it sits in a real install/help surface where the product should keep naming the action literally. `Starts right away` was understandable, yet it was a little less aligned with the calmer `turn on background mode` wording already used everywhere nearby.
+
+**Acceptance checks**
+- `install-agent --help` now says `If setup is already saved, background mode turns on right away.`
+- The same help surface no longer says `background mode starts right away`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-help wording cleanup
+
 ## Cycle R459 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
