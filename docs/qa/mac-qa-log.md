@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R407 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining packaged install-script wording seam in the saved-config path. The CLI and surrounding docs had already converged on the calmer `background mode` story, but the packaged macOS installer still said `Login startup will auto-load this config` and `Move or copy to that location for login startup` in the saved-config branch.
+
+### What changed
+- Reworded the saved-config success line in `scripts/install-macos-launch-agent.sh` from `✓ Login startup will auto-load this config.` to `✓ Background mode will auto-load this config.`
+- Reworded the custom-config fallback from `Move or copy to that location for login startup.` to `Move or copy to that location for background mode.`
+- Tightened `test/macos-launch-agent-scripts.test.mjs` so both the default-path and custom-config install branches keep the calmer `background mode` wording and do not drift back.
+- Kept setup behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged.
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **5 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L89 — packaged macOS install script now keeps the calmer `background mode` wording in the saved-config branch
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it sits in a real packaged install surface. `Login startup` briefly pulled the reader back toward platform mechanics in a moment where the rest of the product already tells the cleaner `background mode` story.
+- **Acceptance criteria:**
+  - The packaged install script says `Background mode will auto-load this config.` when the default saved config path is present.
+  - The custom-config branch says `Move or copy to that location for background mode.`
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged install-script saved-config wording seam fixed without changing behavior
+
 ## Cycle R406 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

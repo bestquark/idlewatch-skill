@@ -63,6 +63,8 @@ exit 0
     const firstInstall = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(firstInstall.status, 0, firstInstall.stderr)
     assert.match(firstInstall.stdout, /✅ Background mode installed\./)
+    assert.match(firstInstall.stdout, /✓ Background mode will auto-load this config\./)
+    assert.doesNotMatch(firstInstall.stdout, /Login startup will auto-load this config\./)
     assert.match(firstInstall.stdout, /\n\s*Service:\s+gui\//)
     assert.doesNotMatch(firstInstall.stdout, /Installed LaunchAgent:/)
     assert.doesNotMatch(firstInstall.stdout, /LaunchAgent already loaded\./)
@@ -147,6 +149,40 @@ test('packaged macOS install script shows the exact refresh command when idlewat
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /Then turn on background mode:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then run this install script again to turn on login startup with the saved config\./)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('packaged macOS install script keeps background-mode wording for custom config paths', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const customConfigPath = path.join(tempHome, 'Library', 'Application Support', 'IdleWatch QA', 'idlewatch.env')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
+    fs.writeFileSync(customConfigPath, 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath,
+      IDLEWATCH_CONFIG_ENV_PATH: customConfigPath
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /⚠ Background mode only auto-loads the default path: .*\.idlewatch\/idlewatch\.env/)
+    assert.match(install.stdout, /Move or copy to that location for background mode\./)
+    assert.doesNotMatch(install.stdout, /Move or copy to that location for login startup\./)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
     fs.rmSync(tempHome, { recursive: true, force: true })
