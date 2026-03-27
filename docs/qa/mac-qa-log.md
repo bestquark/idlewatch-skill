@@ -2,6 +2,54 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R571 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
+
+### Priority call
+No new polish issue cleared the bar this cycle. Fresh live checks still keep the setup wizard, config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx install-path split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-home lifecycle spot checks run with a stubbed `launchctl` for:
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Fresh install-before-setup spot check run with the same stubbed `launchctl` for:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent`
+- [x] Fresh `npx` onboarding/path spot checks run for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - main help still stays short and scan-friendly
+  - local-only quickstart stays literal and low-noise (`✓ Local telemetry verified.`) instead of slipping back into publish-shaped wording
+  - renamed-device continuity and metric-toggle persistence still stay explicit inline after reconfigure (`Device ID: qa-polish-box (kept from original setup for continuity)`, then `Metrics: Memory` in `status`)
+  - install-before-setup still stays honest and calm (`Setup isn't saved yet, so background mode stays off for now.`)
+  - the install-before-setup follow-up still keeps the more literal `Start background mode after setup` wording
+  - saved-setup status still keeps the simple three-action summary (`Change`, `Run now`, `Turn on/Start background mode`) without turning implementation-shaped
+  - true `npx` usage still cleanly separates the one-off foreground path (`npx idlewatch run`) from the durable install path (`npm install -g idlewatch` + `idlewatch install-agent`)
+  - no new confusing, repetitive, or overly technical copy surfaced in setup, reload/apply, launch-agent, test-publish, or install-path messaging
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the clean-home lifecycle, install-before-setup, and real-`npx` spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Judge the exact requested lane together: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, `--test-publish`, device identity persistence, metric-toggle persistence, and npm-vs-npx install-path clarity
+3. Only log a new issue if it adds real user friction instead of just reflecting expected wrapper context, output formatting trivia, or implementation detail that does not leak into the product copy
+
+**Observed**
+No confusing, verbose, repetitive, visually noisy, or unnecessarily technical IdleWatch-owned copy surfaced in the requested areas. The current build still keeps the setup story minimal, the apply/reload story predictable, the launch-agent handoff literal, device identity continuity obvious, metric changes visible, and the `npx` one-off path clearly separate from the durable install path.
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit local verification / test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 4:21 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
+
 ## Cycle R570 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny npm-context detection hardening from the live checkout.
