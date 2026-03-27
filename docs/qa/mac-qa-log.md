@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R442 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS no-setup handoff wording cleanup from the live checkout.
+
+### Priority call
+One low-risk packaged install seam still cleared the bar this pass: `scripts/install-macos-launch-agent.sh` still said `Then turn on background mode:` in the no-setup handoff. The command itself was already right, but that extra `Then` made the handoff a touch more step-shaped than the calmer direct `Turn on background mode` wording already used across the CLI, status, and post-setup surfaces.
+
+### What changed
+- Reworded the packaged macOS no-setup follow-up in `scripts/install-macos-launch-agent.sh` from `Then turn on background mode:` to `Turn on background mode:`
+- Tightened `test/macos-launch-agent-scripts.test.mjs` so both the CLI-available and app-binary fallback branches keep the calmer direct wording and do not drift back
+- Kept setup flow, saved-config behavior, packaged install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **7 passed, 0 failed**
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L106 — packaged macOS no-setup handoff now says `Turn on background mode` instead of `Then turn on background mode`
+**Why this mattered:** This is tiny, but it lands in a real install recovery moment where the product should just name the next command directly. `Then turn on` was understandable, but the cleaner move is to keep the handoff as scan-first and literal as the rest of the setup/install story.
+
+**Acceptance notes**
+- The packaged macOS no-setup handoff now says `Turn on background mode:`
+- The same handoff no longer says `Then turn on background mode:`
+- Both the `idlewatch`-available path and the app-binary fallback path keep the calmer direct wording
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged no-setup wording seam fixed in this pass
+
 ## Cycle R441 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

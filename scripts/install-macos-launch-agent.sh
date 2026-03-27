@@ -194,13 +194,13 @@ else
   fi
   echo ""
   if command -v idlewatch >/dev/null 2>&1; then
-    echo "Then turn on background mode:"
+    echo "Turn on background mode:"
     echo "   idlewatch install-agent"
     echo ""
     echo "💡 Quick status check:"
     echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
   else
-    echo "Then turn on background mode:"
+    echo "Turn on background mode:"
     echo "   $BIN_PATH install-agent"
   fi
 fi
