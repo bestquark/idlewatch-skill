@@ -2,6 +2,56 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R569 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one real `npx` next-step regression in the live checkout.
+
+### Priority call
+One medium-friction polish issue cleared the bar this cycle: in a real `npx` context, the success and status surfaces have drifted back to plain `idlewatch ...` commands instead of the actually runnable one-off foreground path. That is exactly the copy-paste moment where product taste matters most. `idlewatch run` and `idlewatch configure --no-tui` look cleaner, but in a true one-off `npx` use they imply a globally installed binary the user may not have. The earlier cleaner split was better: keep the immediate foreground path on `npx idlewatch run`, and keep the durable background-mode handoff explicitly separate.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-room `npx` repro with a stubbed `launchctl` and no prior saved setup:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Fresh NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Fresh NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+- [x] Observed in the live fresh-`npx` pass:
+  - `quickstart --no-tui` says:
+    - `Run now:`
+    - `  idlewatch run   Run in the foreground`
+    - `For background mode:`
+    - `  idlewatch install-agent   Turn on background mode`
+  - saved-setup `status` says:
+    - `Change:   idlewatch configure --no-tui`
+    - `Run now:  idlewatch run`
+    - `Turn on background mode:  idlewatch install-agent`
+  - `configure --no-tui` repeats the same plain-`idlewatch` next steps in the same `npx` context
+- [x] This reproduces with a truly fresh `HOME`, so it is not just state leakage from an earlier non-`npx` pass
+
+### Prioritized findings
+#### [x] P1 — real `npx` quickstart/configure/status have regressed back to plain `idlewatch ...` next steps
+**Why this matters:** This is small, but it lands at the highest-friction copy-paste moment in the whole one-off install story. In true `npx` use, the foreground retry/run command should be literally runnable as shown. Suggesting `idlewatch run` looks cleaner but quietly assumes a global install that may not exist. The same applies to `idlewatch configure --no-tui` on saved-setup status.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
+3. Run:
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Fresh NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Fresh NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+4. Observe that all three surfaces currently point to plain `idlewatch ...` commands instead of the correct one-off `npx` foreground path and explicit durable-install split
+
+**Acceptance checks**
+- In a real `npx` context, `quickstart --no-tui` says `npx idlewatch run` for the immediate foreground path
+- In that same `npx` context, saved-setup `status` also says `Run now:  npx idlewatch run`
+- In that same `npx` context, saved-setup `status` keeps the config-change path runnable too instead of assuming a global binary
+- `configure --no-tui` in that same `npx` context uses the same one-off-safe next steps
+- The durable background-mode handoff stays separate and explicit rather than pretending `npx` is the long-term path
+- No auth, ingest, launch-agent, or packaging-flow behavior changes are introduced beyond this copy/output fix
+
+**Last updated:** Friday, March 27th, 2026 — 4:31 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one real fresh-`npx` next-step regression for the next polish pass
+
 ## Cycle R568 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass rechecked the logged `npx` foreground-path concern and found the product copy is already doing the right thing in the live checkout.
