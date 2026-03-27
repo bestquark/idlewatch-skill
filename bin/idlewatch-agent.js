@@ -292,6 +292,10 @@ If setup isn't saved yet, finish setup with ${quickstartCommand}, then run ${ins
 function uninstallAgentHelpText() {
   const invocation = detectCliInvocation()
   const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
+  const retainedLocalLogPath = resolvePersistedLocalLogPath()
+  const retainedLocalLogSummary = retainedLocalLogPath
+    ? `Local log stays at ${formatPathForHelp(retainedLocalLogPath)} when local logging is on, so you can re-enable background mode later.`
+    : 'Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.'
 
   if (invocation.kind === 'npx') {
     return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
@@ -309,7 +313,7 @@ Usage:  ${uninstallAgentHelpCommand}
 
 Turns off background mode on macOS.
 Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
-Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
+${retainedLocalLogSummary}
 Turn background mode back on later with idlewatch install-agent.`
 }
 

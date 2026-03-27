@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R519 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny uninstall-help retention-path alignment from the live checkout.
+
+### Priority call
+One low-risk uninstall-help seam still cleared the bar: durable `idlewatch uninstall-agent --help` already names the saved config path directly, but it still fell back to the generic `Local logs stay in ~/.idlewatch/logs ...` line even when saved setup already points local logging at a custom retained file. Nothing functional was broken, but this lands in the exact reversible off-ramp moment where the product should show people the real path they would keep.
+
+### What changed
+- Reworked `uninstall-agent --help` in `bin/idlewatch-agent.js` so it now reads the saved local log target and shows `Local log stays at ...` when setup already uses a custom retained file path
+- Kept the default help wording unchanged for the common path that still uses `~/.idlewatch/logs`
+- Added focused regression coverage in `test/openclaw-env.test.mjs` so uninstall help keeps the saved custom local-log path visible and does not drift back
+- Kept setup/reconfigure behavior, validation messages, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Manual live spot check with a saved custom log path in `~/.idlewatch/idlewatch.env`:
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: help now says `Local log stays at ~/custom-logs/kitchen-mac.ndjson when local logging is on, so you can re-enable background mode later.` when saved setup points there
+- [x] `git diff -- bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Result: only the tiny uninstall-help retained-log-path alignment and matching regression coverage changed in this pass
+
+### Prioritized findings
+#### [x] L146 — `uninstall-agent --help` now shows the saved custom retained local log path instead of falling back to the default log directory
+**Why this mattered:** This is tiny, but it lands in a real off-ramp/recovery moment where someone wants confidence about what turning background mode off will keep. If the saved setup already points local logging somewhere custom, help should show that real retained path instead of quietly describing the default directory.
+
+**Acceptance checks**
+- `uninstall-agent --help` now says `Local log stays at ...` when saved setup already points at a custom local log file
+- The common default-path help still says `Local logs stay in ~/.idlewatch/logs ...`
+- Matching regression coverage now keeps the custom retained-log-path help output from drifting back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall-help retained-log-path alignment fix
+
 ## Cycle R518 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

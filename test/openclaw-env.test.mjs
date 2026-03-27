@@ -1224,6 +1224,33 @@ test('uninstall-agent --help reflects a configured custom saved-config path', ()
   }
 })
 
+test('uninstall-agent --help reflects a saved custom local log path', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-help-custom-log-'))
+  const customLogPath = path.join(tempDir, 'custom-logs', 'kitchen-mac.ndjson')
+
+  fs.mkdirSync(path.join(tempDir, '.idlewatch'), { recursive: true })
+  writeFileSync(path.join(tempDir, '.idlewatch', 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${customLogPath}`
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Local log stays at ~/custom-logs/kitchen-mac.ndjson when local logging is on, so you can re-enable background mode later.'), 'help should show the saved custom local log path')
+    assert.doesNotMatch(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs when local logging is on, so you can re-enable background mode later\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
