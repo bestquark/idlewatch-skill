@@ -2,6 +2,57 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R387 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing installer/CLI polish issue in scope worth opening. The current setup/install/reconfigure/status story remains neat, low-friction, and product-shaped, and the remaining extra noise in the one-off path is still only npm's own banner rather than IdleWatch copy.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output names a custom retained local log path|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- Result: **90 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `node bin/idlewatch-agent.js status` in a clean HOME
+  - `node bin/idlewatch-agent.js --test-publish` in a clean HOME
+  - `npm exec --yes -- idlewatch --help` in a clean HOME
+  - clean-home lifecycle check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+    - `node bin/idlewatch-agent.js configure --no-tui`
+    - `node bin/idlewatch-agent.js status`
+    - `node bin/idlewatch-agent.js uninstall-agent`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live help spot checks listed above
+3. Repeat the clean-home lifecycle check with a stubbed `launchctl`, plus clean-home `status`, `--test-publish`, and `npm exec --yes -- idlewatch --help`
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status help aligned on the calmer saved-config story
+- install-before-setup honest without overexplaining background internals
+- quickstart/configure success output calm and copy-pasteable
+- `--test-publish` explicit without turning into a second workflow
+- saved device identity continuity and metric-toggle persistence obvious in `configure --no-tui` → `status`
+- uninstall reassurance short and reversible
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:18 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R386 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
@@ -16396,3 +16447,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - To:
   - `Enrollment failed: setup could not save config at <path>.`
 - Added regression coverage for a non-interactive `quickstart --no-tui` save failure using an unwritable target path.
+
+## Cycle R348 Status: CLOSED ✅
+
+### Outcome
+- The packaged macOS `uninstall-macos-launch-agent.sh` path now keeps saved-config retention wording honest when a custom config path is in use.
+- Instead of always reassuring users about `~/.idlewatch/idlewatch.env`, it now prints the configured `IDLEWATCH_CONFIG_ENV_PATH` value.
+- This keeps uninstall/re-enable messaging aligned with the already-polished custom-path handling elsewhere in the product.
+- LaunchAgent behavior and the working telemetry path remain untouched.
+
+### R348 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+
+#### [x] L31 — packaged macOS uninstall script now names the actual retained config path instead of always implying the default one
+**Why it matters:** This is tiny, but it lands in a cautious uninstall moment. The main CLI had already learned to stay honest about retained paths, while the packaged script still hard-coded the default config location even when a custom env path was configured. That made the reversible-background story feel slightly less trustworthy than it needed to.
+
+**What shipped**
+- Added `IDLEWATCH_CONFIG_ENV_PATH` handling to `scripts/uninstall-macos-launch-agent.sh`.
+- The success output now says `Saved config stays at <configured path>` instead of always pointing at `~/.idlewatch/idlewatch.env`.
+- Added regression coverage for a packaged uninstall run with a custom config path.

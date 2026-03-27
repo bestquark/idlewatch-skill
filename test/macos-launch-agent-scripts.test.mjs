@@ -152,3 +152,36 @@ test('packaged macOS install script shows the exact refresh command when idlewat
     fs.rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('packaged macOS uninstall script names a custom saved config path when one is configured', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-config-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-config-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const customConfigPath = path.join(tempHome, 'Library', 'Application Support', 'IdleWatch QA', 'idlewatch.env')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
+    fs.writeFileSync(customConfigPath, 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath,
+      IDLEWATCH_CONFIG_ENV_PATH: customConfigPath
+    }
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, new RegExp(`Saved config stays at ${customConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
