@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R585 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one genuinely tiny real-`npx status` labeling cleanup from the live checkout.
+
+### Priority call
+One low-risk one-off-vs-durable-path seam still cleared the bar this cycle: real `npx` `status` already showed the right next commands, but when background mode was still off it printed the durable-install lines (`Install once`, `Turn on background mode`) directly under `Run now` without the explicit `For background mode:` label already used by nearby setup/configure success screens. Nothing functional was broken, yet the unlabeled stack made the status surface just a little less scan-friendly in the exact check-your-work moment where the product should keep foreground use and durable install clearly separate.
+
+### What changed
+- Added `For background mode:` to the real-`npx` `status` next-step block in `bin/idlewatch-agent.js` when background mode is still off
+- Applied the same tiny labeling cleanup to both saved-setup/no-sample `status` and saved-setup/with-sample `status`, so the split stays consistent across the two main `npx` status surfaces
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so both real-`npx` status paths now require the `For background mode:` label and do not drift back to an unlabeled durable-install command list
+- Left setup/reconfigure behavior, saved-config handling, launch-agent behavior, auth flow, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='status command keeps npx background hints short and durable-install oriented'`
+- [x] Result: **100 passed, 0 failed** in the current focused env slice run
+- [x] Observed in the targeted real-`npx` status paths:
+  - saved setup without samples now keeps:
+    - `Run now:  npx idlewatch run`
+    - `For background mode:`
+    - `Install once: npm install -g idlewatch`
+    - `Turn on background mode: idlewatch install-agent`
+  - saved setup with samples now keeps the same labeled split under `Change:` / `Run now:`
+- [x] Observed: already-on and installed-but-not-running durable background states remain unchanged (`Background: already on via the durable install`, `Start background mode: idlewatch install-agent`)
+
+### Prioritized findings
+#### [x] P1 — real `npx` `status` now labels the durable-install command block with `For background mode:` when background mode is still off
+**Why this mattered:** This is tiny, but it lands in one of the most copy-paste-heavy moments in the one-off install story: someone runs `status`, sees the immediate `npx idlewatch run` path, and also needs to understand the durable install path without mixing the two together. The commands were already correct. The issue was presentation. Reusing the same `For background mode:` label already used elsewhere makes the split easier to scan without adding new behavior or extra options.
+
+**Acceptance checks**
+- Real `npx` `status` with saved setup and no samples still says `Run now:  npx idlewatch run`
+- The same no-sample status surface now also says `For background mode:` before the durable-install lines
+- Real `npx` `status` with saved setup and samples keeps the same `For background mode:` label before `Install once:` and `Turn on background mode:`
+- Real `npx` `status` still leaves already-on and installed-but-not-running durable background states unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny real-`npx` status labeling cleanup
+
 ## Cycle R584 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

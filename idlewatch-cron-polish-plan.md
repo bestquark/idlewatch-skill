@@ -39,15 +39,15 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 89 - COMPLETE ✅
+## Cycle Status: Cycle 90 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny real-`npx install-agent` recovery-order fix still cleared the bar in the live checkout.
-- In a real `npx` context, the runtime `install-agent` durable-install warning now leads with the immediate unblocker: `Set up now: npx idlewatch quickstart --no-tui`
-- The same recovery screen still keeps the durable handoff intact right after that: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
-- This removes one more quiet copy-paste hesitation without changing setup behavior, saved-config handling, launch-agent behavior, packaging shape, or the now-working telemetry path
-- The matching real-`npx` regression assertion now checks the output order too, so the runtime warning does not drift back to leading with the bigger durable-install step
+**Finding:** One more genuinely tiny real-`npx status` clarity fix still cleared the bar in the live checkout.
+- In real `npx` status screens with saved setup, the durable-install commands now sit under the same explicit `For background mode:` label already used by the setup/reconfigure success screens
+- This keeps the one-off `Run now: npx idlewatch run` path visually separate from the durable `npm install -g idlewatch` → `idlewatch install-agent` path at the exact status/check-your-work moment where copy-paste clarity matters most
+- The change is output-only: no setup behavior, saved-config handling, launch-agent behavior, packaging shape, auth flow, or the now-working telemetry path changed
+- Matching `status` regressions now assert the `For background mode:` label in both the no-sample and saved-sample real-`npx` paths so this split does not quietly drift back to an unlabeled command list
 
-**Last updated:** Friday, March 27th, 2026 — 5:40 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 5:35 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

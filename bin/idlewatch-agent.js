@@ -1988,6 +1988,7 @@ if (statusRequested) {
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start background mode:     idlewatch install-agent')
       } else {
+        console.log('  For background mode:')
         console.log('  Install once:              npm install -g idlewatch')
         console.log('  Turn on background mode:  idlewatch install-agent')
       }
@@ -2019,6 +2020,7 @@ if (statusRequested) {
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start background mode:     idlewatch install-agent')
       } else {
+        console.log('  For background mode:')
         console.log('  Install once:              npm install -g idlewatch')
         console.log('  Turn on background mode:  idlewatch install-agent')
       }
