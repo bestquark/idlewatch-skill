@@ -2,6 +2,47 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R559 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-time noise cleanup from the live checkout.
+
+### Priority call
+One low-risk install-path seam still cleared the bar: the friendly npm postinstall handoff is useful for the real `npm install -g idlewatch` path, but it was also printing during non-global/local installs where it added setup-ish noise without helping the current flow. Nothing functional was broken, yet this made source/dependency installs feel a little more product-chatty than they needed to be.
+
+### What changed
+- Reworked `scripts/postinstall.mjs` so the friendly setup/background-mode handoff now prints for global installs by default instead of every install context
+- Kept an explicit escape hatch for local validation/dev flows with `IDLEWATCH_POSTINSTALL_ALWAYS_PRINT=1`
+- Added focused regression coverage in `test/postinstall.test.mjs` for the three intended behaviors: normal global handoff, quiet non-global install, and explicit local override
+- Left setup/configure behavior, saved-config handling, launch-agent flows, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] Result: **4 passed, 0 failed** in the targeted postinstall slice
+- [x] `npm_config_global=false node scripts/postinstall.mjs`
+- [x] Observed: no setup handoff prints for non-global/local installs by default
+- [x] `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed: the normal global-install handoff still prints:
+  - `Set up this device:`
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch install-agent   # turn on background mode`
+  - `idlewatch menubar         # menu bar app`
+- [x] `npm_config_global=false IDLEWATCH_POSTINSTALL_ALWAYS_PRINT=1 node scripts/postinstall.mjs`
+- [x] Observed: local/dev flows can still force the same handoff when wanted
+
+### Prioritized findings
+#### [x] P1 — npm postinstall now stays quiet for non-global installs by default
+**Why this mattered:** This is tiny, but it lands in a real install/reinstall moment where product taste matters. The onboarding handoff is helpful when someone just globally installed IdleWatch and wants the next command. The same copy is just noise during local/source/dependency installs. Keeping the useful handoff while suppressing the unnecessary one makes setup feel a little cleaner without changing any real behavior.
+
+**Acceptance checks**
+- Global install postinstall still prints the current setup + macOS handoff
+- Non-global/local installs no longer print that onboarding block by default
+- Local/dev validation can still force the handoff with `IDLEWATCH_POSTINSTALL_ALWAYS_PRINT=1`
+- No auth, ingest, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny postinstall install-noise cleanup
+
 ## Cycle R558 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

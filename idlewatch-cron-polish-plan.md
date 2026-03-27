@@ -39,16 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 83 - COMPLETE ✅
+## Cycle Status: Cycle 84 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny install-path polish fix cleared the bar in the live checkout.
-- The macOS shell installer no longer shows both the clean `idlewatch quickstart --no-tui` command and the raw app-binary fallback when the normal CLI is already available
-- The no-setup handoff now stays neater: finish setup with `idlewatch quickstart --no-tui`, then turn on background mode with `idlewatch install-agent`
+**Finding:** One more genuinely tiny install-time polish fix cleared the bar in the live checkout.
+- The npm postinstall onboarding block now prints for actual global installs by default instead of every install context
+- Local/source installs stay quieter, while `IDLEWATCH_POSTINSTALL_ALWAYS_PRINT=1` still keeps the handoff available for validation/dev flows
 - Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior still remain in good shape
 - The now-working telemetry path remains untouched
-- Fresh focused regression coverage still passes cleanly: **2 passed, 0 failed** in the targeted shell-script suite used for this pass
+- Fresh focused regression coverage still passes cleanly: **4 passed, 0 failed** in the targeted postinstall suite used for this pass
 
-**Last updated:** Thursday, March 26th, 2026 — 7:05 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 3:15 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

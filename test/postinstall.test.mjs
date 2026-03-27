@@ -51,3 +51,27 @@ test('postinstall keeps the durable install handoff neat and macOS guidance user
   assert.doesNotMatch(run.stdout, /Optional on macOS: idlewatch menubar/)
   assert.doesNotMatch(run.stdout, /IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL=1 npm install -g idlewatch/)
 })
+
+test('postinstall stays quiet for non-global installs by default', () => {
+  const run = runPostinstall({
+    npm_config_global: 'false',
+    IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL: '',
+    IDLEWATCH_LAUNCH_MENUBAR_ON_INSTALL: ''
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.equal(run.stdout.trim(), '')
+})
+
+test('postinstall can still print the setup handoff when explicitly requested', () => {
+  const run = runPostinstall({
+    npm_config_global: 'false',
+    IDLEWATCH_POSTINSTALL_ALWAYS_PRINT: '1',
+    IDLEWATCH_INSTALL_MACOS_MENUBAR_ON_INSTALL: '',
+    IDLEWATCH_LAUNCH_MENUBAR_ON_INSTALL: ''
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /Set up this device:/)
+  assert.match(run.stdout, /idlewatch quickstart --no-tui/)
+})
