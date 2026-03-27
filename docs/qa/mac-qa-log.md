@@ -2,6 +2,61 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R420 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. A first smoke run briefly made the install-before-setup handoff look generic again, but that turned out to be a false alarm from an overly-permissive local `launchctl` stub that reported the agent as already loaded. Re-checking against the repo's own deterministic not-loaded stub kept the current product story intact: installed-but-not-running stays distinct from never-installed, saved-config refresh guidance stays short, and the overall setup flow still feels calm and low-friction.
+
+### Verification evidence
+- Targeted live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - clean-home lifecycle spot check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+    - `node bin/idlewatch-agent.js configure --no-tui`
+    - `node bin/idlewatch-agent.js status`
+    - `node bin/idlewatch-agent.js uninstall-agent`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Confirmed the install-before-setup branch still stays on the intended wording when `launchctl print` reports not loaded:
+  - `Background mode is installed and not running yet.`
+  - `Start:    idlewatch install-agent`
+  - `It stays off until you run idlewatch install-agent.`
+- Current live spot-check highlights:
+  - main help still stays short and scan-friendly
+  - first-run `status` still previews setup without implementation-detail sprawl
+  - install-before-setup still stays honest about background mode being installed but not running yet
+  - configure → status still keeps renamed device identity and metric-toggle persistence obvious inline
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - npm/npx one-off-vs-durable-install guidance still stays clean, with only npm's own update banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live help / clean-home spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. For install-before-setup coverage, use a stubbed `launchctl` that exits non-zero for `print` so the background agent stays in the intended installed-but-not-running state
+3. Re-check `--test-publish` and `npm exec --yes -- idlewatch --help` in clean homes
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest about background mode being installed but not running yet
+- saved device identity continuity and metric-toggle persistence obvious in the configure → status follow-up
+- `--test-publish` explicit without becoming a second workflow
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 1:42 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
+
 ## Cycle R419 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass closed one tiny install-before-setup handoff seam in the live checkout.
