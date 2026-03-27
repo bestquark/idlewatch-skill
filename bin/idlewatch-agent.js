@@ -824,25 +824,29 @@ function printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assume
     ? fs.existsSync(localLogPath) || fs.existsSync(path.dirname(localLogPath))
     : fs.existsSync(defaultLogDir)
 
+  const friendlyEnvFile = formatPathForHelp(envFile)
+  const friendlyLocalLogPath = hasKnownLocalLog ? formatPathForHelp(localLogPath) : null
+  const friendlyDefaultLogDir = formatPathForHelp(defaultLogDir)
+
   if (assumeExisting || hasSavedConfig) {
-    console.log(`   Saved config stays at ${envFile}`)
+    console.log(`   Saved config stays at ${friendlyEnvFile}`)
   } else {
-    console.log(`   Saved config would live at ${envFile}`)
+    console.log(`   Saved config would live at ${friendlyEnvFile}`)
   }
 
   if (hasKnownLocalLog) {
     if (assumeExisting || hasExistingLogTarget) {
-      console.log(`   Local log stays at ${localLogPath}`)
+      console.log(`   Local log stays at ${friendlyLocalLogPath}`)
     } else {
-      console.log(`   Local log would be written at ${localLogPath}`)
+      console.log(`   Local log would be written at ${friendlyLocalLogPath}`)
     }
     return
   }
 
   if (assumeExisting || hasExistingLogTarget) {
-    console.log(`   Local logs stay in ${defaultLogDir}`)
+    console.log(`   Local logs stay in ${friendlyDefaultLogDir}`)
   } else {
-    console.log(`   Local logs would go in ${defaultLogDir}`)
+    console.log(`   Local logs would go in ${friendlyDefaultLogDir}`)
   }
 }
 

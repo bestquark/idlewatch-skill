@@ -4,10 +4,16 @@
 
 ## Cycle R557 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one still-real but genuinely tiny uninstall-copy issue in the live checkout.
+Fresh installer/CLI polish pass shipped one still-real but genuinely tiny uninstall-copy cleanup from the live checkout.
 
 ### Priority call
-One low-risk off-ramp seam still clears the bar: successful `idlewatch uninstall-agent` already keeps the reversible story calm, but its retained-path lines still dump full absolute temp/home paths for the saved config and local log. The rest of the CLI now consistently prefers the friendlier `~/.idlewatch/...` style on setup, status, install-before-setup, and uninstall help. Nothing functional is broken, yet this makes the exact “I just turned it off, what stayed?” moment feel more machine-shaped and visually noisy than the surrounding product.
+One low-risk off-ramp seam cleared the bar: successful `idlewatch uninstall-agent` already kept the reversible story calm, but its retained-path lines were still dumping full absolute temp/home paths for the saved config and local log. The rest of the CLI already preferred the friendlier `~/.idlewatch/...` style on setup, status, install-before-setup, and uninstall help. Nothing functional was broken, yet this made the exact “I just turned it off, what stayed?” moment feel more machine-shaped and visually noisy than the surrounding product.
+
+### What changed
+- Reworked `printUninstallRetentionSummary` in `bin/idlewatch-agent.js` so successful/default-home uninstall runtime now uses the same friendly `~`-style path formatting already used by help and status
+- Kept the custom-path behavior honest: if a retained saved config or local log points outside the home directory, runtime still shows the real absolute path
+- Updated focused runtime assertions in `test/openclaw-env.test.mjs` so the default retained config/log lines do not drift back to raw temp-home paths
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
@@ -25,7 +31,7 @@ One low-risk off-ramp seam still clears the bar: successful `idlewatch uninstall
   - `uninstall-agent --help`: retained-path/help copy stays calmer and does not dump temp-home absolute paths in the default-location case
 
 ### Prioritized findings
-#### [ ] P1 — successful `uninstall-agent` runtime should keep retained config/log paths friendly instead of dumping full absolute home/temp paths
+#### [x] P1 — successful `uninstall-agent` runtime should keep retained config/log paths friendly instead of dumping full absolute home/temp paths
 **Why this matters:** This is tiny, but it lands in a real recovery moment where the user is checking what uninstall kept. Full absolute temp/home paths are technically correct, but they add exactly the kind of visual noise the rest of this polish lane has been removing. Showing the same `~/.idlewatch/...` style already used elsewhere would keep uninstall runtime feeling coherent, calmer, and more product-shaped.
 
 **Exact repro**
