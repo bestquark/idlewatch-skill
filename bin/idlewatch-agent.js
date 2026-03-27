@@ -1991,6 +1991,7 @@ if (statusRequested) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
     }
   } else if (!hasSamples) {
+    console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
     console.log(`  Test:     ${preferredProductCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Run now:  ${inferCliCommand('run')}`)

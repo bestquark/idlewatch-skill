@@ -39,14 +39,14 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 93 - COMPLETE ✅
+## Cycle Status: Cycle 94 - COMPLETE ✅
 
-**Finding:** Fresh live verification did not surface another small product-facing installer/CLI issue worth shipping.
-- The currently logged true-`npx` next-step concern no longer reproduces in a clean-home pass: `quickstart --no-tui`, saved-setup `status`, and `configure --no-tui` all keep one-off-safe `npx idlewatch ...` foreground/configure hints and a separate durable install handoff
-- `install-agent --help` and runtime also still keep the intended split: `Set up now: npx idlewatch quickstart --no-tui`, `Install once: npm install -g idlewatch`, then `idlewatch install-agent`
-- That means this cycle's highest-value move was to avoid speculative churn, preserve the now-working telemetry path, and log the verification cleanly in QA instead of forcing another low-value code edit
+**Finding:** One still-worth-shipping tiny status polish issue surfaced in the live checkout.
+- Once setup was already saved but no sample existed yet, `idlewatch status` kept `Test`, `Run now`, and background-mode hints, but it hid the direct reconfigure path until after the first sample
+- That added a small unnecessary memory step right in the “check setup, tweak if needed” moment
+- The fix was intentionally tiny: add `Change: idlewatch configure --no-tui` (and the matching `npx idlewatch configure --no-tui` form in real one-off context) to the saved-setup/no-sample status surface, while leaving the rest of the flow and the now-working telemetry path unchanged
 
-**Last updated:** Friday, March 27th, 2026 — 6:25 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 6:35 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

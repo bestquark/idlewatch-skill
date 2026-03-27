@@ -3122,6 +3122,7 @@ test('status command shows contextual next-step hints', () => {
     })
     assert.equal(noSamples.status, 0, noSamples.stderr)
     assert.ok(noSamples.stdout.includes('(none yet)'), 'should show no samples yet')
+    assert.ok(noSamples.stdout.includes('idlewatch configure --no-tui'), 'should still surface the change/setup tweak path before the first sample exists')
     assert.ok(noSamples.stdout.includes('idlewatch --once'), 'should keep the one-shot test hint on the calmer product command in source checkouts')
     assert.doesNotMatch(noSamples.stdout, new RegExp(`${SOURCE_CMD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} --once`), 'should not fall back to the raw repo-script --once hint in source checkouts')
     assert.ok(noSamples.stdout.includes('idlewatch run'), 'should hint at run for continuous monitoring on the calmer product command in source checkouts')

@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R597 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-setup/no-sample status improvement from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar: once setup was already saved but no sample had been collected yet, `idlewatch status` showed `Test`, `Run now`, and background-mode hints, but it hid the direct reconfigure path until after the first sample existed. Nothing functional was broken, yet that added a tiny unnecessary memory step in the exact check-your-setup moment where the product should stay self-sufficient.
+
+### What changed
+- Added `Change: idlewatch configure --no-tui` to the saved-setup/no-sample `status` surface before the first sample exists
+- Kept the existing no-sample actions intact: `Test`, `Run now`, and background-mode hints still stay visible
+- Applied the same small improvement to the matching real-`npx` no-sample `status` surface (`Change: npx idlewatch configure --no-tui`)
+- Added/updated regression coverage in `test/openclaw-env.test.mjs` so this no-sample reconfigure hint does not drift away again
+- Left auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live no-sample saved-setup spot check now shows:
+  - `Change:   idlewatch configure --no-tui`
+  - `Test:     idlewatch --once  (alias: --test-publish)`
+  - `Run now:  idlewatch run`
+- [x] Fresh live true-`npx` no-sample saved-setup spot check now shows:
+  - `Change:   npx idlewatch configure --no-tui`
+  - `Test:     npx idlewatch --once  (alias: --test-publish)`
+  - `Run now:  npx idlewatch run`
+- [x] Focused `node --test` slices in this environment still exhibit the previously logged sticky timeout behavior, so this pass used syntax validation plus direct live repro/verification for the changed status surface
+
+### Prioritized findings
+#### [x] P1 — saved-setup/no-sample `status` now keeps the reconfigure path visible before the first sample exists
+**Why this mattered:** This is tiny, but it lands in the exact “I just saved setup, let me sanity-check it” moment. Hiding `configure` until after the first sample made the no-sample status surface slightly less self-contained than it needed to be. Keeping `Change` visible removes one memory step without adding a new workflow.
+
+**Acceptance checks**
+- Saved-setup `status` with no samples now says `Change: idlewatch configure --no-tui`
+- The same no-sample surface still keeps `Test: idlewatch --once (alias: --test-publish)`
+- The same no-sample surface still keeps `Run now: idlewatch run`
+- Real `npx` no-sample `status` keeps the same improvement with `Change: npx idlewatch configure --no-tui`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-setup/no-sample status reconfigure-hint improvement
+
 ## Cycle R596 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.
