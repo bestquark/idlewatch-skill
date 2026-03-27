@@ -43,7 +43,7 @@
 
 **Finding:** One more genuinely tiny install-path polish fix cleared the bar in the live checkout.
 - The macOS shell installer no longer shows both the clean `idlewatch quickstart --no-tui` command and the raw app-binary fallback when the normal CLI is already available
-- The no-setup handoff now stays neater: finish setup with `idlewatch quickstart --no-tui`, then turn on login startup with `idlewatch install-agent`
+- The no-setup handoff now stays neater: finish setup with `idlewatch quickstart --no-tui`, then turn on background mode with `idlewatch install-agent`
 - Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior still remain in good shape
 - The now-working telemetry path remains untouched
 - Fresh focused regression coverage still passes cleanly: **2 passed, 0 failed** in the targeted shell-script suite used for this pass

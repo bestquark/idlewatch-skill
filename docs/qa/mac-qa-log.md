@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R414 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining wording seam in the implementer polish handoff itself. The runtime/setup/install surfaces already converged on the calmer `background mode` story, but `idlewatch-cron-polish-plan.md` still said `turn on login startup`, which made the active polish brief slightly older and more platform-shaped than the product it was steering.
+
+### What changed
+- Reworded the final no-setup handoff line in `idlewatch-cron-polish-plan.md` from `turn on login startup` to `turn on background mode`
+- Kept the actual setup/install command story unchanged:
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch install-agent`
+- Kept runtime behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "turn on background mode\|turn on login startup" idlewatch-cron-polish-plan.md`
+- [x] Result: the active polish brief now matches the calmer `background mode` wording already used by the product surfaces it references
+- [x] Live spot checks still read cleanly:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js install-agent --help`
+
+### Prioritized findings
+#### [x] L93 — active polish brief now says `background mode` instead of `login startup`
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but the polish loop is easier to keep honest when the brief uses the same product language as the CLI and installer surfaces being reviewed. Leaving `login startup` here invited drift back toward platform mechanics in a lane that has otherwise been intentionally simplifying around `background mode`.
+- **Acceptance criteria:**
+  - `idlewatch-cron-polish-plan.md` says `turn on background mode with idlewatch install-agent`
+  - The brief keeps the same two-step no-setup handoff
+  - No runtime/setup/install behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 1:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny polish-brief wording seam fixed without changing behavior
+
 ## Cycle R413 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
