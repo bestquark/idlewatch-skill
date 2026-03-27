@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R423 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass closed one tiny remaining saved-config apply seam in the live checkout.
+
+### Priority call
+The current setup/install/reconfigure lane was still in good shape overall, but one saved-config follow-up phrase still felt more mechanical than the rest of the product voice. In the exact reconfigure/status moment where someone just wants the next step, `refresh it with the saved config` was accurate, but slightly more implementation-shaped than the calmer `apply the saved config` wording.
+
+### What changed
+- Reworded the running-background follow-up in `bin/idlewatch-agent.js` from `re-run ... install-agent to refresh it with the saved config` to `re-run ... install-agent to apply the saved config`
+- Reworded the matching `configure --help`, `reconfigure --help`, `status --help`, README, and skill guidance copy to keep the same calmer wording
+- Tightened `test/openclaw-env.test.mjs` so the saved-config apply hint does not drift back to the older phrasing
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **93 passed, 0 failed**
+- [x] Live spot checks:
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js configure --help`
+
+### Prioritized findings
+#### [x] L97 — saved-config apply hints now say `apply the saved config` instead of `refresh it with the saved config`
+**Why this mattered:** This is tiny, but it lands in a real settings-update moment where the product should state the next step simply. `Refresh it with the saved config` worked, but it read a notch more mechanical than the rest of IdleWatch's calmer setup/install wording.
+
+**Acceptance notes**
+- Running-background update hints now say `re-run idlewatch install-agent to apply the saved config`
+- Matching help/docs guidance uses the same shorter wording
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change was introduced
+
+**Last updated:** Friday, March 27th, 2026 — 1:57 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny saved-config apply wording seam fixed in this pass
+
 ## Cycle R422 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

@@ -295,10 +295,10 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   if (isReconfigure && backgroundAgentRunning) {
     console.log('\n   Background mode: already running')
     if (invocation.kind === 'npx') {
-      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh it with the saved config`)
+      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to apply the saved config`)
       console.log('   This npx run updated the saved config only.')
     } else {
-      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to refresh it with the saved config`)
+      console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to apply the saved config`)
     }
     console.log(`   Or run now:       ${runCommand}   Run in foreground`)
     return
@@ -1156,7 +1156,7 @@ Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     status: `${statusCommand} — Show device config and background mode state
 
 Usage:  ${statusUsageCommand}
@@ -1164,7 +1164,7 @@ Usage:  ${statusUsageCommand}
 Displays device config, publish mode, enabled metrics, last sample age,
 and background mode state.
 Config changes saved by quickstart or configure apply on the next start.
-If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
 Usage:  ${createCommand}
@@ -1195,7 +1195,7 @@ Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
 Saved changes apply on the next start.
-If background mode is already on, re-run ${backgroundInstallCommand} to refresh it with the saved config.`,
+If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
 Usage:  ${dashboardCommand}
@@ -1944,7 +1944,7 @@ if (statusRequested) {
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
-        console.log(`  Apply:    re-run ${installAgentCommand} to refresh it with the saved config`)
+        console.log(`  Apply:    re-run ${installAgentCommand} to apply the saved config`)
       } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Start:    ${installAgentCommand}`)
       } else {

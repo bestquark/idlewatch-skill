@@ -47,7 +47,7 @@ idlewatch install-agent         # enable background mode on macOS
 - Update setup later with `idlewatch configure --no-tui`
 - Saved changes apply on the next start
 - Background mode is a durable-install feature; after `npx` setup, install once with `npm install -g idlewatch`, then run `idlewatch install-agent`
-- If background mode is already on, re-run `idlewatch install-agent` to refresh it with the saved config
+- If background mode is already on, re-run `idlewatch install-agent` to apply the saved config
 
 ## Environment
 

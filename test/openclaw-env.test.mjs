@@ -1066,8 +1066,8 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   assert.doesNotMatch(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses simple prompts\. Set IDLEWATCH_ENROLL_\* env vars first\./)
   assert.match(run.stdout, /Saved changes apply on the next start\./)
-  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)
-  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to refresh it with the saved config\./)
+  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to apply the saved config\./)
+  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to apply the saved config\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*configure \[--no-tui\]/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for simple prompts\./)
   assert.doesNotMatch(run.stdout, /Saved changes apply the next time IdleWatch starts\./)
@@ -1086,7 +1086,7 @@ test('configure help stays clean in non-TTY mode and keeps saved-config reload w
   })
 
   assert.equal(npxRun.status, 0, npxRun.stderr)
-  assert.match(npxRun.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)
+  assert.match(npxRun.stdout, /If background mode is already on, re-run idlewatch install-agent to apply the saved config\./)
   assert.doesNotMatch(npxRun.stdout, /npx idlewatch install-agent/)
 })
 
@@ -1104,8 +1104,8 @@ test('reconfigure help stays clean in non-TTY mode', () => {
   assert.match(run.stdout, /Updates device name, metrics, and your optional cloud link\./)
   assert.doesNotMatch(run.stdout, /Re-opens setup to change device name, metrics, and your optional cloud link\./)
   assert.match(run.stdout, /Uses simple prompts\. Set IDLEWATCH_ENROLL_\* env vars first\./)
-  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)
-  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to refresh it with the saved config\./)
+  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to apply the saved config\./)
+  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to apply the saved config\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*reconfigure \[--no-tui\]/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for simple prompts\./)
   assert.doesNotMatch(run.stdout, /Re-opens the setup wizard to change mode, API key, device name, or metrics\./)
@@ -1125,8 +1125,8 @@ test('status help keeps the calmer background-mode wording and saved-config refr
   assert.match(run.stdout, /Displays device config, publish mode, enabled metrics, last sample age,\nand background mode state\./)
   assert.match(run.stdout, /Config changes saved by quickstart or configure apply on the next start\./)
   assert.doesNotMatch(run.stdout, /Config changes saved by quickstart\/configure apply on the next start\./)
-  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to refresh it with the saved config\./)
-  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to refresh it with the saved config\./)
+  assert.match(run.stdout, /If background mode is already on, re-run idlewatch install-agent to apply the saved config\./)
+  assert.doesNotMatch(run.stdout, /re-run node .*install-agent to apply the saved config\./)
   assert.doesNotMatch(run.stdout, /background LaunchAgent state\./)
   assert.doesNotMatch(run.stdout, /If the background agent is already running, re-run .* install-agent to restart it\./)
 })
@@ -1952,7 +1952,7 @@ exit 0
         assert.equal(npxConfigureWithRunningAgent.status, 0, npxConfigureWithRunningAgent.stderr)
         assert.match(npxConfigureWithRunningAgent.stdout, /Background mode:\s+already running/)
         assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /Background agent:\s+already running/)
-        assert.match(npxConfigureWithRunningAgent.stdout, /Apply changes:\s+re-run idlewatch install-agent to refresh it with the saved config/)
+        assert.match(npxConfigureWithRunningAgent.stdout, /Apply changes:\s+re-run idlewatch install-agent to apply the saved config/)
         assert.match(npxConfigureWithRunningAgent.stdout, /This npx run updated the saved config only\./)
         assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /refresh the background agent with the saved config/)
       } finally {
@@ -2480,7 +2480,7 @@ test('configure success says to refresh an already-running background agent', ()
     if (launchAgentWasRunning) {
       assert.match(configure.stdout, /Background mode:\s+already running/)
       assert.doesNotMatch(configure.stdout, /Background agent:\s+already running/)
-      assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to refresh it with the saved config/)
+      assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to apply the saved config/)
       assert.doesNotMatch(configure.stdout, /To keep it running:/)
     } else {
       assert.match(configure.stdout, /Background mode is not on yet\./)
@@ -2938,7 +2938,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background:\s+running in background \(pid 4242\)/, 'should report the running background state')
-    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the running-agent apply hint on the calmer product command in source checkouts')
+    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to apply the saved config'), 'should keep the running-agent apply hint on the calmer product command in source checkouts')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
@@ -2985,7 +2985,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background:\s+on \(waiting for next check\)/, 'should describe the loaded-but-idle background state in plain language')
-    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to refresh it with the saved config'), 'should keep the apply hint on the calmer product command for the loaded background state in source checkouts')
+    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to apply the saved config'), 'should keep the apply hint on the calmer product command for the loaded background state in source checkouts')
     assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
