@@ -1,3 +1,44 @@
+## Cycle R607 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny first-run reconfigure guardrail regression fix from the live checkout.
+
+### Priority call
+One small setup/reconfigure seam clearly still cleared the bar: first-run `configure --no-tui` had drifted back to the generic `Setup cancelled. No changes saved.` path when no saved setup existed yet and the call was non-interactive. Nothing core was broken, but this lands in the exact recovery moment where the product should be most literal. If no setup exists yet, the CLI should say so plainly and point straight to `quickstart` instead of pretending the user cancelled a real setup flow.
+
+### What changed
+- Moved the existing no-saved-setup reconfigure guard ahead of the generic non-interactive cancel branch in `bin/idlewatch-agent.js`
+- Kept the saved-setup reconfigure flow unchanged; this only fixes the first-run no-config path
+- Expanded the matching regression in `test/openclaw-env.test.mjs` so `configure --no-tui` without saved setup now stays clear both with and without `IDLEWATCH_ENROLL_NON_INTERACTIVE=1`
+- Preserved auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live source-checkout first-run repro now exits with:
+  - `IdleWatch is not set up yet. No saved config was found at ~/.idlewatch/idlewatch.env.`
+  - `Run idlewatch quickstart --no-tui to create your first setup.`
+- [x] Fresh live true-`npx` first-run repro now exits with:
+  - `IdleWatch is not set up yet. No saved config was found at ~/.idlewatch/idlewatch.env.`
+  - `Run npx idlewatch quickstart --no-tui to create your first setup.`
+- [x] Observed: the misleading `Setup cancelled. No changes saved.` copy no longer appears on this no-saved-setup reconfigure path
+- [x] Focused `node --test` slices in this environment still exhibit the previously logged sticky runner behavior, so this pass used syntax validation plus direct live repro/verification for the changed path
+
+### Prioritized findings
+#### [x] P1 — first-run `configure --no-tui` now says “not set up yet” instead of falling through to generic cancel wording
+**Why this mattered:** This is tiny, but it lands in the exact “let me tweak setup” moment before setup even exists. The product already had the right guardrail copy; it had just drifted behind a broader cancel branch. Restoring the direct `not set up yet → quickstart` path removes confusion and cuts one needless debugging step.
+
+**Acceptance checks**
+- `configure --no-tui` with no saved env file exits non-zero
+- The error clearly says no saved config was found yet
+- The next step points straight to `quickstart --no-tui`
+- The old misleading `Setup cancelled. No changes saved.` message is gone for this path
+- True `npx` no-saved-setup reconfigure keeps the same fix with a literally runnable `npx idlewatch quickstart --no-tui` handoff
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny first-run reconfigure guardrail regression fix
+
 ## Cycle R606 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` next-step literalness regression in the live checkout.

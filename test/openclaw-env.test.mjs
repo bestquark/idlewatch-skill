@@ -2291,24 +2291,31 @@ exit 0
 test('configure --no-tui fails clearly when no saved setup exists yet', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-no-setup-home-'))
   try {
-    const run = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
-      env: {
-        ...process.env,
-        HOME: tempHome,
-        PATH: process.env.PATH,
+    for (const envPatch of [
+      {
         IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
         IDLEWATCH_ENROLL_DEVICE_NAME: 'Should Not Matter',
         IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
       },
-      encoding: 'utf8',
-      timeout: 15000
-    })
+      {}
+    ]) {
+      const run = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+        env: {
+          ...process.env,
+          HOME: tempHome,
+          PATH: process.env.PATH,
+          ...envPatch
+        },
+        encoding: 'utf8',
+        timeout: 15000
+      })
 
-    assert.equal(run.status, 1)
-    assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
-    assert.match(run.stderr, /Run idlewatch quickstart --no-tui to create your first setup\./)
-    assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)
-    assert.equal(run.stdout, '')
+      assert.equal(run.status, 1)
+      assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
+      assert.match(run.stderr, /Run idlewatch quickstart --no-tui to create your first setup\./)
+      assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)
+      assert.equal(run.stdout, '')
+    }
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

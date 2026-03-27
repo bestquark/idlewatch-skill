@@ -1485,17 +1485,17 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
   // eslint-disable-next-line no-top-level-await - TUI flow needs async but runs in event loop context
   if (quickstartRequested) {
     try {
-      if (args.has('--no-tui') && !process.stdin.isTTY && !process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE) {
-        console.error('Setup cancelled. No changes saved.')
-        process.exit(0)
-      }
-
       const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
       const expectedConfigFile = enrollmentOutputEnvFilePath()
       if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
         console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
         console.error(`Run ${preferredHelpSetupCommand('quickstart')} to create your first setup.`)
         process.exit(1)
+      }
+
+      if (args.has('--no-tui') && !process.stdin.isTTY && !process.env.IDLEWATCH_ENROLL_NON_INTERACTIVE) {
+        console.error('Setup cancelled. No changes saved.')
+        process.exit(0)
       }
 
       const result = await runEnrollmentWizard({
