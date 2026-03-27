@@ -1,6 +1,6 @@
-# macOS LaunchAgent Setup
+# macOS Background Mode
 
-Turn on IdleWatch background mode on macOS.
+Turn on IdleWatch background mode.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ For a source checkout / maintainer workflow:
 npm run install:macos-launch-agent
 ```
 
-This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
+This installs background mode at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
 
 - If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away so background mode turns on immediately.
 - If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
@@ -59,7 +59,7 @@ IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent.qa" \
   npm run install:macos-launch-agent
 ```
 
-IdleWatch now refuses custom app-path or custom plist-root installs that still reuse the default label `com.idlewatch.agent`, because `launchd` keys the loaded job by label rather than plist directory.
+IdleWatch now refuses custom app-path or custom plist-root installs that still reuse the default label `com.idlewatch.agent`, because that label could replace another IdleWatch background-mode install.
 
 ## Uninstall
 
@@ -75,7 +75,7 @@ For a source checkout / maintainer workflow:
 npm run uninstall:macos-launch-agent
 ```
 
-Removes the plist and unloads the agent from launchd.
+Turns background mode off and removes its plist.
 
 ## Logs
 

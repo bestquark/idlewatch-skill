@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R434 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS background-mode doc cleanup from the live checkout.
+
+### Priority call
+One low-risk doc seam still cleared the bar this pass: `docs/packaging/macos-launch-agent.md` still opened and summarized the packaged background-mode path in more `LaunchAgent` / `launchd` language than the calmer product-shaped setup/install story now used across the CLI, onboarding docs, and nearby packaging docs. The behavior was already fine; the scan-first wording lagged behind.
+
+### What changed
+- Reworded `docs/packaging/macos-launch-agent.md` so the page opens as `macOS Background Mode`
+- Reworded the main install summary from `creates a launchd plist` to `installs background mode`
+- Reworded the default-label collision explanation so it says the default label could replace another IdleWatch background-mode install, instead of explaining the `launchd` keying detail in the main doc flow
+- Reworded the uninstall summary from `Removes the plist and unloads the agent from launchd` to `Turns background mode off and removes its plist`
+- Kept setup flow, saved-config handling, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "^# macOS Background Mode\|installs background mode\|could replace another IdleWatch background-mode install\|Turns background mode off and removes its plist" docs/packaging/macos-launch-agent.md`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Result: the packaged background-mode doc now matches the calmer product wording already used by the install/uninstall help surfaces
+
+### Prioritized findings
+#### [x] L102 — packaged macOS background-mode doc now stays on product wording in its scan-first install/uninstall summaries
+**Why this mattered:** This is tiny, but it lands in a real setup/install doc that people can hit while deciding how to turn background mode on or off from the packaged app. Pulling them into `LaunchAgent` / `launchd` framing that early adds friction without helping them complete the task.
+
+**Acceptance notes**
+- The page now opens as `macOS Background Mode`
+- The install summary now says it `installs background mode`
+- The uninstall summary now says it `Turns background mode off`
+- The custom-label safety note keeps the real warning without surfacing extra platform internals in the main explanation
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:08 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged background-mode doc seam fixed in this pass
+
 ## Cycle R433 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
