@@ -383,7 +383,7 @@ function printHelp() {
     ['create', 'Manage custom telemetry metrics'],
     ['dashboard', 'Launch local telemetry dashboard'],
     ['install-agent', installAgentSummary],
-    ['uninstall-agent', 'Disable background mode (macOS)'],
+    ['uninstall-agent', 'Turn off background mode (macOS)'],
     ['menubar', 'Install the macOS menu bar app'],
     ['version', 'Show version']
   ]
@@ -1181,11 +1181,11 @@ Usage:  ${createCommand}
 Interactive wizard to create, edit, or delete custom metrics.
 Each metric has a name, type, and shell command that runs each cycle.`,
     'install-agent': installAgentHelpText(),
-    'uninstall-agent': `${preferredProductCommand('uninstall-agent')} — Disable background mode (macOS)
+    'uninstall-agent': `${preferredProductCommand('uninstall-agent')} — Turn off background mode (macOS)
 
 Usage:  ${preferredProductCommand('uninstall-agent')}
 
-Disables background mode on macOS.
+Turns off background mode on macOS.
 Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
 Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
 Turn it back on later with idlewatch install-agent.`,

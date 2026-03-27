@@ -2,6 +2,82 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R457 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny uninstall-help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk uninstall wording seam still cleared the bar this pass: top-level help and `uninstall-agent --help` still said `Disable background mode` even though the rest of the setup/install lane had already converged on the calmer, more literal `Turn on background mode` / `Turn off background mode` story. The behavior was already right; this just removes one last older label from a real install/uninstall decision surface.
+
+### What changed
+- Reworded the `uninstall-agent` summary in `bin/idlewatch-agent.js` from `Disable background mode (macOS)` to `Turn off background mode (macOS)`
+- Reworded the `uninstall-agent --help` title/body from `Disable/Disables background mode` to `Turn off/Turns off background mode`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the calmer wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] Observed: main help now shows `uninstall-agent   Turn off background mode (macOS)`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command help now says `idlewatch uninstall-agent — Turn off background mode (macOS)` and `Turns off background mode on macOS.`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help keeps the happy path above advanced env tuning noise|main help keeps the source-checkout header on the calmer product command|uninstall-agent help reassures that config and logs are kept|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: focused installer/CLI regression lane still passes cleanly
+
+### Prioritized findings
+#### [x] L113 — uninstall help surfaces now say `Turn off background mode` instead of `Disable background mode`
+**Why this mattered:** This is tiny, but it sits right next to the now-cleaner `Turn on background mode` install language. `Disable background mode` was understandable, yet it was a little more tool-shaped and less symmetrical than the calmer product wording now used elsewhere. `Turn off background mode` makes install/uninstall read like a matched pair.
+
+**Acceptance checks**
+- Main help now says `uninstall-agent   Turn off background mode (macOS)`
+- `uninstall-agent --help` now says `idlewatch uninstall-agent — Turn off background mode (macOS)`
+- `uninstall-agent --help` body now says `Turns off background mode on macOS.`
+- Matching regression assertions now keep the calmer wording from drifting back
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall/help wording cleanup
+
+## Cycle R456 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one more tiny wording seam still worth cleaning up from the live checkout.
+
+### Priority call
+One low-risk uninstall wording seam still clears the bar: top-level help and `uninstall-agent --help` still say `Disable background mode` even though the rest of the setup/install lane has already converged on the calmer, more literal `Turn on background mode` / `Turn off background mode` story. The behavior is already right; this is just one last older label in a real install/uninstall decision surface.
+
+### Verification evidence
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] Observed: main help still shows `uninstall-agent   Disable background mode (macOS)`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command help still says `idlewatch uninstall-agent — Disable background mode (macOS)` and `Disables background mode on macOS.`
+- [x] `grep -RIn "Disable background mode\\|Disable background" bin README.md docs scripts test package.json || true`
+- [x] Observed live hits in product/test surfaces, including `bin/idlewatch-agent.js` and matching assertions in `test/openclaw-env.test.mjs`
+- [x] Fresh live spot checks still look good otherwise:
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+
+### Prioritized findings
+#### [ ] L113 — uninstall help surfaces should say `Turn off background mode` instead of `Disable background mode`
+**Why this matters:** This is tiny, but it sits right next to the now-cleaner `Turn on background mode` install language. `Disable background mode` is understandable, yet it is a little more tool-shaped and less symmetrical than the calmer product wording now used elsewhere. `Turn off background mode` would make install/uninstall read like a matched pair.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js --help`
+3. Observe the command list still says `uninstall-agent   Disable background mode (macOS)`
+4. Run `node bin/idlewatch-agent.js uninstall-agent --help`
+5. Observe the title/body still say `Disable background mode (macOS)` / `Disables background mode on macOS.`
+
+**Acceptance criteria**
+- Main help says `uninstall-agent   Turn off background mode (macOS)`
+- `uninstall-agent --help` says `idlewatch uninstall-agent — Turn off background mode (macOS)`
+- `uninstall-agent --help` body says `Turns off background mode on macOS.`
+- Matching regression assertions update so the calmer wording does not drift back
+- No auth, ingest, packaging, or launch-agent behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 4:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny uninstall/help wording seam documented for follow-up
+
+
 ## Cycle R455 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny help-surface wording cleanup from the live checkout.
