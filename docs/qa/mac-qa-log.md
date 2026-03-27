@@ -2,6 +2,55 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R390 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing installer/CLI polish issue in scope worth opening. The current setup/install/reconfigure/status story remains neat, low-friction, and product-shaped, and the only extra noise seen in the one-off npm path is still npm's own banner rather than IdleWatch copy.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- Result: **90 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Result highlights from this pass:
+  - main help still stays short and scan-friendly
+  - setup/update/status/install/uninstall help still tells one calm command story
+  - first-run `status` still stays preview-shaped instead of implementation-shaped
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - npm/npx one-off-vs-durable-install guidance still feels clean, with only npm's own banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live help spot checks listed above
+3. Use a clean HOME for first-run `status`, `--test-publish`, and `npm exec --yes -- idlewatch --help`
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the checked areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- `--test-publish` explicit without becoming a second workflow
+- saved device identity continuity and metric-toggle persistence covered by the still-green regression lane
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R389 Status: COMPLETE ✅
 
 One tiny uninstall-help recovery seam got cleaned up from the live checkout.
