@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R405 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining setup-help wording seam in the non-TTY path. `quickstart`, `configure`, and `reconfigure` already sat inside the calmer `simple prompts` setup story elsewhere, but their `--help` output still said `Runs non-interactively`, which read a little more tool-shaped than the surrounding product copy.
+
+### What changed
+- Reworded the non-TTY help hint in `bin/idlewatch-agent.js` from `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.` to `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- Kept the actual setup flow unchanged: same `--no-tui` path, same env vars, same saved-config behavior.
+- Tightened `test/openclaw-env.test.mjs` so `quickstart --help`, `configure --help`, and `reconfigure --help` keep the calmer `simple prompts` wording and do not drift back.
+- Kept startup/install behavior, validation behavior, saved-config handling, and the now-working telemetry path unchanged.
+
+### Verification evidence
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **93 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L88 — non-TTY setup help now says `Uses simple prompts` instead of `Runs non-interactively`
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it sits in first-run and reconfigure help surfaces where the product should feel calm and human. `Runs non-interactively` was accurate, but a little more implementation-shaped than necessary right where people just want the cleanest setup story.
+- **Acceptance criteria:**
+  - `quickstart --help`, `configure --help`, and `reconfigure --help` keep the same command and env-var guidance.
+  - The non-TTY hint says `Uses simple prompts`, not `Runs non-interactively`.
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:17 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny non-TTY help wording seam fixed without changing behavior
+
 ## Cycle R404 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
