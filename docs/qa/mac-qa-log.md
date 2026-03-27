@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R549 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-setup status follow-up improvement from the live checkout.
+
+### Priority call
+One low-risk status seam still cleared the bar this cycle: once setup was already saved and samples existed, `idlewatch status` kept the right reconfigure/background-mode hints but dropped the immediate foreground `run` command. Nothing functional was broken, yet that made the most useful next step a little less obvious in the exact “check status, then run it” moment.
+
+### What changed
+- Added `Run now:` back to the saved-setup `status` next-step block in `bin/idlewatch-agent.js` so configured status keeps foreground use visible alongside reconfigure and background-mode hints
+- Updated the matching assertions in `test/openclaw-env.test.mjs` for both source-checkout and `npx` status surfaces so this calmer run hint does not drift back out
+- Kept setup/reconfigure behavior, saved-config handling, startup/install flows, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command keeps npx background hints short and durable-install oriented|status command shows contextual next-step hints)'`
+- [x] Result: **98 passed, 0 failed**
+- [x] Fresh live local-only spot check with saved setup now shows `Run now:` in `idlewatch status` alongside `Change:` and `Turn on background mode:`
+- [x] Observed: the same status surface still keeps the calmer product-command setup/install story and does not add extra workflow copy
+
+### Prioritized findings
+#### [x] P1 — saved-setup `status` now keeps the immediate foreground `Run now` hint visible
+**Why this mattered:** This is tiny, but it lands in a common setup/reconfigure follow-up moment where someone checks `status` and wants the shortest next command. Reconfigure and background mode were already there; keeping `Run now` visible makes the status screen a little more self-sufficient without adding noise.
+
+**Acceptance checks**
+- Saved-setup `status` still shows the existing `Change:` and background-mode hints
+- The same status surface now also shows `Run now:` for the foreground path after setup is already saved
+- Matching source-checkout and `npx` regression assertions were updated so this hint does not drift back out
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-setup status next-step improvement
+
 ## Cycle R548 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

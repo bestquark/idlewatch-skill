@@ -2745,6 +2745,7 @@ test('status command keeps npx background hints short and durable-install orient
 
     assert.equal(withSamples.status, 0, withSamples.stderr)
     assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure --no-tui/)
+    assert.match(withSamples.stdout, /Run now:\s+npx idlewatch run/)
     assert.doesNotMatch(withSamples.stdout, /Change:\s+npx idlewatch configure(?! --no-tui)(?:\s|$)/)
     assert.match(withSamples.stdout, /Install once:\s+npm install -g idlewatch/)
     assert.match(withSamples.stdout, /Turn on background mode:\s+idlewatch install-agent/)
@@ -3014,6 +3015,7 @@ test('status command shows contextual next-step hints', () => {
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
     assert.ok(withSamples.stdout.includes('idlewatch configure --no-tui'), 'should keep the configure hint on the calmer product command in source checkouts')
+    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} run`), 'should keep the foreground run hint visible after setup is already saved')
     assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?! --no-tui)(?:\s|$)/, 'should not fall back to plain configure in non-TTY status hints')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 

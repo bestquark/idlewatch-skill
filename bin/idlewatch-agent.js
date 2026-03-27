@@ -1969,6 +1969,7 @@ if (statusRequested) {
   } else if (!isPlaceholderName) {
     const installAgentCommand = preferredProductCommand('install-agent')
     console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
+    console.log(`  Run now:  ${inferCliCommand('run')}`)
 
     if (detectCliInvocation().kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
