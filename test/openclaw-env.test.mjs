@@ -1168,6 +1168,25 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
   assert.doesNotMatch(run.stdout, /Telemetry collection stops\s+until you manually run IdleWatch again\./)
 })
 
+test('uninstall-agent --help reflects a configured custom saved-config path', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-help-custom-config-'))
+  const customConfigPath = path.join(tempDir, 'configs', 'idlewatch-custom.env')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+      env: { ...process.env, HOME: tempDir, IDLEWATCH_CONFIG_ENV_PATH: customConfigPath, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Saved config stays at ~/configs/idlewatch-custom.env when setup has been saved.'), 'help should show the configured saved-config path')
+    assert.doesNotMatch(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent runtime output keeps the saved-config wording calm', () => {
   if (process.platform !== 'darwin') {
     return

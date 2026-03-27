@@ -16965,3 +16965,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Added `IDLEWATCH_CONFIG_ENV_PATH` handling to `scripts/uninstall-macos-launch-agent.sh`.
 - The success output now says `Saved config stays at <configured path>` instead of always pointing at `~/.idlewatch/idlewatch.env`.
 - Added regression coverage for a packaged uninstall run with a custom config path.
+
+## Cycle R349 Status: CLOSED ✅
+
+### Outcome
+- The main CLI now follows the same custom saved-config path mental model already used by the packaged macOS uninstall script.
+- `uninstall-agent --help` no longer hard-codes `~/.idlewatch/idlewatch.env` when `IDLEWATCH_CONFIG_ENV_PATH` is set.
+- This keeps setup/reconfigure/uninstall guidance a little more trustworthy for users who keep saved config somewhere custom.
+- Background behavior, install flow, and the working telemetry path remain untouched.
+
+### R349 spot-check coverage
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='uninstall-agent help reassures that config and logs are kept|uninstall-agent --help reflects a configured custom saved-config path|uninstall-agent runtime output keeps the saved-config wording calm'`
+
+### Prioritized findings
+
+#### [x] L32 — CLI `uninstall-agent --help` now names the configured retained config path instead of always implying the default one
+**Why it matters:** This is tiny, but it lands in the exact reversible-background moment where wording has to feel dependable. The packaged uninstall script had already learned to respect `IDLEWATCH_CONFIG_ENV_PATH`; the main CLI help still quietly implied that saved config always lived under `~/.idlewatch/idlewatch.env`.
+
+**What shipped**
+- `defaultPersistedEnvFilePath()` now respects `IDLEWATCH_CONFIG_ENV_PATH` in the main CLI too.
+- `uninstall-agent --help` now prints the configured saved-config path in a home-relative form when possible.
+- Added regression coverage for `uninstall-agent --help` with a custom `IDLEWATCH_CONFIG_ENV_PATH`.
