@@ -2,6 +2,51 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R419 Status: OPEN ⚠️
+
+Fresh installer/CLI polish pass found one small but real setup handoff regression in the install-before-setup lane.
+
+### Priority call
+`quickstart --no-tui` no longer tells the truth after background mode was already installed before setup was saved. In that branch, the command currently falls back to the generic `For background mode: idlewatch install-agent   Turn on background mode` handoff instead of explicitly saying background mode is already installed and still not running yet.
+
+That is small, but it lands in the exact moment where a first-run user wants a literal state update, not an implied one. The current wording makes the already-installed branch read the same as the never-installed branch, so it hides the useful distinction the product had already gotten right elsewhere.
+
+### Verification evidence
+- [x] Clean-home lifecycle spot check with stubbed `launchctl` from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Repro output captured from:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] Observed `install-agent` correctly says: `Setup isn't saved yet, so background mode stays off for now.`
+- [x] Observed the following `quickstart --no-tui` follow-up incorrectly collapses back to the generic branch:
+  - `For background mode:`
+  - `  idlewatch install-agent   Turn on background mode`
+
+### Prioritized findings
+#### [ ] M95 — `quickstart --no-tui` should explicitly say background mode is already installed and still off after the install-before-setup path
+**Why this matters:** The product is at its best when it states the real state directly. After someone already ran `install-agent`, the setup completion step should not read like the same branch as a fresh never-installed system. That tiny ambiguity adds avoidable friction in the exact first-run recovery moment the user is most likely to follow literally.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` earlier on `PATH` that exits 0 for `bootstrap`, `bootout`, `enable`, `disable`, `kickstart`, and `print`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Confirm output includes `Setup isn't saved yet, so background mode stays off for now.`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+6. Observe setup completes, but the follow-up only says:
+   - `For background mode:`
+   - `  idlewatch install-agent   Turn on background mode`
+
+**Acceptance criteria**
+- In the install-before-setup branch, `quickstart` distinguishes `already installed and not running yet` from the never-installed path
+- The post-setup handoff explicitly says background mode is already installed and still off until `idlewatch install-agent` is re-run
+- The wording stays short, product-shaped, and non-technical
+- The never-installed branch keeps the simpler `Turn on background mode` handoff
+- No auth, ingest, packaging, or launch-agent behavior redesigns
+
+**Last updated:** Friday, March 27th, 2026 — 1:33 AM (America/Toronto)  
+**Status:** OPEN ⚠️ - one small install-before-setup state-handoff regression found in this pass
+
+## Cycle R418 Status: COMPLETE ✅
+
 ## Cycle R418 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
