@@ -2,6 +2,65 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R526 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
+
+### Priority call
+No new polish issue cleared the bar this cycle. Fresh live checks still keep the setup wizard, saved-config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live help / clean-home lifecycle spot checks run with a stubbed `launchctl` for:
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js configure --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js reconfigure --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed in the live lifecycle pass:
+  - non-TTY setup help still stays on the calmer `Uses simple prompts...` wording
+  - install-before-setup still stays honest and low-noise (`Setup isn't saved yet, so background mode stays off for now.`)
+  - first saved setup still hands off neatly to both foreground use and background mode without repeating commands excessively
+  - configure → status still keeps renamed device continuity explicit inline with `Device ID: qa-polish-box (kept from original setup for continuity)`
+  - metric-toggle persistence still stays obvious and quiet (`Metrics: Memory` after reconfigure)
+  - uninstall still keeps the reversible saved-config/local-log story short and explicit with retained concrete paths
+- [x] Fresh copy-drift sweep run for the exact polish lane:
+  - `grep -RInE 'Runs non-interactively|Turn it back on:|Apply changes:|Or run now:|Try it once:|Background execution lifecycle helpers|launch lifecycle helpers|Turn off background mode \(requires durable install\)|Turn on background mode:|Start:\s+.*install-agent|Start:\s+.*run|Install once: npm install -g idlewatch|requires durable install|Uses simple prompts|add a cloud API key|cloud API key|LaunchAgent scripts|LaunchAgent output|LaunchAgent label' bin docs README.md scripts test package.json || true`
+- [x] Observed: remaining hits are either current intentional wording, regression assertions, or historical QA-log text — not a new live product-surface regression
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live help / clean-home lifecycle spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Re-check the requested setup wizard / config persistence / launch-agent / test-publish / device identity / metric-toggle / npm-npx lane together rather than broadening into unrelated surfaces
+3. Use the copy-drift grep above only as a pointer, then confirm suspected hits on live help/runtime output before logging anything new
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest about background mode being installed but off until setup is saved and turned on
+- configure → status keeping renamed device continuity and metric-toggle persistence obvious inline
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- a clean enough npm/npx one-off-vs-durable-install split, with remaining wrapper noise still coming from npm rather than IdleWatch
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 12:10 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R525 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny non-TTY setup-help wording alignment from the live checkout.
