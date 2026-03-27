@@ -6,7 +6,7 @@ Turn on IdleWatch background mode.
 
 - IdleWatch.app installed (typically `/Applications/IdleWatch.app`)
 - macOS 12+ (Monterey or later)
-- Optional: saved IdleWatch config from `idlewatch quickstart --no-tui` if you want the agent to publish to IdleWatch Cloud right away
+- Optional: saved IdleWatch config from `idlewatch quickstart --no-tui` if you want background mode to start using your saved setup right away
 
 ## Install
 

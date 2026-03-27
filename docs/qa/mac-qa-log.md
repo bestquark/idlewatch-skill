@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R493 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS prerequisite wording cleanup from the live checkout.
+
+### Priority call
+One low-risk packaged setup seam still cleared the bar this pass: `docs/packaging/macos-launch-agent.md` still framed the optional saved-config prerequisite as mainly about publishing to IdleWatch Cloud right away. The runtime behavior was already right, but that wording quietly under-sold the nicer local-only story too: saved setup is what lets background mode start cleanly right away, regardless of whether the device is local-only or cloud-linked.
+
+### What changed
+- Reworded the optional saved-config prerequisite in `docs/packaging/macos-launch-agent.md` from `if you want the agent to publish to IdleWatch Cloud right away` to `if you want background mode to start using your saved setup right away`
+- Kept the packaged install flow, saved-config behavior, local-only setup story, cloud-link behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "saved IdleWatch config.*saved setup right away\|publish to IdleWatch Cloud right away" docs/packaging/macos-launch-agent.md`
+- [x] Observed: the packaged macOS prerequisite now stays on the broader saved-setup story instead of implying cloud linking is the main reason to save config first
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **97 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L131 — packaged macOS prerequisite now says saved config helps background mode start right away, not just cloud publish
+**Why this mattered:** This is tiny, but it lands in a real packaged-app setup moment where the product should reinforce the simplest mental model: save setup once, then background mode can use it right away. Framing that prerequisite mainly around cloud publish made the local-only happy path feel less first-class than it actually is.
+
+**Acceptance checks**
+- `docs/packaging/macos-launch-agent.md` now says saved config helps `background mode` start using the saved setup right away
+- The same prerequisite no longer implies the main reason to save config first is Cloud publish
+- No auth, ingest, packaging behavior, or telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged prerequisite wording cleanup
+
 ## Cycle R492 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
