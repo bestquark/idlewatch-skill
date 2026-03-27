@@ -2,6 +2,50 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R557 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real but genuinely tiny uninstall-copy issue in the live checkout.
+
+### Priority call
+One low-risk off-ramp seam still clears the bar: successful `idlewatch uninstall-agent` already keeps the reversible story calm, but its retained-path lines still dump full absolute temp/home paths for the saved config and local log. The rest of the CLI now consistently prefers the friendlier `~/.idlewatch/...` style on setup, status, install-before-setup, and uninstall help. Nothing functional is broken, yet this makes the exact “I just turned it off, what stayed?” moment feel more machine-shaped and visually noisy than the surrounding product.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Clean-home lifecycle spot check with a stubbed `launchctl` for:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Observed: successful uninstall runtime currently prints:
+  - `Saved config stays at /var/folders/.../tmp.../.idlewatch/idlewatch.env`
+  - `Local log stays at /var/folders/.../tmp.../.idlewatch/logs/qa-polish-box-metrics.ndjson`
+- [x] Cross-check: nearby live surfaces in the same pass still prefer the calmer `~` style instead:
+  - `quickstart --no-tui` success: `Config: ~/.idlewatch/idlewatch.env`
+  - `status`: `Local log: ~/.idlewatch/logs/...`, `Config: ~/.idlewatch/idlewatch.env`
+  - `install-agent` before setup: `Config path:  ~/.idlewatch/idlewatch.env`
+  - `uninstall-agent --help`: retained-path/help copy stays calmer and does not dump temp-home absolute paths in the default-location case
+
+### Prioritized findings
+#### [ ] P1 — successful `uninstall-agent` runtime should keep retained config/log paths friendly instead of dumping full absolute home/temp paths
+**Why this matters:** This is tiny, but it lands in a real recovery moment where the user is checking what uninstall kept. Full absolute temp/home paths are technically correct, but they add exactly the kind of visual noise the rest of this polish lane has been removing. Showing the same `~/.idlewatch/...` style already used elsewhere would keep uninstall runtime feeling coherent, calmer, and more product-shaped.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that succeeds for `bootstrap` / `bootout` and reports not-loaded for `print`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent`
+6. Observe the retained-path lines currently use full absolute temp/home paths instead of the friendlier `~/.idlewatch/...` style used by nearby setup/status/help surfaces
+
+**Acceptance checks**
+- Successful `idlewatch uninstall-agent` runtime shows the retained saved-config path in the same friendly `~`-style already used elsewhere, e.g. `Saved config stays at ~/.idlewatch/idlewatch.env`
+- The same runtime shows the retained local-log path in the same friendly `~`-style when it lives under the default home directory, e.g. `Local log stays at ~/.idlewatch/logs/...`
+- Default-location uninstall runtime no longer dumps full temp-home or absolute home-directory paths in those retained-path lines
+- If a saved config or local log really points outside the home directory, showing the real absolute path there is still fine
+- No auth, ingest, packaging, launch-agent behavior, or telemetry-path behavior changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:58 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny uninstall retained-path copy regression for the next polish pass
+
 ## Cycle R556 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one genuinely tiny but user-visible setup-copy cleanup from the live checkout.
