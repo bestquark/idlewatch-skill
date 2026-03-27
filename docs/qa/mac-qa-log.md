@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R479 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS verify-doc fix from the live checkout.
+
+### Priority call
+One low-risk packaged-doc seam still cleared the bar this pass: `docs/packaging/macos-launch-agent.md` correctly explains custom background-mode labels for side-by-side installs, but its scan-first verify command still hardcoded `com.idlewatch.agent` with no note about swapping in a custom label. The runtime behavior was already right; this just removes one more small custom-install gotcha in the exact verify moment where someone wants the command to work the first time.
+
+### What changed
+- Added a short verify note in `docs/packaging/macos-launch-agent.md` telling people to use their custom `IDLEWATCH_LAUNCH_AGENT_LABEL` in the `launchctl print` command when they changed it
+- Kept the default-label verify example unchanged for the normal install path
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "If you changed .*IDLEWATCH_LAUNCH_AGENT_LABEL\|launchctl print gui/\$\(id -u\)/com.idlewatch.agent" docs/packaging/macos-launch-agent.md`
+- [x] Result: the verify section now keeps the default-label example for the common path while explicitly covering the custom-label path right above it
+- [x] `git diff -- docs/packaging/macos-launch-agent.md docs/qa/mac-qa-log.md`
+- [x] Result: only the tiny verify-note/doc-log update above changed in this pass
+
+### Prioritized findings
+#### [x] L125 — packaged macOS verify doc now tells custom-label installs to use their own label in `launchctl print`
+**Why this mattered:** This is tiny, but it lands in a real setup/verify moment right after the doc has already taught people how to use a custom label safely. Leaving the verify command hardcoded to the default label created avoidable friction for the exact more-advanced install path the same page already supports.
+
+**Acceptance checks**
+- `docs/packaging/macos-launch-agent.md` now tells custom-label installs to swap the label in the verify command
+- The common-path `launchctl print gui/$(id -u)/com.idlewatch.agent` example stays unchanged for normal installs
+- No auth, ingest, packaging behavior, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS verify-doc custom-label fix
+
 ## Cycle R478 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

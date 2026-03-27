@@ -89,6 +89,8 @@ tail -f ~/Library/Logs/IdleWatch/idlewatch.err.log
 
 ## Verify
 
+If you changed `IDLEWATCH_LAUNCH_AGENT_LABEL`, use that label in the `launchctl print` command below.
+
 ```bash
 # Check if running
 launchctl print gui/$(id -u)/com.idlewatch.agent
