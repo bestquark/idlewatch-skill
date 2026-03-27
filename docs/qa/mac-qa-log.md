@@ -2,6 +2,46 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R561 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny installed-but-not-running wording cleanup from the live checkout.
+
+### Priority call
+One low-risk saved-config/apply seam still cleared the bar: after someone had already installed background mode before setup, the next setup-success and status surfaces still said `Turn on background mode: idlewatch install-agent`. Nothing functional was broken, but that wording made the follow-up command sound like a fresh enable step even though IdleWatch was already installed and only needed to start using the saved config. Tightening that copy to `Start background mode` keeps the action more literal in the exact recovery moment where people copy the next command.
+
+### What changed
+- Reworded the installed-but-not-running follow-up in `bin/idlewatch-agent.js` from `Turn on background mode` to `Start background mode` for the saved-config surfaces that appear after setup/configure and in `status`
+- Kept the true first-time/off path unchanged: when background mode is not installed yet, IdleWatch still says `Turn on background mode`
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the installed-but-not-running wording does not drift back
+- Left auth, ingest, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup|install-agent does not claim background is running when launchd still reports not loaded|status command keeps the installed-not-running hint clear after setup saves over a previously installed agent|status command keeps the installed-not-running hint clear for a saved source-checkout setup)'`
+- [x] Result: **98 passed, 0 failed**
+- [x] Fresh live spot check with a stubbed `launchctl` for:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `rm -f "$TMPHOME/.idlewatch-launchctl-state"`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed:
+  - setup success now says `Start background mode:  idlewatch install-agent` once background mode is already installed but not running yet
+  - saved-setup `status` now uses the same more literal `Start background mode:     idlewatch install-agent` hint in that same installed-but-not-running state
+  - first-time background-mode hints still stay on `Turn on background mode` when background mode is not installed yet
+
+### Prioritized findings
+#### [x] P1 — installed-but-not-running follow-up copy now says `Start background mode` instead of `Turn on background mode`
+**Why this mattered:** This is tiny, but it lands in the exact saved-config recovery moment where someone just finished setup and wants the shortest next command. `Turn on` sounded a little too much like a fresh install/enable action. `Start background mode` is more literal because IdleWatch is already installed and only needs to begin using the saved config.
+
+**Acceptance checks**
+- After `install-agent` ran before setup, subsequent setup success surfaces now say `Start background mode: idlewatch install-agent`
+- Saved-setup `status` in the same installed-but-not-running state now uses `Start background mode: idlewatch install-agent`
+- First-time/off-path hints where background mode is not installed yet still say `Turn on background mode`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-but-not-running wording cleanup
+
 ## Cycle R560 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

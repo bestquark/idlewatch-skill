@@ -39,14 +39,14 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 84 - COMPLETE ✅
+## Cycle Status: Cycle 85 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny install-time polish fix cleared the bar in the live checkout.
-- The npm postinstall onboarding block now prints for actual global installs by default instead of every install context
-- Local/source installs stay quieter, while `IDLEWATCH_POSTINSTALL_ALWAYS_PRINT=1` still keeps the handoff available for validation/dev flows
+**Finding:** One more genuinely tiny setup/apply polish fix cleared the bar in the live checkout.
+- After background mode was installed before setup, the follow-up setup/status surfaces now say `Start background mode` instead of `Turn on background mode` when IdleWatch is already installed but just needs to start using the saved config
+- This keeps the saved-config/apply story more literal in the exact re-run moment, without adding new steps or changing behavior
 - Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior still remain in good shape
 - The now-working telemetry path remains untouched
-- Fresh focused regression coverage still passes cleanly: **4 passed, 0 failed** in the targeted postinstall suite used for this pass
+- Fresh focused regression coverage still passes cleanly: **98 passed, 0 failed** in the targeted env slice used for this pass
 
 **Last updated:** Friday, March 27th, 2026 — 3:15 PM (America/Toronto)
 ---
