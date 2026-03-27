@@ -66,10 +66,10 @@ Optional environment variables:
 - `IDLEWATCH_NODE_BIN="/opt/homebrew/bin/node"` — pins Node binary path used by packaged app launcher.
 - `IDLEWATCH_SKIP_SOURCEMAP_VALIDATION="1"` — temporarily disables packaged sourcemap integrity validation during `package:macos` (use only for emergency/debug scenarios).
 - `IDLEWATCH_NODE_RUNTIME_DIR="/path/to/node-runtime"` — optionally bundles portable Node runtime into app resources (`<runtime>/bin/node` required).
-- `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by LaunchAgent scripts.
-- `IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent"` — override LaunchAgent label.
+- `IDLEWATCH_APP_PATH="/Applications/IdleWatch.app"` — app path used by background-mode scripts.
+- `IDLEWATCH_LAUNCH_AGENT_LABEL="com.idlewatch.agent"` — override background-mode label.
 - `IDLEWATCH_LAUNCH_AGENT_PLIST_ROOT="$HOME/Library/LaunchAgents"` — override plist root for install/uninstall scripts.
-- `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for LaunchAgent output.
+- `IDLEWATCH_LAUNCH_AGENT_LOG_DIR="$HOME/Library/Logs/IdleWatch"` — set log destination for background-mode output.
 - `IDLEWATCH_OPENCLAW_PROBE_TIMEOUT_MS=2500` — baseline per-probe timeout for OpenClaw usage commands (packaging validation wrappers default to `4000`).
 - `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES=2097152` — maximum bytes captured per OpenClaw probe call (increase for noisy/progress-heavy OpenClaw outputs).
 - `IDLEWATCH_OPENCLAW_MAX_OUTPUT_BYTES_HARD_CAP=16777216` — hard ceiling for automatic capture growth on noisy outputs before giving up.

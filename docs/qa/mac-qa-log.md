@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R475 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged-macOS env-var wording cleanup from the live checkout.
+
+### Priority call
+One low-risk packaging-doc seam still cleared the bar this pass: the scan-first macOS DMG env-var bullets still said `LaunchAgent scripts` / `LaunchAgent label` / `LaunchAgent output` even though the surrounding installer/setup story has already converged on the calmer `background mode` wording. The behavior was already right; this just keeps one more real installer-adjacent reference aligned with the product voice people now see everywhere else.
+
+### What changed
+- Reworded `docs/packaging/macos-dmg.md` so `IDLEWATCH_APP_PATH` now says it is used by `background-mode scripts`
+- Reworded the matching `IDLEWATCH_LAUNCH_AGENT_LABEL` helper text from `override LaunchAgent label` to `override background-mode label`
+- Reworded `IDLEWATCH_LAUNCH_AGENT_LOG_DIR` from `LaunchAgent output` to `background-mode output`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, packaging behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "background-mode scripts\|background-mode label\|background-mode output\|LaunchAgent scripts\|LaunchAgent label\|LaunchAgent output" docs/packaging/macos-dmg.md`
+- [x] Result: the touched scan-first env-var bullets now stay on `background mode` wording instead of briefly reverting to `LaunchAgent` framing
+- [x] `git diff -- docs/packaging/macos-dmg.md`
+- [x] Result: only the tiny wording cleanup above changed in the packaged macOS DMG guide for this pass
+
+### Prioritized findings
+#### [x] L124 — packaged macOS DMG env-var bullets now stay on `background mode` wording instead of `LaunchAgent` framing
+**Why this mattered:** This is tiny, but it lands in a real installer-adjacent reference that people can scan while figuring out how the packaged macOS path is configured. Leaving those bullets on `LaunchAgent` wording made the doc feel slightly older and more platform-shaped than the calmer setup/install story the product already uses elsewhere.
+
+**Acceptance checks**
+- `IDLEWATCH_APP_PATH` now says it is used by `background-mode scripts`
+- `IDLEWATCH_LAUNCH_AGENT_LABEL` now says `override background-mode label`
+- `IDLEWATCH_LAUNCH_AGENT_LOG_DIR` now says `background-mode output`
+- The same env-var bullets no longer say `LaunchAgent scripts`, `LaunchAgent label`, or `LaunchAgent output`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:42 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged-macOS env-var wording cleanup
+
 ## Cycle R474 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
