@@ -307,6 +307,29 @@ test('--test-publish aliases to one-shot publish mode', () => {
   assert.match(run.stdout, /local-only mode/)
 })
 
+test('source-checkout foreground local-only hint keeps the calmer configure command story', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-run-local-hint-home-'))
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'run'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8',
+      timeout: 1500
+    })
+
+    assert.match(run.stderr, /Running in local-only mode — telemetry is saved to disk but not published\./)
+    assert.match(run.stderr, /Run idlewatch configure --no-tui to add a cloud API key\./)
+    assert.doesNotMatch(run.stderr, /Run node .*configure --no-tui to add a cloud API key\./)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('uses cloud publish label for once mode when cloud ingest config is active', () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-cloud-once-home-'))
   const envDir = path.join(tempHome, '.idlewatch')

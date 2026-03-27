@@ -2,6 +2,46 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R394 Status: COMPLETE ✅
+
+One tiny source-checkout foreground-mode wording seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small product-copy seam in the local-only `run` path.
+- In a source checkout, the foreground collector no longer falls back to `Run node bin/idlewatch-agent.js configure --no-tui to add a cloud API key.`
+- That hint now stays on the calmer product command story: `Run idlewatch configure --no-tui to add a cloud API key.`
+- Kept runtime behavior unchanged: this is command-hint polish only.
+- Preserved saved-config behavior, setup/reconfigure flow, startup/install quality of life, and the now-working telemetry path.
+- Re-ran the focused installer/CLI regression subset and it still passes cleanly: **92 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L75 — source-checkout foreground local-only hint now keeps the calmer `idlewatch configure --no-tui` recovery command
+**Why it mattered:** This is tiny, but it lands in a real support/setup moment where someone is running IdleWatch locally and just wants the clean next command to add a cloud link later. Falling back to `node bin/...` made that one runtime hint feel more implementation-shaped than the surrounding setup/help/status story.
+
+**What shipped**
+- Updated the local-only foreground recovery hint in `bin/idlewatch-agent.js` to use `preferredRecoveryCommand('configure')` instead of the raw source-checkout setup command helper.
+- Added regression coverage so source-checkout `run` keeps the calmer `idlewatch configure --no-tui` hint and does not drift back to `node bin/idlewatch-agent.js configure --no-tui`.
+- Kept runtime behavior unchanged.
+
+### Spot-check coverage for R394
+- [x] Source-checkout `run` in local-only mode now says `Run idlewatch configure --no-tui to add a cloud API key.`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **92 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `TMPHOME=$(mktemp -d)`
+3. `(PATH="$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js run) >/tmp/idlewatch-run-out.txt 2>/tmp/idlewatch-run-err.txt &`
+4. `sleep 2`
+5. `cat /tmp/idlewatch-run-err.txt`
+6. `node --test test/openclaw-env.test.mjs --test-name-pattern='source-checkout foreground local-only hint keeps the calmer configure command story|help keeps the happy path above advanced env tuning noise|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|run --help|create --help|dashboard --help|menubar --help'`
+
+### Acceptance notes
+- The local-only foreground hint now matches the calmer `idlewatch ...` command story already used by nearby help, setup, status, and install surfaces.
+- This is wording polish only; no auth, ingest, packaging, launch-agent behavior, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny source-checkout runtime command-story seam fixed in this pass
+
 ## Cycle R393 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
