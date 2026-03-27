@@ -1,3 +1,43 @@
+## Cycle R609 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny true-`npm exec` / `npx` installer-hint regression fix from the live checkout.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: in a live `npm exec` / `npx`-style context, the installer/status setup hints had drifted back to plain `idlewatch ...` commands again on the most copy-paste-heavy surfaces. Nothing core was broken, but that quietly assumed a durable install exactly where the product should stay literal. One-off actions should remain literally runnable as `npx idlewatch ...`, while background mode should stay on the explicit durable-install handoff.
+
+### What changed
+- Tightened CLI invocation detection in `bin/idlewatch-agent.js` with a small dedicated `looksLikeNpxInvocation()` helper so `npm exec` / `npx` contexts stay classified as one-off even when running the repo script directly
+- Kept the rest of the command-shaping behavior intact; this only restores the already-intended one-off hinting on installer/status/setup surfaces
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for `install-agent --help` and runtime under real npm-exec env vars so these copy-safe hints do not drift back again
+- Left auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live npm-exec / true-`npx` help spot check now shows:
+  - `Set up now:                npx idlewatch quickstart --no-tui`
+  - `Run now:                   npx idlewatch run`
+- [x] Fresh live npm-exec / true-`npx` runtime spot check now shows the same one-off-safe handoff instead of drifting back to plain `idlewatch ...` hints
+- [x] Fresh live npm-exec / true-`npx` quickstart + status spot check still keeps:
+  - `Run now:  npx idlewatch run`
+  - `Change:   npx idlewatch configure --no-tui`
+  - `For background mode:` with `npm install -g idlewatch` then `idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — live npm-exec / true-`npx` installer hints now stay literally runnable as one-off commands again
+**Why this mattered:** This is tiny, but it lands exactly where people copy commands verbatim. When the user is still in one-off `npx` mode, the product should not quietly switch back to plain `idlewatch ...` commands and imply a durable install that may not exist yet.
+
+**Acceptance checks**
+- Live `install-agent --help` under npm-exec / `npx` context now says `Set up now: npx idlewatch quickstart --no-tui`
+- The same help/runtime surfaces now say `Run now: npx idlewatch run`
+- Live one-off setup/status surfaces still keep `Change: npx idlewatch configure --no-tui`
+- The durable background-mode handoff remains separate on `npm install -g idlewatch`, then `idlewatch install-agent`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npm exec` / `npx` command-literalness fix
+
 ## Cycle R608 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.

@@ -263,6 +263,66 @@ test('help preserves one-off command hints under npm exec', () => {
   assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
 })
 
+test('install-agent help/runtime preserve one-off command hints under npm exec', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-'))
+  const npxEnv = {
+    ...process.env,
+    HOME: tempDir,
+    PATH: process.env.PATH,
+    npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+    npm_command: 'exec',
+    npm_lifecycle_event: 'npx',
+    npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+  }
+
+  try {
+    const help = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
+      env: npxEnv,
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(help.status, 0, help.stderr)
+    assert.match(help.stdout, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+    assert.match(help.stdout, /Run now:\s+npx idlewatch run/)
+    assert.doesNotMatch(help.stdout, /Set up now:\s+idlewatch quickstart(?:\s|$)/)
+    assert.doesNotMatch(help.stdout, /Run now:\s+idlewatch run(?:\s|$)/)
+
+    if (process.platform === 'darwin') {
+      const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-bin-'))
+      try {
+        fs.writeFileSync(path.join(fakeBinDir, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 1
+fi
+if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+  exit 0
+fi
+exit 0
+`, { mode: 0o755 })
+
+        const runtime = spawnSync(process.execPath, [BIN, 'install-agent'], {
+          env: { ...npxEnv, PATH: `${fakeBinDir}:${process.env.PATH}` },
+          encoding: 'utf8',
+          timeout: 15000
+        })
+
+        assert.notEqual(runtime.status, 0)
+        assert.match(runtime.stdout, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+        assert.match(runtime.stdout, /Run now:\s+npx idlewatch run/)
+        assert.doesNotMatch(runtime.stdout, /Set up now:\s+idlewatch quickstart(?:\s|$)/)
+        assert.doesNotMatch(runtime.stdout, /Run now:\s+idlewatch run(?:\s|$)/)
+      } finally {
+        rmSync(fakeBinDir, { recursive: true, force: true })
+      }
+    }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('setup mode prompt stays neutral and local-first friendly', () => {
   const prompt = promptModeText()
 

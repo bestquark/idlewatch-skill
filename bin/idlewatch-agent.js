@@ -51,17 +51,26 @@ function escapeXml(value) {
     .replace(/'/g, '&apos;')
 }
 
-function detectCliInvocation() {
-  const scriptArg = process.argv[1] || ''
-  const scriptBase = path.basename(scriptArg)
+function looksLikeNpxInvocation() {
   const execArgv = process.execArgv || []
   const npmExecPath = String(process.env.npm_execpath || '').toLowerCase()
   const userAgent = String(process.env.npm_config_user_agent || '').toLowerCase()
   const npmCommand = String(process.env.npm_command || '').toLowerCase()
   const npmLifecycleEvent = String(process.env.npm_lifecycle_event || '').toLowerCase()
+
+  if (npmLifecycleEvent === 'npx') return true
+  if (npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx')) return true
+  if (npmCommand === 'exec' && (npmExecPath.includes('npm') || npmExecPath.endsWith('npm-cli.js') || userAgent.includes('npm/'))) return true
+  if (userAgent.includes('npm/') && execArgv.includes('exec')) return true
+  return false
+}
+
+function detectCliInvocation() {
+  const scriptArg = process.argv[1] || ''
+  const scriptBase = path.basename(scriptArg)
   const looksLikeRepoScript = scriptBase === 'idlewatch-agent.js' && /(?:^|\/)bin\/idlewatch-agent\.js$/.test(scriptArg)
   const looksLikeGlobalShim = scriptBase === 'idlewatch' || scriptBase === 'idlewatch-agent' || /(?:^|\/)node_modules\/\.bin\/(?:idlewatch|idlewatch-agent)$/.test(scriptArg)
-  const looksLikeNpx = npmExecPath.includes('npx-cli') || npmExecPath.endsWith('/npx') || npmLifecycleEvent === 'npx' || (npmCommand === 'exec' && (npmExecPath.includes('npm') || userAgent.includes('npm/'))) || (userAgent.includes('npm/') && execArgv.includes('exec'))
+  const looksLikeNpx = looksLikeNpxInvocation()
 
   if (looksLikeNpx) return { kind: 'npx', base: 'npx idlewatch' }
   if (looksLikeGlobalShim) return { kind: 'global', base: 'idlewatch' }
