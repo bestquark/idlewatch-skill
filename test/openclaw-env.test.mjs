@@ -323,8 +323,8 @@ test('source-checkout foreground local-only hint keeps the calmer configure comm
     })
 
     assert.match(run.stderr, /Running in local-only mode — telemetry is saved to disk but not published\./)
-    assert.match(run.stderr, /Run idlewatch configure --no-tui to add a cloud API key\./)
-    assert.doesNotMatch(run.stderr, /Run node .*configure --no-tui to add a cloud API key\./)
+    assert.match(run.stderr, /Run idlewatch configure --no-tui to add a cloud link later if you want one\./)
+    assert.doesNotMatch(run.stderr, /Run node .*configure --no-tui to add a cloud link later if you want one\./)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

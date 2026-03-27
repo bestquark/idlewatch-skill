@@ -1987,7 +1987,7 @@ if (statusRequested) {
 
 if (shouldWarnAboutMissingPublishConfig) {
   console.error(
-    `Running in local-only mode — telemetry is saved to disk but not published. Run ${preferredRecoveryCommand('configure')} to add a cloud API key.`
+    `Running in local-only mode — telemetry is saved to disk but not published. Run ${preferredRecoveryCommand('configure')} to add a cloud link later if you want one.`
   )
 }
 

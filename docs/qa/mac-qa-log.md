@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R506 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny local-only runtime wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar this pass: the foreground local-only warning still told people to `add a cloud API key` even though the surrounding setup/help/onboarding story now consistently frames cloud linking as optional. The behavior was already right and the telemetry path was already working; this was just one last small place where the wording felt slightly heavier and more technical than the product around it.
+
+### What changed
+- Reworded the local-only runtime warning in `bin/idlewatch-agent.js` from `Run ... configure --no-tui to add a cloud API key.` to `Run ... configure --no-tui to add a cloud link later if you want one.`
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the local-only foreground hint stays aligned with the calmer optional-cloud-link setup story
+- Kept auth/ingest behavior, saved-config handling, install/uninstall behavior, and the working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|npx|help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] Observed: the live local-only warning now says `Run idlewatch configure --no-tui to add a cloud link later if you want one.`
+- [x] Observed: the same warning no longer says `add a cloud API key`
+
+### Prioritized findings
+#### [x] L138 — local-only foreground warning now stays on the optional-cloud-link story
+**Why this mattered:** This is tiny, but it lands in a real setup/recovery moment where someone is already successfully collecting locally and just wants the cleanest next step. `add a cloud API key` made that hint feel slightly more mandatory and implementation-shaped than the calmer local-first setup story IdleWatch now tells everywhere else nearby.
+
+**Acceptance checks**
+- The live local-only foreground warning now says `Run idlewatch configure --no-tui to add a cloud link later if you want one.`
+- The same warning no longer says `add a cloud API key`
+- Matching regression assertions were updated so this optional-cloud-link wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny local-only runtime wording cleanup
+
 ## Cycle R505 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
