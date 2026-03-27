@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R574 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny installed-before-setup `status` next-step wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/install recovery seam still cleared the bar: after `idlewatch install-agent` ran before setup existed, `status` already correctly remembered `Background: installed but waiting for setup`, but the next-step line still said `Get started:`. Nothing functional was broken, yet that wording was slightly less literal in the exact state where setup has already begun from the install side and the user only needs to finish it. Tightening that one hint to `Finish setup:` makes the recovery path calmer and more precise without adding any new branching or extra copy.
+
+### What changed
+- Reworded the installed-before-setup `status` next-step in `bin/idlewatch-agent.js` from `Get started:` to `Finish setup:` when background mode is already installed and waiting for saved setup
+- Kept the true first-run/off path unchanged: brand-new `status` still says `Get started:` when nothing has been installed yet
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs` so this recovery hint stays literal and does not drift back
+- Left setup/configure behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='status command preserves installed-but-waiting-for-setup state after install-agent ran before setup'`
+- [x] Result: **100 passed, 0 failed** in the current env slice run
+- [x] Fresh live install-before-setup spot check with a stubbed `launchctl` now shows:
+  - `Background:        installed but waiting for setup`
+  - `Finish setup:  idlewatch quickstart --no-tui`
+- [x] Observed: fresh first-run `status` without a prior install still keeps `Get started:  idlewatch quickstart --no-tui`
+
+### Prioritized findings
+#### [x] P1 — install-before-setup `status` now says `Finish setup` instead of `Get started`
+**Why this mattered:** This is tiny, but it lands in the exact recovery moment where someone has already turned on the durable background-mode install path a bit early and is checking what to do next. `Get started` was acceptable, but `Finish setup` is more literal because IdleWatch already knows background mode was installed and is waiting for the saved setup.
+
+**Acceptance checks**
+- `status` after `install-agent` and before saved setup still says `Background: installed but waiting for setup`
+- The same recovery surface now says `Finish setup:  idlewatch quickstart --no-tui`
+- Fresh first-run `status` without a prior install still says `Get started:  idlewatch quickstart --no-tui`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:50 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-before-setup `status` next-step wording cleanup
+
 ## Cycle R573 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

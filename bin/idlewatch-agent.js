@@ -1958,7 +1958,9 @@ if (statusRequested) {
 
   console.log('')
   if (!hasConfig) {
-    console.log(`  Get started:  ${preferredHelpSetupCommand('quickstart')}`)
+    const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
+    const setupLabel = launchAgent?.state === 'installed-not-loaded' ? 'Finish setup' : 'Get started'
+    console.log(`  ${setupLabel}:  ${preferredHelpSetupCommand('quickstart')}`)
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {

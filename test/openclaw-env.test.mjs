@@ -1571,8 +1571,9 @@ test('status command preserves installed-but-waiting-for-setup state after insta
     assert.match(status.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env \(not saved yet\)/)
     assert.match(status.stdout, /Background:\s+installed but waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+waiting for setup/)
-    assert.match(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
-    assert.doesNotMatch(status.stdout, /Get started:\s+node .*quickstart --no-tui/)
+    assert.match(status.stdout, /Finish setup:\s+idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(status.stdout, /Finish setup:\s+node .*quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
