@@ -1165,7 +1165,8 @@ Usage:  ${preferredProductCommand('uninstall-agent')}
 
 Disables background mode on macOS.
 Saved config stays at ~/.idlewatch/idlewatch.env when setup has been saved.
-Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.`,
+Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
+Turn it back on later with idlewatch install-agent.`,
     menubar: `${menubarCommand} — Install macOS menu bar app
 
 Usage:  ${menubarCommand} [--launch] [--force]

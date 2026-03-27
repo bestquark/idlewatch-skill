@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R389 Status: COMPLETE ✅
+
+One tiny uninstall-help recovery seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small off-ramp polish seam in `uninstall-agent --help`.
+- The help surface already reassured people that saved config and local logs stay put, but it did not include the clean recovery command used by the runtime uninstall success output.
+- `idlewatch uninstall-agent --help` now ends with `Turn it back on later with idlewatch install-agent.` so the reversible background-mode story is complete even before someone runs the command.
+- Kept uninstall behavior, saved-config retention, local-log retention, startup/install behavior, and the now-working telemetry path unchanged.
+- Re-ran the focused installer/CLI regression subset and nearby live help check; they still pass cleanly: **90 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L73 — `uninstall-agent --help` now includes the clean recovery command
+**Why it mattered:** This is tiny, but it lands in a scan-first off-ramp surface where people want one clear reassurance and one clear way back. The runtime success output already had the right recovery hint; help should not make people discover it only after uninstalling.
+
+**What shipped**
+- Updated `bin/idlewatch-agent.js` help text for `uninstall-agent` to end with `Turn it back on later with idlewatch install-agent.`
+- Tightened `test/openclaw-env.test.mjs` so the help surface keeps that recovery hint.
+- Kept runtime behavior unchanged.
+
+### Spot-check coverage for R389
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **90 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js uninstall-agent --help`
+3. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent --help|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent no-op still says stays when saved config or logs already exist|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- The uninstall help surface now completes the same calm, reversible background-mode story already used by runtime uninstall output.
+- This is help-copy polish only; no auth, ingest, packaging, launch-agent logic, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 10:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny uninstall-help recovery seam fixed in this pass
+
 ## Cycle R388 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
