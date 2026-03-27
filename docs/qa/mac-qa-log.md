@@ -2,6 +2,70 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R578 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny `npx install-agent` recovery-order seam in the live checkout.
+
+### Priority call
+One low-risk one-off recovery seam cleared the bar this cycle: in a real `npx` context, runtime `idlewatch install-agent` now keeps the commands themselves correct, but the order still leads with the durable path (`Install once: npm install -g idlewatch`) before the immediate one-off action (`Set up now: npx idlewatch quickstart --no-tui`). Nothing functional is broken, yet that order adds a little avoidable friction in the exact copy-paste moment where the user most likely wants the shortest thing they can do right now. Product taste is better if the actionable now-step lands first, then the durable install handoff follows.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-home lifecycle spot checks with a stubbed `launchctl` still keep the requested lane calm and low-noise for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent`
+  - `node bin/idlewatch-agent.js status`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `node bin/idlewatch-agent.js --test-publish`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh loaded-background apply spot checks with the same stubbed `launchctl` still keep the saved-config apply story literal and predictable for:
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js install-agent`
+  - `node bin/idlewatch-agent.js status`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `node bin/idlewatch-agent.js status`
+- [x] Fresh real-`npx` recovery spot checks run for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js uninstall-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed in the live pass:
+  - clean-home setup/configure/status still keep device identity continuity, metric-toggle persistence, install-before-setup recovery, and uninstall reassurance calm and literal
+  - loaded-background status still stays calm after install, and reconfigure still keeps the apply story short and truthful (`Apply saved config:  re-run idlewatch install-agent to apply the saved config`)
+  - `npx idlewatch install-agent --help` already uses the better immediate-first order:
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+  - but real `npx idlewatch install-agent` runtime still prints the same commands in the less helpful order:
+    - `Install once:              npm install -g idlewatch`
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+
+### Prioritized findings
+#### [x] P1 — real `npx install-agent` runtime should lead with `Set up now` before `Install once`
+**Why this matters:** This is tiny, but it lands in the exact recovery moment where someone just tried to enable background mode from `npx` and needs the most useful next step immediately. The commands are already right; the issue is sequencing. Leading with the durable install step subtly nudges the eye toward a bigger commitment before the simple one-off action that can unblock the user right now. The calmer product move is to show the immediate `Set up now` step first, then the durable install split for background mode.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run:
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+3. Observe the real runtime warning currently leads with:
+   - `Install once:              npm install -g idlewatch`
+   - `Set up now:                npx idlewatch quickstart --no-tui`
+4. Compare that with the already-better `install-agent --help` surface, which leads with `Set up now` first in the same `npx` context
+
+**Acceptance checks**
+- In a real `npx` context, runtime `idlewatch install-agent` should lead with `Set up now: npx idlewatch quickstart --no-tui`
+- The same runtime warning should still keep `Install once: npm install -g idlewatch`
+- The same runtime warning should still keep `Turn on background mode: idlewatch install-agent`
+- The same runtime warning should still keep `Run now: npx idlewatch run`
+- This should be output-order polish only; no auth, ingest, packaging, saved-config handling, or launch-agent behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 5:32 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny real-`npx` install-agent recovery-order issue for the next polish pass
+
 ## Cycle R577 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny real-`npx` install-agent recovery-copy fix from the live checkout.
