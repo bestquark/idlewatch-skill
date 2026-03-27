@@ -2,6 +2,46 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R579 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one still-real tiny real-`npx install-agent` recovery-order fix from the live checkout.
+
+### Priority call
+One low-risk one-off recovery seam still cleared the bar this cycle: in a real `npx` context, runtime `idlewatch install-agent` already showed the right commands, but it still led with the durable step (`Install once: npm install -g idlewatch`) before the immediate unblocker (`Set up now: npx idlewatch quickstart --no-tui`). Nothing functional was broken, yet that order adds a little avoidable friction in the exact copy-paste moment where the user most likely wants the shortest thing they can do right now. Product taste is better if the actionable now-step lands first, then the durable install handoff follows.
+
+### What changed
+- Reordered the real-`npx` runtime `install-agent` durable-install warning in `bin/idlewatch-agent.js` so it now leads with `Set up now: npx idlewatch quickstart --no-tui`
+- Kept the same recovery commands intact right after that: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
+- Tightened the matching regression in `test/openclaw-env.test.mjs` so it now checks the output order instead of only checking that both lines exist
+- Left auth, ingest, setup behavior, saved-config handling, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh real-`npx` runtime spot check:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed: runtime warning now says:
+  - `Set up now:                npx idlewatch quickstart --no-tui`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] Focused Node test runner still exhibits the previously noted hanging behavior in this environment, so this pass used syntax validation plus direct live repro instead of waiting on a stuck summary
+
+### Prioritized findings
+#### [x] P1 — real `npx install-agent` runtime now leads with `Set up now` before `Install once`
+**Why this mattered:** This is tiny, but it lands in the exact recovery moment where someone tries to enable background mode from `npx` and immediately needs the shortest useful next step. The commands were already correct; the issue was sequencing. Leading with the durable install step subtly nudged the eye toward a bigger commitment before the simple one-off action that can unblock the user right now. The calmer product move is to show the immediate `Set up now` step first, then the durable install split for background mode.
+
+**Acceptance checks**
+- In a real `npx` context, runtime `idlewatch install-agent` now leads with `Set up now: npx idlewatch quickstart --no-tui`
+- The same runtime warning still keeps `Install once: npm install -g idlewatch`
+- The same runtime warning still keeps `Turn on background mode: idlewatch install-agent`
+- The same runtime warning still keeps `Run now: npx idlewatch run`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny real-`npx` install-agent recovery-order fix
+
 ## Cycle R578 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny `npx install-agent` recovery-order seam in the live checkout.

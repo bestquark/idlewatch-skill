@@ -39,15 +39,15 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 88 - COMPLETE ✅
+## Cycle Status: Cycle 89 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny `npx install-agent` recovery-copy fix still cleared the bar in the live checkout.
-- In a real `npx` context, the runtime `install-agent` durable-install warning now keeps the setup command literally runnable: `Set up now: npx idlewatch quickstart --no-tui`
-- That same recovery screen still keeps the durable split clean: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
-- This removes one quiet copy-paste seam without changing setup behavior, saved-config handling, launch-agent behavior, packaging shape, or the now-working telemetry path
-- The matching `npx` regression assertion was updated so the runtime warning does not drift back to plain `idlewatch quickstart --no-tui`
+**Finding:** One more genuinely tiny real-`npx install-agent` recovery-order fix still cleared the bar in the live checkout.
+- In a real `npx` context, the runtime `install-agent` durable-install warning now leads with the immediate unblocker: `Set up now: npx idlewatch quickstart --no-tui`
+- The same recovery screen still keeps the durable handoff intact right after that: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
+- This removes one more quiet copy-paste hesitation without changing setup behavior, saved-config handling, launch-agent behavior, packaging shape, or the now-working telemetry path
+- The matching real-`npx` regression assertion now checks the output order too, so the runtime warning does not drift back to leading with the bigger durable-install step
 
-**Last updated:** Friday, March 27th, 2026 — 5:18 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 5:40 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
