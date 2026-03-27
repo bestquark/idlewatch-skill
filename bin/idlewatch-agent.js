@@ -330,7 +330,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     } else {
       console.log(`   Apply changes:    re-run ${backgroundInstallCommand} to apply the saved config`)
     }
-    console.log(`   Or run now:       ${runCommand}   Run in foreground`)
+    console.log(`   Or run now:       ${runCommand}   Run in the foreground`)
     return
   }
 
@@ -343,7 +343,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
       console.log('   This npx run saved the config, but background mode still uses the durable install.')
     }
     console.log('\n   Use it now:')
-    console.log(`     ${runCommand}   Run in foreground`)
+    console.log(`     ${runCommand}   Run in the foreground`)
     return
   }
 
@@ -352,7 +352,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
       console.log('\n   Background mode is not on yet.')
     }
     console.log('\n   Use it now:')
-    console.log(`     ${runCommand}   Run in foreground`)
+    console.log(`     ${runCommand}   Run in the foreground`)
     console.log('\n   For background mode:')
     console.log('     Install once: npm install -g idlewatch')
     console.log('     Turn on background mode: idlewatch install-agent')
@@ -364,7 +364,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   }
 
   console.log('\n   Use it now:')
-  console.log(`     ${runCommand}   Run in foreground`)
+  console.log(`     ${runCommand}   Run in the foreground`)
   console.log('\n   For background mode:')
   console.log(`     ${installAgentCommand}   Turn on background mode`)
 }

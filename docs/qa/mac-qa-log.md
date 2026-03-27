@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R468 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny setup/reconfigure foreground-handoff wording cleanup from the live checkout.
+
+### Priority call
+One low-risk copy seam still cleared the bar: the setup/reconfigure `Use it now` handoff still said `Run in foreground` even though nearby help and run surfaces already use the more natural `run in the foreground` wording. The behavior was already right; this just removes one last clipped phrase from a real next-step moment people hit immediately after setup.
+
+### What changed
+- Reworded the setup/reconfigure foreground handoff in `bin/idlewatch-agent.js` from `Run in foreground` to `Run in the foreground`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the calmer wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, background-mode behavior, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart completion stays honest when a LaunchAgent was installed before setup|quickstart and configure keep one-off runs honest about background install under npm exec env|configure success says to refresh an already-running background agent|run command in foreground offers background-mode follow-up with calmer wording|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **96 passed, 0 failed**
+- [x] Clean-home lifecycle spot check with stubbed `launchctl` still shows:
+  - `Use it now:`
+  - `idlewatch run   Run in the foreground`
+- [x] Clean one-shot foreground probe still keeps the already-fixed calmer tip:
+  - `Tip: Turn on background mode with ... install-agent, or use ... menubar for the menu bar app.`
+
+### Prioritized findings
+#### [x] L120 — setup/reconfigure foreground handoff now says `Run in the foreground` instead of `Run in foreground`
+**Why this mattered:** This is tiny, but it lands right after setup or reconfigure, where the product should sound calm and finished rather than clipped. `Run in foreground` was understandable, but it felt slightly terse next to the more natural phrasing already used in `run --help` and nearby follow-up copy.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and zero for `bootstrap` / `bootout`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+5. Observe the `Use it now` handoff now says `idlewatch run   Run in the foreground`
+6. Repeat with `configure --no-tui` and confirm the same wording
+
+**Acceptance checks**
+- Setup/reconfigure follow-up now says `Run in the foreground`
+- The same handoff no longer says `Run in foreground`
+- `run --help` and the foreground-run tip stay otherwise unchanged
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:12 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny setup/reconfigure foreground-handoff wording cleanup
+
 ## Cycle R467 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny foreground-run wording cleanup from the live checkout.
