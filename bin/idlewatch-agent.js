@@ -1309,7 +1309,7 @@ const subcommandPromise = (async () => {
       console.error('Background mode needs a durable install.')
       console.error('')
       console.error('Install once:              npm install -g idlewatch')
-      console.error("If setup isn't saved yet:  idlewatch quickstart --no-tui")
+      console.error("Set up now:                npx idlewatch quickstart --no-tui")
       console.error('Turn on background mode:   idlewatch install-agent')
       console.error('')
       console.error(`Run now:                   ${inferCliCommand('run')}`)

@@ -39,16 +39,15 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 87 - COMPLETE ✅
+## Cycle Status: Cycle 88 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny loaded-background status truthfulness fix cleared the bar in the live checkout.
-- After `idlewatch install-agent` has already applied the current saved setup, `idlewatch status` no longer contradicts itself by also saying `Apply saved config`
-- The apply hint now shows only when the saved config is actually newer than the installed launch-agent plist, which keeps post-reconfigure guidance intact without muddying the happy path
-- The loaded-background confirmation screen now stays calmer and more literal: `Background: on (waiting for next check)` plus `Background: already on`
-- Setup/reconfigure flows, saved-config handling, startup/install quality of life, and the now-working telemetry path remain otherwise unchanged
-- The matching source-checkout regression assertion was updated so this loaded-background happy path does not drift back
+**Finding:** One more genuinely tiny `npx install-agent` recovery-copy fix still cleared the bar in the live checkout.
+- In a real `npx` context, the runtime `install-agent` durable-install warning now keeps the setup command literally runnable: `Set up now: npx idlewatch quickstart --no-tui`
+- That same recovery screen still keeps the durable split clean: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
+- This removes one quiet copy-paste seam without changing setup behavior, saved-config handling, launch-agent behavior, packaging shape, or the now-working telemetry path
+- The matching `npx` regression assertion was updated so the runtime warning does not drift back to plain `idlewatch quickstart --no-tui`
 
-**Last updated:** Friday, March 27th, 2026 — 4:58 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 5:18 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

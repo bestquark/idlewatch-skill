@@ -2,6 +2,46 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R577 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny real-`npx` install-agent recovery-copy fix from the live checkout.
+
+### Priority call
+One low-risk one-off install/recovery seam still cleared the bar: in a real `npx` context, the runtime `idlewatch install-agent` durable-install warning already kept the long-term path honest, but its no-setup hint still said plain `idlewatch quickstart --no-tui`. Nothing functional was broken, yet that is the exact copy-paste moment where the command should be literally runnable as shown. Tightening that one line to `Set up now: npx idlewatch quickstart --no-tui` keeps the one-off recovery path copy-safe while preserving the durable install split for background mode.
+
+### What changed
+- Reworded the real-`npx` runtime `install-agent` durable-install warning in `bin/idlewatch-agent.js` from `If setup isn't saved yet: idlewatch quickstart --no-tui` to `Set up now: npx idlewatch quickstart --no-tui`
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs` so the live runtime warning does not drift back to the plain `idlewatch ...` setup hint
+- Kept the durable background-mode handoff unchanged: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
+- Left auth, ingest, setup behavior, saved-config handling, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh real-`npx` runtime spot check:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed: runtime warning now says:
+  - `Install once:              npm install -g idlewatch`
+  - `Set up now:                npx idlewatch quickstart --no-tui`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] Focused Node test runner still hits the previously noted hanging/cancelled behavior in this environment (`Promise resolution is still pending but the event loop has already resolved`), so this pass used syntax validation plus direct live repro instead of waiting on a stuck summary
+
+### Prioritized findings
+#### [x] P1 — real-`npx` `install-agent` runtime now keeps the no-setup command literally runnable in the same one-off context
+**Why this mattered:** This is tiny, but it lands in the exact recovery moment where someone tries to enable background mode from `npx`, gets told it needs a durable install, and immediately wants the shortest setup command that actually works right now. Showing plain `idlewatch quickstart --no-tui` quietly assumed a global binary the user may not have yet. `npx idlewatch quickstart --no-tui` is more literal, lower-friction, and keeps the product split clean: one-off setup/run now, durable install for background mode.
+
+**Acceptance checks**
+- In a real `npx` context, runtime `install-agent` failure now says `Set up now: npx idlewatch quickstart --no-tui`
+- The same runtime warning no longer points the no-setup path at plain `idlewatch quickstart --no-tui`
+- The same runtime warning still keeps the durable background-mode handoff unchanged on `npm install -g idlewatch` + `idlewatch install-agent`
+- The same runtime warning still keeps the one-off foreground fallback on `npx idlewatch run`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:18 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny real-`npx` install-agent recovery-copy fix
+
 ## Cycle R576 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
