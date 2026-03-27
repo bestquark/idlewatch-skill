@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R490 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent --help` durable-install handoff fix from the live checkout.
+
+### Priority call
+One low-risk one-off off-ramp seam still cleared the bar this pass: `npx idlewatch uninstall-agent --help` already made it clear that background mode belongs to the durable install path, but unlike the matching `npx install-agent --help` help surface it skipped the explicit `Install once: npm install -g idlewatch` step. The runtime behavior was already safe; this just removes one last small bit of avoidable guesswork in a real recovery/reconfigure moment.
+
+### What changed
+- Added the missing `Install once: npm install -g idlewatch` line to the `npx uninstall-agent --help` handoff in `bin/idlewatch-agent.js`
+- Added focused regression coverage in `test/openclaw-env.test.mjs` so the `npx` uninstall off-ramp keeps the durable-install step explicit and does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context keeps the durable off-ramp explicit|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: the `npx` uninstall off-ramp now includes `Install once: npm install -g idlewatch` before the durable uninstall/re-enable commands
+
+### Prioritized findings
+#### [x] L130 — `npx uninstall-agent --help` now includes the missing `Install once` step
+**Why this mattered:** This is tiny, but it lands in the exact one-off-to-durable transition where the product is telling someone how to cleanly manage background mode later. Without the install step, the help text was mostly right yet slightly less self-contained than the matching `npx install-agent` off-ramp.
+
+**Acceptance checks**
+- `npx uninstall-agent --help` now starts with `Background mode needs a durable install.`
+- It now also says `Install once: npm install -g idlewatch`
+- It still says `Turn it off later with: idlewatch uninstall-agent`
+- It still says `Turn it back on later with the durable install: idlewatch install-agent`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:07 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent --help` durable-install handoff fix
+
 ## Cycle R489 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

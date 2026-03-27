@@ -296,6 +296,7 @@ function uninstallAgentHelpText() {
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
 
+Install once: npm install -g idlewatch
 Turn it off later with: idlewatch uninstall-agent
 Turn it back on later with the durable install: idlewatch install-agent`
   }

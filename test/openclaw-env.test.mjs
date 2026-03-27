@@ -967,6 +967,29 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
+test('uninstall-agent help in npx context keeps the durable off-ramp explicit', () => {
+  const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /^Background mode needs a durable install\./)
+  assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.match(run.stdout, /Turn it off later with:\s+idlewatch uninstall-agent/)
+  assert.match(run.stdout, /Turn it back on later with the durable install:\s+idlewatch install-agent/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+npx idlewatch uninstall-agent/)
+  assert.doesNotMatch(run.stdout, /npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
+})
+
 test('main help keeps the source-checkout header on the calmer product command', () => {
   const run = spawnSync(process.execPath, [BIN, '--help'], {
     env: { ...process.env, PATH: process.env.PATH },
