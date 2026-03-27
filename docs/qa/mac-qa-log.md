@@ -20246,6 +20246,58 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ---
 
+## Cycle R115 Status: OPEN ⚠️
+
+This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
+
+### Outcome
+- Most of the current setup/status/install lane still feels calm and low-friction in the live checkout.
+- One tiny but real help-text regression is worth reopening because it lands in a copy-paste moment for headless setup.
+- No auth, ingest, packaging, or background-agent behavior changes are implicated.
+
+### Spot-check coverage
+- Main `--help`
+- `quickstart --help`
+- `configure --help`
+- `reconfigure --help`
+- Clean-home `status`
+- Clean-home `--test-publish`
+- `install-agent` before setup with a stubbed `launchctl`
+- Local-only `quickstart --no-tui`
+- Saved-config `configure --no-tui` rename + metric-toggle persistence
+- Post-configure `status`
+- Clean-home `uninstall-agent`
+- `npx`-like main `--help`
+
+### Prioritized findings
+
+#### [L35] Non-TTY setup help has regressed back to `Uses simple prompts.` in headless help output
+**Why this matters:** This is tiny, but it lands right where people pause before copying a headless setup command. Once help is already showing `quickstart --no-tui`, `configure --no-tui`, or `reconfigure --no-tui`, the sentence `Uses simple prompts.` feels slightly contradictory and more interactive than the flow really is. The calmer `Runs non-interactively` wording was the better fit for this exact moment.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+3. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+4. `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+
+**Observed**
+- All three help screens currently say:
+  - `Usage:  idlewatch ... --no-tui`
+  - `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- That pairing reintroduces the small contradiction the earlier polish pass had already removed.
+
+**Acceptance criteria**
+- Non-TTY `quickstart --help`, `configure --help`, and `reconfigure --help` should describe the headless path as non-interactive again, not as simple prompts.
+- The wording should stay short and product-shaped, e.g. `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- No setup semantics, saved-config behavior, auth, ingest, packaging, or launch-agent behavior should change.
+
+### Notes
+- The cron payload path was stale again; the active repo for this pass was `~/.openclaw/workspace.bak/idlewatch-skill`.
+- Everything else spot-checked in this cycle still looked calm: first-run `status`, local-only `--test-publish`, install-before-setup behavior, saved-config reuse, rename continuity, metric-toggle persistence, uninstall retention wording, and `npx` durable-install guidance.
+- Working tree still contains an unrelated untracked artifact: `idlewatch-0.2.0.tgz`.
+
+---
+
 ## Cycle R114 Status: CLOSED ✅
 
 This pass stayed intentionally narrow and product-facing: setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, test-publish messaging, device identity persistence, metric toggle persistence, and npm/npx install-path clarity.
