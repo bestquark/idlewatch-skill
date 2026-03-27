@@ -18,10 +18,10 @@ Use this path for the simplest one-off setup and foreground testing.
 `idlewatch` is the default package/command name. `idlewatch-skill` remains available as a compatibility alias, but it should not be the main path shown to new users.
 
 Wizard output:
-- Prompts for a device name, API key, and which metrics to collect.
+- Prompts for a device name, which metrics to collect, and an optional cloud link.
 - Generates an env file (`idlewatch.env`) under the user config directory.
 - Saves local config so later runs use the saved setup without manually sourcing the env file.
-- Sends a first sample so the device can link right away.
+- Sends a first sample right away, even in local-only mode.
 
 ### 2) Signed DMG install (managed rollout)
 
@@ -31,7 +31,7 @@ Wizard output:
    ```
 2. Distribute `dist/IdleWatch-<version>-signed.dmg`.
 3. User drags app into Applications and launches.
-4. On first run, user executes quickstart from packaged app terminal context to link the device with an API key.
+4. On first run, user executes quickstart from packaged app terminal context to choose a device name, pick metrics, and optionally add cloud later.
 
 ### Optional: background mode on macOS
 
