@@ -133,9 +133,9 @@ Optional environment variables:
   - Packaged-app path for turning background mode off later
 - `scripts/install-macos-launch-agent.sh`
   - Writes `~/Library/LaunchAgents/<label>.plist`
-  - Loads `LaunchAgent` under current user sandbox, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s), background mode, stdout/stderr logs
+  - Turns background mode on for the current user, with `StartInterval` aligned to `IDLEWATCH_INTERVAL_MS` (min 60s) plus stdout/stderr logs
 - `scripts/uninstall-macos-launch-agent.sh`
-  - Unloads and removes `~/Library/LaunchAgents/<label>.plist`
+  - Turns background mode off and removes `~/Library/LaunchAgents/<label>.plist`
 - `npm run install:macos-launch-agent`
   - Source-checkout / maintainer wrapper for `scripts/install-macos-launch-agent.sh`
   - Packaged-app users should prefer `/Applications/IdleWatch.app/Contents/Resources/payload/package/scripts/install-macos-launch-agent.sh`

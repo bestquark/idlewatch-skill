@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R450 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged-DMG script-summary wording cleanup from the live checkout.
+
+### Priority call
+One low-risk doc seam still cleared the bar this pass: the packaged DMG guide already framed the user-facing path as `background mode`, but its scan-first source-script summary still said `Loads LaunchAgent` / `Unloads and removes ...`. The behavior was already right; this just keeps one more real setup/install reference on the calmer product story.
+
+### What changed
+- Reworded the `scripts/install-macos-launch-agent.sh` summary in `docs/packaging/macos-dmg.md` from `Loads LaunchAgent ...` to `Turns background mode on for the current user ...`
+- Reworded the `scripts/uninstall-macos-launch-agent.sh` summary from `Unloads and removes ...` to `Turns background mode off and removes ...`
+- Kept setup flow, saved-config behavior, startup/install behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "scripts/install-macos-launch-agent.sh\|Turns background mode on for the current user\|Turns background mode off and removes" docs/packaging/macos-dmg.md`
+- [x] Result: the packaged DMG script summary now stays on `background mode` wording in the same scan-first section that already uses the calmer product story
+
+### Prioritized findings
+#### [x] L110 — packaged DMG script summary now says the scripts turn background mode on/off instead of leading with `Loads LaunchAgent` / `Unloads and removes`
+**Why this mattered:** This is tiny, but it sits in a real packaging/setup reference where the product should describe what the scripts do in user terms before surfacing plist details. `Loads LaunchAgent` worked, but it pulled the reader back toward platform mechanics in a section that otherwise already reads cleanly.
+
+**Acceptance notes**
+- The packaged DMG guide now says `Turns background mode on for the current user` for the install script summary
+- The uninstall script summary now says `Turns background mode off and removes ...`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged DMG script-summary wording seam fixed in this pass
+
+
 ## Cycle R449 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
