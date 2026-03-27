@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R471 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS saved-config wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar: `docs/packaging/macos-launch-agent.md` still said config changes are picked up `on the next start`, which was understandable but a little clipped next to the calmer `next time IdleWatch starts` wording already used across the CLI help and nearby setup surfaces. The behavior was already right; this just keeps the packaged macOS doc aligned with the product voice people already see in setup and status.
+
+### What changed
+- Reworded the packaged macOS saved-config note in `docs/packaging/macos-launch-agent.md` from `Config changes are picked up on the next start.` to `Config changes are picked up next time IdleWatch starts.`
+- Kept the follow-up command story unchanged: after `idlewatch quickstart --no-tui` or later settings changes, re-run the install script once to turn background mode on or apply the saved config
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "Config changes are picked up next time IdleWatch starts\|Config changes are picked up on the next start" docs/packaging/macos-launch-agent.md`
+- [x] Observed: the packaged macOS background-mode doc now says `Config changes are picked up next time IdleWatch starts.`
+- [x] `git diff -- docs/packaging/macos-launch-agent.md`
+- [x] Observed: only the tiny wording cleanup above changed in the packaged macOS doc for this pass
+
+### Prioritized findings
+#### [x] L122 — packaged macOS saved-config doc now says `next time IdleWatch starts` instead of `on the next start`
+**Why this mattered:** This is tiny, but it lands in a real setup/reconfigure/install reference where the product should sound calm and explicit instead of slightly clipped. `On the next start` was accurate, but `next time IdleWatch starts` reads more naturally and matches the current CLI help wording users already see elsewhere.
+
+**Acceptance checks**
+- `docs/packaging/macos-launch-agent.md` now says `Config changes are picked up next time IdleWatch starts.`
+- The same doc no longer says `Config changes are picked up on the next start.`
+- The apply/reload guidance right after that line stays otherwise unchanged
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS saved-config wording cleanup
+
+
 ## Cycle R470 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
