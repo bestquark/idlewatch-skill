@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R428 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny postinstall handoff fix from the live checkout.
+
+### Priority call
+One low-risk setup/install seam still cleared the bar this pass: after a durable `npm install -g idlewatch`, the postinstall output named setup, one-off use, and the menubar app, but it did not name the clean optional next step for people who want IdleWatch to keep running on macOS. That made the install handoff slightly less complete than the rest of the calmer `background mode` story already used across help, status, and install surfaces.
+
+### What changed
+- Added an explicit optional postinstall line for macOS background mode: `idlewatch install-agent   # turn on background mode`
+- Kept the optional menubar handoff, but clarified it inline as `idlewatch menubar         # menu bar app`
+- Tightened `test/postinstall.test.mjs` so the npm-install handoff keeps both optional macOS paths without drifting back to a vaguer postinstall summary
+- Kept setup flow, saved-config handling, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test test/postinstall.test.mjs`
+- [x] Result: **2 passed, 0 failed**
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L99 — postinstall now names the optional macOS background-mode step directly after durable install
+**Why this mattered:** This is tiny, but it lands in a real first-run handoff after someone has already chosen the durable install path. They should not need to discover `idlewatch install-agent` later by reading help or docs when the postinstall output can name that optional next step cleanly.
+
+**Acceptance notes**
+- Postinstall keeps `idlewatch quickstart --no-tui` as the main setup step
+- Postinstall still separates one-off `npx` use from durable install
+- Postinstall now includes the optional macOS background-mode step directly
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny postinstall background-mode handoff fix shipped in this pass
+
 ## Cycle R427 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
