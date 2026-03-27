@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R547 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny headless setup-help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup-help seam still cleared the bar this cycle: non-TTY `quickstart` / `configure` / `reconfigure` help already showed the right commands, but it still said `Uses simple prompts...` while the visible usage was explicitly `--no-tui`. Nothing functional was broken, yet that line read slightly more interactive than the actual setup path. Rewording it to `Uses the simple setup flow...` keeps the tone calm without sounding contradictory.
+
+### What changed
+- Reworded the non-TTY setup hint in `bin/idlewatch-agent.js` from `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.` to `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.` for `quickstart`, `configure`, and `reconfigure`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so this calmer headless wording does not drift back to either the older `Uses simple prompts...` or `Runs non-interactively...` phrasing
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+- [x] Observed: `quickstart --help` now says `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+- [x] Observed: `configure --help` now says `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+- [x] Observed: `reconfigure --help` now says `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode)'`
+- [x] Result: **98 passed, 0 failed**
+
+### Prioritized findings
+#### [x] P1 — non-TTY setup help now says `Uses the simple setup flow` instead of `Uses simple prompts`
+**Why this mattered:** This is tiny, but it lands at the exact copy-paste moment where people see `--no-tui` and decide what to run next. `Uses simple prompts` sounded a little more interactive than the actual headless flow. `Uses the simple setup flow` keeps the tone light while matching what the product is really doing.
+
+**Acceptance checks**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode now say `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.`
+- The same help surfaces no longer say `Uses simple prompts...`
+- The same help surfaces still do not drift back to `Runs non-interactively...`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 1:57 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny headless setup-help wording cleanup
+
 ## Cycle R546 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
