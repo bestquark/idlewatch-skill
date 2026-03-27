@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R575 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny loaded-background apply-state fix from the live checkout.
+
+### Priority call
+One medium-friction config-reload seam cleared the bar this cycle: once setup was already saved and `idlewatch install-agent` had just applied it, `idlewatch status` still said `Apply saved config:  re-run idlewatch install-agent to apply the saved config` even though background mode was already up from that same saved setup. Nothing functional was broken, but that made the calmest confirmation screen sound like work was still pending.
+
+### What changed
+- Reworked saved-setup `status` in `bin/idlewatch-agent.js` so the loaded/running background apply hint now only appears when the saved config is actually newer than the installed launch-agent plist
+- Kept the actual reconfigure/apply story intact: if settings change after background mode is already on, `status` still says `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+- Updated the matching loaded-background regression in `test/openclaw-env.test.mjs` so the just-installed happy path stays calm and does not drift back to the contradictory hint
+- Left auth, ingest, packaging, startup/install flow shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh loaded-background happy-path spot check with a stubbed `launchctl` and no later config changes now shows:
+  - `Background:        on (waiting for next check)`
+  - `Background: already on`
+  - no `Apply saved config: ...` line
+- [x] Fresh saved-config-newer spot check still keeps the reconfigure/apply story literal:
+  - `Background:        on (waiting for next check)`
+  - `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+- [x] The focused Node test runner still exhibits the previously noted hanging behavior in this environment, so this pass used direct live repro checks plus syntax validation instead of waiting on a stuck summary
+
+### Prioritized findings
+#### [x] P1 — loaded-background `status` no longer claims saved config still needs applying right after `install-agent` already applied it
+**Why this mattered:** This lands in one of the highest-trust moments in the installer flow: the user just finished setup, turned on background mode, and checks `status` to confirm everything is live. Saying `Background: on` and then immediately saying `Apply saved config` was contradictory enough to create hesitation. The calmer product move is to reserve that apply hint for real pending-change states after reconfigure, not the clean already-applied state.
+
+**Acceptance checks**
+- Right after a successful `install-agent` that starts background mode from the current saved setup, `status` confirms the loaded/running state without implying config is still pending
+- The `Apply saved config` hint now only appears when the saved config is newer than the installed background-mode setup
+- The loaded-background happy path stays calm and literal: background is on, current setup is already in use, and the next useful actions are `Change` and `Run now`
+- No auth, ingest, or packaging redesign was introduced; this was setup/status wording and state-signaling polish only
+
+**Last updated:** Friday, March 27th, 2026 — 4:58 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny loaded-background apply-state truthfulness fix
+
 ## Cycle R574 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny installed-before-setup `status` next-step wording cleanup from the live checkout.

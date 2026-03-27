@@ -39,16 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 86 - COMPLETE ✅
+## Cycle Status: Cycle 87 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny install-before-setup wording fix cleared the bar in the live checkout.
-- After `idlewatch install-agent` succeeds before setup exists, the follow-up now says `Start background mode after setup` instead of `Turn on background mode`
-- This keeps the next-step command more literal in the exact recovery moment where background mode is already installed and only needs setup before it can start using the saved config
-- The install-before-setup flow stays otherwise unchanged: finish setup, optionally run once now, then start background mode with the same command
-- Saved-config handling, startup/install quality of life, and the now-working telemetry path remain untouched
-- The matching source-checkout regression assertion was updated so this copy does not drift back
+**Finding:** One more genuinely tiny loaded-background status truthfulness fix cleared the bar in the live checkout.
+- After `idlewatch install-agent` has already applied the current saved setup, `idlewatch status` no longer contradicts itself by also saying `Apply saved config`
+- The apply hint now shows only when the saved config is actually newer than the installed launch-agent plist, which keeps post-reconfigure guidance intact without muddying the happy path
+- The loaded-background confirmation screen now stays calmer and more literal: `Background: on (waiting for next check)` plus `Background: already on`
+- Setup/reconfigure flows, saved-config handling, startup/install quality of life, and the now-working telemetry path remain otherwise unchanged
+- The matching source-checkout regression assertion was updated so this loaded-background happy path does not drift back
 
-**Last updated:** Friday, March 27th, 2026 — 3:35 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 4:58 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

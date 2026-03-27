@@ -214,6 +214,20 @@ function launchctlOutput(result) {
   return ''
 }
 
+function savedConfigNeedsBackgroundApply({ envFile, launchAgentState, plistPath } = {}) {
+  if (!envFile || !plistPath) return false
+  const backgroundAgentRunning = launchAgentState?.state === 'running' || launchAgentState?.state === 'loaded'
+  if (!backgroundAgentRunning) return false
+
+  try {
+    const envStat = fs.statSync(envFile)
+    const plistStat = fs.statSync(plistPath)
+    return Number(envStat.mtimeMs) > Number(plistStat.mtimeMs)
+  } catch {
+    return false
+  }
+}
+
 function backgroundInstallCommandForInvocation(invocation = detectCliInvocation()) {
   if (invocation.kind === 'npx' || invocation.kind === 'source') {
     return 'idlewatch install-agent'
@@ -2007,8 +2021,10 @@ if (statusRequested) {
       }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
-      if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
+      if (savedConfigNeedsBackgroundApply({ envFile, launchAgentState: launchAgent, plistPath: launchAgent.plistPath })) {
         console.log(`  Apply saved config:  re-run ${installAgentCommand} to apply the saved config`)
+      } else if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
+        console.log('  Background: already on')
       } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Start background mode:     ${installAgentCommand}`)
       } else {

@@ -3181,7 +3181,7 @@ exit 0
   }
 })
 
-test('status command says background is on while waiting for the next check when launchd has it loaded', () => {
+test('status command keeps the loaded background happy path calm right after install-agent already applied the saved config', () => {
   if (process.platform !== 'darwin') return
 
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-loaded-idle-'))
@@ -3189,16 +3189,19 @@ test('status command says background is on while waiting for the next check when
   try {
     const configDir = path.join(tempHome, '.idlewatch')
     const logDir = path.join(configDir, 'logs')
+    const plistDir = path.join(tempHome, 'Library', 'LaunchAgents')
+    const envFile = path.join(configDir, 'idlewatch.env')
+    const plistPath = path.join(plistDir, 'com.idlewatch.agent.plist')
     fs.mkdirSync(logDir, { recursive: true })
-    fs.mkdirSync(path.join(tempHome, 'Library', 'LaunchAgents'), { recursive: true })
-    fs.writeFileSync(path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist'), '<plist/>\n')
-    fs.writeFileSync(path.join(configDir, 'idlewatch.env'), [
+    fs.mkdirSync(plistDir, { recursive: true })
+    fs.writeFileSync(envFile, [
       'IDLEWATCH_DEVICE_NAME=Idle Box',
       'IDLEWATCH_DEVICE_ID=idle-box',
       'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
       'IDLEWATCH_OPENCLAW_USAGE=off'
     ].join('\n') + '\n')
     fs.writeFileSync(path.join(logDir, 'idle-box-metrics.ndjson'), `{"ts":${Date.now()}}\n`)
+    fs.writeFileSync(plistPath, '<plist/>\n')
 
     fs.writeFileSync(path.join(fakeBin, 'launchctl'), `#!/usr/bin/env bash
 set -euo pipefail
@@ -3220,7 +3223,8 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background:\s+on \(waiting for next check\)/, 'should describe the loaded-but-idle background state in plain language')
-    assert.ok(run.stdout.includes('Apply saved config:  re-run idlewatch install-agent to apply the saved config'), 'should keep the apply hint explicit about the saved config for the loaded background state in source checkouts')
+    assert.ok(run.stdout.includes('Background: already on'), 'should keep the loaded background happy path calm after install-agent already applied the saved config')
+    assert.ok(!run.stdout.includes('Apply saved config:  re-run idlewatch install-agent to apply the saved config'), 'should not imply saved config still needs applying right after install-agent already used it')
     assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
