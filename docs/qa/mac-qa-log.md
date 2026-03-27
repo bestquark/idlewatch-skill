@@ -4,13 +4,20 @@
 
 ## Cycle R532 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one small but real status-memory wobble in the install-before-setup path.
+Fresh installer/CLI polish pass shipped one tiny install-before-setup status-memory fix from the live checkout.
 
 ### Priority call
-One low-risk launch-agent/status seam cleared the bar this cycle: successful `idlewatch install-agent` before setup now does the right thing and clearly says background mode was installed but stays off until setup is saved, yet the immediately-following `idlewatch status` screen drops that state and falls back to the flatter `Background: waiting for setup`. Nothing functional is broken, but this is a real product-taste issue because the status screen forgets the very thing the previous success screen just taught the user.
+One low-risk launch-agent/status seam cleared the bar this cycle: successful `idlewatch install-agent` before setup already kept the honest `background mode stays off for now` story, but the immediately-following `idlewatch status` screen flattened that into `Background: waiting for setup`. Nothing functional was broken, yet this added avoidable doubt in a real recovery/check-your-work moment.
+
+### What changed
+- Reworked the install-before-setup `status` branch in `bin/idlewatch-agent.js` so a detected installed-but-not-loaded LaunchAgent now says `Background: installed but waiting for setup`
+- Updated the matching regression in `test/openclaw-env.test.mjs` so this installed-but-off memory does not drift back to the flatter `waiting for setup` wording
+- Kept first-run status preview shape, setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command preserves installed-but-waiting-for-setup state after install-agent ran before setup|quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup|install-agent does not claim background is running when launchd still reports not loaded)'`
+- [x] Result: **98 passed, 0 failed**
 - [x] `TMPHOME="$(mktemp -d)"; FAKEBIN="$(mktemp -d)"; cat > "$FAKEBIN/launchctl" <<'SH'
 #!/bin/sh
 STATE_FILE="${IDLEWATCH_LAUNCHCTL_STATE:-${HOME}/.idlewatch-launchctl-state}"
@@ -41,33 +48,22 @@ esac
 SH
 chmod +x "$FAKEBIN/launchctl"`
 - [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-- [x] Observed: install runtime correctly says `✅ Background mode installed.` and `Setup isn't saved yet, so background mode stays off for now.`
-- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-- [x] Observed: status currently says `Background:        waiting for setup` instead of preserving the more specific installed-but-off state
-- [x] `grep -n "waiting for setup\|installed but not running" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
-- [x] Observed: the current code/test lane explicitly expects `waiting for setup` for this branch today
+- [x] Observed: install runtime still says `✅ Background mode installed.` and `Setup isn't saved yet, so background mode stays off for now.`
+- [x] `rm -f "$TMPHOME/.idlewatch-launchctl-state"; PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed: status now says `Background:        installed but waiting for setup`
 
 ### Prioritized findings
-#### [ ] P1 — install-before-setup `status` currently forgets that background mode is already installed
-**Why this matters:** This is tiny, but it lands in a real copy-paste recovery moment. Someone just successfully turned background mode on, got told it was installed but off until setup is saved, then checked `status` for confirmation and got a less specific line that sounds like they never installed anything. That mismatch adds avoidable doubt to an otherwise polished first-run path.
-
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Create a fake `launchctl` shim that exits success for `bootstrap` / `bootout`, returns a state file for `print`, and otherwise exits success
-3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-4. Observe the success output says `✅ Background mode installed.` and `Setup isn't saved yet, so background mode stays off for now.`
-5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
-6. Observe status currently says `Background:        waiting for setup`
+#### [x] P1 — install-before-setup `status` now preserves that background mode is already installed
+**Why this mattered:** This is tiny, but it lands in a real copy-paste recovery moment. Someone just successfully turned background mode on, got told it was installed but off until setup is saved, then checked `status` for confirmation. Keeping the installed-but-waiting story visible makes that follow-up feel polished instead of slightly forgetful.
 
 **Acceptance checks**
-- After a successful `install-agent` before saved setup, `status` preserves that installed-but-off story instead of collapsing to the generic `waiting for setup` label
-- The wording stays low-noise and explicit, e.g. either `Background: installed but waiting for setup` or equally clear wording that keeps both facts
-- First-run status still remains preview-shaped rather than implementation-shaped
-- Normal pre-install first-run status can still keep the simpler `waiting for setup` branch if nothing is installed yet
-- No auth, ingest, packaging, or major launch-agent behavior changes are introduced
+- After a successful `install-agent` before saved setup, `status` now preserves the installed-but-off story instead of collapsing to the generic `waiting for setup` label
+- The wording stays low-noise and explicit: `Background: installed but waiting for setup`
+- First-run status remains preview-shaped rather than implementation-shaped
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced
 
-**Last updated:** Friday, March 27th, 2026 — 12:23 PM (America/Toronto)  
-**Status:** OPEN — logged one small install-before-setup status-state mismatch for the next polish pass
+**Last updated:** Friday, March 27th, 2026 — 12:33 PM (America/Toronto)  
+**Status:** COMPLETE ✅
 
 ## Cycle R531 Status: COMPLETE ✅
 

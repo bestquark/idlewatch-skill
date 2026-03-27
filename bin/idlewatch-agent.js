@@ -1868,7 +1868,7 @@ if (statusRequested) {
       if (hasConfig) {
         printStatusField('Background', 'installed but not running')
       } else {
-        printStatusField('Background', 'waiting for setup')
+        printStatusField('Background', 'installed but waiting for setup')
       }
     } else {
       printStatusField('Background', 'off')

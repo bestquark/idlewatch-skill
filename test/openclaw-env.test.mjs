@@ -1481,7 +1481,7 @@ test('install-agent follow-up uses source checkout command path', () => {
   }
 })
 
-test('status stays honest after install-agent without saved config', () => {
+test('status command preserves installed-but-waiting-for-setup state after install-agent ran before setup', () => {
   if (process.platform !== 'darwin') {
     return
   }
@@ -1518,7 +1518,8 @@ test('status stays honest after install-agent without saved config', () => {
     assert.match(status.stdout, /Local log preview:\s+.*\.idlewatch\/logs\//)
     assert.doesNotMatch(status.stdout, /\n\s*Local log:\s+/)
     assert.match(status.stdout, /Config:\s+.*\.idlewatch\/idlewatch\.env \(not saved yet\)/)
-    assert.match(status.stdout, /Background:\s+waiting for setup/)
+    assert.match(status.stdout, /Background:\s+installed but waiting for setup/)
+    assert.doesNotMatch(status.stdout, /Background:\s+waiting for setup/)
     assert.match(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Get started:\s+node .*quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
