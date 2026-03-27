@@ -1514,12 +1514,27 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
         process.exit(0)
       }
 
-      console.error(`\n⚠️ Setup saved, but the test sample failed to publish.`)
+      const localMode = result.mode === 'local'
+      const failureHeadline = localMode
+        ? 'Setup saved, but the test sample failed to verify local telemetry.'
+        : 'Setup saved, but the test sample failed to publish.'
+      const commonFixes = localMode
+        ? [
+            '     • Check the validation error printed above',
+            '     • Re-run the test after fixing the local setup issue'
+          ]
+        : [
+            '     • Check your API key is valid at idlewatch.com/api',
+            '     • Verify internet connectivity'
+          ]
+
+      console.error(`\n⚠️ ${failureHeadline}`)
       console.error(`   Device: ${result.deviceName}`)
       console.error(`   Config: ${formatPathForHelp(result.outputEnvFile)}`)
       console.error(`\n   Common fixes:`)
-      console.error(`     • Check your API key is valid at idlewatch.com/api`)
-      console.error(`     • Verify internet connectivity`)
+      for (const line of commonFixes) {
+        console.error(line)
+      }
       console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
       console.error(`   Redo:   ${preferredSetupCommand(isReconfigure ? 'configure' : 'quickstart')}`)
       process.exit(onceRun.status ?? 1)

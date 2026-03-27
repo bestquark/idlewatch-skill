@@ -4,13 +4,21 @@
 
 ## Cycle R562 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
+Fresh installer/CLI polish pass shipped one tiny local-only setup-validation wording fix from the live checkout.
 
 ### Priority call
-No new polish issue cleared the bar this cycle. Fresh live checks still keep the setup wizard, config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx install-path split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+One low-risk validation seam still cleared the bar: setup failure copy always said `failed to publish`, even when the user had just chosen local-only mode and IdleWatch was only trying to verify a local sample. Nothing functional was broken, but the wording was off in the exact setup/retry moment where the message should stay literal and calm. Tightening that copy to `failed to verify local telemetry` keeps the recovery path clearer without changing behavior.
+
+### What changed
+- Reworded local-only setup/configure verification failures in `bin/idlewatch-agent.js` so they talk about verifying local telemetry instead of publishing
+- Kept the cloud-link failure path unchanged: publish failures still talk about publishing and keep the API-key/network fixes
+- Added a focused regression in `test/openclaw-env.test.mjs` using a saved local config that intentionally fails validation, so this wording does not drift back
+- Left auth, ingest, packaging, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart local verification failure keeps the error literal instead of talking about publish|quickstart failure keeps idlewatch --once as the primary retry only for the default saved config path|quickstart failure uses custom-path-aware retry copy when setup saved config outside the default path|configure failure keeps redo guidance on configure instead of sending people back through quickstart)'`
+- [x] Result: **99 passed, 0 failed** in the targeted env slice
 - [x] Fresh clean-home lifecycle spot checks run with a stubbed `launchctl` for:
   - `HOME="$TMPHOME" node bin/idlewatch-agent.js --help`
   - `HOME="$TMPHOME" node bin/idlewatch-agent.js quickstart --help`

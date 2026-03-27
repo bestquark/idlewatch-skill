@@ -41,14 +41,14 @@
 
 ## Cycle Status: Cycle 85 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny setup/apply polish fix cleared the bar in the live checkout.
-- After background mode was installed before setup, the follow-up setup/status surfaces now say `Start background mode` instead of `Turn on background mode` when IdleWatch is already installed but just needs to start using the saved config
-- This keeps the saved-config/apply story more literal in the exact re-run moment, without adding new steps or changing behavior
-- Validation messages, saved-config handling, startup/install quality of life, and tiny reliability behavior still remain in good shape
-- The now-working telemetry path remains untouched
-- Fresh focused regression coverage still passes cleanly: **98 passed, 0 failed** in the targeted env slice used for this pass
+**Finding:** One more genuinely tiny setup-validation polish fix cleared the bar in the live checkout.
+- Local-only setup failures now say `failed to verify local telemetry` instead of `failed to publish`, so the retry copy stays literal when nothing was supposed to publish in the first place
+- Cloud-link setup failures still keep the existing publish wording and API-key/network fixes
+- This reduces friction in the exact validation/retry moment without adding new options, changing flow shape, or touching the telemetry path
+- Saved-config handling, startup/install quality of life, and the now-working telemetry path remain untouched
+- Fresh focused regression coverage was added for the local-only failure wording seam alongside the existing cloud failure slices
 
-**Last updated:** Friday, March 27th, 2026 — 3:15 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 3:25 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

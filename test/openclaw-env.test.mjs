@@ -569,6 +569,53 @@ test('quickstart success summarizes setup verification instead of dumping raw te
   assert.doesNotMatch(run.stdout, /"usageProbeSweeps":/)
 })
 
+test('quickstart local verification failure keeps the error literal instead of talking about publish', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-local-verify-failure-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-local-verify-failure-root-'))
+  const fakeTui = path.join(tempRoot, 'fake-tui.sh')
+
+  writeFileSync(fakeTui, `#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p "$IDLEWATCH_ENROLL_CONFIG_DIR/logs" "$IDLEWATCH_ENROLL_CONFIG_DIR/cache"
+cat > "$IDLEWATCH_ENROLL_OUTPUT_ENV_FILE" <<EOF
+IDLEWATCH_DEVICE_NAME=Broken Local Box
+IDLEWATCH_DEVICE_ID=broken-local-box
+IDLEWATCH_MONITOR_TARGETS=cpu,memory
+IDLEWATCH_OPENCLAW_USAGE=off
+IDLEWATCH_INTERVAL_MS=-1
+IDLEWATCH_LOCAL_LOG_PATH=$IDLEWATCH_ENROLL_CONFIG_DIR/logs/broken-local-box-metrics.ndjson
+IDLEWATCH_OPENCLAW_LAST_GOOD_CACHE_PATH=$IDLEWATCH_ENROLL_CONFIG_DIR/cache/broken-local-box-openclaw-last-good.json
+EOF
+exit 7
+`, { encoding: 'utf8' })
+  chmodSync(fakeTui, 0o755)
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        IDLEWATCH_TUI_BIN: fakeTui
+      },
+      input: '2\n\n\n',
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, /Setup saved, but the test sample failed to verify local telemetry\./)
+    assert.match(run.stderr, /Check the validation error printed above/)
+    assert.match(run.stderr, /Re-run the test after fixing the local setup issue/)
+    assert.doesNotMatch(run.stderr, /failed to publish/)
+    assert.doesNotMatch(run.stderr, /Check your API key is valid at idlewatch\.com\/api/)
+    assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should keep the same one-shot retry command')
+    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart --no-tui`), 'should keep the same setup redo command')
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 
 test('quickstart failure keeps idlewatch --once as the primary retry only for the default saved config path', () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-default-retry-home-'))
