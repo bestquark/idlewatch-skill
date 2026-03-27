@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R543 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny headless setup-help wording re-alignment from the live checkout.
+
+### Priority call
+One low-risk setup-help seam still cleared the bar this cycle: non-TTY `quickstart` / `configure` / `reconfigure` help had drifted back to `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.` The flow was still correct, but that line sounded colder and more implementation-shaped than the calmer `Uses simple prompts...` wording that better fits the rest of the setup/reconfigure story.
+
+### What changed
+- Reworded the non-TTY setup hint in `bin/idlewatch-agent.js` back to `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.` for `quickstart`, `configure`, and `reconfigure`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the calmer wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help | grep -n "Uses simple prompts\|Runs non-interactively"`
+- [x] Observed: `quickstart --help` now says `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help | grep -n "Uses simple prompts\|Runs non-interactively"`
+- [x] Observed: `configure --help` now says `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help | grep -n "Uses simple prompts\|Runs non-interactively"`
+- [x] Observed: `reconfigure --help` now says `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] Focused `node --test --test-concurrency=1 ... --test-name-pattern='(quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode)'` still hangs in this environment before flushing a summary, so this pass used live command checks plus syntax validation instead of waiting on the hung runner
+
+### Prioritized findings
+#### [x] P1 — non-TTY setup help is back on the calmer `Uses simple prompts` wording
+**Why this mattered:** This is tiny, but it lands right where people pause before copying a headless setup or reconfigure command. `Runs non-interactively` reads like an implementation note. `Uses simple prompts` feels calmer, more product-shaped, and better aligned with the low-friction setup story elsewhere in this lane.
+
+**Acceptance checks**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode now say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- The same help surfaces no longer say `Runs non-interactively...`
+- Matching assertions in `test/openclaw-env.test.mjs` were updated so this wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 1:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny headless setup-help wording re-alignment
+
 ## Cycle R542 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
