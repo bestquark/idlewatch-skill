@@ -1992,6 +1992,43 @@ This pass stayed intentionally tiny and only shipped one remaining install-surfa
 **Last updated:** Thursday, March 26th, 2026 — 4:15 PM (America/Toronto)  
 **Status:** COMPLETE ✅ - one tiny postinstall setup-hint seam fixed in this pass
 
+## Cycle R349 Status: COMPLETE ✅
+
+This pass stayed deliberately small and only shipped one wording polish fix that still improved the setup/install handoff without changing behavior.
+
+### Outcome
+- Found one tiny remaining wording seam in `install-agent --help`: `If setup is already saved, IdleWatch starts automatically.` was accurate enough, but slightly vague in the exact moment someone is deciding what `install-agent` does right now.
+- Tightened that line to `If setup is already saved, background mode starts right away.`
+- Kept the rest of the durable-install guidance unchanged, including the calmer `idlewatch quickstart --no-tui` follow-up when setup is not saved yet.
+- Preserved the now-working telemetry path.
+- Re-ran the focused regression subset and it still passes cleanly: **91 passed, 0 failed**.
+- The cron payload path is still stale relative to the actual filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
+
+### Prioritized findings
+#### [x] L57 — `install-agent --help` now says background mode starts right away when setup is already saved
+**Why it mattered:** This is tiny, but it lands in the exact startup/install handoff moment where the product should answer the immediate question plainly. `Starts automatically` was a little more general; `starts right away` is shorter and clearer about what happens after running the command.
+
+**What shipped**
+- Updated `bin/idlewatch-agent.js` install-agent help text from `If setup is already saved, IdleWatch starts automatically.` to `If setup is already saved, background mode starts right away.`
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs`
+- Kept saved-config handling, launch-agent behavior, setup/reconfigure flows, and the telemetry path unchanged
+
+### Spot-check coverage for R349
+- [x] `install-agent --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **91 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node bin/idlewatch-agent.js install-agent --help`
+3. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help keeps the durable setup path short and clear|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- The install help now answers the immediate saved-config startup question a little more directly.
+- This is wording polish only; setup/reconfigure behavior, saved-config handling, background install behavior, and the working telemetry path remain unchanged.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny install-help startup wording seam fixed in this pass
+
 ## Cycle R348 Status: COMPLETE ✅
 
 This pass re-ran the exact installer/CLI polish lane from the current live checkout and stayed strict about not manufacturing another copy tweak just because the cron fired.

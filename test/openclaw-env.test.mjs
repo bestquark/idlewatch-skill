@@ -882,7 +882,7 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.match(run.stdout, /idlewatch install-agent — Enable background mode \(macOS\)/)
   assert.match(run.stdout, /Enables background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Enables the LaunchAgent for background mode\./)
-  assert.match(run.stdout, /If setup is already saved, IdleWatch starts automatically\./)
+  assert.match(run.stdout, /If setup is already saved, background mode starts right away\./)
   assert.match(run.stdout, /If not, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent\./)
   assert.doesNotMatch(run.stdout, /If not, save setup first with node .*quickstart --no-tui, then re-run idlewatch install-agent\./)
   assert.doesNotMatch(run.stdout, /If not, it stays off until you save setup and re-run install-agent\./)
