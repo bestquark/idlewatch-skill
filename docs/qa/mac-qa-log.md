@@ -4,38 +4,39 @@
 
 ## Cycle R461 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one small `npx` help-listing seam worth queuing from the live checkout.
+Fresh installer/CLI polish pass shipped one tiny top-level `npx` help-listing cleanup from the live checkout.
 
 ### Priority call
-One low-risk top-level help inconsistency still clears the bar: `npx idlewatch --help` already frames `install-agent` as `requires durable install`, and `npx idlewatch uninstall-agent --help` already refuses cleanly with `Background mode needs a durable install.` But the top-level `npx` command list still shows `uninstall-agent   Turn off background mode (macOS)` as if it were a normal first-class one-off command. The runtime behavior is safe; the problem is just path clarity.
+One low-risk top-level help inconsistency still cleared the bar: `npx idlewatch --help` already framed `install-agent` as `requires durable install`, and `npx idlewatch uninstall-agent --help` already refused cleanly with `Background mode needs a durable install.` But the top-level `npx` command list still showed `uninstall-agent   Turn off background mode (macOS)` as if it were a normal one-off command. The runtime behavior was safe; the issue was just path clarity.
+
+### What changed
+- Reworked the top-level `npx` help summary in `bin/idlewatch-agent.js` so `uninstall-agent` now reads `Turn off background mode (requires durable install)` in one-off `npx` help
+- Kept the normal durable/source-checkout top-level help unchanged with `uninstall-agent   Turn off background mode (macOS)`
+- Tightened `test/openclaw-env.test.mjs` so the `npx` help surface keeps the durable-install framing for both `install-agent` and `uninstall-agent`
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
-- [x] Observed: top-level `npx` help still lists `uninstall-agent   Turn off background mode (macOS)`
-- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
-- [x] Observed: command-specific help already starts with `Background mode needs a durable install.` and points back to the durable install path
+- [x] Observed: top-level `npx` help now lists `uninstall-agent   Turn off background mode (requires durable install)`
 - [x] `node bin/idlewatch-agent.js --help`
-- [x] Observed: the normal durable/source-checkout help surface is still fine with `uninstall-agent   Turn off background mode (macOS)`
+- [x] Observed: the normal durable/source-checkout help surface still shows `uninstall-agent   Turn off background mode (macOS)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help still starts with `Background mode needs a durable install.` and points back to the durable install path
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help preserves one-off command hints under npm exec|install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context keeps the durable-install framing explicit|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **95 passed, 0 failed**
 
 ### Prioritized findings
-#### [ ] L116 — top-level `npx idlewatch --help` should mark `uninstall-agent` as a durable-install-only command
-**Why this matters:** This is tiny, but it sits in the first command list people scan while deciding what `npx` can do. Right now the top-level `npx` help quietly implies `uninstall-agent` is a normal one-off command, even though the actual command-specific help already says background mode needs a durable install. That mismatch adds a bit of avoidable path ambiguity right where the product has otherwise become very clean.
+#### [x] L116 — top-level `npx idlewatch --help` now marks `uninstall-agent` as a durable-install-only command
+**Why this mattered:** This is tiny, but it sits in the first command list people scan while deciding what `npx` can do. The old top-level help quietly implied `uninstall-agent` was a normal one-off command, even though the command-specific help already said background mode needs a durable install. Tightening that one line keeps the one-off-vs-durable path cleaner and more predictable.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Run `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
-3. Observe the command list still says `uninstall-agent   Turn off background mode (macOS)`
-4. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
-5. Observe that command-specific help already says `Background mode needs a durable install.` and only points to the durable path
-
-**Acceptance criteria**
-- Top-level `npx idlewatch --help` makes the durable-install requirement explicit for `uninstall-agent`, matching the existing `npx` treatment of `install-agent`
+**Acceptance checks**
+- Top-level `npx idlewatch --help` now makes the durable-install requirement explicit for `uninstall-agent`, matching the existing `npx` treatment of `install-agent`
 - The normal durable/source-checkout top-level help keeps `uninstall-agent   Turn off background mode (macOS)` unchanged
 - `npx idlewatch uninstall-agent --help` keeps the current calm refusal + durable-install handoff
-- No auth, ingest, packaging, or launch-agent behavior changes
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
 
-**Last updated:** Friday, March 27th, 2026 — 5:25 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - one small top-level `npx` help-listing seam documented for follow-up
+**Last updated:** Friday, March 27th, 2026 — 5:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny top-level `npx` help-listing cleanup
 
 ## Cycle R460 Status: COMPLETE ✅
 

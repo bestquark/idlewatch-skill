@@ -396,6 +396,9 @@ function printHelp() {
   const installAgentSummary = invocation.kind === 'npx'
     ? 'Turn on background mode (requires durable install)'
     : 'Turn on background mode (macOS)'
+  const uninstallAgentSummary = invocation.kind === 'npx'
+    ? 'Turn off background mode (requires durable install)'
+    : 'Turn off background mode (macOS)'
   const commands = [
     ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
     ['configure', 'Update setup (name, metrics, optional cloud link)'],
@@ -404,7 +407,7 @@ function printHelp() {
     ['create', 'Manage custom telemetry metrics'],
     ['dashboard', 'Launch local telemetry dashboard'],
     ['install-agent', installAgentSummary],
-    ['uninstall-agent', 'Turn off background mode (macOS)'],
+    ['uninstall-agent', uninstallAgentSummary],
     ['menubar', 'Install the macOS menu bar app'],
     ['version', 'Show version']
   ]

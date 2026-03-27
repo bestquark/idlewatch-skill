@@ -1006,8 +1006,10 @@ test('main help stays on the durable command in npx context', () => {
   assert.match(run.stdout, /^npx idlewatch\n\nUsage:\s+npx idlewatch <command> \[options\]/)
   assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
   assert.match(run.stdout, /install-agent\s+Turn on background mode \(requires durable install\)/)
+  assert.match(run.stdout, /uninstall-agent\s+Turn off background mode \(requires durable install\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Enable background mode \(requires durable install\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
+  assert.doesNotMatch(run.stdout, /uninstall-agent\s+Turn off background mode \(macOS\)/)
 })
 
 test('unknown command suggests the closest subcommand and keeps the current invocation path', () => {
