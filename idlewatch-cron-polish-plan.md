@@ -39,15 +39,14 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 92 - COMPLETE ✅
+## Cycle Status: Cycle 93 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny source-checkout `status` literalness fix still cleared the bar in the live checkout.
-- In saved-setup `status` with no samples yet, the `Test:` hint now stays on the same calmer product-command shape as the rest of the screen: `idlewatch --once`
-- That removes the last raw repo-script fallback from this no-sample status block, so `Test`, `Run now`, and background-mode hints now read as one neat product-shaped group instead of mixing `node bin/idlewatch-agent.js --once` with calmer `idlewatch ...` commands
-- The change is output-only: no setup behavior, saved-config handling, launch-agent behavior, packaging shape, auth flow, or the now-working telemetry path changed
-- Matching `status` regression coverage now asserts the calmer no-sample `Test:` hint in source checkouts so this small copy seam does not drift back
+**Finding:** Fresh live verification did not surface another small product-facing installer/CLI issue worth shipping.
+- The currently logged true-`npx` next-step concern no longer reproduces in a clean-home pass: `quickstart --no-tui`, saved-setup `status`, and `configure --no-tui` all keep one-off-safe `npx idlewatch ...` foreground/configure hints and a separate durable install handoff
+- `install-agent --help` and runtime also still keep the intended split: `Set up now: npx idlewatch quickstart --no-tui`, `Install once: npm install -g idlewatch`, then `idlewatch install-agent`
+- That means this cycle's highest-value move was to avoid speculative churn, preserve the now-working telemetry path, and log the verification cleanly in QA instead of forcing another low-value code edit
 
-**Last updated:** Friday, March 27th, 2026 — 6:15 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 6:25 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
