@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R453 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny non-TTY setup-help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode had slipped back to `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.` The setup flow itself was already right, but that phrasing felt more implementation-shaped than the calmer `simple prompts` story used elsewhere across setup/help.
+
+### What changed
+- Reworded the non-TTY setup hint in `bin/idlewatch-agent.js` from `Runs non-interactively...` to `Uses simple prompts...`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the cleaner wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -RIn "Runs non-interactively\. Set IDLEWATCH_ENROLL_\* env vars first\." bin test || true`
+- [x] Result: no remaining live installer/CLI help surfaces in `bin/` or `test/` still use the older wording
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L111 — non-TTY setup help now stays on `Uses simple prompts` instead of `Runs non-interactively`
+**Why this mattered:** This is tiny, but it lands in a real first-run/reconfigure help surface where the product should sound calm and literal, not like a mode switch from an internal implementation note. `Uses simple prompts` is shorter, friendlier, and more aligned with the rest of IdleWatch's setup story.
+
+**Acceptance notes**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode now say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- The same help surfaces no longer say `Runs non-interactively...`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny non-TTY setup-help wording seam fixed in this pass
+
 ## Cycle R452 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
