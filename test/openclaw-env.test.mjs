@@ -1384,6 +1384,55 @@ test('status stays honest after install-agent without saved config', () => {
   }
 })
 
+test('quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-installed-not-running-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-launchctl-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const install = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+    assert.equal(install.status, 0, install.stderr)
+
+    const quickstart = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(quickstart.status, 0, quickstart.stderr)
+    assert.match(quickstart.stdout, /Background mode is installed and not running yet\./)
+    assert.match(quickstart.stdout, /Start:\s+idlewatch install-agent/)
+    assert.match(quickstart.stdout, /It will use the saved config\./)
+    assert.doesNotMatch(quickstart.stdout, /Background mode is already installed\./)
+    assert.doesNotMatch(quickstart.stdout, /node bin\/idlewatch-agent\.js install-agent/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('install-agent does not claim background is running when launchd still reports not loaded', () => {
   if (process.platform !== 'darwin') {
     return
@@ -1572,7 +1621,8 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Background mode is already installed\./)
+    assert.match(run.stdout, /Background mode is installed and not running yet\./)
+    assert.doesNotMatch(run.stdout, /Background mode is already installed\./)
     assert.doesNotMatch(run.stdout, /Background agent is already installed\./)
     assert.match(run.stdout, /Start:\s+idlewatch install-agent/)
     assert.match(run.stdout, /Use it now:/)

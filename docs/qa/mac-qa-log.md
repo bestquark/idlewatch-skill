@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R391 Status: COMPLETE ✅
+
+One tiny installed-but-not-running wording seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small setup follow-up wording seam after background mode had already been installed before setup was saved.
+- `quickstart` completion no longer says `Background mode is already installed.` in that branch; it now says `Background mode is installed and not running yet.`
+- That keeps the setup/re-enable story a little more literal in the exact moment where people just want to know whether anything is already running.
+- Kept startup/install behavior, saved-config handling, and the now-working telemetry path unchanged.
+- Re-ran the focused installer/CLI regression subset and it still passes cleanly: **91 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L74 — quickstart now says `Background mode is installed and not running yet` when install-agent ran before setup
+**Why it mattered:** This is tiny, but it lands in a setup/reconfigure follow-up moment where `already installed` could still make people pause and infer whether IdleWatch was already active. The calmer product move here is to say the actual state directly: installed, but not running yet.
+
+**What shipped**
+- Updated the installed-before-setup quickstart follow-up in `bin/idlewatch-agent.js` from `Background mode is already installed.` to `Background mode is installed and not running yet.`
+- Added regression coverage for the install-agent-before-setup → `quickstart --no-tui` path.
+- Kept setup behavior, launch-agent behavior, saved-config behavior, and telemetry behavior unchanged.
+
+### Spot-check coverage for R391
+- [x] `install-agent` before setup in a clean HOME with stubbed `launchctl`
+- [x] `quickstart --no-tui` after that install-before-setup path
+- [x] Focused `openclaw-env` installer/CLI regression subset: **91 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Acceptance notes
+- The install-before-setup → quickstart handoff now states the actual background-mode state directly instead of making people infer it.
+- This is wording polish only; no auth, ingest, packaging, launch-agent logic, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 10:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny installed-but-not-running wording seam fixed in this pass
+
 ## Cycle R390 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.

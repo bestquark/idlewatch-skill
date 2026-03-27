@@ -304,7 +304,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
   }
 
   if (backgroundAgentInstalledNeedsRefresh) {
-    console.log('\n   Background mode is already installed.')
+    console.log('\n   Background mode is installed and not running yet.')
     console.log(`   Start:    ${backgroundInstallCommand}`)
     console.log('   It will use the saved config.')
     if (invocation.kind === 'npx') {
