@@ -1467,6 +1467,7 @@ test('quickstart keeps the installed-but-not-running wording clear after install
     assert.equal(quickstart.status, 0, quickstart.stderr)
     assert.match(quickstart.stdout, /Background mode is installed and not running yet\./)
     assert.match(quickstart.stdout, /Start:\s+idlewatch install-agent/)
+    assert.match(quickstart.stdout, /It stays off until you run idlewatch install-agent\./)
     assert.match(quickstart.stdout, /It will use the saved config\./)
     assert.doesNotMatch(quickstart.stdout, /Background mode is already installed\./)
     assert.doesNotMatch(quickstart.stdout, /node bin\/idlewatch-agent\.js install-agent/)
