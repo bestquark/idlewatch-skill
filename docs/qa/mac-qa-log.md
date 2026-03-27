@@ -1,3 +1,31 @@
+## Cycle R603 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-config handling fix in the live checkout.
+
+One small but clearly product-facing seam still cleared the bar this cycle: `uninstall-agent` help/runtime already showed the configured saved config path, but its retained local-log lookup still only read `~/.idlewatch/idlewatch.env`. That meant setups using `IDLEWATCH_CONFIG_ENV_PATH` could quietly fall back to the generic default-log copy even when a custom saved local log path had been configured. Nothing about collection or telemetry changed, but the saved-config/off-ramp story was a little less truthful than it should be in a reconfigure-heavy setup.
+
+- Reused the existing `defaultPersistedEnvFilePath()` helper inside the retained-local-log lookup so `uninstall-agent` help/runtime read the same saved config file path the rest of the CLI already honors
+- Added focused coverage for both `uninstall-agent --help` and macOS runtime output when setup is saved in a custom config location with a custom retained local log path
+- Kept the telemetry path unchanged; this is only a tiny saved-config/help/runtime correctness fix
+
+### Checks
+
+- [x] `IDLEWATCH_CONFIG_ENV_PATH=/tmp/.../configs/idlewatch-custom.env node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed the help surface now says both:
+  - `Saved config stays at .../configs/idlewatch-custom.env when setup has been saved.`
+  - `Local log stays at .../custom-logs/kitchen-mac.ndjson when local logging is on, so you can re-enable background mode later.`
+- [x] Added targeted regression coverage in `test/openclaw-env.test.mjs` for custom-config + custom-log retained-path copy on help/runtime surfaces
+
+#### [x] P1 — retained local-log copy now follows the configured saved-config path instead of only checking the default env file
+**Why this matters:** This is tiny, but it lands in the exact uninstall/re-enable moment where people check whether their saved setup and local history will stay where they expect. If the CLI already honors a custom saved-config location, the retention copy should read from that same place instead of quietly drifting back to the default path.
+
+**Acceptance signals:**
+- `uninstall-agent --help` keeps the configured saved-config path
+- The same help surface now also shows the retained custom local log path when that path is stored in the configured saved-config file
+- macOS uninstall runtime output keeps the same retained-log path instead of falling back to the default `~/.idlewatch/logs` wording
+
+**Status:** COMPLETE ✅ - shipped one tiny saved-config/off-ramp correctness fix without touching telemetry behavior
+
 ## Cycle R602 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` literalness regression in the live checkout.

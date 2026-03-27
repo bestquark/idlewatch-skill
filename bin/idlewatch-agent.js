@@ -820,7 +820,7 @@ function resolvePersistedLocalLogPath() {
     return resolveEnvPath(process.env.IDLEWATCH_LOCAL_LOG_PATH)
   }
 
-  const envFile = path.join(os.homedir(), '.idlewatch', 'idlewatch.env')
+  const envFile = defaultPersistedEnvFilePath()
   if (fs.existsSync(envFile)) {
     try {
       const parsed = parseEnvFileToObject(envFile)

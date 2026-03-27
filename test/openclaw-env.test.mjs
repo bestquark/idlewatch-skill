@@ -1308,6 +1308,35 @@ test('uninstall-agent --help reflects a saved custom local log path', () => {
   }
 })
 
+test('uninstall-agent --help reflects a saved custom local log path from a custom config location', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-help-custom-log-custom-config-'))
+  const customConfigPath = path.join(tempDir, 'configs', 'idlewatch-custom.env')
+  const customLogPath = path.join(tempDir, 'custom-logs', 'kitchen-mac.ndjson')
+
+  fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
+  writeFileSync(customConfigPath, [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${customLogPath}`
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
+      env: { ...process.env, HOME: tempDir, IDLEWATCH_CONFIG_ENV_PATH: customConfigPath, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Saved config stays at ~/configs/idlewatch-custom.env when setup has been saved.'), 'help should show the configured saved-config path')
+    assert.ok(run.stdout.includes('Local log stays at ~/custom-logs/kitchen-mac.ndjson when local logging is on, so you can re-enable background mode later.'), 'help should read the saved custom local log path from the configured saved-config file')
+    assert.doesNotMatch(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs when local logging is on, so you can re-enable background mode later\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
@@ -1461,6 +1490,44 @@ test('uninstall-agent runtime output names a custom retained local log path', ()
     assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env/)
     assert.ok(run.stdout.includes('Local log stays at ~/custom-logs/kitchen-mac.ndjson'), 'should show the retained custom local log path')
     assert.doesNotMatch(run.stdout, /Saved config and local logs stay in .*\.idlewatch/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('uninstall-agent runtime output reads a retained custom local log path from a custom config location', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-custom-log-custom-config-'))
+  const launchAgentsDir = path.join(tempDir, 'Library', 'LaunchAgents')
+  const plistPath = path.join(launchAgentsDir, 'com.idlewatch.agent.plist')
+  const customConfigPath = path.join(tempDir, 'configs', 'idlewatch-custom.env')
+  const customLogPath = path.join(tempDir, 'custom-logs', 'kitchen-mac.ndjson')
+
+  fs.mkdirSync(launchAgentsDir, { recursive: true })
+  fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
+  fs.mkdirSync(path.dirname(customLogPath), { recursive: true })
+  writeFileSync(plistPath, '<plist/>')
+  writeFileSync(customConfigPath, [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${customLogPath}`
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, IDLEWATCH_CONFIG_ENV_PATH: customConfigPath, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Saved config stays at ~\/configs\/idlewatch-custom\.env/)
+    assert.ok(run.stdout.includes('Local log stays at ~/custom-logs/kitchen-mac.ndjson'), 'should read the retained custom local log path from the configured saved-config file')
+    assert.doesNotMatch(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
