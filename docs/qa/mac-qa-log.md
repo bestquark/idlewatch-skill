@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R469 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-config help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar: setup/help surfaces still said `apply on the next start`, which was understandable but a little clipped in the exact moment where the product is explaining when saved setup changes take effect. The behavior was already right; this just makes the help read a touch more naturally and explicitly.
+
+### What changed
+- Reworded the `configure --help` and `reconfigure --help` saved-config line in `bin/idlewatch-agent.js` from `Saved changes apply on the next start.` to `Saved changes apply next time IdleWatch starts.`
+- Reworded the matching `status --help` line from `Config changes saved by quickstart or configure apply on the next start.` to `Config changes saved by quickstart or configure apply next time IdleWatch starts.`
+- Updated the matching README line and `test/openclaw-env.test.mjs` assertions so the calmer wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, background-mode behavior, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(configure help stays clean in non-TTY mode and keeps saved-config reload wording short|status help keeps saved-config apply wording calm and explicit|reconfigure help stays clean in non-TTY mode|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **96 passed, 0 failed**
+- [x] Live help spot checks now show:
+  - `Saved changes apply next time IdleWatch starts.`
+  - `Config changes saved by quickstart or configure apply next time IdleWatch starts.`
+
+### Prioritized findings
+#### [x] L121 — saved-config help now says `next time IdleWatch starts` instead of `on the next start`
+**Why this mattered:** This is tiny, but it lands in real setup/reconfigure/status help where the product should sound calm and explicit instead of slightly clipped. `On the next start` was accurate, but `next time IdleWatch starts` is a touch more natural and leaves less room for interpretation.
+
+**Acceptance checks**
+- `configure --help` and `reconfigure --help` now say `Saved changes apply next time IdleWatch starts.`
+- `status --help` now says `Config changes saved by quickstart or configure apply next time IdleWatch starts.`
+- The same help surfaces no longer say `apply on the next start`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-config help wording cleanup
+
 ## Cycle R468 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny setup/reconfigure foreground-handoff wording cleanup from the live checkout.

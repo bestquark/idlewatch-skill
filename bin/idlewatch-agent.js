@@ -1188,7 +1188,7 @@ Usage:  ${configureUsage}
 Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
-Saved changes apply on the next start.
+Saved changes apply next time IdleWatch starts.
 If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     status: `${statusCommand} — Show device config and background mode state
 
@@ -1196,7 +1196,7 @@ Usage:  ${statusUsageCommand}
 
 Displays device config, publish mode, enabled metrics, last sample age,
 and background mode state.
-Config changes saved by quickstart or configure apply on the next start.
+Config changes saved by quickstart or configure apply next time IdleWatch starts.
 If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     create: `${createCommand} — Manage custom telemetry metrics
 
@@ -1220,7 +1220,7 @@ Usage:  ${reconfigureUsage}
 Updates device name, metrics, and your optional cloud link.
 Existing values are pre-filled so you only change what you need.
 ${configurePromptHint}
-Saved changes apply on the next start.
+Saved changes apply next time IdleWatch starts.
 If background mode is already on, re-run ${backgroundInstallCommand} to apply the saved config.`,
     dashboard: `${dashboardCommand} — Launch local telemetry dashboard
 
