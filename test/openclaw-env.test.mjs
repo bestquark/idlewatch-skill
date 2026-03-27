@@ -1664,7 +1664,8 @@ test('install-agent refresh confirmation stays on background-mode wording', () =
 
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /✅ Background mode refreshed — IdleWatch is running in the background\./)
-    assert.match(install.stdout, /Background mode refreshed with the saved config\./)
+    assert.match(install.stdout, /Background mode is using the saved config\./)
+    assert.doesNotMatch(install.stdout, /Background mode refreshed with the saved config\./)
     assert.doesNotMatch(install.stdout, /Existing background agent refreshed with the saved config\./)
     assert.doesNotMatch(install.stdout, /restarted with the latest config/)
   } finally {

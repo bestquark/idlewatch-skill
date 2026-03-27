@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R446 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny already-on install success wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: in the happy-path `install-agent` re-apply branch, success output still said `Background mode refreshed with the saved config.` That line was understandable, but it felt a little more mechanical than the calmer `apply the saved config` / `use the saved config` story already used across setup, reconfigure, status, and the packaged install flow.
+
+### What changed
+- Reworded the already-loaded `install-agent` success follow-up in `bin/idlewatch-agent.js` from `Background mode refreshed with the saved config.` to `Background mode is using the saved config.`
+- Tightened `test/openclaw-env.test.mjs` so that happy-path refresh branch keeps the calmer saved-config wording and does not drift back
+- Kept setup flow, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent|configure|reconfigure|status|quickstart|test-publish|uninstall-agent|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L108 — already-on `install-agent` success now says `is using the saved config` instead of `refreshed with the saved config`
+**Why this mattered:** This is tiny, but it lands in a real reconfigure/apply moment where the product should describe the steady state simply. `Refreshed with the saved config` worked, but it still sounded a little more procedural than the calmer product move here: background mode is on, and it is using the saved config.
+
+**Acceptance notes**
+- The already-loaded `install-agent` success branch now says `Background mode is using the saved config.`
+- The same branch no longer says `Background mode refreshed with the saved config.`
+- The success headline still stays short: `✅ Background mode refreshed — IdleWatch is running in the background.`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:12 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny already-on success wording seam fixed in this pass
+
 ## Cycle R445 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

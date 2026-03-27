@@ -1347,7 +1347,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       if (backgroundAgentRunning) {
         console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'} — IdleWatch is running in the background.`)
         if (alreadyLoaded) {
-          console.log('   Background mode refreshed with the saved config.')
+          console.log('   Background mode is using the saved config.')
         }
       } else {
         console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
