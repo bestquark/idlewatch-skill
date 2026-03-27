@@ -2041,6 +2041,35 @@ test('quickstart accepts cloud-only/local-only enrollment mode aliases in non-in
   }
 })
 
+test('quickstart treats separator-only non-interactive metric input like no override', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-blank-metric-input-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local-only',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Blank Metric Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: ' , , '
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /✅ Setup complete for "Blank Metric Box"\./)
+    assert.match(run.stdout, /Mode:\s+local-only/)
+
+    const saved = fs.readFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'utf8')
+    assert.match(saved, /IDLEWATCH_MONITOR_TARGETS=cpu,memory(?:,[^\n]+)?/)
+    assert.doesNotMatch(run.stderr, /No valid metrics were selected\./)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('quickstart gives a calmer non-interactive error when cloud mode is missing an API key', () => {
   const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-missing-cloud-key-'))
   try {

@@ -169,9 +169,16 @@ function formatMonitorTargetChoice(choice) {
   return `${choice} (${label})`
 }
 
+function metricSelectionLooksBlank(raw) {
+  const normalized = String(raw || '').trim()
+  if (!normalized) return true
+  return normalized.replace(/[\s,]/g, '').length === 0
+}
+
 function ensureMonitorTargetsOrThrow(raw, available) {
+  if (metricSelectionLooksBlank(raw)) return fallbackMonitorTargets(available)
+
   const normalizedRaw = String(raw || '').trim()
-  if (!normalizedRaw) return fallbackMonitorTargets(available)
 
   const explicitlyRequested = normalizedRaw
     .split(',')
@@ -503,7 +510,9 @@ export async function runEnrollmentWizard(options = {}) {
 
   const availableMonitorTargets = detectAvailableMonitorTargets()
   const explicitMonitorTargets = options.monitorTargets || process.env.IDLEWATCH_ENROLL_MONITOR_TARGETS || process.env.IDLEWATCH_MONITOR_TARGETS || ''
-  const requestedMonitorTargets = explicitMonitorTargets || existingConfig?.monitorTargets?.join(',') || ''
+  const requestedMonitorTargets = metricSelectionLooksBlank(explicitMonitorTargets)
+    ? (existingConfig?.monitorTargets?.join(',') || '')
+    : explicitMonitorTargets
   let monitorTargets = ensureMonitorTargetsOrThrow(requestedMonitorTargets, availableMonitorTargets)
 
   if (!nonInteractive && !noTui) {

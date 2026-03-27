@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R589 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny non-interactive metrics-input cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar: in non-interactive flows, a separator-only metrics value like `", ,"` was treated as an explicit invalid selection instead of effectively meaning “leave metrics alone / use the normal defaults.” Nothing functional was broken in the happy path, but this made automation and quick reconfigure scripts a little more brittle than they needed to be in the exact lane where the product should stay calm and forgiving.
+
+### What changed
+- Reworked `src/enrollment.js` so separator-only metric input now counts as blank input rather than an invalid explicit selection
+- In practice that means non-interactive setup now falls back cleanly to the normal default metrics on first run, and to the saved metrics on reconfigure when a script passes only commas/spaces by accident
+- Added a focused regression in `test/openclaw-env.test.mjs` covering `IDLEWATCH_ENROLL_MONITOR_TARGETS=' , , '` so this edge case does not drift back into a blocking setup error
+- Left auth/ingest behavior, launch-agent flow, packaging, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check src/enrollment.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs` for `quickstart treats separator-only non-interactive metric input like no override`
+- [x] Observed in the live pass:
+  - `IDLEWATCH_ENROLL_MONITOR_TARGETS=' , , '` no longer fails setup with `No valid metrics were selected.`
+  - first-run local-only `quickstart --no-tui` now completes normally and saves the usual default metrics (`cpu,memory` in this environment)
+  - the rest of the requested polish lane still stays calm: true-`npx` setup/status hints remain literal, launch-agent install/uninstall stays clear, local-only verification wording stays accurate, and telemetry-path behavior is unchanged
+
+### Prioritized findings
+#### [x] P1 — separator-only non-interactive metrics input now behaves like no override instead of a blocking validation error
+**Why this mattered:** This is tiny, but it lands in automation and reconfigure flows where a stray env-var template, trailing comma, or copy-paste artifact should not force the user back into debugging setup syntax. Treating blank-ish metric lists as “no override” is the calmer move and matches the product’s preference for useful defaults over fussy ceremony.
+
+**Acceptance checks**
+- `quickstart --no-tui` with `IDLEWATCH_ENROLL_MONITOR_TARGETS=' , , '` no longer fails with `No valid metrics were selected.`
+- The same first-run flow falls back to the normal default metrics for the current machine
+- Saved-config reconfigure flows can reuse the existing metrics when the incoming non-interactive override is effectively blank
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-interactive metrics-input cleanup
+
 ## Cycle R588 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression in the live checkout.
