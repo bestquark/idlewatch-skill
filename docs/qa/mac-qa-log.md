@@ -2,6 +2,44 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R572 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx install-agent --help` setup-command literalness fix from the live checkout.
+
+### Priority call
+One low-risk `npx` setup/install seam still cleared the bar: `npx idlewatch install-agent --help` already kept the durable background-mode handoff honest, but in the exact no-setup branch it still pointed people at plain `idlewatch quickstart --no-tui`. Nothing functional was broken, yet that is the copy-paste moment where the command should be literally runnable as shown. Tightening that one line to `npx idlewatch quickstart --no-tui` keeps the one-off setup path copy-safe while preserving the separate durable install handoff for background mode.
+
+### What changed
+- Reworded the `npx install-agent --help` no-setup handoff in `bin/idlewatch-agent.js` from `If setup isn't saved yet: idlewatch quickstart --no-tui` to `Set up now: npx idlewatch quickstart --no-tui`
+- Updated the matching assertion in `test/openclaw-env.test.mjs` so this one-off-safe setup hint does not drift back to the plain `idlewatch ...` command in real `npx` help
+- Kept the durable background-mode split unchanged: `Install once: npm install -g idlewatch`, then `Turn on background mode: idlewatch install-agent`
+- Left auth, ingest, launch-agent behavior, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed: help now says:
+  - `Set up now:                npx idlewatch quickstart --no-tui`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Inline assertion probe confirms the updated `Set up now: npx idlewatch quickstart --no-tui` help text in real npm-exec context
+
+### Prioritized findings
+#### [x] P1 — `npx install-agent --help` now keeps the no-setup command literally runnable in the same one-off context
+**Why this mattered:** This is tiny, but it lands in the exact recovery/help moment where someone learns background mode needs the durable install path and immediately needs the shortest setup command. Showing plain `idlewatch quickstart --no-tui` there quietly assumed a global binary the user may not have yet. `npx idlewatch quickstart --no-tui` is more literal, lower-friction, and keeps the product split clean: one-off setup/run now, durable install for background mode.
+
+**Acceptance checks**
+- `npx idlewatch install-agent --help` now says `Set up now: npx idlewatch quickstart --no-tui`
+- The same help no longer points the no-setup path at plain `idlewatch quickstart --no-tui`
+- The same help still keeps the durable background-mode handoff unchanged on `npm install -g idlewatch` + `idlewatch install-agent`
+- The same help still keeps the one-off foreground fallback on `npx idlewatch run`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx install-agent --help` setup-command literalness fix
+
 ## Cycle R571 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

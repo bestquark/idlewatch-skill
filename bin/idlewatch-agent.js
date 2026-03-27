@@ -275,8 +275,8 @@ function installAgentHelpText() {
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
 
+Set up now:                npx idlewatch quickstart --no-tui
 Install once:              npm install -g idlewatch
-If setup isn't saved yet:  idlewatch quickstart --no-tui
 Turn on background mode:   idlewatch install-agent
 
 Run now:                   npx idlewatch run`
