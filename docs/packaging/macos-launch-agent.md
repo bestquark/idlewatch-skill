@@ -27,7 +27,7 @@ This installs background mode at `~/Library/LaunchAgents/com.idlewatch.agent.pli
 - If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away so background mode turns on immediately.
 - If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
 
-Config changes are picked up on the next start. After running `idlewatch quickstart --no-tui` or changing settings, re-run the install script once to load or refresh background mode with the saved config.
+Config changes are picked up on the next start. After running `idlewatch quickstart --no-tui` or changing settings, re-run the install script once to turn background mode on or apply the saved config.
 
 ### Configuration
 

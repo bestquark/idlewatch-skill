@@ -2,6 +2,34 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R440 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS saved-config doc wording cleanup from the live checkout.
+
+### Priority call
+One low-risk saved-config wording seam still cleared the bar this pass: `docs/packaging/macos-launch-agent.md` still told people to re-run the install script to `load or refresh background mode with the saved config`. That wording was understandable, but it lagged behind the calmer `turn on background mode` / `apply the saved config` story already used across the CLI, README, and nearby setup surfaces.
+
+### What changed
+- Reworded the packaged macOS background-mode follow-up in `docs/packaging/macos-launch-agent.md` to say `turn background mode on or apply the saved config`
+- Kept the actual packaged install/reconfigure flow unchanged: re-running the install script still turns background mode on after setup or reapplies saved settings later
+- Kept setup flow, saved-config behavior, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "turn background mode on or apply the saved config\|load or refresh background mode with the saved config" docs/packaging/macos-launch-agent.md`
+- [x] Result: the packaged macOS background-mode doc now matches the calmer saved-config/apply wording already used across the product
+
+### Prioritized findings
+#### [x] L105 — packaged macOS saved-config doc now says `turn background mode on or apply the saved config` instead of `load or refresh background mode with the saved config`
+**Why this mattered:** This is tiny, but it lands in a real packaged install/reconfigure decision surface where someone just wants the clean next step. `Load or refresh` worked, but it felt a notch more implementation-shaped than the calmer `turn on` / `apply the saved config` wording already used elsewhere.
+
+**Acceptance notes**
+- The packaged macOS background-mode doc now says `turn background mode on or apply the saved config`
+- The same line no longer says `load or refresh background mode with the saved config`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged saved-config wording seam fixed in this pass
+
 ## Cycle R439 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
