@@ -1410,9 +1410,14 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     const envFile = defaultPersistedEnvFilePath()
 
     if (!fs.existsSync(plistPath)) {
+      const invocation = detectCliInvocation()
       const localLogPath = resolvePersistedLocalLogPath()
       console.log('Background mode is already off.')
       printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
+      console.log(`   Turn background mode back on later with ${backgroundInstallCommandForInvocation(invocation)}.`)
+      if (invocation.kind === 'npx') {
+        console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
+      }
       process.exit(0)
     }
 

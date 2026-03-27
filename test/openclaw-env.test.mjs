@@ -1334,6 +1334,7 @@ test('uninstall-agent when nothing is installed stays honest about future config
     assert.match(run.stdout, /Background mode is already off\./)
     assert.match(run.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
     assert.match(run.stdout, /Local logs would go in .*\.idlewatch\/logs/)
+    assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
     assert.doesNotMatch(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.doesNotMatch(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
     assert.doesNotMatch(run.stdout, /LaunchAgent is not installed\. Nothing to remove\./)
@@ -1369,6 +1370,7 @@ test('uninstall-agent no-op still says stays when saved config or logs already e
     assert.match(run.stdout, /Background mode is already off\./)
     assert.match(run.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.match(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
+    assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
     assert.doesNotMatch(run.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
     assert.doesNotMatch(run.stdout, /Local logs would go in .*\.idlewatch\/logs/)
   } finally {

@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R523 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny no-op uninstall off-ramp alignment from the live checkout.
+
+### Priority call
+One low-risk uninstall seam still cleared the bar: successful `idlewatch uninstall-agent` already ends with the clean `Turn background mode back on later with idlewatch install-agent.` handoff, but the no-op path (`Background mode is already off.`) stopped just short of that same recovery cue. Nothing functional was broken, but this lands in the same reversible off-ramp moment where the product should stay calm, explicit, and symmetrical.
+
+### What changed
+- Reworked the no-op `uninstall-agent` branch in `bin/idlewatch-agent.js` so it now also ends with `Turn background mode back on later with idlewatch install-agent.`
+- Kept the existing saved-config/local-log retention summary unchanged for both the preview-style `would live` branch and the existing `stays` branch
+- Kept the existing `npx` reminder intact in the no-op path too: background mode still belongs to the durable install, not the one-off run
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs`
+- Left setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent when nothing is installed stays honest about future config and log paths|uninstall-agent no-op still says stays when saved config or logs already exist|uninstall-agent runtime output keeps the saved-config wording calm|uninstall-agent help in npx context stays simple and matches the real off-ramp)'`
+- [x] Result: **98 passed, 0 failed**
+- [x] Observed: both no-op uninstall branches now keep the same re-enable hint as the successful uninstall path
+
+### Prioritized findings
+#### [x] L148 — no-op `uninstall-agent` now keeps the same `turn background mode back on later` handoff as successful uninstall
+**Why this mattered:** This is tiny, but it lands in a real recovery/off-ramp moment where someone just learned background mode is already off and is deciding what to do next. The product was already honest about what config/logs stay. Adding the same explicit re-enable line keeps that moment a little more finished and a little less asymmetrical.
+
+**Acceptance checks**
+- `idlewatch uninstall-agent` still says `Background mode is already off.` when nothing is loaded
+- The same no-op path still keeps the preview-vs-retained saved-config/local-log wording honest
+- The same no-op path now also says `Turn background mode back on later with idlewatch install-agent.`
+- The `npx` no-op path still keeps the durable-install reminder unchanged
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny no-op uninstall off-ramp alignment
+
 ## Cycle R522 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
