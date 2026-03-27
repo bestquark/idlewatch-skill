@@ -1595,6 +1595,48 @@ test('install-agent falls back to the source script in the LaunchAgent plist whe
   }
 })
 
+test('install-agent escapes special characters in LaunchAgent plist paths', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-special-root-'))
+  const tempHome = path.join(tempRoot, 'QA & Logs Home')
+  const fakeBinRoot = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-special-plist-root-'))
+  const fakeBinDir = path.join(fakeBinRoot, 'bin & qa')
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeIdlewatch = path.join(fakeBinDir, 'idlewatch')
+  try {
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.mkdirSync(fakeBinDir, { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+    writeFileSync(fakeIdlewatch, '#!/usr/bin/env bash\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeIdlewatch, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: `${fakeBinDir}:/usr/bin:/bin:/usr/sbin:/sbin`
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    const plistPath = path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')
+    const plist = fs.readFileSync(plistPath, 'utf8')
+    assert.ok(plist.includes('<string>com.idlewatch.agent</string>'))
+    assert.ok(plist.includes(`<string>${fakeIdlewatch.replace(/&/g, '&amp;')}</string>`), 'should XML-escape special characters in durable CLI paths')
+    assert.ok(plist.includes(`<string>${path.join(tempHome, '.idlewatch', 'logs', 'agent-stdout.log').replace(/&/g, '&amp;')}</string>`), 'should XML-escape special characters in log paths')
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 test('install-agent refresh confirmation stays on background-mode wording', () => {
   if (process.platform !== 'darwin') {
     return

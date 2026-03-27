@@ -156,6 +156,42 @@ test('packaged macOS install script shows the exact refresh command when idlewat
   }
 })
 
+test('packaged macOS install script preserves special characters in plist paths', { skip: process.platform !== 'darwin' }, () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-special-root-'))
+  const tempHome = path.join(tempRoot, 'QA & Logs Home')
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-special-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    fs.mkdirSync(path.join(tempHome, '.idlewatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, '.idlewatch', 'idlewatch.env'), 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_LAUNCH_AGENT_LOG_DIR: path.join(tempHome, 'Library', 'Logs', 'IdleWatch & QA')
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+
+    const plistPath = path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')
+    const plist = fs.readFileSync(plistPath, 'utf8')
+    assert.match(plist, /<string>com.idlewatch.agent<\/string>/)
+    assert.match(plist, /<string>.*QA &amp; Logs Home\/Applications\/IdleWatch\.app\/Contents\/MacOS\/IdleWatch<\/string>/)
+    assert.match(plist, /<string>.*Library\/Logs\/IdleWatch &amp; QA\/idlewatch\.out\.log<\/string>/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS install script keeps background-mode wording for custom config paths', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-bin-'))

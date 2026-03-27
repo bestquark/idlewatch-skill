@@ -43,6 +43,19 @@ if [[ -f "$CONFIG_ENV_PATH" ]]; then
   HAS_SAVED_CONFIG=1
 fi
 
+xml_escape() {
+  printf '%s' "$1" \
+    | sed -e 's/&/\&amp;/g' \
+          -e 's/</\&lt;/g' \
+          -e 's/>/\&gt;/g' \
+          -e "s/'/\&apos;/g" \
+          -e 's/"/\&quot;/g'
+}
+
+sed_replacement_escape() {
+  printf '%s' "$1" | sed -e 's/[&|\\]/\\&/g'
+}
+
 is_standard_app_path=0
 if [[ "$APP_PATH" == "$DEFAULT_APP_PATH" || "$APP_PATH" == "$USER_APP_PATH" ]]; then
   is_standard_app_path=1
@@ -123,13 +136,21 @@ else
   DISABLED_VALUE='<true/>'
 fi
 
-sed -i '' "s|{{PLIST_LABEL}}|$PLIST_LABEL|g" "$PLIST_PATH"
-sed -i '' "s|{{BIN_PATH}}|$BIN_PATH|g" "$PLIST_PATH"
-sed -i '' "s|{{LOG_DIR}}|$LOG_DIR|g" "$PLIST_PATH"
-sed -i '' "s|{{START_INTERVAL_SEC}}|$START_INTERVAL_SEC|g" "$PLIST_PATH"
-sed -i '' "s|{{RUN_AT_LOAD_VALUE}}|$RUN_AT_LOAD_VALUE|g" "$PLIST_PATH"
-sed -i '' "s|{{KEEP_ALIVE_VALUE}}|$KEEP_ALIVE_VALUE|g" "$PLIST_PATH"
-sed -i '' "s|{{DISABLED_VALUE}}|$DISABLED_VALUE|g" "$PLIST_PATH"
+PLIST_LABEL_ESCAPED="$(sed_replacement_escape "$(xml_escape "$PLIST_LABEL")")"
+BIN_PATH_ESCAPED="$(sed_replacement_escape "$(xml_escape "$BIN_PATH")")"
+LOG_DIR_ESCAPED="$(sed_replacement_escape "$(xml_escape "$LOG_DIR")")"
+START_INTERVAL_SEC_ESCAPED="$(sed_replacement_escape "$START_INTERVAL_SEC")"
+RUN_AT_LOAD_VALUE_ESCAPED="$(sed_replacement_escape "$RUN_AT_LOAD_VALUE")"
+KEEP_ALIVE_VALUE_ESCAPED="$(sed_replacement_escape "$KEEP_ALIVE_VALUE")"
+DISABLED_VALUE_ESCAPED="$(sed_replacement_escape "$DISABLED_VALUE")"
+
+sed -i '' "s|{{PLIST_LABEL}}|$PLIST_LABEL_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{BIN_PATH}}|$BIN_PATH_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{LOG_DIR}}|$LOG_DIR_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{START_INTERVAL_SEC}}|$START_INTERVAL_SEC_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{RUN_AT_LOAD_VALUE}}|$RUN_AT_LOAD_VALUE_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{KEEP_ALIVE_VALUE}}|$KEEP_ALIVE_VALUE_ESCAPED|g" "$PLIST_PATH"
+sed -i '' "s|{{DISABLED_VALUE}}|$DISABLED_VALUE_ESCAPED|g" "$PLIST_PATH"
 
 USER_GUID="$(id -u)"
 PLIST_ID="gui/$USER_GUID/$PLIST_LABEL"

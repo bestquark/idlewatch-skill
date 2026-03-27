@@ -42,6 +42,15 @@ function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`
 }
 
+function escapeXml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 function detectCliInvocation() {
   const scriptArg = process.argv[1] || ''
   const scriptBase = path.basename(scriptArg)
@@ -1282,19 +1291,19 @@ const subcommandPromise = (async () => {
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>${svcLabel}</string>
+  <string>${escapeXml(svcLabel)}</string>
   <key>ProgramArguments</key>
   <array>
-${programArguments.map(arg => `    <string>${arg}</string>`).join('\n')}
+${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n')}
   </array>
   <key>RunAtLoad</key>
   <${shouldStartImmediately ? 'true' : 'false'}/>
   <key>KeepAlive</key>
   <${shouldStartImmediately ? 'true' : 'false'}/>
   <key>StandardOutPath</key>
-  <string>${path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stdout.log')}</string>
+  <string>${escapeXml(path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stdout.log'))}</string>
   <key>StandardErrorPath</key>
-  <string>${path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stderr.log')}</string>
+  <string>${escapeXml(path.join(os.homedir(), '.idlewatch', 'logs', 'agent-stderr.log'))}</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>

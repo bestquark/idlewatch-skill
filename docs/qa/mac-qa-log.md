@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R425 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny reliability fix in the background-mode install lane.
+
+### Priority call
+One low-risk setup/install detail still cleared the bar this pass: LaunchAgent plist generation should stay valid even when real macOS paths contain special characters like `&`. That is not a flashy feature, but it is exactly the kind of quiet polish that keeps setup/reconfigure/install feeling dependable instead of fragile.
+
+### What changed
+- XML-escaped LaunchAgent plist string values in `bin/idlewatch-agent.js` so durable CLI paths and log paths stay valid if the home path or install path contains special characters
+- Tightened `scripts/install-macos-launch-agent.sh` so its placeholder replacement safely preserves XML-valid escaped values instead of letting `sed` replacement characters distort the plist
+- Added focused regression coverage for both CLI and packaged-script plist generation with special-character paths
+- Kept setup flow, saved-config behavior, launch-agent lifecycle behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs --test-name-pattern='packaged macOS install script|packaged macOS launch-agent scripts'`
+- [x] Result: **6 passed, 0 failed**
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L98 — LaunchAgent plist generation now safely handles special-character paths
+**Why this mattered:** This is tiny, but it lands in a real install/reconfigure reliability seam. Someone should not need a path without `&` or other XML-sensitive characters for background mode to install cleanly. The calmer product move is simply to make the plist valid and boring every time.
+
+**Acceptance notes**
+- LaunchAgent plist string values are XML-safe in both the main CLI install path and the packaged macOS install script
+- Added regression coverage around special-character home/app/log paths so this does not drift back
+- No auth/ingest changes, no setup-flow expansion, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:22 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny LaunchAgent plist reliability fix shipped in this pass
+
 ## Cycle R424 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
