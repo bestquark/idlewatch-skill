@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R448 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny remaining `status` wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: the non-macOS fallback branch of `status` still said `Enable: ... (background on macOS)` while the rest of the setup/install/reconfigure lane had already converged on calmer `background mode` wording. The behavior was already correct; this just removes one last older, tool-shaped label from a next-step surface.
+
+### What changed
+- Reworded the non-macOS `status` hint in `bin/idlewatch-agent.js` from `Enable:   ... install-agent  (background on macOS)` to `Background mode on macOS:  ... install-agent`
+- Tightened `test/openclaw-env.test.mjs` so both the no-samples and with-samples non-macOS status branches keep the calmer wording and do not drift back
+- Kept setup flow, saved-config behavior, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "Background mode on macOS:\|Enable:   .*install-agent" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command shows contextual next-step hints|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L109 — non-macOS `status` fallback now stays on `background mode` wording instead of `Enable`
+**Why this mattered:** This is tiny, but it lands in a real next-step hint where the product should name the optional macOS capability directly instead of slipping back to a more generic label. `Enable` worked, but it was a little older and more tool-shaped than the calmer wording used everywhere nearby.
+
+**Acceptance notes**
+- The non-macOS `status` fallback now says `Background mode on macOS:  ... install-agent`
+- The same fallback no longer says `Enable:   ... install-agent  (background on macOS)`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny non-macOS `status` wording seam fixed in this pass
+
+
 ## Cycle R447 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

@@ -1933,7 +1933,7 @@ if (statusRequested) {
           console.log(`  Turn on background mode:  ${installAgentCommand}`)
         }
       } else {
-        console.log(`  Enable:   ${inferCliCommand('install-agent')}  (background on macOS)`)
+        console.log(`  Background mode on macOS:  ${inferCliCommand('install-agent')}`)
       }
     }
   } else if (!isPlaceholderName) {
@@ -1960,7 +1960,7 @@ if (statusRequested) {
         console.log(`  Turn on background mode:  ${installAgentCommand}`)
       }
     } else {
-      console.log(`  Enable:   ${installAgentCommand}  (background on macOS)`)
+      console.log(`  Background mode on macOS:  ${installAgentCommand}`)
     }
   }
   process.exit(0)

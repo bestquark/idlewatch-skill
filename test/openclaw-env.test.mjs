@@ -2888,6 +2888,9 @@ test('status command shows contextual next-step hints', () => {
       assert.ok(noSamples.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the calmer background-mode hint on the product command when no samples exist and background mode is not installed')
       assert.ok(!noSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.ok(!noSamples.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when LaunchAgent is not installed')
+    } else {
+      assert.ok(noSamples.stdout.includes(`Background mode on macOS:  ${SOURCE_CMD} install-agent`), 'should keep the non-macOS background-mode hint on the calmer product wording when no samples exist')
+      assert.ok(!noSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not fall back to the older Enable wording on non-macOS when no samples exist')
     }
 
     // With config and samples: should hint at configure
@@ -2909,6 +2912,9 @@ test('status command shows contextual next-step hints', () => {
       assert.ok(withSamples.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the calmer background-mode hint on the product command when background mode is not installed')
       assert.ok(!withSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.doesNotMatch(withSamples.stdout, /Apply:.*already running in the background/, 'should not show running-agent apply hint after uninstall/not-installed state')
+    } else {
+      assert.ok(withSamples.stdout.includes(`Background mode on macOS:  ${SOURCE_CMD} install-agent`), 'should keep the non-macOS background-mode hint on the calmer product wording when samples exist')
+      assert.ok(!withSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not fall back to the older Enable wording on non-macOS when samples exist')
     }
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
