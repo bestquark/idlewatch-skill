@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R541 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent --help` off-ramp simplification from the live checkout.
+
+### Priority call
+One low-risk one-off off-ramp seam still cleared the bar this cycle: `npx idlewatch uninstall-agent --help` already behaved like a clean macOS off-ramp, but it still told people to `Install once: npm install -g idlewatch` right in the exact moment where they were only trying to turn background mode off. Nothing functional was broken, yet that extra step added needless setup-ish friction to a command that already works as a one-off recovery path.
+
+### What changed
+- Removed `Install once: npm install -g idlewatch` from the `npx uninstall-agent --help` block in `bin/idlewatch-agent.js`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the one-off uninstall help keeps the calmer no-extra-step off-ramp
+- Kept the real one-off uninstall runtime, durable-install re-enable hint, saved-config/local-log reassurance, setup/reconfigure flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: help still starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and no longer prints `Install once: npm install -g idlewatch`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context|uninstall-agent runtime output keeps the saved-config wording calm)'`
+- [x] Result: **98 passed, 0 failed**
+
+### Prioritized findings
+#### [x] P1 — `npx uninstall-agent --help` no longer adds an unnecessary durable-install step to the one-off off-ramp
+**Why this mattered:** This is tiny, but it lands in a real “just turn it off” moment. The one-off uninstall path already works. Keeping an `Install once` step in that help block made the off-ramp feel more complicated than the actual product behavior.
+
+**Acceptance checks**
+- `npx idlewatch uninstall-agent --help` still presents itself as a normal macOS off-ramp
+- The same help no longer says `Install once: npm install -g idlewatch`
+- The same help still reassures that saved config and local logs stay in place when background mode is already off
+- The same help still points to `idlewatch install-agent` if someone wants to turn background mode back on later
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 1:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent --help` off-ramp simplification
+
 ## Cycle R540 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
