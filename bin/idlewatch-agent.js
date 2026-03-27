@@ -1856,8 +1856,10 @@ if (statusRequested) {
       printStatusField('Extras available', extraPreview.join(', '))
     }
   }
-  printStatusField(hasConfig ? 'Local log' : 'Local log preview', LOCAL_LOG_PATH || '(none)')
-  printStatusField('Config', hasConfig ? envFile : `${envFile} (not saved yet)`)
+  const localLogStatusPath = LOCAL_LOG_PATH ? formatPathForHelp(LOCAL_LOG_PATH) : '(none)'
+  const configStatusPath = formatPathForHelp(envFile)
+  printStatusField(hasConfig ? 'Local log' : 'Local log preview', localLogStatusPath)
+  printStatusField('Config', hasConfig ? configStatusPath : `${configStatusPath} (not saved yet)`)
 
   // LaunchAgent state
   if (process.platform === 'darwin') {

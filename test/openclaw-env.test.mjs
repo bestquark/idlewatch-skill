@@ -1519,9 +1519,9 @@ test('status command preserves installed-but-waiting-for-setup state after insta
     })
     assert.equal(status.status, 0, status.stderr)
     assert.match(status.stdout, /Setup:\s+not completed yet/)
-    assert.match(status.stdout, /Local log preview:\s+.*\.idlewatch\/logs\//)
+    assert.match(status.stdout, /Local log preview:\s+~\/\.idlewatch\/logs\//)
     assert.doesNotMatch(status.stdout, /\n\s*Local log:\s+/)
-    assert.match(status.stdout, /Config:\s+.*\.idlewatch\/idlewatch\.env \(not saved yet\)/)
+    assert.match(status.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env \(not saved yet\)/)
     assert.match(status.stdout, /Background:\s+installed but waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+waiting for setup/)
     assert.match(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
@@ -2560,7 +2560,7 @@ test('configure keeps the saved device id stable when renaming the device', () =
     assert.equal(status.status, 0, status.stderr)
     assert.match(status.stdout, /Device:\s+Renamed Box/)
     assert.match(status.stdout, /Device ID:\s+qa-box \(kept from original setup for continuity\)/)
-    assert.match(status.stdout, /Local log:\s+.*qa-box-metrics\.ndjson/)
+    assert.match(status.stdout, /Local log:\s+~\/\.idlewatch\/logs\/qa-box-metrics\.ndjson/)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }
@@ -2936,7 +2936,7 @@ test('status command accepts saved config values with trailing inline comments',
     assert.match(run.stdout, /Device:\s+Comment Box/)
     assert.match(run.stdout, /Publish mode:\s+local-only/)
     assert.match(run.stdout, /Metrics:\s+CPU, Memory/)
-    assert.match(run.stdout, /Local log:\s+.*comment-box-metrics\.ndjson/)
+    assert.match(run.stdout, /Local log:\s+~\/\.idlewatch\/logs\/comment-box-metrics\.ndjson/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
