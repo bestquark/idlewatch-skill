@@ -22652,3 +22652,26 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Added `IDLEWATCH_CONFIG_ENV_PATH` to the packaged LaunchAgent plist environment when a custom saved-config path is configured.
 - Updated the install script success output so custom saved config paths get the same calm `Background mode will use this saved config.` confirmation as the default path.
 - Replaced the old move/copy fallback with regression coverage that verifies the packaged plist carries the configured custom path.
+## Cycle R498 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny headless-help wording fix in the installer/CLI lane.
+- Non-TTY `quickstart --help`, `configure --help`, and `reconfigure --help` had drifted back to `Uses simple prompts.` even though those help paths already show `--no-tui` usage.
+- They now consistently say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- Setup behavior, saved-config handling, install behavior, and the working telemetry path remain unchanged.
+
+### R498 spot-check coverage
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+
+### Prioritized findings
+
+#### [x] L37 — non-TTY setup help no longer claims it uses prompts while already showing `--no-tui`
+**Why it matters:** This is tiny, but it lands exactly where people pause before copying a headless setup/reconfigure command. Once help is already showing `quickstart --no-tui`, `configure --no-tui`, or `reconfigure --no-tui`, saying `Uses simple prompts.` makes the path sound more interactive than it really is.
+
+**What shipped**
+- Reworded the non-TTY help hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs`.
+- Kept the interactive TTY help path unchanged (`Use --no-tui for simple prompts.`).

@@ -1160,13 +1160,13 @@ if (args.has('--help') || args.has('-h')) {
   const quickstartUsage = process.stdin.isTTY ? `${quickstartUsageCommand} [--no-tui]` : quickstartUsageCommand
   const quickstartPromptHint = process.stdin.isTTY
     ? 'Use --no-tui for simple prompts.'
-    : 'Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.'
+    : 'Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.'
   const configureCommand = preferredProductCommand('configure')
   const configureUsageCommand = preferredHelpSetupCommand('configure')
   const configureUsage = process.stdin.isTTY ? `${configureUsageCommand} [--no-tui]` : configureUsageCommand
   const configurePromptHint = process.stdin.isTTY
     ? 'Use --no-tui for simple prompts.'
-    : 'Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.'
+    : 'Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.'
   const statusCommand = preferredProductCommand('status')
   const statusUsageCommand = preferredProductCommand('status')
   const createCommand = preferredProductCommand('create')
