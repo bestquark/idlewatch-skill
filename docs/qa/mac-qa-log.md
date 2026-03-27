@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R511 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent` help-list alignment from the live checkout.
+
+### Priority call
+One low-risk one-off-path seam still cleared the bar this pass: top-level `npx idlewatch --help` had drifted stricter than the real off-ramp by saying `uninstall-agent   Turn off background mode (requires durable install)` even though the matching command-specific help and live runtime both behave like a valid one-off recovery command. The runtime behavior was already clean and safe; this just removes one needless moment of uncertainty from the first command list people scan.
+
+### What changed
+- Reworked the top-level `npx` command summary in `bin/idlewatch-agent.js` so `uninstall-agent` now reads `Turn off background mode (macOS)` instead of `Turn off background mode (requires durable install)`
+- Kept the matching command-specific `npx uninstall-agent --help` and live runtime behavior unchanged so the off-ramp story now stays consistent across help + runtime
+- Updated the matching regression assertion in `test/openclaw-env.test.mjs` so the top-level `npx` help surface does not drift back to the stricter wording
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context)'`
+- [x] Result: targeted help/off-ramp regression lane passes cleanly after the alignment
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+- [x] Observed: top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help still starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and keeps the saved-config/local-log reassurance intact
+
+### Prioritized findings
+#### [x] L141 — top-level `npx` help now matches the real `uninstall-agent` off-ramp again
+**Why this mattered:** This is tiny, but it lands in the exact scan-first moment where someone is deciding what they can safely do from a one-off `npx` run. Letting the command list say `requires durable install` while the real `uninstall-agent` help and runtime behave like a valid one-off off-ramp added a small but avoidable mismatch in a recovery path that should feel obvious and low-friction.
+
+**Acceptance checks**
+- Top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- `npx uninstall-agent --help` stays otherwise unchanged and still reassures that saved config and local logs remain in place
+- The live one-off uninstall runtime story stays unchanged
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:00 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent` help-list alignment
+
 ## Cycle R510 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny top-level `npx` off-ramp alignment from the live checkout.
