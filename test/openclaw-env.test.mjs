@@ -3201,7 +3201,7 @@ exit 0
     })
 
     assert.notEqual(run.status, 0, 'install should fail when launchctl does not finish reloading')
-    assert.match(run.stderr, /IdleWatch turned background mode back on, but macOS did not finish reloading it in time\./)
+    assert.match(run.stderr, /IdleWatch turned background mode back on, but macOS did not finish applying the saved config in time\./)
     assert.match(run.stderr, /Please wait a moment, then run: .* install-agent/)
     assert.doesNotMatch(run.stderr, /old background agent/)
   } finally {

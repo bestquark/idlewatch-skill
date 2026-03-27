@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R444 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny reload-time failure wording cleanup from the live checkout.
+
+### Priority call
+One low-risk reload seam still cleared the bar this pass: in the rare macOS reload-time failure branch, `install-agent` still said `macOS did not finish reloading it in time.` The recovery behavior was already right, but that line felt a little more implementation-shaped than the calmer saved-config/apply wording now used across the rest of setup, reconfigure, status, and install surfaces.
+
+### What changed
+- Reworded the rare already-loaded reload-time failure message in `bin/idlewatch-agent.js` from `macOS did not finish reloading it in time` to `macOS did not finish applying the saved config in time`
+- Tightened `test/openclaw-env.test.mjs` so that reload-time failure branch keeps the calmer saved-config wording and does not drift back
+- Kept setup flow, saved-config behavior, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent|configure|reconfigure|status|quickstart|test-publish|uninstall-agent|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L107 — reload-time failure branch now says `applying the saved config` instead of `reloading it`
+**Why this mattered:** This is tiny, but it lands in a real repair moment where the product should stay on the same simple command story as the rest of the setup/install lane. `Reloading it` was understandable, but it pulled the message a little closer to platform mechanics than the calmer saved-config framing already used everywhere nearby.
+
+**Acceptance notes**
+- The rare already-loaded reload-time failure branch now says `macOS did not finish applying the saved config in time`
+- The same branch no longer says `macOS did not finish reloading it in time`
+- The follow-up retry command stays the same: `Please wait a moment, then run: idlewatch install-agent`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny reload-time failure wording seam fixed in this pass
+
 ## Cycle R443 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
