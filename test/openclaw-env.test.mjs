@@ -2052,7 +2052,7 @@ exit 0
         assert.equal(npxConfigureWithRunningAgent.status, 0, npxConfigureWithRunningAgent.stderr)
         assert.match(npxConfigureWithRunningAgent.stdout, /Background mode:\s+already running/)
         assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /Background agent:\s+already running/)
-        assert.match(npxConfigureWithRunningAgent.stdout, /Apply changes:\s+re-run idlewatch install-agent to apply the saved config/)
+        assert.match(npxConfigureWithRunningAgent.stdout, /Apply saved config:\s+re-run idlewatch install-agent to apply the saved config/)
         assert.match(npxConfigureWithRunningAgent.stdout, /This npx run updated the saved config only\./)
         assert.doesNotMatch(npxConfigureWithRunningAgent.stdout, /refresh the background agent with the saved config/)
       } finally {
@@ -2580,7 +2580,7 @@ test('configure success says to refresh an already-running background agent', ()
     if (launchAgentWasRunning) {
       assert.match(configure.stdout, /Background mode:\s+already running/)
       assert.doesNotMatch(configure.stdout, /Background agent:\s+already running/)
-      assert.match(configure.stdout, /Apply changes:\s+re-run .*install-agent to apply the saved config/)
+      assert.match(configure.stdout, /Apply saved config:\s+re-run .*install-agent to apply the saved config/)
       assert.doesNotMatch(configure.stdout, /To keep it running:/)
     } else {
       assert.match(configure.stdout, /Background mode is not on yet\./)

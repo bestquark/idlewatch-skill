@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R500 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-config wording alignment from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar this pass: when reconfigure finished while background mode was already on, completion output still said `Apply changes:` even though the matching `status` surface had already been tightened to the clearer `Apply saved config:` wording for the same action. The behavior was already right; this just makes the saved-config handoff read more literally and consistently in a real reconfigure moment.
+
+### What changed
+- Reworded the already-running reconfigure/setup follow-up in `bin/idlewatch-agent.js` from `Apply changes: ... install-agent to apply the saved config` to `Apply saved config: ... install-agent to apply the saved config`
+- Updated the matching regression coverage in `test/openclaw-env.test.mjs` so setup/reconfigure completion stays aligned with the calmer saved-config wording already used by `status`
+- Kept setup flow behavior, saved-config persistence/apply behavior, background-mode install semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(configure success says to refresh an already-running background agent|status command keeps running-agent apply hint aligned with saved-config wording|quickstart completion stays honest when a LaunchAgent was installed before setup|quickstart|configure|reconfigure|status|install-agent|uninstall-agent|test-publish|npx|help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] Fresh live help spot checks still pass from the live checkout for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+
+### Prioritized findings
+#### [x] L134 — setup/reconfigure running-background handoff now says `Apply saved config` instead of `Apply changes`
+**Why this mattered:** This is tiny, but it lands right after a successful reconfigure, where the product should be explicit about what the next command actually does. `Apply changes` was understandable, but `Apply saved config` is more literal, matches the polished `status` wording, and keeps the saved-config story feeling neat and finished instead of slightly generic.
+
+**Acceptance checks**
+- The already-running setup/reconfigure completion branch now says `Apply saved config:  re-run ... install-agent to apply the saved config`
+- The same branch no longer says `Apply changes:    re-run ... install-agent to apply the saved config`
+- Existing `status` wording remains on the same `Apply saved config` label
+- Matching regression assertions were updated so the wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:19 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-config wording alignment
+
 ## Cycle R499 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
