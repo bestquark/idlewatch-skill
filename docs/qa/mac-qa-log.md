@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R396 Status: COMPLETE ✅
+
+One tiny durable-install handoff seam got cleaned up from the live checkout.
+
+### Outcome
+- Closed one real but very small setup/help seam in the `npx install-agent --help` path.
+- That help surface already pushed people to the durable install, but it skipped the saved-setup handoff entirely.
+- `npx idlewatch install-agent --help` now keeps the same neat command story as the rest of the product: install once, finish setup if needed with `idlewatch quickstart --no-tui`, then enable background mode with `idlewatch install-agent`.
+- Kept runtime behavior unchanged: this is help-copy polish only.
+- Preserved saved-config behavior, startup/install quality of life, and the now-working telemetry path.
+- Re-ran the focused installer/CLI regression subset and it still passes cleanly: **92 passed, 0 failed**.
+
+### Prioritized findings
+#### [x] L76 — `npx install-agent --help` now includes the saved-setup handoff before the durable enable step
+**Why it mattered:** This is tiny, but it lands in a real setup moment where someone is explicitly asking how background mode works from a one-off `npx` run. Pointing to the durable install without also naming the setup handoff left one small gap in an otherwise very calm flow.
+
+**What shipped**
+- Updated the `npx`-specific `install-agent --help` copy in `bin/idlewatch-agent.js` to add `If setup isn't saved yet: idlewatch quickstart --no-tui` between the durable install step and the final enable step.
+- Tightened `test/openclaw-env.test.mjs` so the `npx install-agent --help` surface keeps that setup handoff.
+- Kept runtime behavior unchanged.
+
+### Spot-check coverage for R396
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+- [x] Focused `openclaw-env` installer/CLI regression subset: **92 passed, 0 failed**
+
+### Exact repro commands used
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='install-agent help in npx context points straight to the durable path|install-agent help keeps the durable setup path short and clear|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help'`
+3. `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+
+### Acceptance notes
+- The `npx` durable-install off-ramp now names the setup handoff directly instead of assuming it.
+- This is wording polish only; no auth, ingest, packaging, launch-agent logic, or telemetry-path behavior changed.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny `npx install-agent --help` setup-handoff seam fixed in this pass
+
 ## Cycle R395 Status: COMPLETE ✅
 
 Fresh installer/CLI polish spot check completed from the live checkout.

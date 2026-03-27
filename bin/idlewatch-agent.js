@@ -267,6 +267,7 @@ function installAgentHelpText() {
     return `Background mode needs a durable install.
 
 Install once: npm install -g idlewatch
+If setup isn't saved yet: idlewatch quickstart --no-tui
 Then enable: idlewatch install-agent`
   }
 
