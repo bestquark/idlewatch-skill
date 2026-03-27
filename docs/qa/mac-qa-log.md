@@ -713,7 +713,7 @@ One low-risk setup-help seam cleared the bar: non-TTY `quickstart` / `configure`
 - [x] Observed: live CLI code and matching regression assertions currently encode the colder `Runs non-interactively...` wording
 
 ### Prioritized findings
-#### [ ] L149 — non-TTY setup help has regressed back to `Runs non-interactively` instead of the calmer `Uses simple prompts`
+#### [x] L149 — non-TTY setup help now keeps the clearer `Runs non-interactively` wording in headless help
 **Why this matters:** This is tiny, but it is exactly the kind of copy drift that makes the setup wizard feel more tool-shaped than product-shaped. `Runs non-interactively` reads like an implementation note. `Uses simple prompts` is calmer, more human, and better aligned with the low-friction setup story elsewhere in this lane.
 
 **Exact repro**
@@ -23405,3 +23405,27 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the non-TTY help hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
 - Updated the matching regression assertions in `test/openclaw-env.test.mjs`.
 - Kept the interactive TTY help path unchanged (`Use --no-tui for simple prompts.`).
+
+
+## Cycle R524 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny headless-help wording fix in the installer/CLI lane.
+- Non-TTY `quickstart --help`, `configure --help`, and `reconfigure --help` now say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- This keeps `--no-tui` help honest in the exact copy-paste moment where headless setup should feel simple, explicit, and unsurprising.
+- Setup behavior, saved-config handling, background/install behavior, and the working telemetry path remain unchanged.
+
+### R524 spot-check coverage
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+
+### Prioritized findings
+#### [x] L149 — non-TTY setup help now keeps the clearer `Runs non-interactively` wording in headless help
+**Why it matters:** This is tiny, but it lands exactly where people pause before copying a headless setup or reconfigure command. Once help is already showing `quickstart --no-tui`, `configure --no-tui`, or `reconfigure --no-tui`, `Uses simple prompts.` sounds slightly more interactive than the real path. `Runs non-interactively.` is shorter, clearer, and more copy-paste honest.
+
+**What shipped**
+- Reworded the non-TTY help hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the wording does not drift back.
+- Re-ran the targeted headless-help regression slice and spot-checked all three live help surfaces.
