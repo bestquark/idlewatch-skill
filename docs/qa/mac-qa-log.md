@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R582 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real `npx install-agent` command-literalness regression in the live checkout.
+
+### Priority call
+One low-risk but copy-paste-sensitive seam cleared the bar this cycle: the real `npx` `install-agent` help/runtime surfaces have drifted back to plain `idlewatch ...` commands in the exact places where the user is still in one-off `npx` mode. Nothing functional is broken, but product taste is worse when a one-off recovery flow prints commands that quietly assume a global install. The calmer split is the same one this lane has already converged on elsewhere: keep the immediate one-off setup/run path literally runnable as `npx idlewatch ...`, and keep the durable background-mode handoff on `npm install -g idlewatch`, then `idlewatch install-agent`.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh real-`npx` help/runtime spot checks:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed in the live pass:
+  - `install-agent --help` currently says `If setup isn't saved yet, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
+  - runtime `install-agent` currently says:
+    - `Finish setup: idlewatch quickstart --no-tui`
+    - `Run now:      idlewatch run`
+    - `Start background mode after setup:  idlewatch install-agent`
+- [x] These are plain `idlewatch ...` commands even though the surface is explicitly running in real `npx` context
+- [x] The same pass still confirms the rest of the requested lane remains calm and low-noise: setup wizard flow, config persistence/apply guidance, launch-agent install/uninstall behavior, local-only `--test-publish`, device identity persistence, and metric-toggle persistence all continue to behave as expected
+
+### Prioritized findings
+#### [x] P1 — real `npx install-agent` help/runtime should keep one-off next steps literally runnable as `npx idlewatch ...`
+**Why this matters:** This is small, but it lands in one of the highest-friction copy-paste moments in the whole install story. Someone is already using `npx`, gets told setup is not saved yet, and then sees commands that imply a global install they may not have. That is exactly the kind of subtle mismatch that makes setup feel more fragile than it is.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run:
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+3. Observe that both surfaces currently use plain `idlewatch ...` commands for the immediate next steps instead of one-off-safe `npx idlewatch ...` commands
+
+**Acceptance criteria**
+- In a real `npx` context, `install-agent --help` should say `If setup isn't saved yet, finish setup with npx idlewatch quickstart --no-tui, then run idlewatch install-agent.` or equivalent wording that keeps the one-off setup command literally runnable
+- In that same real `npx` context, runtime `install-agent` should say `Finish setup: npx idlewatch quickstart --no-tui`
+- In that same real `npx` context, runtime `install-agent` should say `Run now:      npx idlewatch run`
+- The durable background-mode handoff should stay explicit and separate rather than pretending `npx` is the long-term path
+- No auth, ingest, packaging, saved-config semantics, or launch-agent behavior changes should be introduced beyond this copy/output fix
+
+**Last updated:** Friday, March 27th, 2026 — 5:50 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one real `npx install-agent` one-off-command regression for the next polish pass
+
 ## Cycle R581 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one genuinely tiny installed-but-not-running setup/reconfigure copy cleanup from the live checkout.
