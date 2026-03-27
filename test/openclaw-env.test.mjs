@@ -3244,3 +3244,51 @@ exit 0
     rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('foreground run tip keeps the calmer background-mode wording', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-run-tip-'))
+
+  try {
+    const probe = spawnSync('python3', ['-c', `
+import os, subprocess, sys, time
+env = os.environ.copy()
+env['HOME'] = ${JSON.stringify(tempHome)}
+env['IDLEWATCH_OPENCLAW_USAGE'] = 'off'
+env['IDLEWATCH_INTERVAL_MS'] = '60000'
+p = subprocess.Popen([${JSON.stringify(process.execPath)}, ${JSON.stringify(BIN)}, 'run'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+out = ''
+err = ''
+try:
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        line = p.stdout.readline()
+        if not line:
+            break
+        out += line
+        if 'Tip: Turn on background mode with' in out:
+            sys.stdout.write(out)
+            raise SystemExit(0)
+    err += p.stderr.read() or ''
+    sys.stderr.write('Timed out waiting for run tip.\\nstdout:\\n' + out + '\\nstderr:\\n' + err)
+    raise SystemExit(1)
+finally:
+    if p.poll() is None:
+        p.terminate()
+        try:
+            p.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.wait(timeout=5)
+`], {
+      encoding: 'utf8',
+      env: process.env,
+      timeout: 20000
+    })
+
+    assert.equal(probe.status, 0, probe.stderr)
+    assert.match(probe.stdout, /Tip: Turn on background mode with .*install-agent, or use .*menubar for the menu bar app\./)
+    assert.doesNotMatch(probe.stdout, /Tip: Run .*install-agent to run in the background, or .*menubar for the menu bar app\./)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})

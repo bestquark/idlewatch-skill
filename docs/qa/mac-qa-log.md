@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R467 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny foreground-run wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar: the live `idlewatch run` tip still said `run in the background` even though the rest of the setup/install/reconfigure lane had already converged on the calmer `background mode` story. The behavior was already right; this just removes one last more mechanical phrase from a real next-step surface people can hit while testing foreground mode.
+
+### What changed
+- Reworded the foreground `run` tip in `bin/idlewatch-agent.js` from `Run ... to run in the background` to `Turn on background mode with ...`
+- Added focused regression coverage in `test/openclaw-env.test.mjs` so the tip keeps the calmer `background mode` wording and does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+- [x] Live foreground tip probe from a clean temp home now prints: `Tip: Turn on background mode with node bin/idlewatch-agent.js install-agent, or use node bin/idlewatch-agent.js menubar for the menu bar app.`
+
+### Prioritized findings
+#### [x] L119 — foreground `run` tip now says `Turn on background mode` instead of `run in the background`
+**Why this mattered:** This is tiny, but it lands in a real foreground-test moment where the product should keep naming the next step the same way it does everywhere else. `Run in the background` was understandable, but it was a touch more generic and implementation-shaped than the calmer `background mode` wording already used across help, status, install, uninstall, and packaging surfaces.
+
+**Acceptance checks**
+- The live foreground `run` tip now says `Tip: Turn on background mode with ... install-agent, or use ... menubar for the menu bar app.`
+- The same tip no longer says `Run ... to run in the background`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny foreground-run wording cleanup
+
 ## Cycle R466 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

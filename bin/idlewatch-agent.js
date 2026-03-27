@@ -2962,7 +2962,7 @@ subcommandPromise
       if (detectCliInvocation().kind === 'npx') {
         runLog.write(`Tip: One-off npx runs are great for testing. For background mode, install IdleWatch once and then run idlewatch install-agent.\n`)
       } else {
-        runLog.write(`Tip: Run ${inferCliCommand('install-agent')} to run in the background, or ${inferCliCommand('menubar')} for the menu bar app.\n`)
+        runLog.write(`Tip: Turn on background mode with ${inferCliCommand('install-agent')}, or use ${inferCliCommand('menubar')} for the menu bar app.\n`)
       }
     }
     loop()
