@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R438 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `status` follow-up wording cleanup from the live checkout.
+
+### Priority call
+One low-risk status seam still cleared the bar this pass: in the normal macOS not-installed branch, `status` still said `Enable:   idlewatch install-agent` even though the rest of the setup/install/reconfigure lane had already converged on the calmer, more literal `Turn on background mode` wording. The behavior was already correct; this just removes one small bit of older, tool-shaped phrasing from a real next-step surface.
+
+### What changed
+- Reworded the normal macOS not-installed `status` hint in `bin/idlewatch-agent.js` from `Enable:   idlewatch install-agent` to `Turn on background mode:  idlewatch install-agent`
+- Tightened `test/openclaw-env.test.mjs` so both the no-samples and with-samples status branches keep the calmer background-mode wording and do not drift back
+- Kept setup flow, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] Direct clean-home status spot check with saved config but no background install from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Observed `status` now says `Turn on background mode:  idlewatch install-agent` in the normal macOS not-installed branch
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command shows contextual next-step hints|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L104 — normal macOS `status` next-step hint now says `Turn on background mode` instead of `Enable`
+**Why this mattered:** This is tiny, but it lands in a real scan-first status moment where the product should name the next step literally. `Enable` worked, but it was a notch more generic and tool-shaped than the calmer `background mode` story already used across nearby setup, help, install, uninstall, and `npx` status surfaces.
+
+**Acceptance notes**
+- The normal macOS not-installed `status` branch now says `Turn on background mode:  idlewatch install-agent`
+- The same branch no longer says `Enable:   idlewatch install-agent`
+- The installed-but-not-running `Start:` and already-running `Apply:` / `already on` branches stay unchanged
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 4:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny `status` next-step wording seam fixed in this pass
+
 ## Cycle R437 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

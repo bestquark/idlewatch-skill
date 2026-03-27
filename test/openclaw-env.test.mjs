@@ -2884,7 +2884,7 @@ test('status command shows contextual next-step hints', () => {
     assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} run`), 'should hint at run for continuous monitoring')
 
     if (process.platform === 'darwin') {
-      assert.ok(noSamples.stdout.includes('Enable:   idlewatch install-agent'), 'should keep the enable hint on the calmer product command when no samples exist and background mode is not installed')
+      assert.ok(noSamples.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the calmer background-mode hint on the product command when no samples exist and background mode is not installed')
       assert.ok(!noSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.ok(!noSamples.stdout.includes('Background: already enabled'), 'should not claim background is already enabled when LaunchAgent is not installed')
     }
@@ -2905,7 +2905,7 @@ test('status command shows contextual next-step hints', () => {
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 
     if (process.platform === 'darwin') {
-      assert.ok(withSamples.stdout.includes('Enable:   idlewatch install-agent'), 'should keep the enable hint on the calmer product command when background mode is not installed')
+      assert.ok(withSamples.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the calmer background-mode hint on the product command when background mode is not installed')
       assert.ok(!withSamples.stdout.includes(`Re-enable:  ${SOURCE_CMD} install-agent`), 'should not suggest re-enabling when LaunchAgent was never installed')
       assert.doesNotMatch(withSamples.stdout, /Apply:.*already running in the background/, 'should not show running-agent apply hint after uninstall/not-installed state')
     }

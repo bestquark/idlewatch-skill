@@ -1930,7 +1930,7 @@ if (statusRequested) {
         } else if (launchAgent.state === 'installed-not-loaded') {
           console.log(`  Start:    ${installAgentCommand}`)
         } else {
-          console.log(`  Enable:   ${installAgentCommand}`)
+          console.log(`  Turn on background mode:  ${installAgentCommand}`)
         }
       } else {
         console.log(`  Enable:   ${inferCliCommand('install-agent')}  (background on macOS)`)
@@ -1957,7 +1957,7 @@ if (statusRequested) {
       } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Start:    ${installAgentCommand}`)
       } else {
-        console.log(`  Enable:   ${installAgentCommand}`)
+        console.log(`  Turn on background mode:  ${installAgentCommand}`)
       }
     } else {
       console.log(`  Enable:   ${installAgentCommand}  (background on macOS)`)
