@@ -568,6 +568,11 @@ function defaultPersistedEnvFilePath() {
   return configured ? resolveEnvPath(configured) : path.join(idlewatchDataDir(), 'idlewatch.env')
 }
 
+function enrollmentOutputEnvFilePath() {
+  const configured = String(process.env.IDLEWATCH_ENROLL_OUTPUT_ENV_FILE || '').trim()
+  return configured ? resolveEnvPath(configured) : defaultPersistedEnvFilePath()
+}
+
 function formatPathForHelp(value) {
   const resolved = resolveEnvPath(value)
   const home = path.resolve(process.env.HOME || os.homedir())
@@ -1484,6 +1489,13 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       }
 
       const isReconfigure = argv[0] === 'configure' || argv[0] === 'reconfigure'
+      const expectedConfigFile = enrollmentOutputEnvFilePath()
+      if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
+        console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
+        console.error(`Run ${preferredHelpSetupCommand('quickstart')} to create your first setup.`)
+        process.exit(1)
+      }
+
       const result = await runEnrollmentWizard({
         noTui: args.has('--no-tui'),
         preserveSavedDeviceId: isReconfigure

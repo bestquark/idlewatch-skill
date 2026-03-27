@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R591 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny but real reconfigure-first-run guardrail.
+
+### Priority call
+One small setup/reconfigure seam still cleared the bar this cycle: `configure --no-tui` without any saved setup currently falls through to the generic cancel path and prints `Setup cancelled. No changes saved.` That is misleading in the exact moment where the product should be calm and literal. If no saved config exists yet, the CLI should say so plainly and point straight to `quickstart`, instead of sounding like the user backed out of a setup that never existed.
+
+### What changed
+- Added a tiny preflight in `bin/idlewatch-agent.js` so `configure` / `reconfigure` now fail fast when the expected saved env file does not exist yet
+- The new message stays literal and low-friction:
+  - `IdleWatch is not set up yet. No saved config was found at ...`
+  - `Run idlewatch quickstart --no-tui to create your first setup.`
+- Kept saved-config semantics, setup flow, launch-agent behavior, and the now-working telemetry path unchanged
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for the no-saved-setup `configure --no-tui` path
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern "configure --no-tui fails clearly when no saved setup exists yet|configure --no-tui preserves the saved local/cloud mode when mode is omitted"`
+- [x] Observed in the live pass:
+  - first-run `configure --no-tui` now exits with a direct not-set-up-yet message instead of the misleading cancel wording
+  - the message points straight to `idlewatch quickstart --no-tui`
+  - normal saved-setup `configure --no-tui` still works and preserves the saved mode as before
+
+### Prioritized findings
+#### [x] P1 — first-run `configure --no-tui` now says “not set up yet” instead of pretending setup was cancelled
+**Why this mattered:** This is tiny, but it lands in a high-friction recovery moment. When someone tries to reconfigure before they have ever set the app up, the product should not imply that a real setup session was cancelled. A direct “not set up yet → run quickstart” message removes confusion and cuts one debugging step.
+
+**Acceptance checks**
+- `configure --no-tui` with no saved env file exits non-zero
+- The error clearly says no saved config was found yet
+- The next step points straight to `quickstart --no-tui`
+- The old misleading `Setup cancelled. No changes saved.` message is gone for this path
+- Saved-config reconfigure behavior remains unchanged
+
+**Last updated:** Friday, March 27th, 2026 — 6:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny first-run reconfigure guardrail
+
 ## Cycle R590 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` next-step literalness regression in the live checkout.
