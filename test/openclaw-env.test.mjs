@@ -1372,6 +1372,7 @@ test('install-agent refuses disposable npm exec paths and explains the durable p
     assert.match(run.stderr, /Background mode needs a durable install\./)
     assert.doesNotMatch(run.stderr, /Background install needs a durable IdleWatch install first/)
     assert.match(run.stderr, /Install once:\s+npm install -g idlewatch/)
+    assert.match(run.stderr, /If setup isn't saved yet:\s+idlewatch quickstart --no-tui/)
     assert.match(run.stderr, /Turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(run.stderr, /Then enable:\s+idlewatch install-agent/)
     assert.match(run.stderr, /Run now:\s+npx idlewatch run/)

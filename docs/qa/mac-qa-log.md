@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R481 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny runtime install-handoff fix from the live checkout.
+
+### Priority call
+One small setup/install seam still cleared the bar this pass: the live `npx idlewatch install-agent` refusal already told people to install IdleWatch once and then turn on background mode from the durable CLI, but it skipped the equally important `finish setup first if needed` step that the dedicated help text already spelled out. The behavior was already safe; this just removes one last bit of avoidable guesswork from a real recovery path.
+
+### What changed
+- Added the missing saved-setup handoff to the live `npx idlewatch install-agent` refusal path: `If setup isn't saved yet: idlewatch quickstart --no-tui`
+- Kept the existing durable-install guidance unchanged: install once, then turn on background mode with `idlewatch install-agent`
+- Kept setup persistence, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='install-agent help in npx context points straight to the durable path|install-agent and uninstall-agent keep the macOS-only error on background-mode wording'`
+- [x] Result: targeted regression coverage still passes with the new runtime handoff
+- [x] `env npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent`
+- [x] Result: the refusal now includes the missing `If setup isn't saved yet: idlewatch quickstart --no-tui` step before the durable background-mode command
+
+### Prioritized findings
+#### [x] L126 — live `npx install-agent` refusal now includes the missing saved-setup step
+**Why this mattered:** This is tiny, but it lands in a real moment where someone is explicitly trying to cross from one-off use into durable background mode. Without the setup reminder, the runtime handoff was slightly less self-contained than the help text and could leave people guessing whether they should save setup first.
+
+**Acceptance checks**
+- The runtime refusal still says `Background mode needs a durable install.`
+- It still points to `npm install -g idlewatch`
+- It now also says `If setup isn't saved yet: idlewatch quickstart --no-tui`
+- It still keeps the durable background-mode step on `idlewatch install-agent`, not `npx idlewatch install-agent`
+- The same path still offers `Run now: npx idlewatch run` for one-off foreground use
+
+**Last updated:** Friday, March 27th, 2026 — 7:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny `npx install-agent` setup-handoff fix shipped in this pass
+
 ## Cycle R480 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
