@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R524 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny but real first-run help-copy regression in the live checkout.
+
+### Priority call
+One low-risk setup-help seam cleared the bar: non-TTY `quickstart` / `configure` / `reconfigure` help has drifted back to `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.` The behavior is fine, but this is colder and more implementation-shaped than the calmer `Uses simple prompts...` story that fits the rest of the setup wizard. It lands right in the scan-first first-run moment where product taste matters.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+- [x] Observed: all three help surfaces currently say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- [x] `grep -n "Uses simple prompts\|Runs non-interactively" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: live CLI code and matching regression assertions currently encode the colder `Runs non-interactively...` wording
+
+### Prioritized findings
+#### [ ] L149 — non-TTY setup help has regressed back to `Runs non-interactively` instead of the calmer `Uses simple prompts`
+**Why this matters:** This is tiny, but it is exactly the kind of copy drift that makes the setup wizard feel more tool-shaped than product-shaped. `Runs non-interactively` reads like an implementation note. `Uses simple prompts` is calmer, more human, and better aligned with the low-friction setup story elsewhere in this lane.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+3. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+4. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+5. Observe all three help surfaces currently say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+
+**Acceptance checks**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- The same help surfaces no longer say `Runs non-interactively...`
+- Matching assertions in `test/openclaw-env.test.mjs` are updated so this wording does not drift back
+- No auth, ingest, setup-flow, launch-agent, or packaging behavior changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny non-TTY setup-help wording regression for the next polish pass
+
 ## Cycle R523 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny no-op uninstall off-ramp alignment from the live checkout.
