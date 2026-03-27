@@ -2,6 +2,40 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R545 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS install-path wording alignment from the live checkout.
+
+### Priority call
+One low-risk packaged install seam still cleared the bar this cycle: the app-bundled macOS installer already matched the CLI on the actual no-setup behavior, but it still said `Setup is not finished yet, so background mode stays off for now.` while the main CLI had already converged on the calmer, more literal `Setup isn't saved yet, so background mode stays off for now.` Nothing functional was broken, yet that small wording split made the packaged recovery path feel slightly less polished than the primary install flow.
+
+### What changed
+- Reworded the packaged macOS no-setup line in `scripts/install-macos-launch-agent.sh` from `Setup is not finished yet...` to `Setup isn't saved yet...`
+- Updated the matching regression assertion in `test/macos-launch-agent-scripts.test.mjs` so the packaged install path stays aligned with the main CLI wording and does not drift back
+- Kept the existing no-setup handoff unchanged otherwise: finish setup first, optionally run once in the foreground, then turn on background mode when ready
+- Left saved-config handling, launch-agent behavior, validation wording, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **7 passed, 0 failed** in the targeted packaged macOS script slice
+- [x] Packaged-script spot check with a custom app path + stubbed `launchctl` now shows `Setup isn't saved yet, so background mode stays off for now.`
+- [x] Observed: the same packaged no-setup branch still keeps `Finish setup:` and `Run now:` unchanged
+
+### Prioritized findings
+#### [x] P1 — packaged macOS install script now uses the same calmer `Setup isn't saved yet` wording as the main CLI
+**Why this mattered:** This is tiny, but it lands in the first recovery moment after someone turns on background mode before saving setup. The main CLI was already saying the cleaner, more literal thing. Letting the packaged script keep the older wording made the product feel slightly split-brain for no user benefit.
+
+**Acceptance checks**
+- The packaged macOS install script still says background mode stays off until setup is saved
+- The same no-setup branch now says `Setup isn't saved yet, so background mode stays off for now.`
+- The same branch no longer says `Setup is not finished yet, so background mode stays off for now.`
+- Matching regression coverage in `test/macos-launch-agent-scripts.test.mjs` was updated so this wording stays aligned
+- No auth, ingest, packaging-flow redesign, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS install-path wording alignment
+
 ## Cycle R544 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

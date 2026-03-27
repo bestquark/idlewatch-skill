@@ -193,7 +193,7 @@ if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
 else
   echo "No saved IdleWatch config yet at: $CONFIG_ENV_PATH"
   echo ""
-  echo "Setup is not finished yet, so background mode stays off for now."
+  echo "Setup isn't saved yet, so background mode stays off for now."
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
     echo "   idlewatch quickstart --no-tui"
