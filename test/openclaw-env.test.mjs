@@ -14,6 +14,16 @@ const BIN = path.resolve(__dirname, '../bin/idlewatch-agent.js')
 const BIN_DISPLAY = path.relative(process.cwd(), BIN) || BIN
 const SOURCE_CMD = `node ${BIN_DISPLAY}`
 
+function shellQuote(value) {
+  if (typeof value !== 'string' || value.length === 0) return "''"
+  if (/^[A-Za-z0-9_./:-]+$/.test(value)) return value
+  return `'${value.replace(/'/g, `'\\''`)}'`
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
@@ -3295,6 +3305,39 @@ test('status command shows contextual next-step hints', () => {
       assert.ok(withSamples.stdout.includes(`Background mode on macOS:  ${SOURCE_CMD} install-agent`), 'should keep the non-macOS background-mode hint on the calmer product wording when samples exist')
       assert.ok(!withSamples.stdout.includes(`Enable:   ${SOURCE_CMD} install-agent`), 'should not fall back to the older Enable wording on non-macOS when samples exist')
     }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('status command keeps custom saved-config follow-up commands literally runnable', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-custom-config-path-'))
+  try {
+    const configRoot = path.join(tempDir, 'configs')
+    fs.mkdirSync(configRoot, { recursive: true })
+    const customConfigPath = path.join(configRoot, 'idlewatch custom.env')
+    fs.writeFileSync(customConfigPath, [
+      'IDLEWATCH_DEVICE_NAME=Custom Path Box',
+      'IDLEWATCH_DEVICE_ID=custom-path-box',
+      'IDLEWATCH_ENROLL_MODE=local',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory'
+    ].join('\n') + '\n')
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: { ...process.env, HOME: tempDir, IDLEWATCH_CONFIG_ENV_PATH: customConfigPath, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(run.status, 0, run.stderr)
+    const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
+    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} idlewatch configure --no-tui`))
+    assert.match(run.stdout, new RegExp(`Test:\\s+${escapeRegex(expectedPrefix)} idlewatch --once`))
+    assert.match(run.stdout, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} idlewatch run`))
+    if (process.platform === 'darwin') {
+      assert.match(run.stdout, new RegExp(`Turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
+    }
+    assert.doesNotMatch(run.stdout, /Change:\s+idlewatch configure --no-tui/)
+    assert.doesNotMatch(run.stdout, /Run now:\s+idlewatch run/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

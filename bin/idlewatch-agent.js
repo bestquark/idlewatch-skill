@@ -85,9 +85,25 @@ function detectCliInvocation() {
   return { kind: 'global', base: 'idlewatch' }
 }
 
+function customConfigEnvPrefix() {
+  const configured = String(process.env.IDLEWATCH_CONFIG_ENV_PATH || '').trim()
+  if (!configured) return ''
+
+  const resolvedConfigured = resolveEnvPath(configured)
+  const defaultResolved = path.resolve(path.join(idlewatchDataDir(), 'idlewatch.env'))
+  if (resolvedConfigured === defaultResolved) return ''
+
+  return `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(configured)}`
+}
+
+function withCustomConfigEnv(command) {
+  const prefix = customConfigEnvPrefix()
+  return prefix ? `${prefix} ${command}` : command
+}
+
 function inferCliCommand(command = '') {
   const { base } = detectCliInvocation()
-  return command ? `${base} ${command}` : base
+  return withCustomConfigEnv(command ? `${base} ${command}` : base)
 }
 
 function preferredSetupCommand(command = 'quickstart') {
@@ -99,7 +115,7 @@ function preferredHelpSetupCommand(command = 'quickstart') {
   const suffix = process.stdin.isTTY ? '' : ' --no-tui'
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
-    return `idlewatch ${command}${suffix}`
+    return withCustomConfigEnv(`idlewatch ${command}${suffix}`)
   }
   return inferCliCommand(`${command}${suffix}`)
 }
@@ -108,7 +124,7 @@ function preferredRecoveryCommand(command = 'configure') {
   const suffix = process.stdin.isTTY ? '' : ' --no-tui'
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
-    return `idlewatch ${command}${suffix}`
+    return withCustomConfigEnv(`idlewatch ${command}${suffix}`)
   }
   return inferCliCommand(`${command}${suffix}`)
 }
@@ -116,7 +132,7 @@ function preferredRecoveryCommand(command = 'configure') {
 function preferredProductCommand(command = '') {
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
-    return command ? `idlewatch ${command}` : 'idlewatch'
+    return withCustomConfigEnv(command ? `idlewatch ${command}` : 'idlewatch')
   }
   return inferCliCommand(command)
 }

@@ -720,6 +720,44 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R611 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny custom-saved-config follow-up command fix from the live checkout.
+
+### Priority call
+One still-worth-shipping saved-config seam cleared the bar this cycle: when `IDLEWATCH_CONFIG_ENV_PATH` pointed at a custom env file, the CLI correctly loaded and showed that config path, but many next-step commands in `status` still fell back to plain `idlewatch ...` forms. Nothing core was broken inside the current shell, yet those hints were no longer fully literal in the exact copy/paste moment where the product should be most self-sufficient. If someone intentionally uses a custom saved-config path, the nearby follow-up commands should carry that same path too.
+
+### What changed
+- Added a tiny command-wrapping helper in `bin/idlewatch-agent.js` so product/recovery/setup commands automatically prepend `IDLEWATCH_CONFIG_ENV_PATH=...` when a non-default saved-config path is active
+- Kept the default-path experience unchanged; the prefix only appears when the saved-config path is genuinely custom
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for custom-path `status` follow-up commands, including a path with spaces so the shell quoting stays literal and copy-safe
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live custom-config-path `status` spot check now shows:
+  - `Change:   IDLEWATCH_CONFIG_ENV_PATH='.../idlewatch custom.env' idlewatch configure --no-tui`
+  - `Test:     IDLEWATCH_CONFIG_ENV_PATH='.../idlewatch custom.env' idlewatch --once  (alias: --test-publish)`
+  - `Run now:  IDLEWATCH_CONFIG_ENV_PATH='.../idlewatch custom.env' idlewatch run`
+  - `Turn on background mode:  IDLEWATCH_CONFIG_ENV_PATH='.../idlewatch custom.env' idlewatch install-agent`
+- [x] Observed: the same custom-path `status` surface no longer quietly falls back to bare `idlewatch ...` follow-up commands that depend on the current shell exporting the path already
+- [x] Focused `node --test` slices in this environment still exhibit the previously logged sticky runner behavior, so this pass used syntax validation plus direct live repro/verification for the changed path
+
+### Prioritized findings
+#### [x] P1 — custom saved-config follow-up commands now stay literally runnable instead of quietly dropping the configured env-path context
+**Why this mattered:** This is tiny, but it lands in the exact saved-config handling moment where someone chose a custom env path on purpose and then wants to copy the next command verbatim. Showing plain `idlewatch configure --no-tui` or `idlewatch run` there worked only as long as the same shell happened to keep exporting `IDLEWATCH_CONFIG_ENV_PATH`. Carrying the env-path prefix into the nearby follow-up commands makes the product more truthful and lowers one subtle reconfigure/debugging trap.
+
+**Acceptance checks**
+- With a non-default `IDLEWATCH_CONFIG_ENV_PATH`, `status` now prefixes `Change`, `Test`, and `Run now` with that same env var
+- On macOS, the same custom-path `status` surface now also prefixes `Turn on background mode` with that same env var
+- Default-path setups remain unchanged and do not gain extra env-var noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny custom saved-config follow-up command fix
+
 ## Cycle R597 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny saved-setup/no-sample status improvement from the live checkout.
