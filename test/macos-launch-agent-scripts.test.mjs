@@ -63,7 +63,8 @@ exit 0
     const firstInstall = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(firstInstall.status, 0, firstInstall.stderr)
     assert.match(firstInstall.stdout, /✅ Background mode installed\./)
-    assert.match(firstInstall.stdout, /✓ Background mode will auto-load this config\./)
+    assert.match(firstInstall.stdout, /✓ Background mode will use this saved config\./)
+    assert.doesNotMatch(firstInstall.stdout, /Background mode will auto-load this config\./)
     assert.doesNotMatch(firstInstall.stdout, /Login startup will auto-load this config\./)
     assert.match(firstInstall.stdout, /\n\s*Service:\s+gui\//)
     assert.doesNotMatch(firstInstall.stdout, /Installed LaunchAgent:/)
@@ -180,7 +181,8 @@ test('packaged macOS install script keeps background-mode wording for custom con
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /⚠ Background mode only auto-loads the default path: .*\.idlewatch\/idlewatch\.env/)
+    assert.match(install.stdout, /⚠ Background mode only uses the default saved config path: .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(install.stdout, /⚠ Background mode only auto-loads the default path: .*\.idlewatch\/idlewatch\.env/)
     assert.match(install.stdout, /Move or copy to that location for background mode\./)
     assert.doesNotMatch(install.stdout, /Move or copy to that location for login startup\./)
   } finally {

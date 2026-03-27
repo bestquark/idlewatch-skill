@@ -156,9 +156,9 @@ echo "   Logs:    $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
 if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
   if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then
-    echo "✓ Background mode will auto-load this config."
+    echo "✓ Background mode will use this saved config."
   else
-    echo "⚠ Background mode only auto-loads the default path: $HOME/.idlewatch/idlewatch.env"
+    echo "⚠ Background mode only uses the default saved config path: $HOME/.idlewatch/idlewatch.env"
     echo "   Move or copy to that location for background mode."
   fi
 else

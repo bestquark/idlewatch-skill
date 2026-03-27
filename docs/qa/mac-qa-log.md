@@ -2,6 +2,35 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R411 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining packaged macOS install-script saved-config wording seam. The packaged installer already kept the calmer `background mode` story, but it still said `auto-load`, which pulled the reader slightly back toward system behavior instead of the simpler saved-setup story.
+
+### What changed
+- Reworded the packaged macOS install success line in `scripts/install-macos-launch-agent.sh` from `✓ Background mode will auto-load this config.` to `✓ Background mode will use this saved config.`
+- Reworded the custom-config fallback from `⚠ Background mode only auto-loads the default path: ...` to `⚠ Background mode only uses the default saved config path: ...`
+- Tightened `test/macos-launch-agent-scripts.test.mjs` so both packaged-install branches keep the calmer saved-config wording and do not drift back.
+- Kept setup behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged.
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **5 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L91 — packaged macOS install script now says `use this saved config` instead of `auto-load this config`
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it sits in a real install/setup surface. `Auto-load` was understandable, yet it still sounded a bit more like background machinery than product guidance. `Use this saved config` is calmer and says what actually matters to the person running setup.
+- **Acceptance criteria:**
+  - The packaged install script says `✓ Background mode will use this saved config.` when the default saved config path is present.
+  - The custom-config branch says `⚠ Background mode only uses the default saved config path: ...`
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged install-script saved-config wording seam fixed without changing behavior
+
 ## Cycle R410 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
