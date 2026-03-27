@@ -2,6 +2,73 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R532 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one small but real status-memory wobble in the install-before-setup path.
+
+### Priority call
+One low-risk launch-agent/status seam cleared the bar this cycle: successful `idlewatch install-agent` before setup now does the right thing and clearly says background mode was installed but stays off until setup is saved, yet the immediately-following `idlewatch status` screen drops that state and falls back to the flatter `Background: waiting for setup`. Nothing functional is broken, but this is a real product-taste issue because the status screen forgets the very thing the previous success screen just taught the user.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `TMPHOME="$(mktemp -d)"; FAKEBIN="$(mktemp -d)"; cat > "$FAKEBIN/launchctl" <<'SH'
+#!/bin/sh
+STATE_FILE="${IDLEWATCH_LAUNCHCTL_STATE:-${HOME}/.idlewatch-launchctl-state}"
+cmd="$1"
+shift
+case "$cmd" in
+  print)
+    [ -f "$STATE_FILE" ] || exit 1
+    cat "$STATE_FILE"
+    exit 0
+    ;;
+  bootstrap)
+    mkdir -p "$(dirname "$STATE_FILE")"
+    printf 'pid = 4242\nstate = running\n' > "$STATE_FILE"
+    exit 0
+    ;;
+  bootout)
+    rm -f "$STATE_FILE"
+    exit 0
+    ;;
+  enable|disable|kickstart)
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+SH
+chmod +x "$FAKEBIN/launchctl"`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed: install runtime correctly says `✅ Background mode installed.` and `Setup isn't saved yet, so background mode stays off for now.`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed: status currently says `Background:        waiting for setup` instead of preserving the more specific installed-but-off state
+- [x] `grep -n "waiting for setup\|installed but not running" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: the current code/test lane explicitly expects `waiting for setup` for this branch today
+
+### Prioritized findings
+#### [ ] P1 — install-before-setup `status` currently forgets that background mode is already installed
+**Why this matters:** This is tiny, but it lands in a real copy-paste recovery moment. Someone just successfully turned background mode on, got told it was installed but off until setup is saved, then checked `status` for confirmation and got a less specific line that sounds like they never installed anything. That mismatch adds avoidable doubt to an otherwise polished first-run path.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits success for `bootstrap` / `bootout`, returns a state file for `print`, and otherwise exits success
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Observe the success output says `✅ Background mode installed.` and `Setup isn't saved yet, so background mode stays off for now.`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+6. Observe status currently says `Background:        waiting for setup`
+
+**Acceptance checks**
+- After a successful `install-agent` before saved setup, `status` preserves that installed-but-off story instead of collapsing to the generic `waiting for setup` label
+- The wording stays low-noise and explicit, e.g. either `Background: installed but waiting for setup` or equally clear wording that keeps both facts
+- First-run status still remains preview-shaped rather than implementation-shaped
+- Normal pre-install first-run status can still keep the simpler `waiting for setup` branch if nothing is installed yet
+- No auth, ingest, packaging, or major launch-agent behavior changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 12:23 PM (America/Toronto)  
+**Status:** OPEN — logged one small install-before-setup status-state mismatch for the next polish pass
+
 ## Cycle R531 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny install-before-setup handoff wording cleanup from the live checkout.
