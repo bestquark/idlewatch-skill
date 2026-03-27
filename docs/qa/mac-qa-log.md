@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R564 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup follow-up wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/install seam still cleared the bar: after `idlewatch install-agent` succeeds before setup exists, the next-step block still said `Turn on background mode: idlewatch install-agent` even though IdleWatch was already installed. Nothing functional was broken, but that wording sounded a little too much like a fresh enable/install step in the exact recovery moment where the user only needs to finish setup and then start using the already-installed agent.
+
+### What changed
+- Reworded the install-before-setup follow-up in `bin/idlewatch-agent.js` from `Turn on background mode` to `Start background mode after setup`
+- Updated the matching source-checkout regression assertion in `test/openclaw-env.test.mjs` so this install-before-setup follow-up stays literal and does not drift back
+- Left setup/configure behavior, saved-config handling, launch-agent behavior, `--test-publish`, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live install-before-setup spot check with a stubbed `launchctl` now shows:
+  - `✅ Background mode installed.`
+  - `Setup isn't saved yet, so background mode stays off for now.`
+  - `Finish setup: idlewatch quickstart --no-tui`
+  - `Run now:      idlewatch run`
+  - `Start background mode after setup:  idlewatch install-agent`
+- [x] Focused regression assertion updated in `test/openclaw-env.test.mjs`
+- [x] Observed: nearby install-before-setup copy remains unchanged and calm (`Config path`, `Check`, `Remove`)
+
+### Prioritized findings
+#### [x] P1 — install-before-setup follow-up now says `Start background mode after setup` instead of `Turn on background mode`
+**Why this mattered:** This is tiny, but it lands right where someone copy-pastes the next command after installing background mode a bit early. `Turn on background mode` made the command sound like a fresh install/enable action even though IdleWatch had already done that part. `Start background mode after setup` is more literal and lowers a little friction without adding any extra flow.
+
+**Acceptance checks**
+- Successful `idlewatch install-agent` before saved setup still says background mode is installed but stays off for now
+- The same follow-up now says `Start background mode after setup:  idlewatch install-agent`
+- The same follow-up no longer says `Turn on background mode:  idlewatch install-agent`
+- The rest of the install-before-setup handoff remains unchanged and low-noise
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-before-setup follow-up wording cleanup
+
 ## Cycle R563 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

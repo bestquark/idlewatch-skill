@@ -39,16 +39,16 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 85 - COMPLETE ✅
+## Cycle Status: Cycle 86 - COMPLETE ✅
 
-**Finding:** One more genuinely tiny setup-validation polish fix cleared the bar in the live checkout.
-- Local-only setup failures now say `failed to verify local telemetry` instead of `failed to publish`, so the retry copy stays literal when nothing was supposed to publish in the first place
-- Cloud-link setup failures still keep the existing publish wording and API-key/network fixes
-- This reduces friction in the exact validation/retry moment without adding new options, changing flow shape, or touching the telemetry path
+**Finding:** One more genuinely tiny install-before-setup wording fix cleared the bar in the live checkout.
+- After `idlewatch install-agent` succeeds before setup exists, the follow-up now says `Start background mode after setup` instead of `Turn on background mode`
+- This keeps the next-step command more literal in the exact recovery moment where background mode is already installed and only needs setup before it can start using the saved config
+- The install-before-setup flow stays otherwise unchanged: finish setup, optionally run once now, then start background mode with the same command
 - Saved-config handling, startup/install quality of life, and the now-working telemetry path remain untouched
-- Fresh focused regression coverage was added for the local-only failure wording seam alongside the existing cloud failure slices
+- The matching source-checkout regression assertion was updated so this copy does not drift back
 
-**Last updated:** Friday, March 27th, 2026 — 3:25 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 3:35 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
