@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R488 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny background-mode wording alignment from the live checkout.
+
+### Priority call
+One low-risk setup/status seam still cleared the bar this pass: when background mode was already installed but currently off, a few real next-step surfaces still fell back to the older `Start:` label before `install-agent`. The behavior was already right, but that wording was a little less explicit and less aligned with the calmer `Turn on background mode` story now used across setup, status, install help, and post-setup guidance.
+
+### What changed
+- Reworded the installed-but-not-running setup follow-up in `bin/idlewatch-agent.js` from `Start: ... install-agent` to `Turn on background mode: ... install-agent`
+- Reworded the matching `status` hints in both the sample-free and configured branches so installed-but-off background mode now gets the same calmer wording
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs`
+- Kept saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "Turn on background mode:  .*install-agent\|Start:    .*install-agent" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+- [x] Observed: installed-but-not-running setup/status surfaces now say `Turn on background mode:  ... install-agent`
+- [x] Observed: the old `Start: ... install-agent` label is gone from live CLI code and matching regression assertions
+
+### Prioritized findings
+#### [x] L129 — installed-but-off background mode now says `Turn on background mode` instead of `Start`
+**Why this mattered:** This is tiny, but it lands in a real recovery/reconfigure moment where the product is telling someone exactly what to do next. `Start:` worked, yet it was slightly more tool-shaped and less explicit than the calmer `Turn on background mode` wording already used across the rest of this lane.
+
+**Acceptance checks**
+- Setup success now says `Turn on background mode:  ... install-agent` when background mode is installed but not running yet
+- `status` now uses the same `Turn on background mode:  ... install-agent` wording in the installed-but-off branch
+- The same live setup/status surfaces no longer say `Start: ... install-agent`
+- Matching regression assertions were updated so this wording does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:27 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-but-off background-mode wording fix
+
 ## Cycle R487 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
