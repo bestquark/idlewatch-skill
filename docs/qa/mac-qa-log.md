@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R409 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining post-setup wording seam in the normal CLI path. The product already converged on the calmer `background mode` story across help, status, install, uninstall, and packaging surfaces, but the local post-setup success handoff still said `Auto-start in background`, and the README still said `enable background startup`.
+
+### What changed
+- Reworded the local post-setup handoff in `bin/idlewatch-agent.js` from `Auto-start in background` to `Turn on background mode`
+- Reworded the matching README install hint from `then enable background startup` to `then turn on background mode`
+- Tightened `test/openclaw-env.test.mjs` so quickstart/configure success output keeps the calmer `Turn on background mode` wording and does not drift back
+- Kept setup behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart success summarizes setup verification instead of dumping raw telemetry JSON|quickstart and configure keep one-off runs honest about background install under npm exec env|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **93 passed, 0 failed**
+- [x] `sed -n '46,62p' README.md`
+
+### Prioritized findings
+#### [x] L90 — post-setup foreground handoff now says `Turn on background mode` instead of `Auto-start in background`
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it lands in the exact moment where someone just finished setup and wants the next step to feel product-shaped instead of a little system-shaped. `Auto-start in background` was understandable, but the rest of IdleWatch had already settled on the cleaner `background mode` wording.
+- **Acceptance criteria:**
+  - Quickstart/configure success output says `Turn on background mode` in the normal CLI path.
+  - README background-mode install guidance uses the same calmer wording.
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:37 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny post-setup background-mode wording seam fixed without changing behavior
+
 ## Cycle R408 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
