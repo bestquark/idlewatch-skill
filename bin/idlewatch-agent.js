@@ -1354,7 +1354,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       console.log(`   Finish setup: ${preferredHelpSetupCommand('quickstart')}`)
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Turn on background mode:  ${preferredProductCommand('install-agent')}`)
-      console.log(`   Config path:  ${envFile}`)
+      console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
       console.log(`   Check:        ${preferredProductCommand('status')}`)
       console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
@@ -1379,7 +1379,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
         console.log('   Saved config is ready, but background mode is installed and not running yet.')
         console.log(`   Turn on background mode:  ${installAgentCommand}`)
       }
-      console.log(`   Saved config: ${envFile}`)
+      console.log(`   Saved config: ${formatPathForHelp(envFile)}`)
       console.log(`   Check:        ${statusCommand}`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
@@ -1489,7 +1489,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
           : `\n✅ Setup complete for "${result.deviceName}".`
         console.log(setupHeadline)
         console.log(`   Mode:   ${modeLabel}`)
-        console.log(`   Config: ${result.outputEnvFile}`)
+        console.log(`   Config: ${formatPathForHelp(result.outputEnvFile)}`)
         if (deviceIdentityPreservedAcrossRename(result.deviceName, result.deviceId)) {
           console.log(`   Device ID: ${result.deviceId} (kept from original setup for continuity)`)
         }
@@ -1512,7 +1512,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
 
       console.error(`\n⚠️ Setup saved, but the test sample failed to publish.`)
       console.error(`   Device: ${result.deviceName}`)
-      console.error(`   Config: ${result.outputEnvFile}`)
+      console.error(`   Config: ${formatPathForHelp(result.outputEnvFile)}`)
       console.error(`\n   Common fixes:`)
       console.error(`     • Check your API key is valid at idlewatch.com/api`)
       console.error(`     • Verify internet connectivity`)

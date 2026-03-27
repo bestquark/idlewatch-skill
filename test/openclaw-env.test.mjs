@@ -1476,7 +1476,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.ok(run.stdout.includes('Run now:      idlewatch run'), 'should keep the foreground run hint on the calmer product command in a source checkout')
     assert.ok(run.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the follow-up background-mode hint on the calmer product command in a source checkout')
     assert.doesNotMatch(run.stdout, /Then start:\s+idlewatch install-agent/)
-    assert.ok(run.stdout.includes(`Config path:  ${path.join(tempDir, '.idlewatch', 'idlewatch.env')}`), 'should show source-checkout config path before setup is saved')
+    assert.ok(run.stdout.includes('Config path:  ~/.idlewatch/idlewatch.env'), 'should keep the source-checkout config path friendly before setup is saved')
     assert.ok(run.stdout.includes('Check:        idlewatch status'), 'should show the calmer product status command in a source checkout')
     assert.ok(run.stdout.includes('Remove:       idlewatch uninstall-agent'), 'should show the calmer product uninstall command in a source checkout')
     assert.doesNotMatch(run.stdout, /node bin\/idlewatch-agent\.js (quickstart --no-tui|run|install-agent|status|uninstall-agent)/)
@@ -1958,6 +1958,7 @@ test('quickstart accepts cloud-only/local-only enrollment mode aliases in non-in
     assert.equal(localRun.status, 0, localRun.stderr)
     assert.match(localRun.stdout, /✅ Setup complete for "Alias Box"\./)
     assert.match(localRun.stdout, /Mode:\s+local-only/)
+    assert.match(localRun.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env/)
 
     const cloudRun = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
       env: {
@@ -2149,6 +2150,7 @@ test('configure --no-tui preserves the saved local/cloud mode when mode is omitt
 
     assert.equal(configure.status, 0, configure.stderr)
     assert.match(configure.stdout, /✅ Settings saved for "Renamed Box"\./)
+    assert.match(configure.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env/)
     assert.match(configure.stdout, /✓ Local telemetry verified\./)
     assert.doesNotMatch(configure.stderr, /Missing cloud API key/)
 

@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R555 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny config-path copy cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/install seam still cleared the bar this cycle: first-run status and uninstall help already show config paths in the friendlier `~/.idlewatch/...` style, but install-before-setup and setup/configure success were still printing full absolute home-directory paths. Nothing functional was broken, yet those temp-home / machine-shaped paths added avoidable noise right in the first-run and reconfigure success moments where the next-step copy should stay calm and product-shaped.
+
+### What changed
+- Reworked the install-before-setup, saved-config install, setup success, configure success, and setup-failed-after-save config-path lines in `bin/idlewatch-agent.js` to use the same friendly `~`-style path formatting already used elsewhere in the CLI
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so these success/help surfaces do not drift back to full absolute home-directory paths
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, validation copy, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent follow-up uses source checkout command path|quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|configure preserves local-only mode without re-entering cloud credentials)'`
+- [x] Result: **98 passed, 0 failed** in the targeted env slice
+- [x] Fresh live local-only spot checks with a stubbed `launchctl` now show:
+  - `Config path:  ~/.idlewatch/idlewatch.env` after `install-agent` before setup
+  - `Config: ~/.idlewatch/idlewatch.env` after `quickstart --no-tui`
+  - `Config: ~/.idlewatch/idlewatch.env` after `configure --no-tui`
+- [x] Observed: the same setup/install surfaces keep the calmer product-command handoff unchanged (`idlewatch quickstart --no-tui`, `idlewatch run`, `idlewatch install-agent`)
+
+### Prioritized findings
+#### [x] P1 — setup/install success surfaces now keep config paths friendly instead of dumping full absolute home-directory paths
+**Why this mattered:** This is tiny, but it lands in the exact scan-first moments where someone just installed background mode, finished setup, or re-saved settings and is checking what changed. Full absolute paths are technically correct, but noisier than they need to be. Showing the same `~/.idlewatch/...` style already used by status and uninstall keeps the product feeling more coherent and less machine-shaped.
+
+**Acceptance checks**
+- install-before-setup `install-agent` now shows `Config path:  ~/.idlewatch/idlewatch.env`
+- setup/configure success now show `Config: ~/.idlewatch/idlewatch.env`
+- These surfaces no longer dump full temp-home or absolute home-directory paths for the default saved config location
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:20 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny config-path copy cleanup
+
 ## Cycle R554 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
