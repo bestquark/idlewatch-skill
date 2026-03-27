@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R416 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining README setup-note seam. The CLI help already treats `--no-tui` as the clean simple-prompts path on purpose, but the top-level README still framed it as a fallback `if the TUI isn't available`, which made the first-run setup note feel slightly more conditional and implementation-shaped than the product itself.
+
+### What changed
+- Reworded the README quickstart note from `Use --no-tui for simple prompts if the TUI isn't available.` to `Use --no-tui for simple prompts any time you want the simplest setup path.`
+- Kept actual setup behavior unchanged: `--no-tui` is still the same saved-setup flow, not a new mode or a different path.
+- Kept saved-config handling, background-mode behavior, validation messaging, and the now-working telemetry path unchanged.
+
+### Verification evidence
+- [x] `grep -n "Use --no-tui for simple prompts" README.md bin/idlewatch-agent.js`
+- [x] Result: README now matches the calmer command story already used by the CLI help, without implying `--no-tui` is only for fallback situations.
+- [x] Fresh live spot checks still read cleanly:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+
+### Prioritized findings
+#### [x] L94 — README now treats `--no-tui` as the normal simple-prompts option, not just a fallback when TUI is unavailable
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it lands in the exact scan-first setup moment where people decide which command to run. The product already converged on `--no-tui` being the calmest setup path when you want simple prompts; leaving the README on `if the TUI isn't available` made that one entrypoint feel more conditional and slightly older than the actual CLI story.
+- **Acceptance criteria:**
+  - README says `Use --no-tui for simple prompts any time you want the simplest setup path.`
+  - Nearby CLI help continues to say `Use --no-tui for simple prompts.` / `Uses simple prompts.`
+  - No runtime/setup/install behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 1:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny README setup-note seam fixed without changing behavior
+
 ## Cycle R415 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
