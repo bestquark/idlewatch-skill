@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R455 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny help-surface wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: top-level help and `install-agent --help` still said `Enable background mode` even though the rest of the setup/install/reconfigure lane had already settled on the calmer, more literal `Turn on background mode` wording. The behavior was already right; this just removes one more small older label from first-run and install help.
+
+### What changed
+- Reworded the `install-agent` summary in `bin/idlewatch-agent.js` from `Enable background mode ...` to `Turn on background mode ...` in both normal and `npx` help surfaces
+- Reworded the `install-agent --help` title/body from `Enable/Enables background mode` to `Turn on/Turns on background mode`
+- Updated the matching assertions in `test/openclaw-env.test.mjs` so the calmer wording does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -RIn "Enable background mode" bin test README.md docs scripts || true`
+- [x] Result: live installer/CLI surfaces no longer use `Enable background mode`; remaining hits are only negative regression assertions and historical QA notes
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(help preserves one-off command hints under npm exec|install-agent help keeps the durable setup path short and clear|main help keeps the source-checkout header on the calmer product command|main help stays on the durable command in npx context|test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L112 — help surfaces now say `Turn on background mode` instead of `Enable background mode`
+**Why this mattered:** This is tiny, but it sits in the first command list and install help surface that people scan while deciding what to do next. `Enable background mode` was understandable; `Turn on background mode` is more literal, more consistent with the rest of IdleWatch's setup story, and one notch less tool-shaped.
+
+**Acceptance checks**
+- Main help now shows `install-agent   Turn on background mode (macOS)` in the durable/source-checkout path
+- Main help now shows `install-agent   Turn on background mode (requires durable install)` in the `npx` path
+- `install-agent --help` now says `idlewatch install-agent — Turn on background mode (macOS)` and `Turns on background mode on macOS.`
+- The same live help surfaces no longer say `Enable background mode`
+
+**Last updated:** Friday, March 27th, 2026 — 4:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installer/help wording cleanup
+
+
 ## Cycle R454 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

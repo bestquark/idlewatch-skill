@@ -280,11 +280,11 @@ If setup isn't saved yet: idlewatch quickstart --no-tui
 Turn on background mode: idlewatch install-agent`
   }
 
-  return `${installAgentHelpCommand} — Enable background mode (macOS)
+  return `${installAgentHelpCommand} — Turn on background mode (macOS)
 
 Usage:  ${installAgentHelpCommand}
 
-Enables background mode on macOS.
+Turns on background mode on macOS.
 If setup is already saved, background mode starts right away.
 If not, finish setup with ${quickstartCommand}, then run ${installAgentHelpCommand}.`
 }
@@ -373,8 +373,8 @@ function printHelp() {
   const invocation = detectCliInvocation()
   const cliBase = preferredProductCommand()
   const installAgentSummary = invocation.kind === 'npx'
-    ? 'Enable background mode (requires durable install)'
-    : 'Enable background mode (macOS)'
+    ? 'Turn on background mode (requires durable install)'
+    : 'Turn on background mode (macOS)'
   const commands = [
     ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
     ['configure', 'Update setup (name, metrics, optional cloud link)'],
