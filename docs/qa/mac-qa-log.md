@@ -2,6 +2,55 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R388 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing installer/CLI polish issue in scope worth opening. The currently visible first-run/help/test surfaces still feel neat, low-friction, and product-shaped, and the only extra noise seen in the one-off npm path is still npm's own banner rather than IdleWatch copy.
+
+### Verification evidence
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+  - clean-home launch-agent spot check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+- Result highlights from this pass:
+  - first-run `status` still stays short and preview-shaped
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - install-before-setup still keeps the reversible background-mode story clear
+  - npm/npx one-off-vs-durable-install guidance still feels clean, with only npm's own banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Use a clean HOME for first-run `status`, `--test-publish`, and `npm exec --yes -- idlewatch --help`
+3. Repeat the install-before-setup spot check with a stubbed `launchctl`
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the checked areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest without overexplaining background internals
+- `--test-publish` explicit without becoming a second workflow
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 10:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R387 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
