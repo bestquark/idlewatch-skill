@@ -2,6 +2,75 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R507 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in the requested lane cleared the bar this pass. Fresh live checks still keep the setup wizard, saved-config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+
+### Verification evidence
+- Targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **97 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- Fresh clean-home lifecycle spot check with a stubbed `launchctl` for:
+  - `node bin/idlewatch-agent.js install-agent`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js status`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js run --once`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+  - `node bin/idlewatch-agent.js status`
+- Fresh wording/code sweep run for likely regressions in the requested lane:
+  - `grep -RInE 'LaunchAgent scripts|LaunchAgent output|LaunchAgent label|launch lifecycle helpers|Background execution lifecycle helpers|Enable background mode|Disable background mode|Runs non-interactively|on the next start|Or run now:|add a cloud API key|run in the background|Start:\s+.*install-agent|Start:\s+.*run|Apply changes:|It will use the saved config\.|If not, finish setup|Try it once:|npx idlewatch quickstart --no-tui' bin docs README.md scripts test package.json || true`
+- Current live spot-check highlights:
+  - main help still stays short and scan-friendly
+  - first-run `status` still previews setup cleanly without implementation-detail sprawl
+  - install-before-setup still stays honest that background mode is installed but off until setup is saved and turned on
+  - configure → status still keeps renamed device identity and metric-toggle persistence obvious inline
+  - uninstall still keeps the reversible saved-config/local-log story short and calm
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - `npx` help and command-specific off-ramps still keep one-off use clearly separate from the durable install path, with no new IdleWatch-owned noise surfacing in this pass
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live help / `npx` / clean-home lifecycle spot checks listed above
+3. Re-check the requested setup wizard / config persistence / launch-agent / test-publish / device identity / metric-toggle / npm-npx lane together rather than broadening into unrelated surfaces
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/reconfigure/status/install/uninstall help aligned on the calmer command story
+- first-run `status` preview-shaped instead of implementation-shaped
+- predictable saved-config apply/reload guidance in the current help and lifecycle surfaces
+- install-before-setup honest about background mode being installed but off until setup is saved and turned on
+- saved device identity continuity and metric-toggle persistence obvious in the configure → status follow-up
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- clean npm/npx one-off-vs-durable-install guidance, with only npm's own wrapper context remaining outside IdleWatch's copy surface
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 10:02 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R506 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny local-only runtime wording cleanup from the live checkout.
