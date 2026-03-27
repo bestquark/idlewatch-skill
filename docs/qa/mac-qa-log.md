@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R516 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny but still-real `npx` off-ramp mismatch in the live checkout.
+
+### Priority call
+One low-risk npm/npx seam still clears the bar: top-level `npx idlewatch --help` now lists `uninstall-agent   Turn off background mode (requires durable install)`, but the matching command-specific help and live runtime no longer behave like a durable-install refusal. Today they behave like a harmless one-off recovery path: `npx idlewatch uninstall-agent --help` presents itself as a normal macOS command, and live `npx idlewatch uninstall-agent` cleanly says background mode is already off while keeping saved config/local-log reassurance. Nothing functional is broken, but this split makes the exact first command list people scan less predictable than the actual off-ramp.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+- [x] Observed: top-level `npx` help currently lists `uninstall-agent   Turn off background mode (requires durable install)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)` and says `If background mode is already off, this still keeps the saved config and local logs in place.`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Observed: live runtime cleanly says `Background mode is already off.` and keeps the saved-config/local-log reassurance instead of refusing behind a durable-install handoff
+
+### Prioritized findings
+#### [ ] L145 — top-level `npx` help currently overstates the durable-install requirement for `uninstall-agent`
+**Why this matters:** This is tiny, but it lands in the exact scan-first moment where someone is deciding what they can safely do from a one-off `npx` run. If the real command and command-specific help now behave like a harmless off-ramp, the top-level list should not frame it like a stricter durable-install-only command. If product intent is the opposite, then the command/help/runtime should all go back to the stricter refusal together. Right now the mixed story feels slightly less crisp than the rest of this lane.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+3. Observe top-level `npx` help lists `uninstall-agent   Turn off background mode (requires durable install)`
+4. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+5. Observe command-specific help instead presents `npx idlewatch uninstall-agent` like a normal macOS command and reassures that saved config/local logs stay in place
+6. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent`
+7. Observe live runtime does not refuse on durable-install grounds; it cleanly says `Background mode is already off.`
+
+**Acceptance checks**
+- Pick one story and keep it consistent across all three surfaces:
+  - either top-level `npx` help lists `uninstall-agent   Turn off background mode (macOS)` to match the current command-specific help + runtime off-ramp
+  - or command-specific help/runtime go back to the stricter `Background mode needs a durable install.` refusal path to match the current top-level list
+- The final `npx` story stays self-consistent without making users infer special cases from mismatched help layers
+- No auth, ingest, launch-agent behavior, or packaging flow changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 11:38 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny current `npx uninstall-agent` help/runtime mismatch for the next polish pass
+
 ## Cycle R515 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny top-level `npx` help-list alignment from the live checkout.
