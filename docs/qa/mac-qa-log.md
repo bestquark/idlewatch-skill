@@ -19373,3 +19373,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - `defaultPersistedEnvFilePath()` now respects `IDLEWATCH_CONFIG_ENV_PATH` in the main CLI too.
 - `uninstall-agent --help` now prints the configured saved-config path in a home-relative form when possible.
 - Added regression coverage for `uninstall-agent --help` with a custom `IDLEWATCH_CONFIG_ENV_PATH`.
+## Cycle R350 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny headless-setup help polish fix in the installer/CLI lane.
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode now say `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+- This removes a small contradiction in the exact copy-paste moment where help was already showing `--no-tui` usage but still said `Uses simple prompts.`
+- Setup behavior, saved-config handling, background/install behavior, and the working telemetry path remain untouched.
+
+### R350 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='quickstart help stays clean in non-TTY mode|configure help stays clean in non-TTY mode and keeps saved-config reload wording short|reconfigure help stays clean in non-TTY mode'`
+- [x] Full targeted regression sweep in `test/openclaw-env.test.mjs` still passes locally (`94/94`).
+
+### Prioritized findings
+
+#### [x] L33 — headless setup help now says `Runs non-interactively` instead of `Uses simple prompts`
+**Why it matters:** This is tiny, but it lands exactly where people pause before copying a headless setup/reconfigure command. Once help is already showing `quickstart --no-tui`, `configure --no-tui`, or `reconfigure --no-tui`, telling them it `Uses simple prompts` adds an unnecessary little contradiction.
+
+**What shipped**
+- Reworded the non-TTY prompt hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
+- Updated regression coverage in `test/openclaw-env.test.mjs` so the headless help path stays honest.
+- Left the interactive TTY help path unchanged (`Use --no-tui for simple prompts.`).
