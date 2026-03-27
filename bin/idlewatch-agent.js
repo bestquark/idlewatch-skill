@@ -275,9 +275,9 @@ function installAgentHelpText() {
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
 
-Install once: npm install -g idlewatch
-If setup isn't saved yet: idlewatch quickstart --no-tui
-Turn on background mode: idlewatch install-agent`
+Install once:              npm install -g idlewatch
+If setup isn't saved yet:  idlewatch quickstart --no-tui
+Turn on background mode:   idlewatch install-agent`
   }
 
   return `${installAgentHelpCommand} — Turn on background mode (macOS)
@@ -1289,9 +1289,9 @@ const subcommandPromise = (async () => {
       console.error('')
       console.error('Install once:              npm install -g idlewatch')
       console.error("If setup isn't saved yet:  idlewatch quickstart --no-tui")
-      console.error('Turn on background mode:  idlewatch install-agent')
+      console.error('Turn on background mode:   idlewatch install-agent')
       console.error('')
-      console.error(`Run now:       ${inferCliCommand('run')}`)
+      console.error(`Run now:                   ${inferCliCommand('run')}`)
       process.exit(1)
     }
 

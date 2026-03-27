@@ -2,6 +2,44 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R529 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny scan-first formatting alignment in the one-off durable-install handoff.
+
+### Priority call
+One low-risk `npx install-agent` seam still cleared the bar: the durable-install guidance was already correct and minimal, but the live refusal/help block still looked slightly ragged because `Turn on background mode:` and `Run now:` were not aligned with the nearby `Install once:` / `If setup isn't saved yet:` labels. Nothing functional was broken, but this is exactly the kind of tiny visual friction that makes a copy-paste handoff feel a bit less finished than it should.
+
+### What changed
+- Re-aligned the `npx` durable-install handoff in `bin/idlewatch-agent.js` so these labels now scan as one clean block:
+  - `Install once:`
+  - `If setup isn't saved yet:`
+  - `Turn on background mode:`
+  - `Run now:`
+- Kept the exact durable-install story unchanged: install once globally, finish setup if needed, turn background mode on with the durable install, or run once in the foreground with `npx idlewatch run`
+- Kept setup/reconfigure flows, saved-config handling, launch-agent behavior, validation, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|install-agent and uninstall-agent keep the macOS-only error on background-mode wording|main help stays on the durable command in npx context|status command keeps npx background hints short and durable-install oriented)'`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent`
+- [x] Observed both the `--help` surface and the live refusal output now present the durable-install handoff as one aligned scan-first block
+- [x] Observed the wording itself stays unchanged and still points to the same low-friction paths: durable install, setup if needed, or one-off foreground run
+
+### Prioritized findings
+#### [x] P1 — `npx install-agent` durable-install handoff now scans as one aligned block
+**Why it matters:** This is tiny, but it lands in a real recovery/setup moment where someone is deciding what to copy next. When the labels in a short handoff block line up cleanly, the product feels calmer and more intentional. Tightening this keeps the one-off-vs-durable story neat without adding any new words or options.
+
+**Acceptance criteria**
+- `npx idlewatch install-agent --help` still starts with `Background mode needs a durable install.`
+- The follow-up lines still keep the same four-step story: install once, finish setup if needed, turn on background mode, or run now in the foreground
+- The same help/runtime block now scans as one aligned list instead of a slightly ragged set of labels
+- No setup, config, background-mode, or telemetry behavior changes beyond this formatting polish
+
+**Last updated:** Friday, March 27th, 2026 — 12:53 PM (America/Toronto)  
+**Status:** COMPLETE ✅
+
+
 ## Cycle R528 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
