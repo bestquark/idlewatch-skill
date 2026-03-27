@@ -2992,7 +2992,7 @@ test('status command shows contextual next-step hints', () => {
     assert.equal(noSamples.status, 0, noSamples.stderr)
     assert.ok(noSamples.stdout.includes('(none yet)'), 'should show no samples yet')
     assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} --once`), 'should hint at --once for test sample')
-    assert.ok(noSamples.stdout.includes(`${SOURCE_CMD} run`), 'should hint at run for continuous monitoring')
+    assert.ok(noSamples.stdout.includes('idlewatch run'), 'should hint at run for continuous monitoring on the calmer product command in source checkouts')
 
     if (process.platform === 'darwin') {
       assert.ok(noSamples.stdout.includes('Turn on background mode:  idlewatch install-agent'), 'should keep the calmer background-mode hint on the product command when no samples exist and background mode is not installed')
@@ -3015,7 +3015,7 @@ test('status command shows contextual next-step hints', () => {
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
     assert.ok(withSamples.stdout.includes('idlewatch configure --no-tui'), 'should keep the configure hint on the calmer product command in source checkouts')
-    assert.ok(withSamples.stdout.includes(`${SOURCE_CMD} run`), 'should keep the foreground run hint visible after setup is already saved')
+    assert.ok(withSamples.stdout.includes('idlewatch run'), 'should keep the foreground run hint visible after setup is already saved on the calmer product command in source checkouts')
     assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?! --no-tui)(?:\s|$)/, 'should not fall back to plain configure in non-TTY status hints')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 

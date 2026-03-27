@@ -2,6 +2,42 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R553 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny source-checkout status next-step cleanup from the live checkout.
+
+### Priority call
+One low-risk status seam still cleared the bar this cycle: in a source checkout, saved-setup `idlewatch status` already kept `Change:` on the calmer product command (`idlewatch configure --no-tui`), but `Run now:` still fell back to the raw repo command (`node bin/idlewatch-agent.js run`). Nothing functional was broken, yet that single machine-shaped command added avoidable noise in the exact scan-first “what should I run next?” moment.
+
+### What changed
+- Reworked the saved-setup and no-sample source-checkout `status` next-step hints in `bin/idlewatch-agent.js` so `Run now:` now uses the same calmer product command shape: `idlewatch run`
+- Updated the matching source-checkout assertions in `test/openclaw-env.test.mjs` so status does not drift back to the raw repo-script command in this lane
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command shows contextual next-step hints|status command keeps npx background hints short and durable-install oriented)'`
+- [x] Result: **98 passed, 0 failed**
+- [x] Fresh live local-only source-checkout spot check now shows:
+  - `Change:   idlewatch configure --no-tui`
+  - `Run now:  idlewatch run`
+  - `Turn on background mode:  idlewatch install-agent`
+- [x] Observed: the same status surface stays otherwise unchanged and still keeps the calmer product-command setup/install story
+
+### Prioritized findings
+#### [x] P1 — source-checkout `status` now keeps `Run now` on the calmer `idlewatch run` product command
+**Why this mattered:** This is tiny, but it lands in the exact moment where someone checks status after setup and copies the next command. `Change:` was already product-shaped. Letting `Run now:` fall back to `node bin/idlewatch-agent.js run` made the screen feel a little more repo-shaped than the rest of the CLI.
+
+**Acceptance checks**
+- Source-checkout `status` with saved setup now shows `Run now:  idlewatch run`
+- The same source-checkout status surface with saved setup no longer shows `Run now:  node bin/idlewatch-agent.js run`
+- The no-sample source-checkout status path now keeps the same calmer `idlewatch run` wording too
+- `npx` status hints remain unchanged on `npx idlewatch run`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 2:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny source-checkout status next-step cleanup
+
 ## Cycle R552 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

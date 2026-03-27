@@ -1953,7 +1953,7 @@ if (statusRequested) {
         console.log('  Turn on background mode:  idlewatch install-agent')
       }
     } else {
-      console.log(`  Run now:  ${inferCliCommand('run')}`)
+      console.log(`  Run now:  ${preferredProductCommand('run')}`)
       if (process.platform === 'darwin') {
         const launchAgent = probeOwnedLaunchAgentState()
         const installAgentCommand = preferredProductCommand('install-agent')
@@ -1971,7 +1971,7 @@ if (statusRequested) {
   } else if (!isPlaceholderName) {
     const installAgentCommand = preferredProductCommand('install-agent')
     console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
-    console.log(`  Run now:  ${inferCliCommand('run')}`)
+    console.log(`  Run now:  ${preferredProductCommand('run')}`)
 
     if (detectCliInvocation().kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
