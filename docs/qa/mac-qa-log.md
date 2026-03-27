@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R436 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup handoff wording cleanup from the live checkout.
+
+### Priority call
+One low-risk CLI seam still cleared the bar this pass: the normal `install-agent` install-before-setup branch still said `Then start:` right before `idlewatch install-agent`. The behavior was already correct, but that line lagged behind the calmer `Turn on background mode` wording now used across the rest of setup, status, postinstall, and packaged install surfaces.
+
+### What changed
+- Reworded the install-before-setup follow-up in `bin/idlewatch-agent.js` from `Then start:` to `Turn on background mode:`
+- Tightened `test/openclaw-env.test.mjs` so the clean-home `install-agent` branch keeps the calmer background-mode wording and does not drift back
+- Kept setup flow, saved-config handling, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] Clean-home lifecycle spot check with stubbed `launchctl` from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Observed `install-agent` now says `Turn on background mode:  idlewatch install-agent` in the install-before-setup branch
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent in a clean HOME keeps the setup-first recovery hints calm and copy-pasteable'`
+- [x] Result: **94 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L103 — install-before-setup CLI handoff now says `Turn on background mode` instead of `Then start`
+**Why this mattered:** This is tiny, but it lands in a real first-run recovery moment where the product should name the next step literally. `Then start` worked, but it was a little more generic and tool-shaped than the calmer `background mode` story already used everywhere nearby.
+
+**Acceptance notes**
+- The install-before-setup CLI branch now says `Turn on background mode:  idlewatch install-agent`
+- The same branch no longer says `Then start`
+- No auth/ingest changes, no packaging rewrite, and no telemetry-path changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny install-before-setup CLI wording seam fixed in this pass
+
 ## Cycle R435 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

@@ -1328,7 +1328,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
       console.log(`   Save setup:   ${preferredHelpSetupCommand('quickstart')}`)
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
-      console.log(`   Then start:   ${preferredProductCommand('install-agent')}`)
+      console.log(`   Turn on background mode:  ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${envFile}`)
       console.log(`   Check:        ${preferredProductCommand('status')}`)
       console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
