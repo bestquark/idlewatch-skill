@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R403 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining wording seam in the packaged macOS install script. After setup was still missing, the script already kept the right command handoff, but it said `Then turn on login startup:` instead of the calmer product-shaped `background mode` language used across the CLI and docs.
+
+### What changed
+- Reworded the no-setup follow-up in `scripts/install-macos-launch-agent.sh` from `Then turn on login startup:` to `Then turn on background mode:`
+- Kept the actual recovery commands unchanged:
+  - `idlewatch install-agent`
+  - app-binary fallback `.../Contents/MacOS/IdleWatch install-agent`
+- Tightened `test/macos-launch-agent-scripts.test.mjs` so the packaged shell flow keeps the calmer `background mode` wording and does not drift back
+- Kept setup behavior, saved-config handling, startup/install behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **4 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L87 — packaged macOS install script now says `background mode` instead of `login startup` in the no-setup handoff
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but it sits in a real install/setup surface. `Login startup` pulled the reader back toward platform mechanics right after the product had already converged on the simpler `background mode` story everywhere else.
+- **Acceptance criteria:**
+  - The packaged install script keeps the same command handoff when setup is not saved yet.
+  - The wording says `background mode`, not `login startup`.
+  - No runtime/setup/install behavior changes.
+
+**Last updated:** Friday, March 27th, 2026 — 12:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged install-script wording seam fixed without changing behavior
+
 ## Cycle R402 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
