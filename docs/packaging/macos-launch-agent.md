@@ -1,6 +1,6 @@
 # macOS LaunchAgent Setup
 
-Run IdleWatch as a background service that starts automatically at login.
+Turn on IdleWatch background mode on macOS.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ npm run install:macos-launch-agent
 
 This creates a `launchd` plist at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
 
-- If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away and background mode starts normally.
+- If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away so background mode turns on immediately.
 - If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
 
 Config changes are picked up on the next start. After running `idlewatch quickstart --no-tui` or changing settings, re-run the install script once to load or refresh background mode with the saved config.

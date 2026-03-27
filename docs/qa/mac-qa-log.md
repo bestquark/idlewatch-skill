@@ -2,6 +2,34 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R399 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining doc seam in the packaged macOS background-mode guide. The CLI itself already spoke in the calmer product-shaped `background mode` language, but `docs/packaging/macos-launch-agent.md` still opened with the slightly more system-shaped `background service that starts automatically at login` framing.
+
+### What changed
+- Reworded the opening line in `docs/packaging/macos-launch-agent.md` from `Run IdleWatch as a background service that starts automatically at login.` to `Turn on IdleWatch background mode on macOS.`
+- Tightened the saved-config install note from `background mode starts normally` to `background mode turns on immediately` so the first-run install branch reads a little more direct and task-shaped.
+
+### Verification evidence
+- [x] `sed -n '1,30p' docs/packaging/macos-launch-agent.md`
+- [x] `grep -n "background mode on macOS\|turns on immediately\|starts automatically at login\|starts normally" docs/packaging/macos-launch-agent.md`
+- [x] Targeted regression context remains green from this live checkout: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+
+### Prioritized findings
+#### [x] L85 — packaged macOS background-mode doc now opens on the calmer product story
+- **Priority:** Low
+- **Why this mattered:** This is tiny, but the packaging doc is still a setup/install decision surface. Leading with `background service that starts automatically at login` briefly pulled the reader back toward system mechanics right where the rest of the product already converged on the simpler `background mode` framing.
+- **Acceptance criteria:**
+  - `docs/packaging/macos-launch-agent.md` opens with `background mode`, not `background service that starts automatically at login`.
+  - The saved-config install note stays explicit that setup already saved means background mode turns on right away.
+  - No CLI/runtime behavior changes.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - packaged macOS background-mode doc wording tightened without changing behavior
+
 ## Cycle R398 Status: COMPLETE ✅
 
 Fresh installer/CLI polish spot check completed from the live checkout.
