@@ -2,6 +2,48 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R531 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup handoff wording cleanup from the live checkout.
+
+### Priority call
+One low-risk install-before-setup seam still cleared the bar: successful `idlewatch install-agent` already kept the honest `background mode stays off for now` story and pointed straight to setup, foreground use, and turning background mode on later, but the first follow-up label still said `Save setup:`. Nothing functional was broken, yet `Finish setup:` is slightly more literal and action-shaped in that recovery moment.
+
+### What changed
+- Reworded the install-before-setup follow-up in `bin/idlewatch-agent.js` from `Save setup:` to `Finish setup:`
+- Updated the matching source-checkout regression assertion in `test/openclaw-env.test.mjs` so the calmer handoff does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `grep -n "Finish setup:\|install-agent follow-up uses source checkout command path" test/openclaw-env.test.mjs`
+- [x] `TMPHOME="$(mktemp -d)"; FAKEBIN="$(mktemp -d)"; cat > "$FAKEBIN/launchctl" <<'SH'
+#!/bin/sh
+cmd="$1"
+shift
+case "$cmd" in
+  print) exit 1 ;;
+  bootstrap|bootout) exit 0 ;;
+  *) exit 0 ;;
+esac
+SH
+chmod +x "$FAKEBIN/launchctl"; PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] Observed: install-before-setup runtime now says `Finish setup: idlewatch quickstart --no-tui`
+- [x] Observed: the same runtime still keeps the rest of the calm handoff unchanged: `Run now: idlewatch run`, `Turn on background mode: idlewatch install-agent`, saved config path, status check, and uninstall off-ramp
+
+### Prioritized findings
+#### [x] P1 — install-before-setup runtime now says `Finish setup:` instead of `Save setup:`
+**Why it matters:** This is tiny, but it lands at the exact moment where someone just turned background mode on before saving setup and needs the cleanest next command. `Save setup:` was understandable, yet `Finish setup:` is a little more direct and better matches the actual action the user still needs to take.
+
+**Acceptance criteria**
+- Successful `idlewatch install-agent` before saved setup now says `Finish setup: idlewatch quickstart --no-tui`
+- The same runtime no longer says `Save setup: ...`
+- The rest of the install-before-setup handoff remains unchanged and low-noise
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 12:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅
+
 ## Cycle R530 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
