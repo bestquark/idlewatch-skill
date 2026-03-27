@@ -1989,8 +1989,8 @@ if (statusRequested) {
         console.log('  Start background mode:     idlewatch install-agent')
       } else {
         console.log('  For background mode:')
-        console.log('  Install once:              npm install -g idlewatch')
-        console.log('  Turn on background mode:  idlewatch install-agent')
+        console.log('    Install once:            npm install -g idlewatch')
+        console.log('    Turn on background mode: idlewatch install-agent')
       }
     } else {
       console.log(`  Run now:  ${preferredProductCommand('run')}`)
@@ -2021,8 +2021,8 @@ if (statusRequested) {
         console.log('  Start background mode:     idlewatch install-agent')
       } else {
         console.log('  For background mode:')
-        console.log('  Install once:              npm install -g idlewatch')
-        console.log('  Turn on background mode:  idlewatch install-agent')
+        console.log('    Install once:            npm install -g idlewatch')
+        console.log('    Turn on background mode: idlewatch install-agent')
       }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()

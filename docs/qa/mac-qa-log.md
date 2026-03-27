@@ -2,6 +2,47 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R587 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one genuinely tiny true-`npx status` nesting cleanup from the live checkout.
+
+### Priority call
+One low-risk presentation seam still cleared the bar this cycle: true `npx` `status` already showed the right one-off and durable background-mode commands, but the durable-install lines had drifted flush with the main status action lines instead of reading like a nested block under `For background mode:`. Nothing functional was broken, yet the visual hierarchy was a little flatter than the nearby setup/configure success screens that already make this split easier to scan.
+
+### What changed
+- Re-indented the real-`npx` `status` durable-install follow-up in `bin/idlewatch-agent.js` so `Install once:` and `Turn on background mode:` now sit visibly under `For background mode:` in both the no-sample and saved-setup status paths
+- Tightened the matching assertions in `test/openclaw-env.test.mjs` so both real-`npx` status paths now require the nested two-line block instead of merely checking that the commands exist somewhere below the label
+- Left setup/reconfigure behavior, saved-config handling, launch-agent behavior, packaging, auth flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='status command keeps npx background hints short and durable-install oriented'`
+- [x] Result: **100 passed, 0 failed** in the current focused env slice run
+- [x] Observed in the targeted real-`npx` status paths:
+  - no-sample status now keeps:
+    - `Run now:  npx idlewatch run`
+    - `For background mode:`
+    - `    Install once:            npm install -g idlewatch`
+    - `    Turn on background mode: idlewatch install-agent`
+  - saved-setup status now keeps the same nested split under `Change:` / `Run now:`
+- [x] Observed: already-on and installed-but-not-running durable background states remain unchanged
+
+### Prioritized findings
+#### [x] P1 — real `npx` `status` now visually nests the durable-install commands under `For background mode:`
+**Why this mattered:** This is tiny, but it lands in the exact copy-paste check-your-work moment where the product should keep the immediate `npx idlewatch run` path separate from the durable install path without making the screen feel crowded. The commands were already correct. The issue was hierarchy. Nesting the two durable lines makes the status surface read more like the nearby setup/configure success blocks and a little less like a flat list.
+
+**Acceptance checks**
+- Real `npx` `status` with no samples still says `Run now:  npx idlewatch run`
+- The same no-sample status surface now prints `Install once:` and `Turn on background mode:` as visibly nested lines under `For background mode:`
+- Real `npx` `status` with saved setup keeps the same nested block under `Change:` / `Run now:`
+- Already-on and installed-but-not-running durable background states remain unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:50 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny real-`npx` status nesting cleanup
+
 ## Cycle R586 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression spanning help, install-before-setup, setup success, and saved-setup status surfaces.

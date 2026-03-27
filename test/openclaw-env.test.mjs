@@ -2808,9 +2808,7 @@ test('status command keeps npx background hints short and durable-install orient
 
     assert.equal(noSamples.status, 0, noSamples.stderr)
     assert.match(noSamples.stdout, /Run now:\s+npx idlewatch run/)
-    assert.match(noSamples.stdout, /For background mode:/)
-    assert.match(noSamples.stdout, /Install once:\s+npm install -g idlewatch/)
-    assert.match(noSamples.stdout, /Turn on background mode:\s+idlewatch install-agent/)
+    assert.match(noSamples.stdout, /For background mode:\n\s{4}Install once:\s+npm install -g idlewatch\n\s{4}Turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(noSamples.stdout, /Then enable:\s+idlewatch install-agent/)
     assert.doesNotMatch(noSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
 
@@ -2826,9 +2824,7 @@ test('status command keeps npx background hints short and durable-install orient
     assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure --no-tui/)
     assert.match(withSamples.stdout, /Run now:\s+npx idlewatch run/)
     assert.doesNotMatch(withSamples.stdout, /Change:\s+npx idlewatch configure(?! --no-tui)(?:\s|$)/)
-    assert.match(withSamples.stdout, /For background mode:/)
-    assert.match(withSamples.stdout, /Install once:\s+npm install -g idlewatch/)
-    assert.match(withSamples.stdout, /Turn on background mode:\s+idlewatch install-agent/)
+    assert.match(withSamples.stdout, /For background mode:\n\s{4}Install once:\s+npm install -g idlewatch\n\s{4}Turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Then enable:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
 
