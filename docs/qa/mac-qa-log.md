@@ -2,6 +2,39 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R566 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny packaged macOS install-before-setup wording alignment from the live checkout.
+
+### Priority call
+One low-risk packaged install seam still cleared the bar: the packaged macOS install script already matched the actual recovery flow, but in the exact no-saved-setup moment it still said `Turn on background mode:` even though background mode had already been installed and only needed setup before it could start using the saved config. Nothing functional was broken, yet that wording was a little more install-shaped than the now-calmer main CLI handoff.
+
+### What changed
+- Reworded the packaged macOS no-setup follow-up in `scripts/install-macos-launch-agent.sh` from `Turn on background mode:` to `Start background mode after setup:`
+- Updated the matching regression assertions in `test/macos-launch-agent-scripts.test.mjs` for both the normal `idlewatch`-on-PATH branch and the exact app-binary fallback branch
+- Left setup/configure behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Result: **7 passed, 0 failed** in the targeted packaged macOS script slice
+- [x] Observed: the packaged no-setup install handoff now says `Start background mode after setup:` when `idlewatch` is on PATH
+- [x] Observed: the same packaged no-setup handoff now uses the same more literal wording for the exact app-binary fallback path too
+
+### Prioritized findings
+#### [x] P1 — packaged macOS install-before-setup handoff now says `Start background mode after setup` instead of `Turn on background mode`
+**Why this mattered:** This is tiny, but it lands right where someone copy-pastes the next command after turning on login startup a bit early in the packaged app flow. `Turn on background mode` sounded a little too much like a fresh enable/install step. `Start background mode after setup` is more literal because the install already happened and setup is the only missing step.
+
+**Acceptance checks**
+- Successful packaged macOS install before saved setup still says background mode stays off for now
+- The same handoff still points to `quickstart --no-tui` first and still keeps `Run now:` visible
+- The same handoff now says `Start background mode after setup:` instead of `Turn on background mode:`
+- The same wording applies both when `idlewatch` is on PATH and when the packaged app needs to print the exact app-binary command
+- No auth, ingest, packaging redesign, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 3:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS install-before-setup wording alignment
+
 ## Cycle R565 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.

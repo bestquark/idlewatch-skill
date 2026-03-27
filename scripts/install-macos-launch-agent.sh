@@ -201,7 +201,7 @@ else
     echo "Run now:"
     echo "   idlewatch run"
     echo ""
-    echo "Turn on background mode:"
+    echo "Start background mode after setup:"
     echo "   idlewatch install-agent"
     echo ""
     echo "💡 Quick status check:"
@@ -212,7 +212,7 @@ else
     echo "Run now:"
     echo "   $BIN_PATH run"
     echo ""
-    echo "Turn on background mode:"
+    echo "Start background mode after setup:"
     echo "   $BIN_PATH install-agent"
   fi
 fi
