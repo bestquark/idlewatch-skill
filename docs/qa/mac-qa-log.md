@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R483 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny durable-install help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk help seam still cleared the bar this pass: `install-agent --help` already kept the durable setup path short, but its final line still opened with the clipped `If not, finish setup...` wording. The behavior was already right; this just makes the saved-setup prerequisite read as explicitly as the matching `npx` handoff and other nearby setup surfaces.
+
+### What changed
+- Reworded the durable `install-agent --help` saved-setup line in `bin/idlewatch-agent.js` from `If not, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.` to `If setup isn't saved yet, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
+- Tightened `test/openclaw-env.test.mjs` so the calmer saved-setup wording stays covered and the older clipped phrasing does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help keeps the durable setup path short and clear|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: focused installer/CLI regression lane still passes cleanly with the wording update
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Result: help now says `If setup isn't saved yet, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
+
+### Prioritized findings
+#### [x] L127 — durable `install-agent --help` now says `If setup isn't saved yet` instead of `If not`
+**Why this mattered:** This is tiny, but it sits in the exact help surface someone reads while deciding whether background mode will work right away. `If not` was understandable, yet it made the prerequisite a little more implicit than the calmer wording already used elsewhere in the current setup story.
+
+**Acceptance checks**
+- `install-agent --help` now says `If setup isn't saved yet, finish setup with idlewatch quickstart --no-tui, then run idlewatch install-agent.`
+- The same help surface no longer says `If not, finish setup ...`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny durable-install help wording cleanup
+
 ## Cycle R482 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
