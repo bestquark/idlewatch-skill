@@ -268,7 +268,7 @@ function installAgentHelpText() {
 
 Install once: npm install -g idlewatch
 If setup isn't saved yet: idlewatch quickstart --no-tui
-Then enable: idlewatch install-agent`
+Turn on background mode: idlewatch install-agent`
   }
 
   return `${installAgentHelpCommand} — Enable background mode (macOS)
@@ -325,7 +325,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     console.log(`     ${runCommand}   Run in foreground`)
     console.log('\n   For background mode:')
     console.log('     Install once: npm install -g idlewatch')
-    console.log('     Then enable: idlewatch install-agent')
+    console.log('     Turn on background mode: idlewatch install-agent')
     return
   }
 
@@ -1256,8 +1256,8 @@ const subcommandPromise = (async () => {
     if (invocation.kind === 'npx') {
       console.error('Background mode needs a durable install.')
       console.error('')
-      console.error('Install once:  npm install -g idlewatch')
-      console.error('Then enable:   idlewatch install-agent')
+      console.error('Install once:              npm install -g idlewatch')
+      console.error('Turn on background mode:  idlewatch install-agent')
       console.error('')
       console.error(`Run now:       ${inferCliCommand('run')}`)
       process.exit(1)
@@ -1908,8 +1908,8 @@ if (statusRequested) {
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start:    idlewatch install-agent')
       } else {
-        console.log('  Install once: npm install -g idlewatch')
-        console.log('  Then enable:  idlewatch install-agent')
+        console.log('  Install once:              npm install -g idlewatch')
+        console.log('  Turn on background mode:  idlewatch install-agent')
       }
     } else {
       console.log(`  Start:    ${inferCliCommand('run')}`)
@@ -1938,8 +1938,8 @@ if (statusRequested) {
       } else if (launchAgent?.state === 'installed-not-loaded') {
         console.log('  Start:    idlewatch install-agent')
       } else {
-        console.log('  Install once: npm install -g idlewatch')
-        console.log('  Then enable:  idlewatch install-agent')
+        console.log('  Install once:              npm install -g idlewatch')
+        console.log('  Turn on background mode:  idlewatch install-agent')
       }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()

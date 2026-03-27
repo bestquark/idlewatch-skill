@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R421 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass closed one small remaining wording seam in the one-off `npx` durable-install handoff.
+
+### Priority call
+The current setup/install/reconfigure lane was still in good shape overall, but one `npx`-specific background-mode hint lagged behind the rest of the product voice. In the exact durable-install off-ramp where IdleWatch already says `background mode` almost everywhere else, the one-off path still said `Then enable: idlewatch install-agent`. That was understandable, but slightly more generic and tool-shaped than the calmer product wording already used in nearby help and setup surfaces.
+
+### What changed
+- Reworded the `npx` durable-install handoff in `install-agent --help` from `Then enable: idlewatch install-agent` to `Turn on background mode: idlewatch install-agent`
+- Reworded the matching `npx` guidance in setup/status follow-ups and the `install-agent` durable-install refusal path to keep the same calmer wording
+- Tightened the matching regression coverage so the `npx` off-ramp does not drift back to `Then enable`
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|install-agent under npm exec points people to the durable install path and foreground fallback|quickstart and configure keep one-off runs honest about background install under npm exec env|status command keeps npx background hints short and durable-install oriented|install-agent help keeps the durable setup path short and clear)'`
+- [x] Result: targeted `npx` durable-install lane still passes cleanly
+- [x] Full requested regression context remains green from the live checkout:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **93 passed, 0 failed**
+- [x] Live spot checks:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js status`
+
+### Prioritized findings
+#### [x] L96 — `npx` durable-install handoffs now say `Turn on background mode` instead of `Then enable`
+**Why this mattered:** This is tiny, but it sits in a real setup decision surface where someone is explicitly crossing from one-off use into the durable-install path. `Then enable` worked, but it was a notch less literal and less product-shaped than the rest of IdleWatch's calmer `background mode` story.
+
+**Acceptance notes**
+- `npx` install help now says `Turn on background mode: idlewatch install-agent`
+- Matching `npx` setup/status/install refusal hints use the same wording
+- No auth, ingest, packaging redesign, launch-agent behavior change, or telemetry-path change was introduced
+
+**Last updated:** Friday, March 27th, 2026 — 1:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny `npx` durable-install wording seam fixed in this pass
+
 ## Cycle R420 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
