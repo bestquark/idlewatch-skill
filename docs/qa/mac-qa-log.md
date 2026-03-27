@@ -2,6 +2,49 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R384 Status: COMPLETE ✅
+
+Fresh installer/CLI polish re-check completed from the live checkout.
+
+### Priority call
+Still no new product-facing installer/CLI polish issue in scope worth opening. The current setup/install/reconfigure/status story remains neat, low-friction, and product-shaped, and the older unchecked QA notes for `quickstart --help`, `npx install-agent --help`, and the uninstall recovery hint are now confirmed fixed in the live checkout.
+
+### Verification evidence
+- Targeted regression run passed: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- Result: **90 passed, 0 failed**
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec node bin/idlewatch-agent.js quickstart --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js install-agent` in a clean HOME with stubbed `launchctl`
+  - `node bin/idlewatch-agent.js quickstart --no-tui` in a clean HOME with stubbed `launchctl`
+  - `node bin/idlewatch-agent.js status` in a clean HOME with stubbed `launchctl`
+  - `node bin/idlewatch-agent.js uninstall-agent` in a clean HOME with stubbed `launchctl`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the targeted regression command above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the live spot checks listed above, including the `npx`-like help surfaces and the clean-home install/setup/status/uninstall lifecycle check with a stubbed `launchctl`
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- install-before-setup honest without overexplaining background internals
+- quickstart/configure success output calm and copy-pasteable
+- saved device identity continuity obvious inline
+- metric-toggle persistence reflected immediately in `status`
+- uninstall reassurance short and reversible
+- `quickstart --help` on the local-first `device name, metrics, optional cloud link` story
+- `npx install-agent --help` on the durable-install story instead of presenting the refused `npx idlewatch install-agent` usage line
+- npm/npx one-off-vs-durable-install guidance clear, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 10:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R383 Status: COMPLETE ✅
 
 Fresh installer/CLI polish re-check completed from the live checkout.
@@ -2840,7 +2883,7 @@ This pass re-ran the current installer/CLI polish lane from the live checkout an
 - The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
-#### [ ] L52 — runtime `uninstall-agent` success output should keep the final recovery hint on `idlewatch install-agent`
+#### [x] L52 — runtime `uninstall-agent` success output should keep the final recovery hint on `idlewatch install-agent`
 **Why it matters:** This lands in a reversible off-ramp where the user is deciding whether background mode feels safe to turn off. The uninstall message is already calm and reassuring about kept config and logs; dropping back to `node bin/idlewatch-agent.js install-agent` in the last line makes the product feel slightly more implementation-ish than the surrounding flow.
 
 **Exact repro**
@@ -2961,7 +3004,7 @@ This pass re-ran the same narrow installer/CLI polish lane from the live checkou
 - The cron payload path is still stale relative to the live filesystem: this pass again had to use `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`, not the repo path named in the cron payload.
 
 ### Prioritized findings
-#### [ ] L52 — runtime `uninstall-agent` success output should stay on the calmer `idlewatch install-agent` recovery command
+#### [x] L52 — runtime `uninstall-agent` success output should stay on the calmer `idlewatch install-agent` recovery command
 **Why it matters:** This lands in a reversible off-ramp where the user is deciding whether background mode feels safe to turn off. The uninstall message is already calm and reassuring about kept config/logs; dropping back to `node bin/idlewatch-agent.js install-agent` in the final recovery hint makes that last line feel a little more technical than the rest of the product.
 
 **Exact repro**
@@ -12850,7 +12893,7 @@ This pass stayed intentionally narrow and product-facing: setup wizard quality, 
 
 ### Prioritized findings
 
-#### [ ] L32 — `quickstart --help` still implies setup always starts with an API key
+#### [x] L32 — `quickstart --help` still implies setup always starts with an API key
 **Why it matters:** The actual onboarding flow already treats local-only setup as first-class, and the top-level help was already polished to reflect that. But the quickstart help screen still says `Walks you through API key, device name, and metric selection.` That is tiny, but it reintroduces the exact cloud-first feel the rest of the CLI has been sanding away.
 
 **Exact repro**
@@ -15028,7 +15071,7 @@ This pass stayed intentionally narrow: setup wizard quality, config persistence/
 
 ### Prioritized findings
 
-#### [ ] L14 — `npx` help for `install-agent` still presents the wrong command as the usage line
+#### [x] L14 — `npx` help for `install-agent` still presents the wrong command as the usage line
 **Why it matters:** The real runtime behavior is already correct: background install is a durable-install feature, and `npx idlewatch install-agent` is refused. But the `--help` screen for that same path still headlines the invalid command as if it were usable. That tiny contradiction makes the setup story feel less crisp than the actual product behavior.
 
 **Exact repro**
