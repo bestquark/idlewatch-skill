@@ -96,7 +96,15 @@ if [[ ! -x "$BIN_PATH" ]]; then
   exit 1
 fi
 
-cat > "$PLIST_PATH" <<'PLIST'
+CONFIG_ENV_KEY_BLOCK=''
+if [[ "$CONFIG_ENV_PATH" != "$HOME/.idlewatch/idlewatch.env" ]]; then
+  CONFIG_ENV_PATH_ESCAPED_FOR_XML="$(xml_escape "$CONFIG_ENV_PATH")"
+  CONFIG_ENV_KEY_BLOCK="
+    <key>IDLEWATCH_CONFIG_ENV_PATH</key>
+    <string>${CONFIG_ENV_PATH_ESCAPED_FOR_XML}</string>"
+fi
+
+cat > "$PLIST_PATH" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -122,6 +130,11 @@ cat > "$PLIST_PATH" <<'PLIST'
   <integer>{{START_INTERVAL_SEC}}</integer>
   <key>Disabled</key>
   {{DISABLED_VALUE}}
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>${CONFIG_ENV_KEY_BLOCK}
+  </dict>
 </dict>
 </plist>
 PLIST
@@ -176,12 +189,7 @@ echo "   Plist:   $PLIST_PATH"
 echo "   Logs:    $LOG_DIR/idlewatch.out.log and $LOG_DIR/idlewatch.err.log"
 if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
   echo "Saved IdleWatch config found: $CONFIG_ENV_PATH"
-  if [[ "$CONFIG_ENV_PATH" == "$HOME/.idlewatch/idlewatch.env" ]]; then
-    echo "✓ Background mode will use this saved config."
-  else
-    echo "⚠ Background mode only uses the default saved config path: $HOME/.idlewatch/idlewatch.env"
-    echo "   Move or copy to that location for background mode."
-  fi
+  echo "✓ Background mode will use this saved config."
 else
   echo "No saved IdleWatch config yet at: $CONFIG_ENV_PATH"
   echo ""

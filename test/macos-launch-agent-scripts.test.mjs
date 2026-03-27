@@ -225,7 +225,7 @@ test('packaged macOS install script keeps the default-label collision warning on
   }
 })
 
-test('packaged macOS install script keeps background-mode wording for custom config paths', { skip: process.platform !== 'darwin' }, () => {
+test('packaged macOS install script uses a configured custom saved-config path', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-install-bin-'))
   const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
@@ -250,10 +250,15 @@ test('packaged macOS install script keeps background-mode wording for custom con
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /⚠ Background mode only uses the default saved config path: .*\.idlewatch\/idlewatch\.env/)
-    assert.doesNotMatch(install.stdout, /⚠ Background mode only auto-loads the default path: .*\.idlewatch\/idlewatch\.env/)
-    assert.match(install.stdout, /Move or copy to that location for background mode\./)
-    assert.doesNotMatch(install.stdout, /Move or copy to that location for login startup\./)
+    assert.match(install.stdout, new RegExp(`Saved IdleWatch config found: ${customConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.match(install.stdout, /✓ Background mode will use this saved config\./)
+    assert.doesNotMatch(install.stdout, /default saved config path/)
+    assert.doesNotMatch(install.stdout, /Move or copy to that location for background mode\./)
+
+    const plistPath = path.join(tempHome, 'Library', 'LaunchAgents', 'com.idlewatch.agent.plist')
+    const plist = fs.readFileSync(plistPath, 'utf8')
+    assert.match(plist, /<key>IDLEWATCH_CONFIG_ENV_PATH<\/key>/)
+    assert.match(plist, new RegExp(`<string>${customConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&/g, '&amp;')}</string>`))
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
     fs.rmSync(tempHome, { recursive: true, force: true })

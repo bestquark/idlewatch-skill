@@ -21366,3 +21366,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the non-TTY prompt hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
 - Updated the matching regression assertions in `test/openclaw-env.test.mjs`.
 - Re-ran the targeted help regression slice and confirmed it still passes cleanly.
+
+## Cycle R497 Status: CLOSED ✅
+
+### Outcome
+- Shipped one small saved-config quality-of-life fix in the packaged macOS installer path.
+- `scripts/install-macos-launch-agent.sh` now passes `IDLEWATCH_CONFIG_ENV_PATH` through to the LaunchAgent when a custom saved-config path is configured.
+- That removes a needless `move or copy your config back to ~/.idlewatch/idlewatch.env` detour from the setup/reconfigure flow and keeps the packaged installer aligned with the main CLI's custom-path behavior.
+- Background/install behavior stays simple, and the now-working telemetry path remains untouched.
+
+### R497 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+
+#### [x] L36 — packaged macOS install script now uses a configured custom saved-config path instead of asking users to move it
+**Why it matters:** This is tiny, but it lands in a real setup/reconfigure moment. The main CLI already respects `IDLEWATCH_CONFIG_ENV_PATH`, while the packaged macOS install script still warned that background mode only used the default saved-config path. That added avoidable friction right where the product should feel most reversible and low-maintenance.
+
+**What shipped**
+- Added `IDLEWATCH_CONFIG_ENV_PATH` to the packaged LaunchAgent plist environment when a custom saved-config path is configured.
+- Updated the install script success output so custom saved config paths get the same calm `Background mode will use this saved config.` confirmation as the default path.
+- Replaced the old move/copy fallback with regression coverage that verifies the packaged plist carries the configured custom path.
