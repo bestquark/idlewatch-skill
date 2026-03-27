@@ -2,6 +2,34 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R465 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny installed-but-not-running saved-config wording cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure handoff seam still cleared the bar: in the branch where background mode is already installed but still off, the success follow-up still said `It will use the saved config.` The behavior was already right, but that `It` was slightly vague in a real recovery moment where the product should name the thing directly.
+
+### What changed
+- Reworded the installed-but-not-running setup handoff in `bin/idlewatch-agent.js` from `It will use the saved config.` to `Background mode will use the saved config.`
+- Tightened `test/openclaw-env.test.mjs` so both the setup-success and status-follow-up coverage keep the more explicit saved-config wording and do not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install flow, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup|quickstart and configure keep one-off runs honest about background install under npm exec env|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **95 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L118 — installed-but-not-running handoff now says `Background mode will use the saved config` instead of `It will use the saved config`
+**Why this mattered:** This is tiny, but it lands in a real setup/recovery moment where the product should not make the user resolve an ambiguous pronoun. Saying `Background mode will use the saved config` keeps the handoff explicit, calm, and scan-friendly.
+
+**Acceptance checks**
+- The installed-but-not-running setup handoff now says `Background mode will use the saved config.`
+- The same handoff no longer says `It will use the saved config.`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:47 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-but-not-running saved-config wording cleanup
+
 ## Cycle R464 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
