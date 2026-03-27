@@ -339,7 +339,8 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     } else {
       console.log(`   Apply saved config:  re-run ${backgroundInstallCommand} to apply the saved config`)
     }
-    console.log(`   Run now:         ${runCommand}   Run in the foreground`)
+    console.log('\n   Run now:')
+    console.log(`     ${runCommand}   Run in the foreground`)
     return
   }
 

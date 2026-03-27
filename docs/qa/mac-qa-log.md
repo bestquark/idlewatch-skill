@@ -4,49 +4,45 @@
 
 ## Cycle R567 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one still-real tiny running-background completion inconsistency worth logging for the next polish change.
+Fresh installer/CLI polish pass shipped one tiny running-background reconfigure output consistency cleanup from the live checkout.
 
 ### Priority call
-One low-risk reconfigure-success seam still clears the bar: when `configure --no-tui` saves settings while background mode is already running, the completion output keeps the right saved-config/apply guidance but then collapses the foreground fallback into one dense line: `Run now:         idlewatch run   Run in the foreground`. Nothing functional is broken, yet this is exactly the kind of visually noisy little compression that makes the otherwise calm setup story feel slightly less polished than the nearby two-line `Run now` blocks used after fresh setup, installed-but-not-running setup, and `npx` onboarding.
+One low-risk reconfigure-success seam still cleared the bar: when `configure --no-tui` saved settings while background mode was already running, the completion output kept the right saved-config/apply guidance but then collapsed the foreground fallback into one dense line: `Run now:         idlewatch run   Run in the foreground`. Nothing functional was broken, yet that little compression made the otherwise calm setup story feel slightly less polished than the nearby two-line `Run now` blocks used after fresh setup, installed-but-not-running setup, and `npx` onboarding.
+
+### What changed
+- Reworked the running-background reconfigure success block in `bin/idlewatch-agent.js` so `Run now` now uses the same calmer two-line style as nearby setup/configure surfaces
+- Updated the matching running-background assertions in `test/openclaw-env.test.mjs` so this output does not drift back to the denser one-line rendering
+- Left auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Fresh loaded-background local-only spot check with a stubbed `launchctl` for:
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent`
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
-- [x] Observed in the live pass:
-  - running-background reconfigure still correctly says `Background mode: already running`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(configure --no-tui preserves the saved local/cloud mode when mode is omitted|configure preserves local-only mode without re-entering cloud credentials)'`
+- [x] Result: **99 passed, 0 failed** in the targeted env slice
+- [x] Observed in the passing running-background configure surfaces:
+  - reconfigure success still correctly says `Background mode: already running`
   - the apply story stays literal: `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
-  - the immediate foreground fallback is currently compressed onto one dense line instead of the calmer block style used elsewhere: `Run now:         idlewatch run   Run in the foreground`
+  - the immediate foreground fallback now uses the calmer two-line block style:
+    - `Run now:`
+    - `  idlewatch run   Run in the foreground`
+  - the same cleanup also holds for the matching `npx` running-background configure surface
 
 ### Prioritized findings
-#### [ ] P1 — running-background `configure --no-tui` success should use the same calmer two-line `Run now` block as nearby success surfaces
-**Why this matters:** This is tiny, but it lands right after settings are saved in one of the highest-trust moments in the flow. The product already has a nice scan-friendly pattern for immediate foreground use:
+#### [x] P1 — running-background `configure --no-tui` success now uses the same calmer two-line `Run now` block as nearby success surfaces
+**Why this mattered:** This is tiny, but it lands right after settings are saved in one of the highest-trust moments in the flow. The product already had a nice scan-friendly pattern for immediate foreground use:
 - `Run now:`
 - `  idlewatch run   Run in the foreground`
 
-Flattening that into one line when background mode is already running adds just a bit of visual density and inconsistency for no benefit.
+Flattening that into one line when background mode was already running added just a bit of visual density and inconsistency for no benefit.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Create a fake `launchctl` shim that succeeds for `bootstrap`, reports a loaded/running agent for `print`, and succeeds for the usual background-mode subcommands
-3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Loaded Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
-6. Observe that the success output currently ends with `Run now:         idlewatch run   Run in the foreground` instead of using the calmer two-line block style already used by nearby setup/configure surfaces
-
-**Acceptance criteria**
+**Acceptance checks**
 - Running-background `configure --no-tui` success still says `Background mode: already running`
 - The same surface still keeps the existing saved-config/apply guidance unchanged
-- The immediate foreground fallback switches to the calmer two-line style already used elsewhere, e.g.:
-  - `Run now:`
-  - `  idlewatch run   Run in the foreground`
-- The same cleanup applies to the matching `npx` running-background configure surface too if it currently shares the same dense one-line rendering
-- No auth, ingest, packaging, launch-agent behavior, or saved-config semantics change beyond this output polish
+- The immediate foreground fallback now uses the calmer two-line style already used elsewhere
+- The same cleanup applies to the matching `npx` running-background configure surface too
+- No auth, ingest, packaging, launch-agent behavior, or saved-config semantics changed beyond this output polish
 
 **Last updated:** Friday, March 27th, 2026 — 3:55 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny running-background reconfigure output consistency issue for the next polish pass
+**Status:** COMPLETE ✅ - shipped one tiny running-background reconfigure output consistency cleanup
 
 ## Cycle R566 Status: COMPLETE ✅
 
