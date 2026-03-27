@@ -2,6 +2,45 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R508 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `npx uninstall-agent` help/off-ramp cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/install recovery seam cleared the bar this pass: `npx uninstall-agent` already worked at runtime as a clean way to turn background mode off, but the top-level `npx` help and command-specific `uninstall-agent --help` still framed it like a durable-install-only command. The behavior was already safe and the telemetry path was already working; this was just one last place where the copy added friction instead of matching the simpler real off-ramp.
+
+### What changed
+- Reworked the `npx` top-level command summary in `bin/idlewatch-agent.js` so `uninstall-agent` now reads `Turn off background mode (macOS)` instead of `Turn off background mode (requires durable install)`
+- Reworked `npx uninstall-agent --help` to present itself like the real command it already is: `npx idlewatch uninstall-agent — Turn off background mode (macOS)` with a short note that saved config and local logs stay in place if background mode is already off
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the one-off uninstall/help story stays aligned with the live runtime behavior
+- Kept install-agent durable-install protection, saved-config handling, launch-agent behavior, and the working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(install-agent help in npx context points straight to the durable path|uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context|uninstall-agent runtime output keeps the saved-config wording calm)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js --help`
+- [x] Observed: top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help now starts with `npx idlewatch uninstall-agent — Turn off background mode (macOS)`
+- [x] Observed: the same help now includes `If background mode is already off, this still keeps the saved config and local logs in place.`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent`
+- [x] Observed: runtime behavior still cleanly says `Background mode is already off.` and keeps the saved-config/local-log reassurance intact
+- [x] Observed: install-agent `npx` help/runtime still keep the durable-install refusal path unchanged
+
+### Prioritized findings
+#### [x] L139 — `npx uninstall-agent` help now matches the real one-off off-ramp
+**Why this mattered:** This is tiny, but it lands in a real recovery moment where people want the shortest path to turning background mode off. Saying `requires durable install` in help made the product feel stricter and more tool-shaped than the actual runtime behavior. Letting the help match the real command removes a needless step and keeps the install/uninstall story neat.
+
+**Acceptance checks**
+- Top-level `npx` help now lists `uninstall-agent   Turn off background mode (macOS)`
+- `npx uninstall-agent --help` now presents itself as a normal command instead of a durable-install refusal
+- The same help explicitly reassures that saved config and local logs stay in place when background mode is already off
+- `npx install-agent` still keeps the durable-install-only protection unchanged
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 10:13 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx uninstall-agent` help/off-ramp cleanup
+
 ## Cycle R507 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

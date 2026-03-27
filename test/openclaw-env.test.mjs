@@ -967,7 +967,7 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
-test('uninstall-agent help in npx context keeps the durable off-ramp explicit', () => {
+test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
       ...process.env,
@@ -982,12 +982,14 @@ test('uninstall-agent help in npx context keeps the durable off-ramp explicit', 
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /^Background mode needs a durable install\./)
-  assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
-  assert.match(run.stdout, /Turn it off later with:\s+idlewatch uninstall-agent/)
-  assert.match(run.stdout, /Turn it back on later with the durable install:\s+idlewatch install-agent/)
-  assert.doesNotMatch(run.stdout, /Usage:\s+npx idlewatch uninstall-agent/)
-  assert.doesNotMatch(run.stdout, /npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
+  assert.match(run.stdout, /^npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
+  assert.match(run.stdout, /Usage:\s+npx idlewatch uninstall-agent/)
+  assert.match(run.stdout, /Turns off background mode on macOS\./)
+  assert.match(run.stdout, /If background mode is already off, this still keeps the saved config and local logs in place\./)
+  assert.match(run.stdout, /Turn it back on later with idlewatch install-agent\./)
+  assert.doesNotMatch(run.stdout, /^Background mode needs a durable install\./)
+  assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.doesNotMatch(run.stdout, /Turn it back on later with the durable install:/)
 })
 
 test('main help keeps the source-checkout header on the calmer product command', () => {
@@ -1030,10 +1032,10 @@ test('main help stays on the durable command in npx context', () => {
   assert.match(run.stdout, /^npx idlewatch\n\nUsage:\s+npx idlewatch <command> \[options\]/)
   assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
   assert.match(run.stdout, /install-agent\s+Turn on background mode \(requires durable install\)/)
-  assert.match(run.stdout, /uninstall-agent\s+Turn off background mode \(requires durable install\)/)
+  assert.match(run.stdout, /uninstall-agent\s+Turn off background mode \(macOS\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Enable background mode \(requires durable install\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Install background LaunchAgent \(macOS\)/)
-  assert.doesNotMatch(run.stdout, /uninstall-agent\s+Turn off background mode \(macOS\)/)
+  assert.doesNotMatch(run.stdout, /uninstall-agent\s+Turn off background mode \(requires durable install\)/)
 })
 
 test('unknown command suggests the closest subcommand and keeps the current invocation path', () => {
@@ -1222,7 +1224,7 @@ test('uninstall-agent --help reflects a configured custom saved-config path', ()
   }
 })
 
-test('uninstall-agent help in npx context keeps the durable-install framing explicit', () => {
+test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
       ...process.env,
@@ -1237,11 +1239,14 @@ test('uninstall-agent help in npx context keeps the durable-install framing expl
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /^Background mode needs a durable install\./)
-  assert.match(run.stdout, /Turn it off later with: idlewatch uninstall-agent/)
-  assert.match(run.stdout, /Turn it back on later with the durable install: idlewatch install-agent/)
-  assert.doesNotMatch(run.stdout, /^npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/m)
-  assert.doesNotMatch(run.stdout, /Saved config stays at .* when setup has been saved\./)
+  assert.match(run.stdout, /^npx idlewatch uninstall-agent — Turn off background mode \(macOS\)/)
+  assert.match(run.stdout, /Usage:\s+npx idlewatch uninstall-agent/)
+  assert.match(run.stdout, /Turns off background mode on macOS\./)
+  assert.match(run.stdout, /If background mode is already off, this still keeps the saved config and local logs in place\./)
+  assert.match(run.stdout, /Turn it back on later with idlewatch install-agent\./)
+  assert.doesNotMatch(run.stdout, /^Background mode needs a durable install\./)
+  assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.doesNotMatch(run.stdout, /Turn it back on later with the durable install:/)
 })
 
 test('uninstall-agent runtime output keeps the saved-config wording calm', () => {

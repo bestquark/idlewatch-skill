@@ -294,11 +294,13 @@ function uninstallAgentHelpText() {
   const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
 
   if (invocation.kind === 'npx') {
-    return `Background mode needs a durable install.
+    return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
 
-Install once: npm install -g idlewatch
-Turn it off later with: idlewatch uninstall-agent
-Turn it back on later with the durable install: idlewatch install-agent`
+Usage:  ${uninstallAgentHelpCommand}
+
+Turns off background mode on macOS.
+If background mode is already off, this still keeps the saved config and local logs in place.
+Turn it back on later with idlewatch install-agent.`
   }
 
   return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
@@ -397,9 +399,7 @@ function printHelp() {
   const installAgentSummary = invocation.kind === 'npx'
     ? 'Turn on background mode (requires durable install)'
     : 'Turn on background mode (macOS)'
-  const uninstallAgentSummary = invocation.kind === 'npx'
-    ? 'Turn off background mode (requires durable install)'
-    : 'Turn off background mode (macOS)'
+  const uninstallAgentSummary = 'Turn off background mode (macOS)'
   const commands = [
     ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
     ['configure', 'Update setup (name, metrics, optional cloud link)'],
