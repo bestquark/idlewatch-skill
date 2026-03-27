@@ -2,6 +2,68 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R520 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
+
+### Priority call
+No new polish issue cleared the bar this cycle. Fresh live checks still keep the setup wizard, saved-config persistence/apply story, launch-agent install/uninstall path, `--test-publish`, device identity continuity, metric-toggle persistence, and npm-vs-npx split calm, minimal, and low-friction rather than confusing, repetitive, visually noisy, or unnecessarily technical.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live help / setup-path spot checks run for:
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js reconfigure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Fresh clean-home lifecycle spot check with a stubbed `launchctl` for:
+  - `node bin/idlewatch-agent.js install-agent`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `node bin/idlewatch-agent.js status`
+  - `IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `node bin/idlewatch-agent.js status`
+  - `node bin/idlewatch-agent.js run --once`
+  - `node bin/idlewatch-agent.js uninstall-agent`
+  - `node bin/idlewatch-agent.js status`
+- [x] Observed in the live lifecycle pass:
+  - configure → status still keeps renamed device continuity explicit inline with `Device ID: qa-polish-box (kept from original setup for continuity)`
+  - metric-toggle persistence still stays obvious and quiet (`Metrics: Memory` after reconfigure)
+  - installed-but-off background-mode messaging still stays neat: `Turn on background mode`, `It stays off until then.`, `Background mode will use the saved config.`
+  - uninstall still keeps the reversible saved-config/local-log story short and explicit
+  - one-off `npx` help still keeps `install-agent` on the durable-install path while leaving `uninstall-agent` as the calm macOS off-ramp
+- [x] Focused regression command surfaced one stale assertion but no new product-facing UX issue:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Current result: the runner hangs until one failing assertion is flushed, and the failure is an out-of-scope stale expectation in `uninstall-agent help reassures that config and logs are kept`
+  - Current mismatch: test still expects the old default-directory line `Local logs stay in ~/.idlewatch/logs ...`, while live help now intentionally shows the more precise retained-path line `Local log stays at ~/.idlewatch/logs/test-metrics.ndjson ...`
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live help / `npx` / clean-home lifecycle spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Re-check the requested setup wizard / config persistence / launch-agent / test-publish / device identity / metric-toggle / npm-npx lane together rather than broadening into unrelated surfaces
+3. Treat the currently failing uninstall-help assertion as regression-test drift, not a user-facing copy issue, unless the product intentionally wants to revert from real-path wording back to the generic default-directory wording
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- first-run `status` preview-shaped instead of implementation-shaped
+- install-before-setup honest about background mode being installed but off until setup is saved and turned on
+- configure → status keeping renamed device continuity and metric-toggle persistence obvious inline
+- uninstall reassurance short, reversible, and explicit about saved config + local logs staying put
+- explicit local-only `--test-publish` wording without turning it into a separate workflow
+- a clean enough npm/npx one-off-vs-durable-install split, with remaining wrapper noise still coming from npm rather than IdleWatch
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, predictable apply/reload guidance, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Friday, March 27th, 2026 — 11:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
 ## Cycle R519 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny uninstall-help retention-path alignment from the live checkout.
