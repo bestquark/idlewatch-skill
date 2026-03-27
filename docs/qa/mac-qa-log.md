@@ -21,7 +21,7 @@ One low-risk uninstall seam still clears the bar: `uninstall-agent --help` alrea
 - [x] Observed: the shorter runtime label is still wired in `bin/idlewatch-agent.js`, related test assertions, and the macOS uninstall helper script
 
 ### Prioritized findings
-#### [ ] L143 — successful uninstall runtime should match the calmer `background mode` wording already used by uninstall help
+#### [x] L143 — successful uninstall runtime now matches the calmer `background mode` wording already used by uninstall help
 **Why this matters:** This is tiny, but it lands in a real recovery moment right after someone turns background mode off. The help surface now sounds calmer and more literal than the live runtime. Letting runtime keep the older `it` phrasing makes the product feel just a bit less finished than it already is elsewhere in this lane.
 
 **Exact repro**
@@ -41,7 +41,7 @@ One low-risk uninstall seam still clears the bar: `uninstall-agent --help` alrea
 - No auth, ingest, packaging, or launch-agent behavior changes are introduced
 
 **Last updated:** Friday, March 27th, 2026 — 10:45 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny uninstall runtime/help wording mismatch still worth fixing
+**Status:** COMPLETE ✅ - shipped one tiny uninstall runtime/help wording alignment fix
 
 ## Cycle R513 Status: COMPLETE ✅
 

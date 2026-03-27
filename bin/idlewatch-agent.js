@@ -1424,7 +1424,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ Background mode turned off.')
     printUninstallRetentionSummary({ envFile, dataDir, localLogPath })
-    console.log(`   Turn it back on: ${backgroundInstallCommandForInvocation(invocation)}`)
+    console.log(`   Turn background mode back on later with ${backgroundInstallCommandForInvocation(invocation)}.`)
     if (invocation.kind === 'npx') {
       console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
     }
