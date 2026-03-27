@@ -2021,7 +2021,7 @@ if (statusRequested) {
         console.log(`  Background mode on macOS:  ${inferCliCommand('install-agent')}`)
       }
     }
-  } else if (!isPlaceholderName) {
+  } else {
     const installAgentCommand = preferredProductCommand('install-agent')
     console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
     console.log(`  Run now:  ${preferredProductCommand('run')}`)

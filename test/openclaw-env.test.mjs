@@ -3188,6 +3188,8 @@ test('status command keeps placeholder-device rename hint on the calmer product 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('Rename this device:  idlewatch configure --no-tui'), 'should keep the rename hint on the calmer product command in source checkouts')
     assert.doesNotMatch(run.stdout, /Rename this device:\s+node .*configure(?:\s|$)/, 'should not fall back to the source checkout command in the rename hint')
+    assert.match(run.stdout, /Change:\s+idlewatch configure --no-tui/, 'should still keep the normal change action visible while nudging placeholder names toward rename')
+    assert.match(run.stdout, /Run now:\s+idlewatch run/, 'should not turn placeholder-name status into a dead end')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }

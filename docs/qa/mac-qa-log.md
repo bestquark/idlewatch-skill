@@ -1,3 +1,41 @@
+## Cycle R599 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny placeholder-device status follow-up fix from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar: when a saved setup used an obvious placeholder device name like `test`, `idlewatch status` already showed the right rename hint, but it hid the normal follow-up actions once samples existed. Nothing functional was broken, yet that made the status surface feel like a dead end in the exact moment where the product should stay self-sufficient: people still need `Run now`, background-mode guidance, and the usual `Change` path while deciding whether to rename.
+
+### What changed
+- Kept the existing placeholder-name rename hint in `status` (`Rename this device: idlewatch configure --no-tui`)
+- Restored the normal saved-setup action block even when the current device name looks like a placeholder, so `Change`, `Run now`, and the usual background-mode guidance still stay visible
+- Tightened the matching regression in `test/openclaw-env.test.mjs` so placeholder-name status no longer drifts back into a rename-only dead end
+- Left auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='status command keeps placeholder-device rename hint on the calmer product command'`
+- [x] Fresh live placeholder-name status spot check now shows all of:
+  - `Rename this device:  idlewatch configure --no-tui`
+  - `Change:   idlewatch configure --no-tui`
+  - `Run now:  idlewatch run`
+- [x] Observed: the status surface no longer drops the usual next-step block just because the current device name looks temporary
+
+### Prioritized findings
+#### [x] P1 — placeholder-name `status` now keeps the rename hint without hiding the normal next-step actions
+**Why this mattered:** This is tiny, but it lands in the exact check-your-setup moment where someone names a box `test`, runs `status`, and still needs the product to be self-sufficient. The rename nudge is useful, but it should not replace the rest of the status surface.
+
+**Acceptance checks**
+- Saved-setup `status` with a placeholder device name still says `Rename this device: idlewatch configure --no-tui`
+- That same status surface now also keeps `Change: idlewatch configure --no-tui`
+- That same status surface now also keeps `Run now: idlewatch run`
+- The usual background-mode guidance still stays visible for the current install state
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny placeholder-device status follow-up fix
+
 ## Cycle R598 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.
