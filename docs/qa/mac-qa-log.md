@@ -17381,6 +17381,51 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 
 ### Prioritized findings
 
+#### None this pass.
+- Re-ran the requested polish lane against current CLI/runtime/docs surfaces: first-run `status`, install-before-setup, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, post-setup `status`, clean-home `--test-publish`, uninstall retention messaging, and `npm exec` / `npx` durable-install guidance.
+- Nothing in this pass felt confusing, overly technical, noisy, or inconsistent enough to justify a new product-facing finding.
+- Saved-config reuse, next-start reload semantics, background-mode install/uninstall handoff, device-ID continuity on rename, metric-toggle persistence, and durable-vs-`npx` guidance all still held up in spot checks.
+
+## Cycle R346 Status: CLOSED ✅
+
+### Outcome
+- No new polish regressions surfaced in the requested installer/CLI QA lane.
+- The current product shape still feels calm and low-friction across setup, reconfigure, status, background-mode enable/disable, `--test-publish`, and durable-vs-`npx` install guidance.
+- Kept auth, ingest, packaging flow shape, and launch-agent behavior unchanged.
+
+### R346 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node bin/idlewatch-agent.js status --help`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] `node bin/idlewatch-agent.js quickstart --help`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] clean-HOME first-run `status`
+- [x] install-before-setup with fake `launchctl`
+- [x] local-only non-interactive `quickstart --no-tui`
+- [x] saved-config `configure --no-tui` rename + metric-toggle persistence
+- [x] post-setup `status`
+- [x] clean-HOME `--test-publish`
+- [x] `npm exec --yes -- idlewatch --help`
+
+### Prioritized findings
+
+#### None this pass.
+- **Exact repro steps:**
+  1. `node bin/idlewatch-agent.js --help`
+  2. `node bin/idlewatch-agent.js status --help`
+  3. `node bin/idlewatch-agent.js install-agent --help`
+  4. `node bin/idlewatch-agent.js uninstall-agent --help`
+  5. `node bin/idlewatch-agent.js quickstart --help`
+  6. `node bin/idlewatch-agent.js configure --help`
+  7. In a temp HOME with fake `launchctl`, run first-run `status`, `install-agent`, local-only `quickstart --no-tui`, saved-config `configure --no-tui`, follow-up `status`, and `uninstall-agent`.
+  8. In a clean HOME, run `node bin/idlewatch-agent.js --test-publish`.
+  9. Run `npm exec --yes -- idlewatch --help`.
+- **Acceptance criteria:**
+  - Setup/reconfigure/status/install/uninstall/test-publish copy stays short, calm, and product-shaped.
+  - Saved config persists cleanly and reload guidance stays explicit: changes apply on next start; re-run `idlewatch install-agent` when background mode needs the saved config refreshed.
+  - Rename keeps device identity continuity, metric toggles persist into saved config and next `status`, uninstall remains clearly reversible, and `npx` keeps foreground testing separate from durable background mode.
+
 ## Cycle R345 Status: CLOSED ✅
 
 ### Outcome
