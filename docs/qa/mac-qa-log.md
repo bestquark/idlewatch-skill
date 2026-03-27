@@ -2,6 +2,56 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R486 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one small real regression in the exact requested setup-help lane.
+
+### Priority call
+One low-risk but user-facing wording regression cleared the bar this pass: non-TTY `quickstart` / `configure` help has slipped back from the calmer `Uses simple prompts...` wording to the older `Runs non-interactively...` phrasing. Nothing is broken functionally, but this is exactly the kind of tiny implementation-shaped copy drift that makes first-run help feel colder and more technical than it needs to.
+
+### Verification evidence
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Fresh targeted regression run passed:
+  - `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+  - Result: **96 passed, 0 failed**
+- Focused wording/code sweep confirms the regression is currently live and test-encoded:
+  - `grep -RInE "Runs non-interactively|Uses simple prompts" bin/idlewatch-agent.js test/openclaw-env.test.mjs`
+  - Live hits currently include:
+    - `bin/idlewatch-agent.js:1158`
+    - `bin/idlewatch-agent.js:1164`
+    - `test/openclaw-env.test.mjs:1055-1056`
+    - `test/openclaw-env.test.mjs:1075-1076`
+    - `test/openclaw-env.test.mjs:1115-1116`
+
+### Prioritized findings
+#### [ ] L128 — non-TTY setup help has regressed back to `Runs non-interactively` instead of `Uses simple prompts`
+**Why this matters:** This is tiny, but it lands in the first-run / reconfigure help surface where product taste matters most. `Runs non-interactively` is accurate, yet it sounds like an implementation note. `Uses simple prompts` is calmer, less technical, and better matches the minimal low-friction setup story elsewhere in this lane.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+3. Observe: `Runs non-interactively. Set IDLEWATCH_ENROLL_* env vars first.`
+4. Run `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --help`
+5. Observe the same wording, even though the calmer saved-config line below it still reads well
+6. Confirm the regression is locked in by current assertions in `test/openclaw-env.test.mjs`
+
+**Acceptance criteria**
+- `quickstart --help`, `configure --help`, and `reconfigure --help` in non-TTY mode say `Uses simple prompts. Set IDLEWATCH_ENROLL_* env vars first.`
+- The same help surfaces no longer say `Runs non-interactively...`
+- Matching regression assertions are updated so this polish does not drift back
+- No auth, ingest, packaging, setup-flow, or launch-agent behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 7:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one small non-TTY setup-help wording regression documented for follow-up
+
 ## Cycle R485 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
