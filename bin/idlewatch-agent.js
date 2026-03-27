@@ -1972,7 +1972,7 @@ if (statusRequested) {
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
       if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
-        console.log(`  Apply:    re-run ${installAgentCommand} to apply the saved config`)
+        console.log(`  Apply saved config:  re-run ${installAgentCommand} to apply the saved config`)
       } else if (launchAgent.state === 'installed-not-loaded') {
         console.log(`  Turn on background mode:  ${installAgentCommand}`)
       } else {

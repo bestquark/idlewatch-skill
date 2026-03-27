@@ -2,6 +2,36 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R495 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-config status-label cleanup from the live checkout.
+
+### Priority call
+One low-risk status seam still cleared the bar this pass: when background mode was already on, `status` still used the vague `Apply:` label right before the `re-run idlewatch install-agent to apply the saved config` hint. The behavior was already right, but the label made the follow-up scan a little less explicit than the surrounding saved-config wording now used across setup, configure, install, and help.
+
+### What changed
+- Reworded the already-on `status` follow-up in `bin/idlewatch-agent.js` from `Apply:` to `Apply saved config:`
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the clearer saved-config label does not drift back
+- Kept setup/reconfigure behavior, saved-config handling, startup/install quality of life, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command says background is running when launchd reports a PID|status command says background is on while waiting for the next check when launchd has it loaded|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **97 passed, 0 failed**
+- [x] Live loaded-background spot check now shows `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+
+### Prioritized findings
+#### [x] L132 — already-on `status` now says `Apply saved config` instead of the vaguer `Apply`
+**Why this mattered:** This is tiny, but it lands in a real reconfigure/status moment where the product should tell people exactly what the follow-up command is doing. `Apply:` was understandable, yet it was a touch too generic next to the otherwise explicit saved-config story.
+
+**Acceptance checks**
+- The already-on `status` branch now says `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+- The same branch no longer says `Apply:    re-run ... install-agent to apply the saved config`
+- Matching regression assertions were updated so the clearer label does not drift back
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-config status-label cleanup
+
 ## Cycle R494 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

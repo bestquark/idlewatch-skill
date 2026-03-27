@@ -3044,7 +3044,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background:\s+running in background \(pid 4242\)/, 'should report the running background state')
-    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to apply the saved config'), 'should keep the running-agent apply hint on the calmer product command in source checkouts')
+    assert.ok(run.stdout.includes('Apply saved config:  re-run idlewatch install-agent to apply the saved config'), 'should keep the running-agent apply hint explicit about the saved config in source checkouts')
     assert.ok(!run.stdout.includes('after config changes to refresh the background agent'), 'should drop the older longer apply wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
@@ -3091,7 +3091,7 @@ exit 0
 
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background:\s+on \(waiting for next check\)/, 'should describe the loaded-but-idle background state in plain language')
-    assert.ok(run.stdout.includes('Apply:    re-run idlewatch install-agent to apply the saved config'), 'should keep the apply hint on the calmer product command for the loaded background state in source checkouts')
+    assert.ok(run.stdout.includes('Apply saved config:  re-run idlewatch install-agent to apply the saved config'), 'should keep the apply hint explicit about the saved config for the loaded background state in source checkouts')
     assert.ok(!run.stdout.includes('Background:   enabled (idle)'), 'should not fall back to the older implementation-ish idle wording')
   } finally {
     rmSync(fakeBin, { recursive: true, force: true })
