@@ -2,6 +2,41 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R461 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one small `npx` help-listing seam worth queuing from the live checkout.
+
+### Priority call
+One low-risk top-level help inconsistency still clears the bar: `npx idlewatch --help` already frames `install-agent` as `requires durable install`, and `npx idlewatch uninstall-agent --help` already refuses cleanly with `Background mode needs a durable install.` But the top-level `npx` command list still shows `uninstall-agent   Turn off background mode (macOS)` as if it were a normal first-class one-off command. The runtime behavior is safe; the problem is just path clarity.
+
+### Verification evidence
+- [x] `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- [x] Observed: top-level `npx` help still lists `uninstall-agent   Turn off background mode (macOS)`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+- [x] Observed: command-specific help already starts with `Background mode needs a durable install.` and points back to the durable install path
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] Observed: the normal durable/source-checkout help surface is still fine with `uninstall-agent   Turn off background mode (macOS)`
+
+### Prioritized findings
+#### [ ] L116 — top-level `npx idlewatch --help` should mark `uninstall-agent` as a durable-install-only command
+**Why this matters:** This is tiny, but it sits in the first command list people scan while deciding what `npx` can do. Right now the top-level `npx` help quietly implies `uninstall-agent` is a normal one-off command, even though the actual command-specific help already says background mode needs a durable install. That mismatch adds a bit of avoidable path ambiguity right where the product has otherwise become very clean.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+3. Observe the command list still says `uninstall-agent   Turn off background mode (macOS)`
+4. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js uninstall-agent --help`
+5. Observe that command-specific help already says `Background mode needs a durable install.` and only points to the durable path
+
+**Acceptance criteria**
+- Top-level `npx idlewatch --help` makes the durable-install requirement explicit for `uninstall-agent`, matching the existing `npx` treatment of `install-agent`
+- The normal durable/source-checkout top-level help keeps `uninstall-agent   Turn off background mode (macOS)` unchanged
+- `npx idlewatch uninstall-agent --help` keeps the current calm refusal + durable-install handoff
+- No auth, ingest, packaging, or launch-agent behavior changes
+
+**Last updated:** Friday, March 27th, 2026 — 5:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one small top-level `npx` help-listing seam documented for follow-up
+
 ## Cycle R460 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny install-help wording cleanup from the live checkout.
