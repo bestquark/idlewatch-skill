@@ -2,6 +2,61 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R395 Status: COMPLETE ✅
+
+Fresh installer/CLI polish spot check completed from the live checkout.
+
+### Priority call
+No new product-facing installer/CLI polish issue in scope cleared the bar this pass. The setup/install/reconfigure/status story still feels neat, low-friction, and intentionally minimal rather than tool-shaped.
+
+### Verification evidence
+- Fresh live spot checks run from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill` for:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `node bin/idlewatch-agent.js configure --help`
+  - `node bin/idlewatch-agent.js status --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `node bin/idlewatch-agent.js uninstall-agent --help`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+  - clean-home lifecycle spot check with stubbed `launchctl` for:
+    - `node bin/idlewatch-agent.js install-agent`
+    - `node bin/idlewatch-agent.js quickstart --no-tui`
+    - `node bin/idlewatch-agent.js configure --no-tui`
+    - `node bin/idlewatch-agent.js status`
+    - `node bin/idlewatch-agent.js uninstall-agent`
+  - `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$(mktemp -d):$PATH" HOME="$(mktemp -d)" npm exec --yes -- idlewatch --help`
+- Result highlights from this pass:
+  - main help still stays short and scan-friendly
+  - quickstart/configure/status/install/uninstall help still tells one calm command story
+  - install-before-setup still lands on the honest `installed and not running yet` background-mode story
+  - device rename + metric toggle persistence still show up cleanly in follow-up `status`
+  - `--test-publish` still stays explicit and lightweight on the local-only happy path
+  - npm/npx one-off-vs-durable-install guidance still feels clean, with only npm's own banner adding noise
+
+### Prioritized findings
+#### [x] P0 — No new product-facing installer/CLI polish issue found in scope
+**Repro**
+1. Run the live help spot checks listed above from `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Repeat the clean-home lifecycle spot check with a stubbed `launchctl`
+3. Use a clean HOME for first-run `status`, `--test-publish`, and `npm exec --yes -- idlewatch --help`
+
+**Observed**
+No confusing, repetitive, visually noisy, or unnecessarily technical IdleWatch copy surfaced in the requested areas. In particular, the current build still keeps:
+- main help short and scan-friendly
+- quickstart/configure/status/install/uninstall help aligned on the calmer command story
+- install-before-setup honest about background mode being installed but not running yet
+- saved device identity continuity and metric-toggle persistence obvious in the configure → status follow-up
+- `--test-publish` explicit without becoming a second workflow
+- npm/npx one-off-vs-durable-install guidance clean, with only npm's own update banner adding noise
+
+**Acceptance criteria**
+Keep the current UX bar: simple setup copy, durable saved-config behavior, stable device identity, low-noise background-mode messaging, explicit test-publish wording, and a clean split between one-off use and durable install guidance.
+
+**Last updated:** Thursday, March 26th, 2026 — 11:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - no new product-facing polish issue found in this pass
+
+
 ## Cycle R394 Status: COMPLETE ✅
 
 One tiny source-checkout foreground-mode wording seam got cleaned up from the live checkout.
