@@ -300,7 +300,7 @@ Usage:  ${uninstallAgentHelpCommand}
 
 Turns off background mode on macOS.
 If background mode is already off, this still keeps the saved config and local logs in place.
-Turn it back on later with idlewatch install-agent.`
+Turn background mode back on later with idlewatch install-agent.`
   }
 
   return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
@@ -310,7 +310,7 @@ Usage:  ${uninstallAgentHelpCommand}
 Turns off background mode on macOS.
 Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
 Local logs stay in ~/.idlewatch/logs when local logging is on, so you can re-enable background mode later.
-Turn it back on later with idlewatch install-agent.`
+Turn background mode back on later with idlewatch install-agent.`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {

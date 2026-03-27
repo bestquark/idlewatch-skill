@@ -2,6 +2,38 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R513 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny uninstall-help wording cleanup from the live checkout.
+
+### Priority call
+One low-risk wording seam still cleared the bar this pass: both uninstall help surfaces ended with `Turn it back on later with idlewatch install-agent.` The behavior was already right, but that `it` was slightly vaguer than the calmer, literal `background mode` story the rest of setup/reconfigure/status now uses.
+
+### What changed
+- Reworded the final uninstall follow-up in `bin/idlewatch-agent.js` from `Turn it back on later with idlewatch install-agent.` to `Turn background mode back on later with idlewatch install-agent.`
+- Kept the normal uninstall behavior, saved-config retention, local-log retention, setup/reconfigure flow, and the working telemetry path unchanged
+- Updated the matching regression assertions in `test/openclaw-env.test.mjs` so the clearer wording does not drift back
+
+### Verification evidence
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(uninstall-agent help reassures that config and logs are kept|uninstall-agent help in npx context stays simple and matches the real off-ramp|main help stays on the durable command in npx context|uninstall-agent runtime output keeps the saved-config wording calm)'`
+- [x] Result: **97 passed, 0 failed** in the targeted regression lane
+- [x] Observed: `uninstall-agent --help` now says `Turn background mode back on later with idlewatch install-agent.`
+- [x] Observed: `npx uninstall-agent --help` now says the same clearer follow-up line
+
+### Prioritized findings
+#### [x] L142 — uninstall help now says `Turn background mode back on later` instead of `Turn it back on later`
+**Why this mattered:** This is tiny, but it lands in a real install/uninstall recovery moment where the product should name the thing directly instead of making users resolve a pronoun. The updated line is slightly more literal, slightly more scan-clean, and a little more aligned with the rest of the calmer `background mode` wording across this lane.
+
+**Acceptance checks**
+- `uninstall-agent --help` now says `Turn background mode back on later with idlewatch install-agent.`
+- `npx uninstall-agent --help` now says the same thing
+- The same help surfaces no longer say `Turn it back on later with idlewatch install-agent.`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 10:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall-help wording cleanup
+
+
 ## Cycle R512 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.
