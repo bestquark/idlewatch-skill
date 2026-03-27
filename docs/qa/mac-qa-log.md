@@ -20747,3 +20747,29 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the non-TTY prompt hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
 - Updated regression coverage in `test/openclaw-env.test.mjs` so the headless help path stays honest.
 - Left the interactive TTY help path unchanged (`Use --no-tui for simple prompts.`).
+
+## Cycle R351 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny skill-doc consistency polish fix in the installer/CLI lane.
+- `skill/SKILL.md` now matches the calmer current product wording already used by the CLI and README:
+  - `turn on background mode on macOS`
+  - `Saved changes apply next time IdleWatch starts`
+- This keeps setup/reconfigure/background guidance reading like one product across the main user-facing surfaces.
+- Setup behavior, saved-config handling, background/install behavior, and the working telemetry path remain untouched.
+
+### R351 spot-check coverage
+- [x] `skill/SKILL.md`
+- [x] `README.md`
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+
+### Prioritized findings
+
+#### [x] L34 — skill doc no longer lags behind the polished CLI/README wording for background mode and saved-config timing
+**Why it matters:** This is tiny, but it lands in the setup/install docs path where wording consistency does real product work. The CLI and README had already converged on a calmer `turn on background mode` / `next time IdleWatch starts` story, while the skill doc still carried slightly older phrasing.
+
+**What shipped**
+- Reworded the `idlewatch install-agent` comment in `skill/SKILL.md` from `enable background mode on macOS` to `turn on background mode on macOS`.
+- Reworded the saved-config timing note from `Saved changes apply on the next start` to `Saved changes apply next time IdleWatch starts`.
+- Left install paths, config behavior, and telemetry behavior unchanged.
