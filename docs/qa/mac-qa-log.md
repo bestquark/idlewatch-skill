@@ -2,6 +2,44 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R583 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup status follow-up improvement from the live checkout.
+
+### Priority call
+One low-risk setup/install recovery seam still cleared the bar: after `idlewatch install-agent` ran before setup existed, the runtime success screen already kept both the main next step (`Finish setup`) and the immediate foreground fallback (`Run now`). `idlewatch status` in that same state still only showed `Finish setup`. Nothing functional was broken, yet the check-your-work surface felt slightly less self-sufficient than the matching install handoff. Keeping the same `Run now` fallback in status makes that recovery state a little more complete without adding any branching or new behavior.
+
+### What changed
+- Added `Run now: idlewatch run` to the installed-but-waiting-for-setup `status` follow-up in `bin/idlewatch-agent.js`
+- Kept the main action first: `Finish setup: idlewatch quickstart --no-tui` still leads the block
+- Updated the matching regression in `test/openclaw-env.test.mjs` so this source-checkout status path does not drift back to a single-hint screen or raw repo-script commands
+- Also cleaned up one stale regression assertion that still expected the intentionally removed `It stays off until then.` sentence, so the focused env suite matches the shipped wording again
+- Left auth, ingest, packaging, launch-agent behavior, saved-config semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(status command preserves installed-but-waiting-for-setup state after install-agent ran before setup|quickstart completion stays honest when a LaunchAgent was installed before setup)'`
+- [x] Result: **100 passed, 0 failed** in the current focused env slice run
+- [x] Fresh live install-before-setup status spot check with a stubbed `launchctl` now shows:
+  - `Finish setup:  idlewatch quickstart --no-tui`
+  - `Run now:       idlewatch run`
+- [x] Observed: the same status surface still keeps the honest installed-memory line (`Background: installed but waiting for setup`) and does not add extra background-mode noise before setup is saved
+
+### Prioritized findings
+#### [x] P1 — install-before-setup `status` now keeps the same `Run now` fallback visible as the matching install success screen
+**Why this mattered:** This is tiny, but it lands in the exact recovery moment where someone checks status after installing background mode a bit early and wants the shortest useful next command. `Finish setup` should still lead, but keeping `Run now` visible makes the status page feel less like a dead end and more like a complete next-step surface.
+
+**Acceptance checks**
+- Installed-but-waiting-for-setup `status` still says `Finish setup: idlewatch quickstart --no-tui`
+- The same recovery surface now also says `Run now: idlewatch run`
+- The same status surface does not drift back to raw repo-script commands like `node bin/idlewatch-agent.js run`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 6:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-before-setup status follow-up improvement
+
 ## Cycle R582 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real `npx install-agent` command-literalness regression in the live checkout.

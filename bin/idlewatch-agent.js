@@ -1972,8 +1972,12 @@ if (statusRequested) {
   console.log('')
   if (!hasConfig) {
     const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
-    const setupLabel = launchAgent?.state === 'installed-not-loaded' ? 'Finish setup' : 'Get started'
+    const setupWaitingForInstalledBackground = launchAgent?.state === 'installed-not-loaded'
+    const setupLabel = setupWaitingForInstalledBackground ? 'Finish setup' : 'Get started'
     console.log(`  ${setupLabel}:  ${preferredHelpSetupCommand('quickstart')}`)
+    if (setupWaitingForInstalledBackground) {
+      console.log(`  Run now:       ${preferredProductCommand('run')}`)
+    }
   } else if (!hasSamples) {
     console.log(`  Test:     ${inferCliCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {

@@ -1574,7 +1574,9 @@ test('status command preserves installed-but-waiting-for-setup state after insta
     assert.match(status.stdout, /Background:\s+installed but waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+waiting for setup/)
     assert.match(status.stdout, /Finish setup:\s+idlewatch quickstart --no-tui/)
+    assert.match(status.stdout, /Run now:\s+idlewatch run/)
     assert.doesNotMatch(status.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(status.stdout, /Run now:\s+node .*run/)
     assert.doesNotMatch(status.stdout, /Finish setup:\s+node .*quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
   } finally {
@@ -1869,7 +1871,7 @@ test('quickstart completion stays honest when a LaunchAgent was installed before
     assert.doesNotMatch(run.stdout, /Background mode is already installed\./)
     assert.doesNotMatch(run.stdout, /Background agent is already installed\./)
     assert.match(run.stdout, /Start background mode:\s+idlewatch install-agent/)
-    assert.match(run.stdout, /It stays off until then\./)
+    assert.doesNotMatch(run.stdout, /It stays off until then\./)
     assert.doesNotMatch(run.stdout, /It stays off until you run idlewatch install-agent\./)
     assert.match(run.stdout, /Run now:/)
     assert.match(run.stdout, /idlewatch run\s+Run in the foreground/)
