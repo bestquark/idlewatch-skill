@@ -2,6 +2,37 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R418 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass completed from the live checkout.
+
+### Priority call
+Closed one tiny remaining packaged-install doc seam that still used `LaunchAgent` framing in a setup/install decision surface where the rest of IdleWatch already speaks more simply in terms of `background mode`.
+
+### What changed
+- Reworded the optional packaged-app lifecycle section in `docs/packaging/macos-dmg.md` from `Launch lifecycle` / `Install LaunchAgent` to `Background mode` / `Turn on IdleWatch background mode on macOS`
+- Reworded the matching uninstall bullet from `Uninstall` to `Turn it off`, so the section reads more like the product and less like launchd internals
+- Kept setup/reconfigure behavior, saved-config handling, launch-agent implementation, packaging behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `grep -n "Background mode (optional)\|Turn on IdleWatch background mode on macOS\|Turn it off" docs/packaging/macos-dmg.md`
+- [x] `grep -n "Launch lifecycle\|Install LaunchAgent to keep IdleWatch running in the background\|Uninstall:" docs/packaging/macos-dmg.md`
+- [x] Targeted regression context remains green from the live checkout: `node --test --test-concurrency=1 test/openclaw-env.test.mjs --test-name-pattern='(test-publish|install-agent|uninstall-agent|quickstart|configure|reconfigure|status|metric|device|npx|help|run --help|create --help|dashboard --help|menubar --help)'`
+- [x] Result: **93 passed, 0 failed**
+
+### Prioritized findings
+#### [x] L94 — packaged DMG guide now says `background mode` instead of `Launch lifecycle` / `Install LaunchAgent`
+**Why this mattered:** This is tiny, but it sits in a real setup/install choice point. The product has already converged on the calmer `background mode` story across the CLI, installer, and nearby docs. Leaving this one packaged-app section on `Launch lifecycle` / `Install LaunchAgent` made the DMG guide feel slightly older and more implementation-shaped than the actual setup flow.
+
+**Acceptance notes**
+- `docs/packaging/macos-dmg.md` now says `Background mode (optional)`
+- The install bullet now says `Turn on IdleWatch background mode on macOS`
+- The uninstall bullet now says `Turn it off`
+- No runtime, packaging, auth, ingest, or telemetry behavior changed
+
+**Last updated:** Friday, March 27th, 2026 — 1:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - one tiny packaged-install doc seam fixed in this pass
+
 ## Cycle R417 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass completed from the live checkout.

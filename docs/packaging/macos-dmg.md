@@ -24,10 +24,10 @@ local testing and release preparation.
 2. **Create app wrapper skeleton**
    - Stage Node package + app metadata into `dist/IdleWatch.app/Contents/Resources/`
    - Add launcher script in `Contents/MacOS/IdleWatch`
-3. **Launch lifecycle (optional)**
-   - Install LaunchAgent to keep IdleWatch running in the background:
+3. **Background mode (optional)**
+   - Turn on IdleWatch background mode on macOS:
      - `scripts/install-macos-launch-agent.sh`
-   - Uninstall: `scripts/uninstall-macos-launch-agent.sh`
+   - Turn it off: `scripts/uninstall-macos-launch-agent.sh`
 4. **Codesign (optional)**
    - Sign app with `codesign --deep --force --options runtime ...`
 5. **Notarize (optional)**
