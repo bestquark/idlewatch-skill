@@ -2,6 +2,47 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R462 Status: READY FOR FIX ⚠️
+
+Fresh installer/CLI polish pass found one remaining public onboarding-doc mismatch worth cleaning up.
+
+### Priority call
+One small but real setup-path clarity issue still stands out: `docs/onboarding-external.md` still describes `npx idlewatch quickstart --no-tui` as prompting for `a device name, API key, and which metrics to collect`, and the DMG path still says first run is to `link the device with an API key`. That no longer matches the current product flow, where quickstart is local-only-friendly and cloud linking is optional. The CLI/help surfaces already say this correctly; the stale doc copy is the confusing outlier.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `sed -n '1,80p' docs/onboarding-external.md`
+- [x] Observed: onboarding doc still says `Prompts for a device name, API key, and which metrics to collect.`
+- [x] Observed: DMG lane still says packaged first run is to `link the device with an API key`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+- [x] Observed: live help says `Walks you through device name, metrics, and an optional cloud link.`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js --test-publish`
+- [x] Observed: first-run one-shot path succeeds in `local-only mode` without requiring any API key
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- [x] Observed: first-run status still previews `Publish preview:   local-only` and keeps the setup story aligned with optional cloud linking
+
+### Prioritized findings
+#### [ ] L117 — external onboarding doc should stop implying that quickstart requires an API key
+**Why this matters:** This is small, but it hits the exact first-impression lane the installer polish work is trying to keep clean. The product now has a nice low-friction story: pick a device name, choose metrics, optionally add cloud later. The public onboarding doc quietly reintroduces the older, heavier mental model that cloud linking is mandatory. That makes setup feel more technical and more committed than it really is.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `sed -n '1,80p' docs/onboarding-external.md`
+3. Observe `Wizard output:` still says `Prompts for a device name, API key, and which metrics to collect.`
+4. Observe the DMG rollout section still says the first-run goal is to `link the device with an API key`
+5. Compare with `HOME="$(mktemp -d)" node bin/idlewatch-agent.js quickstart --help`
+6. Observe the actual product help now says `device name, metrics, and an optional cloud link`
+
+**Acceptance criteria**
+- `docs/onboarding-external.md` describes quickstart as local-only-friendly, with cloud linking optional
+- The `Wizard output` bullets no longer imply that an API key is always required on first run
+- The DMG install path no longer frames first run as inherently `link the device with an API key`
+- npm/npx and packaged-app guidance stays otherwise unchanged
+- No auth, ingest, packaging, or launch-agent behavior changes are introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:43 AM (America/Toronto)  
+**Status:** READY FOR FIX ⚠️ - one public onboarding doc still overstates API-key requirements
+
 ## Cycle R461 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny top-level `npx` help-listing cleanup from the live checkout.
