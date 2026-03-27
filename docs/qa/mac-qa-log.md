@@ -2,6 +2,43 @@
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R581 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one genuinely tiny installed-but-not-running setup/reconfigure copy cleanup from the live checkout.
+
+### Priority call
+One low-risk setup/reconfigure seam still cleared the bar this cycle: after setup was saved while background mode had already been installed but was still off, the success block said both `Background mode is installed and not running yet.` and `It stays off until then.` Nothing functional was broken, but that second line repeated the same point in a slightly heavier way right in a scan-first moment. The calmer product move is to keep the literal state line, keep the actionable `Start background mode` command, and drop the extra sentence.
+
+### What changed
+- Removed the redundant `It stays off until then.` line from the installed-but-not-running setup/reconfigure next-step block in `bin/idlewatch-agent.js`
+- Kept the useful state and action lines intact: `Background mode is installed and not running yet.`, `Start background mode: ...`, and `Background mode will use the saved config.`
+- Updated the matching regression in `test/openclaw-env.test.mjs` so that extra sentence does not drift back into the setup success surface
+- Left auth, ingest, launch-agent behavior, saved-config handling, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live installed-before-setup → quickstart spot check with a stubbed `launchctl` now shows:
+  - `Background mode is installed and not running yet.`
+  - `Start background mode:  idlewatch install-agent`
+  - `Background mode will use the saved config.`
+  - no extra `It stays off until then.` line
+
+### Prioritized findings
+#### [x] P1 — installed-but-not-running setup success no longer repeats itself with `It stays off until then.`
+**Why this mattered:** This is tiny, but it lands right after setup succeeds, where the product should feel especially neat. The state line already said background mode was installed and not running. Repeating the same idea one line later made the block slightly more verbose without making the next step any clearer.
+
+**Acceptance checks**
+- Installed-but-not-running setup/reconfigure success still says `Background mode is installed and not running yet.`
+- The same block still keeps `Start background mode: idlewatch install-agent`
+- The same block still keeps `Background mode will use the saved config.`
+- The same block no longer says `It stays off until then.`
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 5:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-but-not-running setup/reconfigure copy cleanup
+
 ## Cycle R580 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass did not surface a new product-facing issue worth logging in the requested lane.
