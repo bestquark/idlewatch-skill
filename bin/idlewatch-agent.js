@@ -302,7 +302,9 @@ Usage:  ${installAgentHelpCommand}
 
 Turns on background mode on macOS.
 If setup is already saved, background mode turns on right away.
-If setup isn't saved yet, finish setup with ${quickstartCommand}, then run ${installAgentHelpCommand}.`
+
+Set up now:              ${quickstartCommand}
+Turn on background mode: ${installAgentHelpCommand}`
 }
 
 function uninstallAgentHelpText() {

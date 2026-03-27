@@ -1,3 +1,39 @@
+## Cycle R605 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny `install-agent --help` setup handoff cleanup in the live checkout.
+
+### Priority call
+One low-risk setup/install seam still cleared the bar: the normal `idlewatch install-agent --help` path already said the right thing, but it still buried the no-setup recovery inside a sentence (`If setup isn't saved yet, finish setup with ...`). That was slightly heavier than the rest of this lane, which has already converged on short, labeled next steps. Tightening the help output to the same scan-friendly shape removes a little reading friction without changing any behavior.
+
+### What changed
+- Reworked the non-`npx` `install-agent --help` handoff in `bin/idlewatch-agent.js` from the older sentence form to the same compact step labels used elsewhere:
+  - `Set up now: idlewatch quickstart --no-tui`
+  - `Turn on background mode: idlewatch install-agent`
+- Updated the matching regression in `test/openclaw-env.test.mjs` so the calmer labeled handoff does not drift back to the heavier sentence form
+- Left auth, ingest, launch-agent behavior, saved-config handling, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live help spot check now shows:
+  - `Set up now:              idlewatch quickstart --no-tui`
+  - `Turn on background mode: idlewatch install-agent`
+- [x] Observed: the same help surface still keeps the short top-level context (`Turns on background mode on macOS.`, `If setup is already saved, background mode turns on right away.`) without adding new options or changing the durable flow
+
+### Prioritized findings
+#### [x] P1 — non-`npx` `install-agent --help` now uses short labeled next steps instead of a heavier sentence handoff
+**Why this mattered:** This is tiny, but it lands in the exact moment where someone checks how background mode works and scans for the next command. A short labeled handoff is easier to skim, matches the surrounding product surfaces better, and reduces one little bit of setup friction.
+
+**Acceptance checks**
+- `idlewatch install-agent --help` now says `Set up now: idlewatch quickstart --no-tui`
+- The same help now says `Turn on background mode: idlewatch install-agent`
+- The old sentence form (`If setup isn't saved yet, finish setup with ...`) is gone from this help surface
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 7:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `install-agent --help` setup handoff cleanup
+
 ## Cycle R604 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.
