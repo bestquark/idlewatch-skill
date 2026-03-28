@@ -1,3 +1,42 @@
+## Cycle R760 Status: COMPLETE ✅
+
+Shipped the tiny install-first recovery-copy fix from the previous live QA pass.
+
+### Priority call
+One small issue cleared the bar and is now fixed: if someone ran `install-agent` first, then finished setup while the launch agent was already loaded, the setup success screen used to fall back to the generic `Turn on background mode` handoff instead of the more truthful `Apply saved config` guidance already used elsewhere for running background mode. The product worked, but that state asked the user to reconcile two slightly different stories about the same next step. The fix was to keep the setup success block aligned with the running-state mental model.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated the setup/reconfigure success next-step block so an already-running background mode now consistently says `Background mode: already running`
+- [x] Updated that same running-state handoff to say `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+- [x] Kept the calmer `Turn on background mode` handoff unchanged for the installed-but-not-running state
+- [x] Added focused regression coverage for the install-before-setup → finish-setup path when `launchctl print` already succeeds
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart uses apply-saved-config wording when install-agent was already loaded before setup finished|quickstart keeps the installed-but-not-running wording clear after install-agent ran before setup'`
+- [x] Observed the install-first + already-loaded quickstart success block now prints:
+  - `Background mode: already running`
+  - `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+- [x] Observed the installed-but-not-running variant still keeps:
+  - `Background mode is installed and not running yet.`
+  - `Turn on background mode:  idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — install-first setup completion now keeps the already-running handoff literal instead of sounding like a fresh enable
+**Why this mattered:** This is tiny, but it lands in one of the exact flows this polish lane cares about. When background mode is already loaded, `Apply saved config` is more truthful than `Turn on background mode`, and it keeps the setup completion screen aligned with `status` and reconfigure output.
+
+**Acceptance checks**
+- In the install-before-setup recovery path, if the launch agent is already loaded by the time setup completes, the setup success handoff now uses the same `Apply saved config` mental model as the running-state surfaces
+- The next step stays literally runnable as `idlewatch install-agent`
+- The existing `Turn on background mode` handoff remains unchanged for the genuinely installed-but-not-running state
+- No auth, ingest, packaging, metric persistence, device identity, or launch-agent behavior changes were introduced beyond this recovery-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped the install-first already-running recovery-copy fix from the latest QA pass
+
 ## Cycle R759 Status: COMPLETE ✅
 
 Fresh live installer/CLI polish pass found one still-real recovery-copy seam in the install-before-setup → finish-setup flow when the launch agent is already loaded.
