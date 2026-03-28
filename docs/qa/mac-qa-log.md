@@ -1110,6 +1110,48 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R638 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS install script.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `scripts/install-macos-launch-agent.sh` still opens with `✅ Background mode installed.` even in the install-before-setup path where the very next line correctly says `Setup isn't saved yet, so background mode stays off for now.` Nothing functional is broken, but this is exactly the kind of tiny contradiction that makes a reversible setup flow feel slightly less trustworthy than the calmer CLI path. The right fix should be tiny and product-shaped: keep the same flow, but make the headline say what actually happened — background integration was installed, while background mode is still waiting for saved setup.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh standalone install-script repro with a stubbed `launchctl` and fake app bundle:
+  - `HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" ./scripts/install-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - standalone install script currently says:
+    - `✅ Background mode installed.`
+    - `Setup isn't saved yet, so background mode stays off for now.`
+    - `Finish setup:` then `idlewatch quickstart`
+    - `Run now:` then `idlewatch run`
+    - `Start background mode after setup:` then `idlewatch install-agent`
+- [x] This still leaves the rest of the no-setup handoff calm and useful; the issue is just the slightly over-claimed opening line
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install script currently overstates success by saying `Background mode installed` even when setup is still missing
+**Why this matters:** This is tiny, but it lands in the first install-before-setup moment where someone decides whether they are done. The rest of the script already tells the truth. Keeping the headline equally truthful would make the whole handoff feel cleaner and more trustworthy.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout` / `enable`
+3. Create a fake app bundle at `~/Applications/IdleWatch.app/Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" ./scripts/install-macos-launch-agent.sh`
+5. Observe that the script currently opens with `✅ Background mode installed.` while the next line says `Setup isn't saved yet, so background mode stays off for now.`
+
+**Acceptance criteria**
+- The standalone macOS install script should not imply that background mode is already on when no saved setup exists yet
+- The opening confirmation should stay short and low-noise, but read truthfully alongside `Setup isn't saved yet, so background mode stays off for now.`
+- The rest of the no-setup handoff should remain unchanged and minimal (`Finish setup`, `Run now`, then `Start background mode after setup`)
+- Saved-setup install paths should remain unchanged
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 10:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny standalone macOS install-script truthfulness seam from a fresh live pass
+
+
 ## Cycle R637 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
