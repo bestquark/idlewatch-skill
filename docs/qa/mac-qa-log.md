@@ -34996,6 +34996,46 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 
 **Last updated:** Saturday, March 28th, 2026 — 4:17 AM (America/Toronto)
 
+
+## Cycle R671 Status: CLOSED ✅
+
+### Outcome
+- Restored one tiny but user-visible setup/install polish regression in the live checkout.
+- A few scan-first headless setup surfaces had drifted back to showing both `quickstart` and `quickstart --no-tui`, even though these are already explicitly text-first/non-interactive moments.
+- The main CLI help, first-run/recovery handoffs, global npm postinstall, and packaged macOS install-before-setup flow now go back to one obvious copy-paste command: `quickstart --no-tui`.
+- Packaged/global install follow-up wording also stays a bit more literal again: `start background mode after setup`.
+- Saved-config handling, launch-agent behavior, and the now-working telemetry path stayed untouched.
+
+### R671 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test test/postinstall.test.mjs test/macos-launch-agent-scripts.test.mjs`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern 'help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|install-agent help/runtime preserve one-off command hints under npm exec|install-agent help keeps custom saved-config npx handoffs literally runnable|install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path|main help stays on the durable command in npx context|install-agent refuses disposable npm exec paths and explains the durable path|install-agent runtime in npx context keeps custom saved-config handoffs literally runnable|status command preserves installed-but-waiting-for-setup state after install-agent ran before setup|quickstart and configure keep one-off runs honest about background install under npm exec env|configure --no-tui fails clearly when no saved setup exists yet|configure --no-tui keeps the calmer setup-first recovery copy in true npx mode when no saved setup exists yet|status command keeps custom saved-config follow-up commands literally runnable|npx status keeps the durable background-mode hint literally runnable with a custom saved-config path|npx quickstart keeps the durable background-mode hint literally runnable with a custom saved-config path'`
+
+### Prioritized findings
+#### [x] L157 — text-first setup/install handoffs again stay single-command and copy-safe
+**Why it matters:** This is small, but it lands exactly in the copy-paste moment where setup taste matters most. Once IdleWatch already knows it is in a non-interactive/text-first setup moment, showing both `quickstart` and `quickstart --no-tui` adds one unnecessary decision and makes the flow feel busier than the rest of the current product.
+
+**What shipped**
+- Reworded `bin/idlewatch-agent.js` so non-TTY setup/recovery/help handoffs now prefer a single `quickstart --no-tui` command instead of leading with two choices.
+- Reworded `scripts/postinstall.mjs` so global install handoff again prints only `idlewatch quickstart --no-tui`.
+- Reworded `scripts/install-macos-launch-agent.sh` so packaged install-before-setup also prints one `quickstart --no-tui` step and says `Start background mode after setup`.
+- Updated focused regression coverage in `test/openclaw-env.test.mjs`, `test/postinstall.test.mjs`, and `test/macos-launch-agent-scripts.test.mjs`.
+
+**Acceptance checks**
+- [x] Main `--help` now says `Get started:  idlewatch quickstart --no-tui`
+- [x] True-`npx` `install-agent --help` now says `Set up now:                npx idlewatch quickstart --no-tui`
+- [x] Global npm postinstall now says `idlewatch quickstart --no-tui`
+- [x] Global npm postinstall now says `idlewatch install-agent   # start background mode after setup`
+- [x] Packaged macOS install-before-setup now says `Finish setup: ... quickstart --no-tui`
+- [x] Packaged macOS install-before-setup now says `Start background mode after setup:`
+- [x] The same text-first surfaces no longer print a second `# plain text fallback` line
+- [x] Saved-config/install behavior and telemetry behavior stay unchanged
+
+**Last updated:** Saturday, March 28th, 2026 — 9:15 AM (America/Toronto)
+
+---
+
 ## Cycle R669 Status: CLOSED ✅
 
 ### Outcome
