@@ -1110,6 +1110,43 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R637 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch-agent.sh` always said `Saved config stays at ...` and `Logs stay in ...` even when someone had only tried background integration and never saved setup. Nothing functional was broken, but this was slightly less literal than the now-calmer CLI uninstall path. The right fix was tiny and product-shaped: keep the same simple uninstall flow, but say `would live` / `would go` unless those retained paths actually exist.
+
+### What changed
+- [x] Made `scripts/uninstall-macos-launch-agent.sh` truthfulness-aware for no-setup / no-log off-ramps
+- [x] Kept the existing calmer `stays` wording when saved config or retained logs really exist
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left setup, reconfigure, install flow, launch-agent semantics, packaging shape, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone macOS uninstall script now says:
+  - `Saved config would live at ~/.idlewatch/idlewatch.env`
+  - `Logs would go in ~/Library/Logs/IdleWatch`
+  - while still keeping `Turn background mode back on later with idlewatch install-agent.`
+- [x] Confirmed the configured-saved-config path still keeps the existing `Saved config stays at ...` wording when setup really exists
+
+### Prioritized findings
+#### [x] P1 — standalone macOS uninstall script now stays truthful when setup was never saved
+**Why this mattered:** This is tiny, but it lands in the exact reversible “never mind” moment where product trust is won or lost. If setup and retained logs do not exist yet, saying they `stay` is a little too optimistic. Saying where they *would* live keeps the off-ramp calm, literal, and copy-safe without adding any new choices.
+
+**Acceptance checks**
+- The standalone macOS uninstall script still exits successfully and keeps the same simple off-ramp
+- No-saved-setup / no-log paths now say `Saved config would live at ...` and `Logs would go in ...`
+- Saved-config / retained-log paths still keep the existing `stays` wording
+- The reinstall handoff remains short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this wording truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 10:05 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall off-ramp truthfulness fix
+
+
 ## Cycle R630 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scope from the current polish plan — setup wizard quality, config persistence/reload behavior, launch-agent install/uninstall behavior, local-only `--test-publish`, device identity continuity, metric-toggle persistence, and npm/`npx` install-path clarity — and did not surface another small product-facing issue worth shipping.

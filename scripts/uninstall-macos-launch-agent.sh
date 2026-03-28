@@ -41,8 +41,17 @@ if [[ -f "$PLIST_PATH" ]]; then
   rm -f "$PLIST_PATH"
 fi
 
+CONFIG_STATUS_WORD="stays at"
+LOG_STATUS_WORD="stay in"
+if [[ ! -f "$CONFIG_ENV_PATH" ]]; then
+  CONFIG_STATUS_WORD="would live at"
+fi
+if [[ ! -d "$LOG_DIR" ]]; then
+  LOG_STATUS_WORD="would go in"
+fi
+
 echo "✅ Background mode turned off."
 echo "   Removed plist: $PLIST_PATH"
-echo "   Saved config stays at $CONFIG_ENV_PATH"
-echo "   Logs stay in $LOG_DIR"
+echo "   Saved config $CONFIG_STATUS_WORD $CONFIG_ENV_PATH"
+echo "   Logs $LOG_STATUS_WORD $LOG_DIR"
 echo "   Turn background mode back on later with $REINSTALL_HINT."

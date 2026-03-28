@@ -299,3 +299,34 @@ test('packaged macOS uninstall script names a custom saved config path when one 
     fs.rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('packaged macOS uninstall script stays truthful when setup was never saved', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-no-setup-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-no-setup-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
+    assert.match(uninstall.stdout, /Logs would go in .*Library\/Logs\/IdleWatch/)
+    assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
