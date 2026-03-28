@@ -1,3 +1,41 @@
+## Cycle R748 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last small docs-level setup drift outside the README and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the runtime product and README already converged on the calmer `quickstart`-first setup story, but two adjacent setup docs still treated `quickstart --no-tui` as the headline path in places that shape first-run expectations. Nothing functional was broken; this was a docs-only product-taste seam in onboarding and background-mode docs.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored `docs/onboarding-external.md` to lead its fastest one-off path with `npx idlewatch quickstart`, with `npx idlewatch quickstart --no-tui` kept one block below as the plain-text fallback
+- [x] Tightened `docs/packaging/macos-launch-agent.md` so saved-setup/background-mode wording now points at `idlewatch quickstart` first and treats `--no-tui` as the explicit fallback instead of the default setup shape
+- [x] Left auth/ingest behavior, packaging behavior, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `docs/onboarding-external.md`
+- [x] Updated `docs/packaging/macos-launch-agent.md`
+- [x] Observed `docs/onboarding-external.md` now shows:
+  - `npx idlewatch quickstart`
+  - then `npx idlewatch quickstart --no-tui  # plain text fallback`
+- [x] Observed `docs/packaging/macos-launch-agent.md` now says:
+  - saved setup can come from `idlewatch quickstart`
+  - install loads right away if `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart`
+  - reconfigure/apply guidance now says `After running idlewatch quickstart or changing settings...`, with `idlewatch quickstart --no-tui` kept as the plain-text fallback
+
+### Prioritized findings
+#### [x] P1 — non-README setup docs now match the calmer quickstart-first product shape already used by the CLI and main install surfaces
+**Why this mattered:** This is small, but it lands in the same “what should I run first?” scan path as the README. Keeping the surrounding docs aligned with the actual product makes setup feel more deliberate and less technical without touching behavior.
+
+**Acceptance checks**
+- `docs/onboarding-external.md` now leads its one-off setup path with `npx idlewatch quickstart`
+- `docs/onboarding-external.md` still keeps `npx idlewatch quickstart --no-tui` visible as the explicit plain-text fallback
+- `docs/packaging/macos-launch-agent.md` now treats `idlewatch quickstart` as the default saved-setup path and `--no-tui` as the explicit fallback
+- No auth, ingest, packaging behavior, launch-agent, or telemetry-path behavior changes were introduced beyond this docs-only polish
+
+**Last updated:** Saturday, March 28th, 2026 — 8:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny setup-doc consistency fix outside the README
+
 ## Cycle R747 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan and did not surface another small end-user issue worth shipping.

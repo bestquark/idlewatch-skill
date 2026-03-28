@@ -6,7 +6,7 @@ Turn on IdleWatch background mode.
 
 - IdleWatch.app installed (typically `/Applications/IdleWatch.app`)
 - macOS 12+ (Monterey or later)
-- Optional: saved IdleWatch config from `idlewatch quickstart --no-tui` if you want background mode to start using your saved setup right away
+- Optional: saved IdleWatch config from `idlewatch quickstart` if you want background mode to start using your saved setup right away (`idlewatch quickstart --no-tui` remains the plain-text fallback)
 
 ## Install
 
@@ -24,10 +24,10 @@ npm run install:macos-launch-agent
 
 This installs background mode at `~/Library/LaunchAgents/com.idlewatch.agent.plist`.
 
-- If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart --no-tui`, the install also loads the agent right away so background mode turns on immediately.
+- If `~/.idlewatch/idlewatch.env` already exists from `idlewatch quickstart`, the install also loads the agent right away so background mode turns on immediately.
 - If setup has not been saved yet, the plist is installed but left unloaded until you finish setup. That keeps the first-run flow simpler and avoids a half-configured background process.
 
-Config changes are picked up next time IdleWatch starts. After running `idlewatch quickstart --no-tui` or changing settings, re-run the install script once to turn background mode on or apply the saved config.
+Config changes are picked up next time IdleWatch starts. After running `idlewatch quickstart` or changing settings, re-run the install script once to turn background mode on or apply the saved config. Use `idlewatch quickstart --no-tui` any time you want the plain-text fallback.
 
 ### Configuration
 
