@@ -159,7 +159,11 @@ function preferredRecoveryCommand(command = 'configure') {
 }
 
 function preferredPrimarySetupCommand(command = 'quickstart') {
-  return preferredHelpSetupCommand(command)
+  const invocation = detectCliInvocation()
+  if (invocation.kind === 'source') {
+    return withCustomConfigEnv(`idlewatch ${command}`)
+  }
+  return inferCliCommand(command)
 }
 
 function preferredSetupFallbackCommand(command = 'quickstart') {

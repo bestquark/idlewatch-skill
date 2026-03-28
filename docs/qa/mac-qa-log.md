@@ -1,3 +1,57 @@
+## Cycle R694 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real setup-handoff friendliness regression on the highest-visibility help surfaces and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the main help and durable-background help surfaces had drifted back to leading with the more technical `quickstart --no-tui` command as the headline setup handoff. Nothing functional was broken, but this is one of the first product surfaces people scan before copying their first command. The calmer direction elsewhere in the product was already better: lead with plain `quickstart`, then keep `quickstart --no-tui` one line below as the literal plain-text fallback.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked top-level help to lead with plain `quickstart` in both normal and true-`npx` contexts
+- [x] Reworked `install-agent --help` to lead with plain `quickstart` in both normal and true-`npx` contexts
+- [x] Kept the literal `quickstart --no-tui` fallback one line below on those same surfaces instead of deleting it
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config behavior, and the durable one-off/background split unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh normal help spot check now prints:
+  - `Get started:  idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Fresh true-`npx` help spot check now prints:
+  - `Get started:  npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Fresh normal `install-agent --help` spot check now prints:
+  - `Set up now:              idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Fresh true-`npx` `install-agent --help` spot check now prints:
+  - `Set up now:                npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed in the same live pass:
+  - the durable background-mode handoff still stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`
+  - one-off `npx` run guidance still stays literal on `npx idlewatch run`
+  - the top-level `install-agent` summary still stays truthful about setup/durable-install prerequisites
+
+### Prioritized findings
+#### [x] P1 — top-level help and `install-agent --help` now lead with plain `quickstart` again while keeping `--no-tui` one line below as the fallback
+**Why this mattered:** This is tiny, but it lands right at the “what should I run first?” moment. Leading with the more technical fallback made setup feel slightly noisier and more implementation-shaped than the rest of the product. Restoring the calmer plain command first makes the first scan friendlier without removing the literal text fallback.
+
+**Acceptance checks**
+- Normal top-level help now leads with `Get started:  idlewatch quickstart`
+- True-`npx` top-level help now leads with `Get started:  npx idlewatch quickstart`
+- Normal `install-agent --help` now leads with `Set up now: idlewatch quickstart`
+- True-`npx` `install-agent --help` now leads with `Set up now: npx idlewatch quickstart`
+- Those same help surfaces still keep the literal `quickstart --no-tui` fallback visible one line below
+- The existing one-off/durable split remains unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable background mode stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- No auth, ingest, packaging, launch-agent, or saved-config semantic changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny help-surface setup-handoff friendliness fix
+
 ## Cycle R693 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real setup-handoff friendliness regression on the highest-visibility help surfaces.
