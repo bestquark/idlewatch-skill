@@ -720,6 +720,59 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R615 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the currently logged top-priority `npx` command-literalness concern in the live checkout and did not reproduce another product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The previously logged `R614` concern was worth rechecking because it lands in the most copy/paste-heavy setup/install/status moments, but a fresh live pass now keeps the one-off `npx` path literal and the durable background-mode handoff separate exactly where it should.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh real-`npx` install/help spot checks with explicit npm-exec env vars for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+- [x] Fresh real-`npx` quickstart/status/configure/status spot checks with a stubbed `launchctl` for:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0' HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh custom-saved-config sanity spot check still keeps the actual saved file path truthful:
+  - `HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Custom Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - `install-agent --help` now says:
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `Run now:                   npx idlewatch run`
+  - runtime `install-agent` keeps the same one-off-safe split instead of drifting back to plain `idlewatch ...` commands
+  - `quickstart --no-tui` now says:
+    - `Run now:`
+    - `  npx idlewatch run   Run in the foreground`
+    - `For background mode:`
+    - `  Install once: npm install -g idlewatch`
+    - `  Turn on background mode: idlewatch install-agent`
+  - saved-setup `status` now says:
+    - `Change:   npx idlewatch configure --no-tui`
+    - `Run now:  npx idlewatch run`
+    - `For background mode:` with the same explicit durable-install split
+  - `configure --no-tui` repeats the same one-off-safe foreground path and explicit durable-install handoff
+  - custom-saved-config setup/status still point at the actual configured env path and do not silently fall back to the default saved-config file
+- [x] The same pass still confirms the rest of the requested polish lane remains calm and useful: install-before-setup stays honest, device IDs persist through rename/reconfigure, metric toggles persist in status, local-only `--test-publish` stays intentionally lightweight, uninstall remains a clean reversible off-ramp, and the now-working telemetry path stays intact
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after rerunning the logged top-priority `npx` concern
+**Why this matters:** This lane is about removing friction, not manufacturing churn. When the live product already feels neat, literal, and copy-safe across setup, reconfigure, status, uninstall, true-`npx`, and custom saved-config use, the right move is to log the verification cleanly and avoid speculative edits.
+
+**Acceptance checks**
+- True `npx` help/runtime still say `npx idlewatch quickstart --no-tui` for setup and `npx idlewatch run` for one-off foreground use
+- True `npx` saved-setup `status` still says `Change: npx idlewatch configure --no-tui`
+- The durable background-mode handoff still stays explicit on `npm install -g idlewatch`, then `idlewatch install-agent`
+- Custom saved-config setup/status still point at the actual configured env path and do not drift back to `~/.idlewatch/idlewatch.env`
+- No auth, ingest, packaging, launch-agent, or telemetry-path changes were introduced in this verification-only pass
+
+**Last updated:** Friday, March 27th, 2026 — 8:20 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the logged top-priority `npx` concern and confirmed no additional product change was needed
+
 ## Cycle R614 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression in the live checkout.
