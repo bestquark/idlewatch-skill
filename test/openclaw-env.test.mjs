@@ -1689,6 +1689,49 @@ test('install-agent refuses disposable npm exec paths and explains the durable p
   }
 })
 
+test('install-agent runtime in npx context keeps custom saved-config handoffs literally runnable', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-runtime-custom-config-npx-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-runtime-custom-config-npx-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const customConfigPath = path.join(tempDir, 'configs', 'idlewatch custom.env')
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
+
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const run = spawnSync(process.execPath, [BIN, 'install-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        IDLEWATCH_CONFIG_ENV_PATH: customConfigPath,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.notEqual(run.status, 0)
+    assert.match(run.stderr, new RegExp(`Set up now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch quickstart --no-tui`))
+    assert.match(run.stderr, /Install once:\s+npm install -g idlewatch/)
+    assert.match(run.stderr, new RegExp(`Turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
+    assert.match(run.stderr, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch run`))
+    assert.doesNotMatch(run.stderr, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(run.stderr, /Turn on background mode:\s+idlewatch install-agent/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('install-agent follow-up uses source checkout command path', () => {
   if (process.platform !== 'darwin') {
     return

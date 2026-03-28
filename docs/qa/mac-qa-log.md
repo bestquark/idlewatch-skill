@@ -762,6 +762,94 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R622 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup handoff truthfulness fix in the combined true-`npx` + custom-saved-config path.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: when `IDLEWATCH_CONFIG_ENV_PATH` pointed at a custom saved env file and the user tried `install-agent` before setup existed yet, the runtime handoff still dropped that env prefix exactly on `Set up now` and the durable `Turn on background mode` line while keeping it on `Run now`. Nothing core was broken, but this was the exact copy-paste moment where the product should feel most literal and trustworthy. Nearby help/setup/status surfaces were already doing the right thing; runtime just needed to reuse the same helpers instead of its last hardcoded true-`npx` strings.
+
+### What changed
+- Reworked the true-`npx` `install-agent` runtime early-exit in `bin/idlewatch-agent.js` to reuse the same invocation-aware/custom-config-aware helpers already used by the polished help/setup/status surfaces
+- Kept the default-path experience unchanged; the env prefix only appears when a genuinely custom saved-config path is active
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for true-`npx` `install-agent` runtime with a custom saved-config path
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` + custom-saved-config install-before-setup repro with a stubbed `launchctl` now shows:
+  - `Set up now:                IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch quickstart --no-tui`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' idlewatch install-agent`
+  - `Run now:                   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch run`
+- [x] Observed: the same runtime handoff no longer mixes custom-path-aware and custom-path-blind follow-up commands on one screen
+- [x] Focused `node --test` was skipped in this environment because the runner has stayed sticky in prior passes; verification for this tiny patch was completed with syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — true-`npx` install-before-setup runtime now keeps the custom saved-config prefix on all copy-paste follow-up commands
+**Why this mattered:** This is tiny, but it lands in the exact handoff where someone is moving from one-off setup toward durable background mode without losing track of a custom config file. Keeping the same env-prefixed context on each command makes the screen feel neat, trustworthy, and copy-safe again.
+
+**Acceptance checks**
+- In a true `npx` context with a non-default `IDLEWATCH_CONFIG_ENV_PATH`, install-before-setup runtime now keeps that same env prefix on `Set up now`
+- In that same path, the durable handoff now also keeps that same env prefix on `Turn on background mode: ... idlewatch install-agent`
+- `Install once: npm install -g idlewatch` stays unchanged and unprefixed
+- `Run now` keeps the already-correct env-prefixed `npx idlewatch run`
+- Default-path behavior remains unchanged and does not gain extra env-var noise
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced beyond making this handoff truthful and consistent
+
+**Last updated:** Friday, March 27th, 2026 — 8:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` + custom-path install-before-setup runtime handoff fix
+
+## Cycle R621 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real install-before-setup handoff truthfulness regression in the combined true-`npx` + custom-saved-config path.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: when `IDLEWATCH_CONFIG_ENV_PATH` points at a custom saved env file and the user tries `install-agent` before setup exists yet, the runtime handoff drops that env prefix exactly on the `Set up now` and durable `Turn on background mode` lines while still keeping it on `Run now`. Nothing core is broken, but this is the exact copy-paste moment where the product should feel most literal and trustworthy. If nearby help/setup/status surfaces already preserve the custom-path prefix, this pre-setup durable-install handoff should too.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh true-`npx` + custom-saved-config install-before-setup repro with a stubbed `launchctl`:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" node bin/idlewatch-agent.js install-agent`
+- [x] Observed in the live pass:
+  - runtime currently says:
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch run`
+  - this means the same screen is currently mixing custom-path-aware and custom-path-blind follow-up commands
+- [x] Nearby surfaces in the same checkout still behave better and establish the expected product standard:
+  - true-`npx` `install-agent --help` with the same custom path keeps the env prefix on `Set up now`, `Turn on background mode`, and `Run now`
+  - true-`npx` `quickstart --no-tui`, `configure --no-tui`, and `status` with the same custom path also keep the env-prefixed follow-up commands literal
+
+### Prioritized findings
+#### [x] P1 — true-`npx` install-before-setup runtime currently drops the custom saved-config prefix on two of the three handoff commands
+**Why this matters:** This is tiny, but it lands in the exact moment where someone is trying to move from one-off setup to durable background mode without losing track of a custom config file. Showing one line with the right env-prefixed command and the next two without it makes the product feel slightly less trustworthy than the surrounding polished surfaces.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
+3. Run:
+   - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_CONFIG_ENV_PATH="$TMPHOME/configs/idlewatch custom.env" node bin/idlewatch-agent.js install-agent`
+4. Observe that runtime currently shows:
+   - `Set up now: npx idlewatch quickstart --no-tui`
+   - `Turn on background mode: idlewatch install-agent`
+   - `Run now: IDLEWATCH_CONFIG_ENV_PATH=... npx idlewatch run`
+5. Compare that to the same checkout’s true-`npx` `install-agent --help`, `quickstart --no-tui`, or `status`, which do preserve the custom-path prefix consistently
+
+**Acceptance criteria**
+- In a true `npx` context with a non-default `IDLEWATCH_CONFIG_ENV_PATH`, install-before-setup runtime should keep that same env prefix on `Set up now`
+- In that same path, the durable handoff should also keep that same env prefix on `Turn on background mode: ... idlewatch install-agent`
+- `Install once: npm install -g idlewatch` should stay unchanged and unprefixed
+- `Run now` should keep the already-correct env-prefixed `npx idlewatch run`
+- Default-path behavior should remain unchanged and should not gain extra env-var noise
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond making this handoff truthful and consistent
+
+**Last updated:** Friday, March 27th, 2026 — 8:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` + custom-path install-before-setup handoff regression from a fresh live pass
+
 ## Cycle R620 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny custom-saved-config `install-agent --help` truthfulness fix in the true-`npx` handoff.

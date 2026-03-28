@@ -1340,9 +1340,9 @@ const subcommandPromise = (async () => {
     if (invocation.kind === 'npx') {
       console.error('Background mode needs a durable install.')
       console.error('')
-      console.error("Set up now:                npx idlewatch quickstart --no-tui")
+      console.error(`Set up now:                ${preferredHelpSetupCommand('quickstart')}`)
       console.error('Install once:              npm install -g idlewatch')
-      console.error('Turn on background mode:   idlewatch install-agent')
+      console.error(`Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}`)
       console.error('')
       console.error(`Run now:                   ${inferCliCommand('run')}`)
       process.exit(1)
