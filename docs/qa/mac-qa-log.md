@@ -35246,3 +35246,35 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 - [x] Existing packaged/runtime behavior stays unchanged aside from wording
 
 **Last updated:** Saturday, March 28th, 2026 — 7:25 AM (America/Toronto)
+
+---
+
+## Cycle R672 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny non-interactive setup validation polish fix in the installer/CLI lane.
+- The invalid `IDLEWATCH_ENROLL_MODE` error already named the accepted values, but it still stopped one step short of the most useful copy-paste recovery.
+- The non-interactive error now ends with the exact env var fix: `Set IDLEWATCH_ENROLL_MODE=cloud or IDLEWATCH_ENROLL_MODE=local.`
+- Accepted aliases, saved-config behavior, install/start flows, and the now-working telemetry path stayed unchanged.
+
+### R672 spot-check coverage
+- [x] `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=cloudy IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='quickstart names the valid enrollment modes when non-interactive mode is invalid|quickstart accepts cloud-only/local-only enrollment mode aliases in non-interactive mode|quickstart gives a calmer non-interactive error when cloud mode is missing an API key'`
+
+### Prioritized findings
+#### [x] L158 — invalid non-interactive setup mode now ends with the exact env-var fix
+**Why it matters:** This is tiny, but it lands in a pure copy-paste setup moment. Once the user is already driving setup through env vars, the calmest recovery is not just naming the valid values — it is showing the exact variable they need to change.
+
+**What shipped**
+- Reworded the invalid enrollment-mode error in `src/enrollment.js` so non-interactive setup now ends with `Set IDLEWATCH_ENROLL_MODE=cloud or IDLEWATCH_ENROLL_MODE=local.`
+- Kept accepted values unchanged: `cloud`, `cloud-only`, `local`, and `local-only` still normalize the same way they already did.
+- Updated focused regression coverage in `test/openclaw-env.test.mjs`.
+
+**Acceptance checks**
+- [x] Invalid non-interactive mode still starts with `Invalid enrollment mode: ...`
+- [x] The same error still names the accepted values and aliases
+- [x] The same error now adds `Set IDLEWATCH_ENROLL_MODE=cloud or IDLEWATCH_ENROLL_MODE=local.`
+- [x] `cloud-only` / `local-only` aliases still work unchanged
+- [x] Saved-config, install/start behavior, and telemetry behavior stay unchanged
+
+**Last updated:** Saturday, March 28th, 2026 — 9:35 AM (America/Toronto)

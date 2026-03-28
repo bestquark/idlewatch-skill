@@ -244,6 +244,12 @@ function normalizeEnrollmentMode(raw) {
   return value
 }
 
+function invalidEnrollmentModeMessage(mode, { nonInteractive = false } = {}) {
+  const base = `Invalid enrollment mode: ${mode}. Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`
+  if (!nonInteractive) return base
+  return `${base} Set IDLEWATCH_ENROLL_MODE=cloud or IDLEWATCH_ENROLL_MODE=local.`
+}
+
 function looksLikeCloudApiKey(value) {
   return /^iwk_[A-Za-z0-9_-]{20,}$/.test(String(value || '').trim())
 }
@@ -575,7 +581,7 @@ export async function runEnrollmentWizard(options = {}) {
 
   if (!mode) mode = 'production'
   if (!['production', 'local'].includes(mode)) {
-    throw new Error(`Invalid enrollment mode: ${mode}. Choose "cloud" or "local" ("cloud-only" and "local-only" also work).`)
+    throw new Error(invalidEnrollmentModeMessage(mode, { nonInteractive }))
   }
 
   if ((mode === 'production') && !cloudApiKey) {

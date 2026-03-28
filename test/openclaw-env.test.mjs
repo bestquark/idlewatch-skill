@@ -2443,6 +2443,7 @@ test('quickstart names the valid enrollment modes when non-interactive mode is i
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Invalid enrollment mode: cloudy\./)
     assert.match(run.stderr, /Choose "cloud" or "local" \("cloud-only" and "local-only" also work\)\./)
+    assert.match(run.stderr, /Set IDLEWATCH_ENROLL_MODE=cloud or IDLEWATCH_ENROLL_MODE=local\./)
     assert.equal(fs.existsSync(path.join(tempHome, '.idlewatch', 'idlewatch.env')), false)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
