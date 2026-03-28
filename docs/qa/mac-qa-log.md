@@ -31509,6 +31509,39 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 **Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
 
 
+## Cycle R667 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny but real headless setup polish fix in the main CLI.
+- A few non-interactive source-checkout and `npx` help/status/install surfaces had drifted back to a two-choice setup block (`quickstart`, then `quickstart --no-tui` as a fallback).
+- Those scan-first surfaces now keep one calmer copy-paste command: `idlewatch quickstart --no-tui` or `npx idlewatch quickstart --no-tui`, depending on context.
+- This removes one unnecessary decision in text-first setup/reconfigure moments while leaving saved-config handling, install/start behavior, and the now-working telemetry path untouched.
+
+### R667 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js configure --no-tui`
+- [x] `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test --test-name-pattern='help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|install-agent help/runtime preserve one-off command hints under npm exec|configure --no-tui keeps the calmer setup-first recovery copy in true npx mode when no saved setup exists yet' test/openclaw-env.test.mjs`
+
+### Prioritized findings
+#### [x] L153 — non-interactive main CLI setup handoffs now stick to one copy-safe `quickstart --no-tui` command
+**Why it matters:** This is tiny, but it lands exactly where people pause before copying a headless setup command. Once the product already knows it is in a text-first/non-interactive moment, showing both `quickstart` and `quickstart --no-tui` adds one avoidable “which one do you actually want me to run?” wobble.
+
+**What shipped**
+- Reworded `bin/idlewatch-agent.js` so non-interactive first-run help/status/install recovery surfaces now lead with only `idlewatch quickstart --no-tui` in durable/source-checkout contexts.
+- Kept true one-off `npx` surfaces literally runnable as `npx idlewatch quickstart --no-tui`.
+- Removed the extra `# plain text fallback` line from those same non-interactive main-CLI surfaces.
+- Updated focused regression coverage in `test/openclaw-env.test.mjs`.
+
+**Acceptance checks**
+- Main `--help` now says `Get started:  idlewatch quickstart --no-tui`
+- First-run `status` now says `Get started:  idlewatch quickstart --no-tui`
+- `configure --no-tui` with no saved setup now says `Start with idlewatch quickstart --no-tui.`
+- True-`npx` durable-install help now says `Set up now:  npx idlewatch quickstart --no-tui`
+- The same non-interactive surfaces no longer add a second `# plain text fallback` setup line
+- Background/install guidance and telemetry behavior stay unchanged
+
 ## Cycle R666 Status: CLOSED ✅
 
 ### Outcome

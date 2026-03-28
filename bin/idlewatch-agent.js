@@ -159,12 +159,14 @@ function preferredRecoveryCommand(command = 'configure') {
 }
 
 function preferredPrimarySetupCommand(command = 'quickstart') {
-  return preferredProductCommand(command)
+  return preferredHelpSetupCommand(command)
 }
 
 function preferredSetupFallbackCommand(command = 'quickstart') {
-  if (process.stdin.isTTY) return ''
-  return preferredProductCommand(`${command} --no-tui`)
+  const primary = preferredPrimarySetupCommand(command)
+  const fallback = preferredProductCommand(`${command} --no-tui`)
+  if (!fallback || fallback === primary) return ''
+  return fallback
 }
 
 function preferredProductCommand(command = '') {
