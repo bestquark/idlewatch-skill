@@ -953,7 +953,7 @@ function printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assume
     if (assumeExisting || hasExistingLogTarget) {
       console.log(`   Local log stays at ${friendlyLocalLogPath}`)
     } else {
-      console.log(`   Local log would be written at ${friendlyLocalLogPath}`)
+      console.log(`   Local log would go to ${friendlyLocalLogPath}`)
     }
     return
   }

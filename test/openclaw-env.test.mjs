@@ -1803,6 +1803,41 @@ test('uninstall-agent runtime output names a custom retained local log path', ()
   }
 })
 
+test('uninstall-agent runtime keeps missing custom local log wording calm and literal', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-missing-custom-log-'))
+  const launchAgentsDir = path.join(tempDir, 'Library', 'LaunchAgents')
+  const plistPath = path.join(launchAgentsDir, 'com.idlewatch.agent.plist')
+  const customLogPath = path.join(tempDir, 'custom-logs', 'kitchen-mac.ndjson')
+
+  fs.mkdirSync(launchAgentsDir, { recursive: true })
+  writeFileSync(plistPath, '<plist/>')
+  fs.mkdirSync(path.join(tempDir, '.idlewatch'), { recursive: true })
+  writeFileSync(path.join(tempDir, '.idlewatch', 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${customLogPath}`
+  ].join('\n') + '\n')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.ok(run.stdout.includes('Local log would go to ~/custom-logs/kitchen-mac.ndjson'), 'should keep the missing saved local log path readable')
+    assert.doesNotMatch(run.stdout, /Local log would be written at /)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent runtime output reads a retained custom local log path from a custom config location', () => {
   if (process.platform !== 'darwin') {
     return

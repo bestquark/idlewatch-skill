@@ -1,3 +1,41 @@
+## Cycle R724 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny wording seam in the main CLI uninstall summary and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the main CLI uninstall path still said `Local log would be written at ...` when setup had already saved a custom local telemetry file path but that file had not been created yet. Nothing functional was broken and the saved-config handling was already correct; this was purely a product-copy seam in a calm reversible off-ramp moment. The standalone macOS uninstall script had already converged on the cleaner wording: `Local log would go to ...`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the main CLI uninstall wording from `Local log would be written at ...` to `Local log would go to ...` when a saved custom local telemetry path exists but the file has not been created yet
+- [x] Kept the existing `Local log stays at ...` wording unchanged when that saved local telemetry file or parent path already exists
+- [x] Kept the existing `Local logs would go in ...` directory fallback unchanged when no saved custom local telemetry path exists
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-name-pattern='uninstall-agent runtime keeps missing custom local log wording calm and literal|uninstall-agent runtime output names a custom retained local log path' test/openclaw-env.test.mjs`
+- [x] Observed the missing-saved-log uninstall path now prints:
+  - `Local log would go to ~/custom-logs/kitchen-mac.ndjson`
+- [x] Observed the old clunkier wording is gone from that same path:
+  - `Local log would be written at ...`
+
+### Prioritized findings
+#### [x] P1 — main CLI uninstall now keeps the missing custom local log path wording as calm as the standalone macOS uninstall script
+**Why this mattered:** This is tiny, but it lands in the exact “did uninstall keep the right local log target?” moment. The CLI already knew the right saved path; the only problem was that the fallback wording sounded more implementation-shaped than the rest of the product.
+
+**Acceptance checks**
+- When the main CLI uninstall path sees a saved `IDLEWATCH_LOCAL_LOG_PATH` whose file does not exist yet, it now says `Local log would go to ...`
+- The existing `Local log stays at ...` wording remains unchanged when that saved file or parent path already exists
+- The existing `Local logs would go in ...` fallback remains unchanged when no saved custom local telemetry path exists
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny main CLI uninstall missing-log wording polish fix
+
 ## Cycle R723 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
