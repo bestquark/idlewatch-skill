@@ -803,6 +803,46 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R629 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny npm global install handoff wording fix in the live checkout.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: the global-install postinstall handoff still led with `idlewatch quickstart --no-tui` as the very first setup command. Nothing functional was broken, but that first impression felt slightly more technical than the rest of the product, which already treats plain `quickstart` as the friendlier default when someone is sitting in a normal terminal after `npm install -g idlewatch`.
+
+### What changed
+- Reworked the global-install postinstall handoff in `scripts/postinstall.mjs` so it now leads with `idlewatch quickstart`
+- Kept `idlewatch quickstart --no-tui` available right underneath as a lightweight plain-text fallback instead of the headline path
+- Left the macOS optional handoff short and unchanged: `idlewatch install-agent`, then `idlewatch menubar`
+- Added focused regression coverage in `test/postinstall.test.mjs` so the global-install handoff stays friendly without drifting back to the more technical default
+- Left auth, ingest, packaging behavior, launch-agent semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check scripts/postinstall.mjs`
+- [x] `node --check test/postinstall.test.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] Fresh global-install handoff repro now prints:
+  - `Set up this device:`
+  - `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Optional on macOS:`
+  - `idlewatch install-agent   # turn on background mode`
+  - `idlewatch menubar         # menu bar app`
+
+### Prioritized findings
+#### [x] P1 — global-install postinstall handoff now leads with the friendlier default setup command while keeping plain-text setup one line below
+**Why this mattered:** This is tiny, but it lands at the exact first impression after install. Someone who just finished `npm install -g idlewatch` in a normal terminal should see the nicest default next. Keeping `--no-tui` available as a fallback preserves the lower-friction escape hatch without making the whole product feel more technical than it needs to.
+
+**Acceptance checks**
+- The global-install postinstall handoff now leads with `idlewatch quickstart`
+- The plain-text `idlewatch quickstart --no-tui` path is still visible, but secondary/lightweight instead of the headline command
+- The macOS optional handoff stays short (`install-agent`, `menubar`) without extra wording noise
+- No auth, ingest, packaging, launch-agent, or telemetry behavior changes were introduced beyond making the install handoff feel more natural
+
+**Last updated:** Friday, March 27th, 2026 — 9:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny npm global install handoff wording fix
+
 ## Cycle R628 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real npm global install handoff wording seam in the live checkout.
