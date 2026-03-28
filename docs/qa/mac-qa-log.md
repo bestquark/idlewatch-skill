@@ -1110,6 +1110,44 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R639 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS uninstall script.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch-agent.sh` still says `Removed plist: ...` even when no launch-agent plist existed at all. Nothing functional is broken, but this lands in the exact reversible off-ramp moment where the product should feel most literal and low-drama. The current script already became careful about `Saved config would live ...` and `Logs would go ...` when setup was never saved; the plist line should match that same standard instead of implying a deletion that never happened.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh standalone uninstall-script repro with a stubbed `launchctl` and no existing plist:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - script currently says `✅ Background mode turned off.`
+  - then says `Removed plist: .../Library/LaunchAgents/com.idlewatch.agent.plist`
+  - even though no plist file existed at that path before the script ran
+- [x] The same pass still confirms the rest of the requested polish lane remains calm and useful: install-before-setup stays truthful, saved setup + reconfigure still keep device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` stays intentionally lightweight, and npm/`npx` handoffs remain literal
+
+### Prioritized findings
+#### [x] P1 — standalone macOS uninstall script currently claims it removed a plist even when nothing was there
+**Why this matters:** This is tiny, but it’s the kind of needless over-claim that makes uninstall flows feel less trustworthy than they should. In a clean “never mind” moment, the product should say exactly what happened and nothing more.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootout`
+3. Use a fresh empty `HOME` with no `~/Library/LaunchAgents/com.idlewatch.agent.plist`
+4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" bash scripts/uninstall-macos-launch-agent.sh`
+5. Observe that the script prints `Removed plist: ...` even though there was no plist to remove
+
+**Acceptance checks**
+- The standalone macOS uninstall script should stay truthful when no plist exists yet
+- In that no-plist path, the summary should avoid implying a deletion that did not happen (for example, `Plist would live at ...` or `No plist was installed at ...`)
+- Existing-plist uninstall paths should still keep a short low-noise confirmation when a plist really was removed
+- The calmer saved-config/log truthfulness behavior should remain unchanged (`stays` vs `would live` / `would go`)
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 10:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny standalone macOS uninstall-script plist truthfulness seam from a fresh live pass
+
 ## Cycle R638 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS install script and shipped the smallest useful fix.
