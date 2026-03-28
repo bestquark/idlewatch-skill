@@ -1110,6 +1110,42 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R650 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining packaged-app setup handoff gap in the standalone macOS install script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: in the standalone macOS install script’s no-setup fallback when `idlewatch` is not on `PATH` yet, the product already showed the exact packaged-app commands for `quickstart --no-tui`, `run`, and `install-agent`, but it quietly dropped the same calm `Check:` status hint shown everywhere else. Nothing functional was broken, but this landed in the exact packaged-app setup moment where someone should be able to verify state without guessing the binary path. The right fix was tiny: keep the existing fallback commands, and add the same low-noise packaged-app `status` hint right underneath.
+
+### What changed
+- [x] Added a `Check:` hint to the standalone macOS install script’s no-CLI fallback path
+- [x] Kept the command literal on the packaged app binary (`.../Contents/MacOS/IdleWatch status`)
+- [x] Reused the same calmer status description already used by the CLI-friendly path (`See your saved config, background mode state, and last publish result`)
+- [x] Updated focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left setup, reconfigure, launch-agent behavior, packaging shape, auth/ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the packaged-app no-CLI install-script handoff now prints:
+  - `Start background mode after setup:` then `.../Contents/MacOS/IdleWatch install-agent`
+  - `Check:` then `.../Contents/MacOS/IdleWatch status   See your saved config, background mode state, and last publish result`
+- [x] Confirmed the rest of the packaged-app no-CLI handoff stayed unchanged (`quickstart --no-tui`, `run`, then `install-agent`)
+
+### Prioritized findings
+#### [x] P1 — packaged-app no-CLI install handoff now keeps the same calm status-check hint instead of making the user infer the binary path themselves
+**Why this mattered:** This is tiny, but it lands in one of the most fragile setup moments: the app is installed, `idlewatch` is not on `PATH`, and the product is already asking the user to copy packaged-binary commands literally. Adding the matching `status` hint removes one tiny guess and makes the packaged fallback feel just as self-sufficient as the nicer CLI path.
+
+**Acceptance checks**
+- The standalone macOS install script no-CLI fallback still keeps literal packaged-binary commands for setup, run, and background mode
+- That same fallback now also shows `Check:` with the packaged-binary `status` command
+- The wording stays short and calm instead of adding another explanatory block
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this packaged fallback handoff polish
+
+**Last updated:** Friday, March 27th, 2026 — 11:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged-app install-script status-hint parity fix
+
 ## Cycle R649 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact current scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

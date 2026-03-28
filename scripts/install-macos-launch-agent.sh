@@ -219,5 +219,8 @@ else
     echo ""
     echo "Start background mode after setup:"
     echo "   $BIN_PATH install-agent"
+    echo ""
+    echo "Check:"
+    echo "   $BIN_PATH status   See your saved config, background mode state, and last publish result"
   fi
 fi

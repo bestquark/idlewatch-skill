@@ -164,6 +164,7 @@ test('packaged macOS install script shows the exact refresh command when idlewat
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /Start background mode after setup:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
+    assert.match(install.stdout, /Check:\s+.*Contents\/MacOS\/IdleWatch status\s+See your saved config, background mode state, and last publish result/)
     assert.doesNotMatch(install.stdout, /Turn on background mode:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then turn on background mode:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then run this install script again to turn on login startup with the saved config\./)
