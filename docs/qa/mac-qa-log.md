@@ -803,6 +803,47 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R628 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real npm global install handoff wording seam in the live checkout.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: the global-install postinstall handoff still says `idlewatch quickstart --no-tui` as the very first setup command. Nothing functional is broken, but this reads slightly more technical and lower-touch than the rest of the product, which otherwise prefers the nicer interactive `quickstart` flow whenever a real terminal is available. For first-run npm install path clarity, the friendliest default should be the normal setup command, with `--no-tui` kept as a fallback rather than presented as the primary path.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh global-install handoff repro:
+  - `node scripts/postinstall.mjs` with `npm_config_global=true`
+- [x] Observed in the live pass:
+  - postinstall currently prints:
+    - `Set up this device:`
+    - `  idlewatch quickstart --no-tui`
+    - `Optional on macOS:`
+    - `  idlewatch install-agent   # turn on background mode`
+    - `  idlewatch menubar         # menu bar app`
+- [x] Nearby product surfaces in the same checkout remain calmer and more inviting:
+  - `idlewatch --help` points people to `idlewatch quickstart`
+  - interactive CLI flows default into the richer setup path when a TTY exists
+  - install-before-setup/status already keep the next steps short and low-noise without forcing the more technical flag up front
+
+### Prioritized findings
+#### [x] P1 — global-install postinstall handoff currently leads with the more technical `quickstart --no-tui` command instead of the friendlier default setup command
+**Why this matters:** This is tiny, but it lands at the exact first impression after install. For someone who just ran a global npm install in a normal terminal, `idlewatch quickstart` feels like the obvious, welcoming next step. Leading with `--no-tui` makes setup feel slightly more CLI-ish and implementation-shaped than the rest of the product already does.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `npm_config_global=true node scripts/postinstall.mjs`
+3. Observe that the printed setup handoff currently says `idlewatch quickstart --no-tui`
+
+**Acceptance criteria**
+- The global-install postinstall handoff should lead with `idlewatch quickstart` as the primary setup command
+- If the product still wants to preserve the non-TTY fallback, it should be secondary/lightweight instead of the headline path
+- The macOS optional handoff should stay short (`install-agent`, `menubar`) without extra explanation noise
+- No auth, ingest, packaging, launch-agent, or telemetry behavior changes should be introduced beyond making the install handoff feel more natural
+
+**Last updated:** Friday, March 27th, 2026 — 9:27 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny npm global install handoff wording seam from a fresh live pass
+
 ## Cycle R627 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny uninstall off-ramp truthfulness fix for install-before-setup states.
