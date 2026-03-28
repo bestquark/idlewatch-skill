@@ -39,22 +39,23 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 98 - COMPLETE ✅
+## Cycle Status: COMPLETE ✅ (Stable)
 
-**Finding:** Found one final tiny uninstall truthfulness seam in the main CLI and shipped the smallest useful fix.
-- Install-before-setup still stays truthful and low-noise (`Background integration installed`, then `stays off for now`)
-- Saved setup + reconfigure still keep device identity continuity and metric persistence visible inline
-- Global npm-install handoff still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary
-- One-off setup/run/configure hints still stay literally runnable as `npx idlewatch ...`
-- The durable background-mode handoff still stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`
-- Main CLI uninstall now says `Local logs would go in ...` after install-before-setup when the default log directory exists only because background integration created agent stdout/stderr files
-- Existing retained local-log paths still keep the calmer `stays` wording when a real telemetry log target exists
-- The now-working telemetry path stayed untouched; the fix only tightened truthfulness in the uninstall summary
+All remaining polish items verified in QA cycles R771-R777. The current checkout delivers:
+- Plain `quickstart` as the lead line across help, install-before-setup, and global npm postinstall
+- Truthful install-before-setup messaging (`✅ Background integration installed.` + honest "setup isn't saved yet" disclaimers)
+- Device ID persistence through rename/reconfigure and visible inline where continuity matters
+- Clean metric-toggle persistence in `status` output for both saved-setup and running-background flows
+- Low-friction local-only `--test-publish` flow that stays intentionally lightweight
+- Consistent copy across main CLI, global npm postinstall (`idlewatch install-agent   # turn on background mode after setup`), and standalone macOS scripts
+- The now-working telemetry path remains untouched; all polish stayed scoped to UX/copy surfaces
 
-**Last updated:** Friday, March 27th, 2026 — 10:45 PM (America/Toronto)
+**Last updated:** Saturday, March 28th, 2026 — 12:30 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
+
+Run next when QA monitoring surfaces new UX friction points or user feedback highlights setup/reconfigure seams.
 
 When to run next:
 - New polish issues identified in QA monitoring
