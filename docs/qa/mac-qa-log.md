@@ -1,3 +1,44 @@
+## Cycle R702 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one final tiny setup-handoff friendliness fix in the standalone macOS install script.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the standalone `scripts/install-macos-launch-agent.sh` no-saved-setup handoff still led with the more technical `quickstart --no-tui` command in the side-by-side/custom-label QA path. Nothing functional was broken, but it landed in the exact “what should I run first?” moment where the calmer product shape already used elsewhere was better: plain `quickstart` first, then `quickstart --no-tui` one line below as the plain-text fallback.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the standalone macOS install script’s no-saved-setup handoff to lead with plain `quickstart` in both the CLI and packaged-app branches
+- [x] Kept the literal `quickstart --no-tui` command one line below as the plain-text fallback
+- [x] Left `Run now`, `Turn on background mode after setup`, and `Check` unchanged and low-noise
+- [x] Updated focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging shape, launch-agent semantics, saved-config handling, and the default-label safety guard unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone macOS no-saved-setup handoff now prints:
+  - `Finish setup:` then `idlewatch quickstart`
+  - one line below: `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Run now:` then `idlewatch run`
+  - `Turn on background mode after setup:` then `idlewatch install-agent`
+  - `Check:` then `idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Observed the packaged-app fallback now follows that same calmer shape with literal `.../Contents/MacOS/IdleWatch quickstart` first and `... quickstart --no-tui` second
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install-before-setup handoff now leads with the friendlier `quickstart` command again
+**Why this mattered:** This is tiny, but it lands at the exact point where someone is deciding whether the setup feels polished or slightly too technical. Leading with the nicer default and keeping the plain-text fallback one line below removes friction without adding any behavior.
+
+**Acceptance checks**
+- In the standalone macOS install script’s no-saved-setup path, the first setup hint is now plain `quickstart`
+- That same surface still keeps `quickstart --no-tui` visible one line below as the plain-text fallback
+- `Run now`, `Turn on background mode after setup`, and `Check` remain unchanged and low-noise
+- The safety guard that blocks reusing the default label with a custom app path or plist root remains unchanged
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS install-script setup-handoff friendliness fix
+
 ## Cycle R701 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real setup-handoff friendliness seam in the standalone macOS install script’s side-by-side/custom-label path.
