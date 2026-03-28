@@ -30998,3 +30998,30 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 
 **Last updated:** Saturday, March 28th, 2026 — 1:05 AM (America/Toronto)  
 **Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
+
+## Cycle R666 Status: CLOSED ✅
+
+### Outcome
+- Shipped one small headless setup-handoff polish fix in the installer/CLI lane.
+- Non-interactive setup hints had drifted back to a two-choice shape (`quickstart`, then `quickstart --no-tui` as a fallback) in a few scan-first moments.
+- The main non-TTY install-before-setup/status/help handoff now sticks to one obvious copy-paste command: `quickstart --no-tui`.
+- Global npm `postinstall` now does the same.
+- This removes one unnecessary decision in text-first setup/reconfigure moments while leaving saved-config behavior, launch-agent behavior, and the working telemetry path untouched.
+
+### R666 spot-check coverage
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+- [x] `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] `HOME="$TMPHOME2" npm_config_global=true node scripts/postinstall.mjs`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME3" node bin/idlewatch-agent.js install-agent --help`
+
+### Prioritized findings
+#### [x] L152 — non-interactive setup handoffs now keep one calmer `quickstart --no-tui` command instead of leading with two choices
+**Why it matters:** This is tiny, but it lands right where people pause before copying a headless setup command. Once the product already knows the user is in a non-interactive/text-first moment, showing both `quickstart` and `quickstart --no-tui` reintroduces one avoidable “which one do you actually want me to run?” wobble.
+
+**What shipped**
+- Reworded non-TTY setup hints in `bin/idlewatch-agent.js` so source/global install-before-setup and first-run status now lead with only `idlewatch quickstart --no-tui`.
+- Kept interactive/TTY guidance unchanged.
+- Reworded `scripts/postinstall.mjs` so the global install handoff also prints only `idlewatch quickstart --no-tui`.
+- Updated the focused regression coverage in `test/postinstall.test.mjs`.
