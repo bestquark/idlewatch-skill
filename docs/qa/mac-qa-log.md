@@ -1,3 +1,43 @@
+## Cycle R775 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-live setup-story mismatch in the standalone macOS install script.
+
+### Priority call
+One medium-severity product-taste issue clearly still clears the bar: the standalone macOS `scripts/install-macos-launch-agent.sh` flow has drifted back to a more technical setup story even though the main CLI and global npm handoff are already calmer. In the current checkout, install-before-setup from the standalone script still headlines `idlewatch quickstart --no-tui` instead of plain `idlewatch quickstart`, and it still says `Start background mode after setup:` instead of the calmer `Turn on background mode after setup:` wording already used elsewhere. Nothing functional is broken, but this is exactly the sort of first-impression copy drift that makes setup feel more implementation-shaped than the product really is.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh standalone macOS install-before-setup repro with a stubbed non-running `launchctl`, temporary app bundle, and custom label:
+  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APPDIR" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+- [x] Observed in that live pass:
+  - the script still says `Finish setup:` then `idlewatch quickstart --no-tui`
+  - the script still says `Start background mode after setup:`
+  - meanwhile nearby product surfaces are calmer and already converged:
+    - top-level help leads with `Get started:  idlewatch quickstart`
+    - installed `install-agent --help` says `Set up now:              idlewatch quickstart`
+    - global npm postinstall leads with `idlewatch quickstart`
+    - the main CLI install-before-setup handoff uses `turn on background mode after setup`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install-before-setup still leads with the fallback command and slightly noisier background wording
+**Why this matters:** This is small, but it lands in the packaged/macOS-first setup path where people decide whether the product feels calm or technical. `--no-tui` is a useful fallback, not the headline. `Start background mode after setup` also reads a little busier than the calmer `Turn on background mode after setup` wording already used by the rest of the product.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim whose `print` action exits non-zero and whose install actions succeed
+3. Create a temporary app bundle with an executable launcher at `IdleWatch.app/Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APPDIR" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+5. Observe that the install-before-setup handoff currently says `Finish setup:` then `idlewatch quickstart --no-tui`, and later says `Start background mode after setup:`
+
+**Acceptance checks**
+- Standalone macOS install-before-setup should lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept one line below as the plain-text fallback
+- The same surface should say `Turn on background mode after setup:` while keeping the custom-label follow-up command literally runnable
+- `Run now:` and `Check:` handoffs should remain unchanged
+- No auth, ingest, config persistence, device identity, metric persistence, config-reload semantics, or launch-agent behavior changes are needed beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 11:30 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-live standalone macOS install-script setup-story seam from a fresh live pass
+
 ## Cycle R774 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real setup-story regression in the current checkout.
