@@ -803,6 +803,46 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R625 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny install-before-setup confirmation wording fix in the live checkout.
+
+### Priority call
+One tiny but clearly product-facing seam still cleared the bar: `install-agent` before any saved setup opened with `✅ Background mode installed.` even though the very next line correctly said `Setup isn't saved yet, so background mode stays off for now.` Nothing functional was broken, but the first line slightly over-claimed success in the exact moment where the product should be most literal. The right fix was to keep the flow exactly as-is and make the headline tell the truth: the background integration is installed, while background mode itself is still waiting for setup.
+
+### What changed
+- Reworded the install-before-setup success headline in `bin/idlewatch-agent.js` from `✅ Background mode installed.` to `✅ Background integration installed.`
+- Kept the calmer follow-up handoff unchanged: `Finish setup`, `Run now`, then the durable `Start background mode after setup`
+- Updated the focused source-checkout regression coverage in `test/openclaw-env.test.mjs` to lock the more truthful headline in place
+- Left launch-agent behavior, saved-config handling, status memory, packaging, auth, ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh clean-home install-before-setup spot check now says:
+  - `✅ Background integration installed.`
+  - `Setup isn't saved yet, so background mode stays off for now.`
+  - `Finish setup: idlewatch quickstart --no-tui`
+  - `Run now:      idlewatch run`
+  - `Start background mode after setup:  idlewatch install-agent`
+- [x] Immediate follow-up `status` still says `Background: installed but waiting for setup`
+
+### Prioritized findings
+#### [x] P1 — install-before-setup confirmation now says `Background integration installed` so the headline matches the actual state
+**Why this mattered:** This is tiny, but it lands in the exact setup/install handoff where users decide whether they are done. The rest of the screen was already honest. Making the first line equally honest removes one little moment of cognitive friction without adding any new steps or wording.
+
+**Acceptance checks**
+- Install-before-setup confirmation no longer implies that background mode is already on when saved setup does not exist yet
+- The top confirmation line stays short and low-noise while reading truthfully alongside `Setup isn't saved yet, so background mode stays off for now.`
+- The working install-before-setup memory remains intact: follow-up `status` still says `Background: installed but waiting for setup`
+- The next-step handoff remains minimal and literal (`Finish setup`, `Run now`, then the durable background-mode command after setup)
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced beyond making this confirmation copy more accurate
+
+**Last updated:** Friday, March 27th, 2026 — 9:20 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-before-setup confirmation wording fix
+
+
 ## Cycle R624 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real install-before-setup confirmation wording seam in the live checkout.

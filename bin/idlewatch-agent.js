@@ -1429,7 +1429,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     }
 
     if (!shouldStartImmediately) {
-      console.log('✅ Background mode installed.')
+      console.log('✅ Background integration installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
       console.log(`   Finish setup: ${preferredHelpSetupCommand('quickstart')}`)
       console.log(`   Run now:      ${preferredProductCommand('run')}`)

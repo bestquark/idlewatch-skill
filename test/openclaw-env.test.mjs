@@ -1782,7 +1782,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /✅ Background mode installed\./)
+    assert.match(run.stdout, /✅ Background integration installed\./)
     assert.match(run.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.doesNotMatch(run.stdout, /IdleWatch is running in the background\./)
     assert.ok(run.stdout.includes('Finish setup: idlewatch quickstart --no-tui'), 'should keep the setup hint on the calmer product command in a source checkout')
