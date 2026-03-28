@@ -1,3 +1,52 @@
+## Cycle R736 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real setup-handoff regression outside the main CLI and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the global npm postinstall handoff and the standalone macOS install-before-setup script had drifted back to leading with the more technical `quickstart --no-tui` command, even though the main CLI had already converged on the calmer product shape of leading with plain `quickstart` and keeping the plain-text path secondary. Nothing functional was broken, but this is one of the highest-friction “what do I run first?” moments in setup and recovery.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored `scripts/postinstall.mjs` to lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- [x] Tightened the global postinstall macOS handoff from `start background mode after setup` to the calmer `turn on background mode after setup`
+- [x] Restored `scripts/install-macos-launch-agent.sh` no-saved-setup handoffs to lead with plain `quickstart` in both the `idlewatch`-on-PATH and packaged-app paths
+- [x] Kept the literal plain-text fallback visible one line below in that standalone macOS flow
+- [x] Matched the standalone macOS setup-follow-up label to the main CLI: `Turn on background mode after setup`
+- [x] Updated focused regression coverage in `test/postinstall.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging shape, saved-config handling, launch-agent semantics, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed the global install handoff now prints:
+  - `Set up this device:` then `idlewatch quickstart`
+  - one line below: `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Optional on macOS:` then `idlewatch install-agent   # turn on background mode after setup`
+- [x] Observed the standalone macOS no-saved-setup handoff now prints:
+  - `Finish setup:` then `idlewatch quickstart`
+  - one line below: `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Turn on background mode after setup:` then `idlewatch install-agent`
+- [x] Observed the packaged-app fallback follows that same calmer shape with literal `.../Contents/MacOS/IdleWatch quickstart` first and `... quickstart --no-tui   # plain text fallback` second
+- [x] Observed the old harsher wording is gone from the touched setup-first surfaces:
+  - `idlewatch quickstart --no-tui` as the headline setup step
+  - `Start background mode after setup:`
+
+### Prioritized findings
+#### [x] P1 — setup-first handoffs outside the main CLI now match the calmer `quickstart`-first product shape again
+**Why this mattered:** This is tiny, but it lands in the exact copy/paste moment where setup either feels neat or a little too technical. Leading with plain `quickstart`, keeping `--no-tui` as the explicit fallback, and using the same `Turn on background mode after setup` wording as the main CLI makes the install/recovery surfaces feel more deliberate without adding any behavior.
+
+**Acceptance checks**
+- Global npm postinstall now leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- Standalone macOS install-before-setup now leads with `quickstart` in both the CLI and packaged-app paths, with the same plain-text fallback one line below
+- The standalone macOS setup follow-up now says `Turn on background mode after setup`
+- No auth, ingest, packaging redesign, or telemetry-path behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny setup-handoff consistency fix across postinstall and standalone macOS install
+
 ## Cycle R735 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from the current polish plan in the live checkout and did not surface another small user-facing issue worth shipping.
