@@ -1,3 +1,46 @@
+## Cycle R721 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one last tiny help-surface wording cleanup in the installed background-mode handoff.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the normal `idlewatch install-agent --help` screen ended with `Turn on background mode: idlewatch install-agent` even though the user was already reading `install-agent --help`. Nothing functional was broken, but that final label felt slightly circular and more mechanical than the surrounding copy. The smallest useful fix was to keep the literal command unchanged and tighten the handoff label to `After setup:`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the normal `install-agent --help` closing handoff from `Turn on background mode:` to `After setup:`
+- [x] Kept the literal command unchanged: `idlewatch install-agent`
+- [x] Left the true-`npx` durable-install help surface unchanged
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and runtime flows unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-name-pattern='install-agent help keeps the durable setup path short and clear|install-agent help in npx context points straight to the durable path' test/openclaw-env.test.mjs`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the normal installed help surface now ends with:
+  - `After setup:             idlewatch install-agent`
+- [x] Observed the surrounding calmer setup handoff stays unchanged:
+  - `Set up now:              idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed the true-`npx` durable-install handoff remains unchanged and literal:
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — normal `install-agent --help` now ends on a less circular `After setup:` handoff while keeping the same literal command
+**Why this mattered:** This is tiny, but it lands in a copy/paste-heavy trust moment. `After setup:` reads cleaner than repeating `Turn on background mode:` on the help screen for the very command the user is already reading.
+
+**Acceptance checks**
+- Normal `idlewatch install-agent --help` now ends with `After setup: idlewatch install-agent`
+- The surrounding `Set up now:` handoff still leads with plain `idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- The true-`npx` durable-install help surface remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed `install-agent --help` wording cleanup
+
 ## Cycle R720 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

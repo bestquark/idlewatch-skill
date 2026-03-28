@@ -381,7 +381,7 @@ Turns on background mode on macOS.
 If setup is already saved, background mode turns on right away.
 
 Set up now:              ${quickstartPrimaryCommand}${quickstartFallbackLine}
-Turn on background mode: ${installAgentHelpCommand}`
+After setup:             ${installAgentHelpCommand}`
 }
 
 function durableBackgroundModeRestoreHint(invocation = detectCliInvocation()) {
