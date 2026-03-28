@@ -1,3 +1,72 @@
+## Cycle R666 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny true-`npx` durable-install help regression in the live checkout.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: the live true-`npx` `install-agent --help` surface is no longer showing the calmer plain `npx idlewatch quickstart` line at all. Instead, it jumps straight to `npx idlewatch quickstart --no-tui`, then leaves a dangling `# plain text fallback` comment on the next line by itself. Nothing functional is broken, but this lands in the exact copy/paste moment where the product should feel least technical and most trustworthy. The rest of the installer/CLI now prefers the calmer plain `quickstart` first with `--no-tui` one line below as the fallback; the true-`npx` durable-install help should match that same shape.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/global-style lifecycle spot checks with a stubbed `launchctl` still keep the non-`npx` path calm and literal:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh global-install postinstall spot check still keeps the calmer setup-first shape:
+  - `HOME="$TMPHOME2" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh true-`npx` help/setup/status spot checks with explicit npm-exec env vars:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+- [x] Fresh standalone macOS install/uninstall spot checks with a stubbed `launchctl` and temporary app bundle still keep the calmer two-line setup handoff:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$TMPHOME3/Applications/IdleWatch.app" bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - non-`npx` install-before-setup still leads with:
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - global npm-install postinstall still leads with:
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - standalone macOS install still keeps that same calmer two-line setup handoff
+  - true `npx` `install-agent --help` currently prints:
+    - `Set up now:                npx idlewatch quickstart --no-tui`
+    - `                              # plain text fallback`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+  - true `npx` quickstart/status still keep one-off commands literal while background mode stays on the explicit durable-install split
+  - saved setup + reconfigure still keep device identity continuity explicit inline and metric toggles visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight
+  - uninstall still keeps the reversible saved-config/local-log story short and truthful
+
+### Prioritized findings
+#### [x] P1 — live true-`npx` durable-install help lost the calmer plain `quickstart` line and now shows a dangling fallback comment
+**Why this matters:** This is tiny, but it is exactly the kind of product-taste seam that makes setup feel a little sloppier and more technical than necessary. A stray fallback comment with no primary command above it reads like formatting damage, not intentional guidance.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent --help`
+3. Observe that the current true-`npx` help surface says `Set up now: npx idlewatch quickstart --no-tui`
+4. Observe that the next line is only `# plain text fallback` with no plain `npx idlewatch quickstart` command above it
+5. Compare that with the calmer non-`npx`, global npm-install, and standalone macOS installer handoffs that already lead with plain `quickstart` and keep `--no-tui` one line below as the fallback
+
+**Acceptance checks**
+- In the true `npx` `install-agent --help` surface, the first setup hint should be `npx idlewatch quickstart`
+- That same true-`npx` help surface should still keep `npx idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- The dangling standalone `# plain text fallback` line should be gone
+- The existing one-off/durable split should remain unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable install stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- `Run now: npx idlewatch run` should remain unchanged
+- Main CLI, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics should remain untouched beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 1:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` setup-handoff regression from a fresh live pass
+
 ## Cycle R654 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny setup-handoff regression in the standalone macOS install script.
