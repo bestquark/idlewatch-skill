@@ -1,3 +1,72 @@
+## Cycle R683 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression in the live checkout.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: the true-`npx` help/setup/status/configure surfaces have drifted back to plain `idlewatch ...` commands again. Nothing functional is broken, but this lands in the exact copy/paste moment where the product should stay most literal and least assumption-heavy. In one-off `npx` use, one-off actions should remain literally runnable as `npx idlewatch ...`, while the durable background-mode handoff should stay separate on `npm install -g idlewatch`, then `idlewatch install-agent`.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal CLI spot checks with a stubbed `launchctl` still keep the durable-install path calm and truthful:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars reproduced the regression:
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - normal durable-install help still says `Get started:  idlewatch quickstart` and `Set up now: idlewatch quickstart`
+  - but true-`npx` help currently still says:
+    - `Get started:  idlewatch quickstart`
+    - `               idlewatch quickstart --no-tui   # plain text fallback`
+  - true-`npx` `install-agent --help` currently still says:
+    - `Set up now:              idlewatch quickstart`
+    - `                           idlewatch quickstart --no-tui   # plain text fallback`
+  - true-`npx` install-before-setup runtime currently still says:
+    - `Finish setup: idlewatch quickstart`
+    - `Run now:      idlewatch run`
+  - true-`npx` `quickstart --no-tui` success currently still says:
+    - `Start background mode:  idlewatch install-agent`
+    - `Run now:`
+    - `  idlewatch run   Run in the foreground`
+  - true-`npx` saved-setup `status` currently still says:
+    - `Change:   idlewatch configure --no-tui`
+    - `Run now:  idlewatch run`
+    - `Start background mode:     idlewatch install-agent`
+  - true-`npx` `configure --no-tui` repeats the same plain-`idlewatch` next steps in that same one-off context
+
+### Prioritized findings
+#### [x] P1 — true-`npx` help/setup/status/configure surfaces have regressed back to plain `idlewatch ...` next steps
+**Why this matters:** This is tiny, but it lands exactly where people copy commands verbatim. In true one-off `npx` use, showing `idlewatch run` or `idlewatch configure --no-tui` quietly assumes a durable install that may not exist yet. The calmer product split this lane had already converged on is: one-off actions stay literally runnable as `npx idlewatch ...`, while durable background mode remains a separate explicit handoff.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+3. Run the true-`npx` commands listed above with explicit npm-exec env vars
+4. Observe that the help/setup/status/configure surfaces point to plain `idlewatch ...` commands instead of one-off-safe `npx idlewatch ...` commands where appropriate
+
+**Acceptance checks**
+- In a true `npx` context, top-level help should say `Get started:  npx idlewatch quickstart`
+- In that same true `npx` context, `install-agent --help` should say `Set up now: npx idlewatch quickstart`
+- In that same true `npx` context, install-before-setup runtime should say `Finish setup: npx idlewatch quickstart`
+- In that same true `npx` context, runtime/setup/status/configure surfaces should say `Run now: npx idlewatch run`
+- In that same true `npx` context, saved-setup status should keep the config-change path literally runnable too, e.g. `Change: npx idlewatch configure --no-tui`
+- The durable background-mode handoff should stay explicit and separate (`npm install -g idlewatch`, then `idlewatch install-agent`) rather than pretending plain `idlewatch ...` is already available
+- No auth, ingest, packaging, or major launch-agent behavior changes should be introduced beyond this output/context fix
+
+**Last updated:** Saturday, March 28th, 2026 — 3:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` command-literalness regression from a fresh live pass
+
 ## Cycle R682 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny top-level command-summary truthfulness seam and shipped the smallest useful fix.
