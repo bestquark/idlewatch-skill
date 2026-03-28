@@ -1,9 +1,9 @@
 ## Cycle R719 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one still-real tiny background-mode wording seam on the main saved-setup/status surfaces.
+Fresh installer/CLI polish pass shipped the smallest useful fix for one last tiny background-mode wording seam on the installed saved-setup/status surfaces.
 
 ### Priority call
-One low-risk polish issue still clearly cleared the bar: the product has already converged on the calmer, more literal `Turn on background mode` wording across top-level help, `install-agent --help`, install-before-setup recovery, uninstall off-ramps, and the standalone macOS installer scripts — but the successful saved-setup and saved-status surfaces still say `Start background mode`. Nothing functional is broken and the command itself is already right, but this is a copy/paste-heavy moment where the product should sound internally consistent and low-noise.
+One low-risk polish issue clearly cleared the bar: the product had already converged on the calmer, more literal `Turn on background mode` wording across top-level help, `install-agent --help`, install-before-setup recovery, uninstall off-ramps, and the standalone macOS installer scripts — but the installed saved-setup and saved-status surfaces still said `Start background mode`. Nothing functional was broken and the command itself was already right, but this was a copy/paste-heavy moment where the product should sound internally consistent and low-noise.
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
@@ -30,7 +30,7 @@ One low-risk polish issue still clearly cleared the bar: the product has already
 - [x] Fresh standalone macOS side-by-side install/uninstall spot checks with a stubbed `launchctl`, temporary app bundle, and custom label:
   - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
   - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
-- [x] Observed in the same live pass:
+- [x] Observed in the same focused pass:
   - top-level help still says `install-agent     Turn on background mode after setup (macOS)`
   - installed `install-agent --help` still says `idlewatch install-agent — Turn on background mode after setup (macOS)` and `Turn on background mode: idlewatch install-agent`
   - true-`npx` help still says `install-agent     Turn on background mode after durable install`
@@ -38,23 +38,22 @@ One low-risk polish issue still clearly cleared the bar: the product has already
   - install-before-setup recovery still says `Turn on background mode after setup: idlewatch install-agent`
   - uninstall still says `Turn background mode back on later with idlewatch install-agent.`
   - standalone macOS install/uninstall script flows keep that same `Turn on background mode` / `Turn background mode back on later` wording
-  - but the successful saved-setup and saved-status surfaces currently still say:
-    - `Start background mode:  idlewatch install-agent`
-    - `Start background mode:     idlewatch install-agent`
-  - and in true `npx` saved flows they still say:
-    - `Turn on background mode: idlewatch install-agent` inside the explicit durable-install block
-    - so the wording seam is isolated to the installed saved-setup/status path
+  - the installed saved-setup and saved-status surfaces now say:
+    - `Turn on background mode:  idlewatch install-agent`
+    - `Turn on background mode:  idlewatch install-agent`
+  - true `npx` saved flows still keep the explicit durable-install block wording:
+    - `Turn on background mode: idlewatch install-agent`
 
 ### Prioritized findings
-#### [x] P1 — installed saved-setup/status surfaces still say `Start background mode` even though the rest of the product has already standardized on calmer `Turn on background mode` wording
-**Why this matters:** This is tiny, but it lands in the exact moment where the user has just completed setup or checked status and is deciding whether to copy the next command. The command is already correct; the remaining issue is pure product taste and consistency. `Turn on` now reads more deliberate and less mechanically imperative than `Start`, especially because the rest of the installer/CLI already made that wording choice.
+#### [x] P1 — installed saved-setup/status surfaces now say `Turn on background mode`, matching the rest of the installer/CLI
+**Why this mattered:** This is tiny, but it lands in the exact moment where the user has just completed setup or checked status and is deciding whether to copy the next command. The command was already correct; the remaining issue was pure product taste and consistency. `Turn on` reads more deliberate and less mechanically imperative than `Start`, especially because the rest of the installer/CLI had already made that wording choice.
 
 **Exact repro**
 1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
 2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
 3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
 4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
-5. Observe that the successful setup and status surfaces currently still say `Start background mode: idlewatch install-agent`
+5. Observe that the successful setup and status surfaces now say `Turn on background mode: idlewatch install-agent`
 6. Compare that with the surrounding help/install/uninstall surfaces that already say `Turn on background mode ...`
 
 **Acceptance checks**
@@ -64,8 +63,8 @@ One low-risk polish issue still clearly cleared the bar: the product has already
 - The literal command should remain unchanged (`idlewatch install-agent`)
 - No auth, ingest, packaging, launch-agent, config-reload, or metric/device-identity behavior changes should be introduced beyond this wording consistency polish
 
-**Last updated:** Saturday, March 28th, 2026 — 5:50 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one still-real saved-setup/status wording consistency seam from a fresh live pass
+**Last updated:** Saturday, March 28th, 2026 — 6:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed saved-setup/status wording consistency fix
 
 ## Cycle R718 Status: COMPLETE ✅
 

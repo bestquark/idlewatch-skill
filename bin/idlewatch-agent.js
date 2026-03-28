@@ -448,7 +448,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
 
   if (backgroundAgentInstalledNeedsRefresh) {
     console.log('\n   Background mode is installed and not running yet.')
-    console.log(`   Start background mode:  ${backgroundInstallCommand}`)
+    console.log(`   Turn on background mode:  ${backgroundInstallCommand}`)
     console.log('   Background mode will use the saved config.')
     if (invocation.kind === 'npx') {
       console.log('   This npx run saved the config, but background mode still uses the durable install.')
@@ -2111,7 +2111,7 @@ if (statusRequested) {
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log(`  Start background mode:     ${backgroundInstallCommand}`)
+        console.log(`  Turn on background mode:  ${backgroundInstallCommand}`)
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
@@ -2125,7 +2125,7 @@ if (statusRequested) {
         if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
           console.log('  Background: already on')
         } else if (launchAgent.state === 'installed-not-loaded') {
-          console.log(`  Start background mode:     ${installAgentCommand}`)
+          console.log(`  Turn on background mode:  ${installAgentCommand}`)
         } else {
           console.log(`  Turn on background mode:  ${installAgentCommand}`)
         }
@@ -2148,7 +2148,7 @@ if (statusRequested) {
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log(`  Start background mode:     ${backgroundInstallCommand}`)
+        console.log(`  Turn on background mode:  ${backgroundInstallCommand}`)
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
@@ -2161,7 +2161,7 @@ if (statusRequested) {
       } else if (launchAgent.state === 'running' || launchAgent.state === 'loaded') {
         console.log('  Background: already on')
       } else if (launchAgent.state === 'installed-not-loaded') {
-        console.log(`  Start background mode:     ${installAgentCommand}`)
+        console.log(`  Turn on background mode:  ${installAgentCommand}`)
       } else {
         console.log(`  Turn on background mode:  ${installAgentCommand}`)
       }
