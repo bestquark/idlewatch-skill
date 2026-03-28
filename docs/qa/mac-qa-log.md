@@ -1,3 +1,41 @@
+## Cycle R733 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny status-screen consistency fix for the install-before-setup path.
+
+### Priority call
+One low-risk polish issue still cleared the bar: after `install-agent` had already been run before any setup was saved, the CLI's install summary correctly said `Turn on background mode after setup: idlewatch install-agent`, but the matching `idlewatch status` screen for that same state only showed `Finish setup` and `Run now`. Nothing functional was broken, but this left one last tiny copy mismatch in a recovery/copy-paste moment where the product should keep the final step explicit.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Added the missing `Turn on background mode after setup: idlewatch install-agent` hint to the `status` screen when background integration is installed but setup is still not saved
+- [x] Kept the existing `Finish setup`, plain-text fallback, `Run now`, config preview, and background-state wording unchanged
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='status command preserves installed-but-waiting-for-setup state after install-agent ran before setup' test/openclaw-env.test.mjs`
+- [x] Fresh install-before-setup status repro now prints:
+  - `Background:        installed but waiting for setup`
+  - `Finish setup:  idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Run now:       idlewatch run`
+  - `Turn on background mode after setup: idlewatch install-agent`
+- [x] Observed the rest of the same status block stays unchanged and low-noise
+
+### Prioritized findings
+#### [x] P1 — install-before-setup `status` now keeps the final background-mode step explicit instead of making the user infer it from earlier install output
+**Why this mattered:** This is tiny, but `status` is exactly where someone goes after a partial setup to re-orient themselves. Keeping the final `install-agent` step visible there makes the waiting state feel more self-contained and less like it depends on remembering the previous command's output.
+
+**Acceptance checks**
+- When background integration is installed before setup is saved, `idlewatch status` now includes `Turn on background mode after setup: idlewatch install-agent`
+- The existing `Finish setup`, `quickstart --no-tui` fallback, `Run now`, config preview, and `Background: installed but waiting for setup` lines remain unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this status-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-before-setup status consistency fix
+
 ## Cycle R732 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and still did not surface another small user-facing issue worth shipping.

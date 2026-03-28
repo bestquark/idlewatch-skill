@@ -2031,6 +2031,7 @@ test('status command preserves installed-but-waiting-for-setup state after insta
     assert.match(status.stdout, /Finish setup:\s+idlewatch quickstart(?:\s|$)/)
     assert.match(status.stdout, /idlewatch quickstart --no-tui\s+# plain text fallback/)
     assert.match(status.stdout, /Run now:\s+idlewatch run/)
+    assert.match(status.stdout, /Turn on background mode after setup:\s+idlewatch install-agent/)
     assert.doesNotMatch(status.stdout, /Finish setup:\s+idlewatch quickstart --no-tui(?:\s|$)/)
     assert.doesNotMatch(status.stdout, /Run now:\s+node .*run/)
     assert.doesNotMatch(status.stdout, /Finish setup:\s+node .*quickstart --no-tui/)

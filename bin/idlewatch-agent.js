@@ -2109,6 +2109,7 @@ if (statusRequested) {
     }
     if (setupWaitingForInstalledBackground) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
+      console.log(`  Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
     }
   } else if (!hasSamples) {
     console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
