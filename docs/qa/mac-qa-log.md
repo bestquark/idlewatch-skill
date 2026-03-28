@@ -1110,6 +1110,93 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R646 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining retained-log truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch-agent.sh` still treated any file in `~/Library/Logs/IdleWatch` as proof that retained local logs existed. That was slightly too optimistic in the exact calm off-ramp moment where the product should stay literal, because install scaffolding or agent stdout/stderr files can exist without any real telemetry history. The main CLI already uses the stricter product rule here: only real telemetry logs should flip the copy from `would go in ...` to `stay in ...`. The standalone uninstall script now matches that bar.
+
+### What changed
+- [x] Tightened `scripts/uninstall-macos-launch-agent.sh` so standalone uninstall only says `Logs stay in ...` when the log folder contains real telemetry `.ndjson` files
+- [x] Kept the calmer `Logs would go in ...` wording when only shared folder scaffolding or agent stdout/stderr files exist
+- [x] Updated focused coverage in `test/macos-launch-agent-scripts.test.mjs` to distinguish real telemetry logs from launcher stdout/stderr files
+- [x] Left setup, reconfigure, launch-agent behavior, packaging shape, auth/ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed in focused script coverage:
+  - retained `.ndjson` telemetry files still keep `Logs stay in ...`
+  - install-before-setup paths with only `idlewatch.out.log` / `idlewatch.err.log` now keep `Logs would go in ...`
+- [x] Confirmed the rest of the requested polish lane stayed untouched in this pass
+
+### Prioritized findings
+#### [x] P1 — standalone macOS uninstall script now uses the same retained-log truthfulness rule as the main CLI
+**Why this mattered:** This is tiny, but it lands in the exact reversible `never mind` moment where product trust matters. If the only files on disk are launcher stdout/stderr scaffolding, saying logs `stay` over-claims a little. Saying where telemetry logs *would* go until a real `.ndjson` file exists keeps the off-ramp neat and literal.
+
+**Acceptance checks**
+- Standalone macOS uninstall now says `Logs stay in ...` only when the log folder contains real telemetry `.ndjson` files
+- Paths with only launcher stdout/stderr files now keep the calmer `Logs would go in ...` wording
+- Existing retained telemetry-log paths still keep the current `stay in ...` wording
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this tiny off-ramp truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 11:12 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall retained-log truthfulness fix
+
+## Cycle R645 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the exact scope from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The current checkout still feels neat in the highest-friction setup moments: install-before-setup stays truthful instead of pretending background mode is already on, saved setup + reconfigure still keep device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` remains intentionally lightweight, uninstall stays a calm reversible off-ramp, global npm install still leads with the friendlier `idlewatch quickstart`, and true-`npx` still keeps one-off commands literal while background mode stays on the explicit durable-install handoff.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/global-style lifecycle spot checks with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh global-install postinstall spot check:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - install-before-setup still says `✅ Background integration installed.` and keeps the honest `Setup isn't saved yet, so background mode stays off for now.` handoff
+  - saved setup + reconfigure still keep device identity continuity explicit inline (`Device ID: ... kept from original setup for continuity`)
+  - metric toggles still persist and remain visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight instead of turning into a second workflow
+  - uninstall still keeps the reversible saved-config/local-log story short and truthful
+  - global npm-install handoff still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary
+  - true `npx` setup/status/configure surfaces still keep one-off-safe `npx idlewatch ...` commands while the durable background-mode handoff remains separate on `npm install -g idlewatch`, then `idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after a fresh live pass
+**Why this matters:** This lane is about reducing friction, not manufacturing activity. When the current product already feels minimal, copy-safe, and trustworthy across setup, reconfigure, uninstall, and install-path handoffs, the right move is to log the clean verification pass and avoid speculative churn.
+
+**Acceptance checks**
+- Install-before-setup remains truthful and low-noise
+- Device IDs still persist through rename/reconfigure and stay visible inline where continuity matters
+- Metric toggles still persist cleanly and show up clearly in saved-setup `status`
+- Launch-agent install/uninstall behavior remains clear, reversible, and low-noise
+- Local-only `--test-publish` stays intentionally lightweight rather than growing into a second setup flow
+- Global npm-install handoff still leads with `idlewatch quickstart`, with `--no-tui` kept secondary
+- True-`npx` setup/status/configure surfaces keep one-off-safe `npx idlewatch ...` commands while background mode stays on the explicit durable-install handoff
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced in this verification-only pass
+
+**Last updated:** Friday, March 27th, 2026 — 11:00 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
 ## Cycle R644 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.

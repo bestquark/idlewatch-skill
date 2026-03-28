@@ -77,7 +77,7 @@ exit 0
     assert.doesNotMatch(secondInstall.stdout, /LaunchAgent already loaded\./)
 
     fs.mkdirSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch'), { recursive: true })
-    fs.writeFileSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch', 'idlewatch.out.log'), 'retained log\n', 'utf8')
+    fs.writeFileSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch', 'qa-box-metrics.ndjson'), '{"cpu":42}\n', 'utf8')
 
     const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(uninstall.status, 0, uninstall.stderr)
@@ -375,6 +375,10 @@ exit 0
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
     assert.match(install.stdout, /✅ Background integration installed\./)
+
+    fs.mkdirSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch', 'idlewatch.out.log'), 'agent stdout only\n')
+    fs.writeFileSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch', 'idlewatch.err.log'), 'agent stderr only\n')
 
     const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(uninstall.status, 0, uninstall.stderr)

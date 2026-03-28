@@ -52,9 +52,9 @@ if [[ ! -d "$LOG_DIR" ]]; then
   LOG_STATUS_WORD="would go in"
 else
   shopt -s nullglob
-  log_dir_entries=("$LOG_DIR"/*)
+  telemetry_logs=("$LOG_DIR"/*.ndjson)
   shopt -u nullglob
-  if [[ ${#log_dir_entries[@]} -eq 0 ]]; then
+  if [[ ${#telemetry_logs[@]} -eq 0 ]]; then
     LOG_STATUS_WORD="would go in"
   fi
 fi
