@@ -1,3 +1,53 @@
+## Cycle R769 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny status-next-step seam in the saved-setup flow.
+
+### Priority call
+One low-risk issue still clears the bar: `status` still headlines `configure --no-tui` as the main way to change settings, even though the rest of the product now consistently leads with plain `configure` and keeps `--no-tui` secondary as the plain-text fallback. Nothing functional is broken, but this lands in a high-trust “what do I do next?” surface. Right now the status screen reads a little more implementation-shaped than the surrounding help and setup flows.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh saved-setup status spot check with a stubbed non-running `launchctl`:
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh running-background status spot check with a stubbed running `launchctl`:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` saved-status spot check with explicit npm-exec env vars:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed in that live pass:
+  - saved local status currently says `Change:   idlewatch configure --no-tui`
+  - running-background status currently says `Change:   idlewatch configure --no-tui`
+  - true-`npx` status currently says `Change:   npx idlewatch configure --no-tui`
+  - but nearby setup/help surfaces already teach the calmer default-first shape:
+    - top-level help says `configure         Update setup (name, metrics, optional cloud link)`
+    - `configure --help` now leads with `idlewatch configure`
+    - `reconfigure --help` now leads with `idlewatch reconfigure`
+  - so the status screen still describes the same settings-edit path with a slightly more technical headline than the rest of the product
+
+### Prioritized findings
+#### [x] P1 — `status` still suggests the plain-text fallback as the main settings-edit path instead of matching the calmer `configure`-first product shape
+**Why this matters:** This is tiny, but it sits in one of the highest-frequency “change one thing” moments after setup. The product already did the work to make `configure` feel like the primary path elsewhere. Keeping `status` on `configure --no-tui` makes that one surface feel a bit noisier and more technical than necessary.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Save a local setup with `node bin/idlewatch-agent.js quickstart --no-tui` under a temp `HOME`
+3. Run `node bin/idlewatch-agent.js status`
+4. Observe the current next-step line says `Change:   idlewatch configure --no-tui`
+5. Repeat in true `npx` context and observe the same pattern there (`Change:   npx idlewatch configure --no-tui`)
+6. Compare that with the now-calmer help surfaces, which already lead with plain `configure`
+
+**Acceptance checks**
+- Saved-setup `status` should say `Change:   idlewatch configure`, with `idlewatch configure --no-tui` kept secondary only if needed rather than as the headline path
+- True-`npx` saved-setup `status` should say `Change:   npx idlewatch configure`, with the plain-text fallback kept secondary only if needed
+- Running-background `status` should keep the same calmer default-first shape while preserving the existing `Apply saved config` guidance
+- No auth, ingest, device identity, metric persistence, config-reload semantics, or launch-agent behavior changes are needed beyond this status-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real status next-step copy seam from a fresh live pass
+
 ## Cycle R768 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny reconfigure-help seam and shipped the smallest useful fix.
