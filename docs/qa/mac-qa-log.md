@@ -1,3 +1,34 @@
+## Cycle R750 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny help-surface wording cleanup for saved-setup clarity.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the installed `idlewatch install-agent --help` screen already had the right setup-first title and the right literal `After setup: idlewatch install-agent` handoff, but its body line still said `Turns on background mode after setup on macOS.` That wording was not wrong, but it was slightly flatter than the actual behavior in a trust-heavy help moment: this command turns background mode on using the saved setup the user has already created. The smallest useful fix was to make that one sentence say exactly that, without changing any commands or behavior.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern "install-agent help"`
+- [x] Observed the installed help body now says `Turns on background mode on macOS using your saved setup.`
+- [x] Observed the surrounding handoff stayed unchanged:
+  - `Set up now:              idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `After setup:             idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — installed `install-agent --help` now describes saved-setup behavior more literally
+**Why this mattered:** This is tiny, but it lands in one of the most copy/paste-heavy help surfaces in the product. `using your saved setup` is slightly clearer than `after setup` about what the command actually consumes, especially in reconfigure/reapply flows. It removes a little ambiguity without adding any new option, branch, or step.
+
+**Acceptance checks**
+- The installed `idlewatch install-agent --help` body should say `Turns on background mode on macOS using your saved setup.`
+- The title should remain `idlewatch install-agent — Turn on background mode after setup (macOS)`
+- The closing handoff should remain `After setup: idlewatch install-agent`
+- True-`npx` durable-install help should remain unchanged
+- No auth, ingest, telemetry-path, packaging, or launch-agent behavior changes should be introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 8:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-help saved-setup wording cleanup
+
 ## Cycle R749 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from the current polish plan and did not surface another small product-facing issue worth shipping.
