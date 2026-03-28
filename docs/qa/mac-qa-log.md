@@ -1,3 +1,42 @@
+## Cycle R691 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny wording seam in the install-before-setup recovery copy and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the main CLI and standalone macOS install script still used `Start background mode after setup` in the install-before-setup handoff, even though the rest of the product had already converged on the calmer, more literal `Turn on background mode` wording. Nothing functional was broken, but this is one of the first recovery surfaces someone scans after trying background mode before saving setup. Tightening that wording removes a small bit of inconsistency without changing any behavior or adding any extra steps.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the main CLI install-before-setup recovery hint from `Start background mode after setup` to `Turn on background mode after setup`
+- [x] Matched the standalone macOS install script’s CLI and packaged-app no-setup handoffs to that same wording
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left setup behavior, saved-config handling, launch-agent semantics, auth/ingest, packaging, and invocation shaping unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] Fresh main CLI install-before-setup spot check with a stubbed `launchctl` now prints:
+  - `Turn on background mode after setup: idlewatch install-agent`
+- [x] Fresh standalone macOS install-script no-setup spot check now prints:
+  - `Turn on background mode after setup:`
+  - `  idlewatch install-agent`
+  - and, in the packaged-app fallback, `.../Contents/MacOS/IdleWatch install-agent`
+- [x] Observed: surrounding `Finish setup`, `Run now`, `Config path`, `Check`, and `Remove` handoffs stayed unchanged and low-noise
+
+### Prioritized findings
+#### [x] P1 — install-before-setup recovery wording now stays consistent on `Turn on background mode` across the main CLI and standalone macOS installer
+**Why this mattered:** This is tiny, but it lands in a copy/paste-heavy recovery moment. Keeping the product on one calm phrase reduces one more little bit of wording drift without adding features or changing flow shape.
+
+**Acceptance checks**
+- Main CLI install-before-setup recovery now says `Turn on background mode after setup: idlewatch install-agent`
+- Standalone macOS install-script no-setup recovery now says `Turn on background mode after setup:` before the literal install command
+- The surrounding setup/run/check/remove hints remain unchanged and literally runnable
+- No auth, ingest, packaging, invocation-detection, launch-agent, or telemetry-path behavior changes were introduced beyond this wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny install-before-setup wording consistency fix
+
 ## Cycle R684 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real higher-priority true-`npx` invocation-detection regression in the live checkout.

@@ -1462,7 +1462,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
         console.log(`                 ${setupFallbackCommand}   # plain text fallback`)
       }
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
-      console.log(`   Start background mode after setup:  ${preferredProductCommand('install-agent')}`)
+      console.log(`   Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
       console.log(`   Check:        ${preferredProductCommand('status')}   See your saved config, background mode state, and last publish result`)
       console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
