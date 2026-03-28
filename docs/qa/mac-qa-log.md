@@ -1,3 +1,41 @@
+## Cycle R764 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny first-run help seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk issue still cleared the bar: non-TTY `quickstart --help` and `configure --help` currently said `Set IDLEWATCH_ENROLL_* env vars first.`, which made setup sound more env-var-driven than it really is. The product already supports calm interactive setup; env vars are mainly for unattended runs. The smallest useful fix was to keep the existing help shape and only make that one sentence more literal.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened non-TTY `quickstart --help` wording to say `For unattended runs, set IDLEWATCH_ENROLL_* env vars first.`
+- [x] Matched non-TTY `configure --help` to that same calmer wording
+- [x] Updated focused expectations in `test/openclaw-env.test.mjs`
+- [x] Left install/setup flow, saved-config handling, launch-agent behavior, and telemetry behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='quickstart help|configure help' test/openclaw-env.test.mjs`
+- [x] Observed non-TTY help now says:
+  - `Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.`
+- [x] Observed the older more technical wording is gone from the touched help surfaces:
+  - `Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.`
+
+### Prioritized findings
+#### [x] P1 — non-TTY setup help no longer implies env vars are part of the normal setup path
+**Why this mattered:** This is tiny, but it lands in an early trust surface. Saying `Set ... env vars first` made setup sound more technical than the actual product. `For unattended runs...` keeps the automation path visible without making first-run setup feel heavier.
+
+**Acceptance checks**
+- Non-TTY `quickstart --help` now says `Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.`
+- Non-TTY `configure --help` now uses that same wording
+- The existing calm `quickstart` / `quickstart --no-tui` help shape remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-TTY setup-help wording fix
+
 ## Cycle R763 Status: COMPLETE ✅
 
 Fresh scoped installer/CLI polish pass reran the exact lanes from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.

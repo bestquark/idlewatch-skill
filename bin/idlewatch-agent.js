@@ -1295,13 +1295,13 @@ if (args.has('--help') || args.has('-h')) {
   const quickstartUsage = `Usage:  ${quickstartUsageCommand}\n        ${quickstartFallbackCommand}   # plain text fallback`
   const quickstartPromptHint = process.stdin.isTTY
     ? 'Use --no-tui if you want the plain-text setup path.'
-    : 'Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.'
+    : 'Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.'
   const configureCommand = preferredProductCommand('configure')
   const configureUsageCommand = preferredHelpSetupCommand('configure')
   const configureUsage = process.stdin.isTTY ? `${configureUsageCommand} [--no-tui]` : configureUsageCommand
   const configurePromptHint = process.stdin.isTTY
     ? 'Use --no-tui for simple prompts.'
-    : 'Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.'
+    : 'Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.'
   const statusCommand = preferredProductCommand('status')
   const statusUsageCommand = preferredProductCommand('status')
   const createCommand = preferredProductCommand('create')
