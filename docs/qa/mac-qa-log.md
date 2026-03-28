@@ -1,3 +1,68 @@
+## Cycle R741 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the live runtime lane and found one remaining docs-level install-path clarity seam worth tracking, but no new CLI/runtime change that cleared the bar.
+
+### Priority call
+The shipped CLI surfaces still feel clean in a fresh pass: help leads with plain `quickstart`, install-before-setup stays truthful, saved setup + reconfigure preserve device identity and metric-toggle persistence, reload/apply guidance stays predictable, true-`npx` keeps the durable-install split literal, and standalone macOS install/uninstall flows stay copy-safe. The one remaining mismatch is the README install path: it still headlines `quickstart --no-tui` in a few first-scan setup moments even though the product itself has now converged on the calmer shape of leading with plain `quickstart` and keeping `--no-tui` as the explicit fallback.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal CLI pass with stubbed non-running `launchctl`:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh running-background/config-apply pass with stubbed running `launchctl`:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars:
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Fresh global install + standalone macOS script spot checks:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+  - `HOME="$TMPHOME4" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME4" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the same pass:
+  - top-level help still leads with `Get started:  idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback
+  - `install-agent --help` still keeps the calmer setup-first shape (`Set up now: idlewatch quickstart`, then fallback, then `After setup: idlewatch install-agent`)
+  - install-before-setup still says `✅ Background integration installed.` and keeps the honest `Setup isn't saved yet, so background mode stays off for now.` handoff
+  - saved setup + reconfigure still keep `Device ID: ... kept from original setup for continuity` inline where it matters
+  - metric-toggle persistence still stays visible in `status`
+  - running-background reconfigure/status still say `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+  - local-only `--test-publish` still stays intentionally lightweight
+  - true `npx` help/status still keep one-off commands literal while background mode stays on the explicit durable-install handoff
+  - standalone macOS custom-label install/uninstall still keep their follow-up commands literally runnable
+  - README still currently leads with the more technical `npx idlewatch quickstart --no-tui` and `idlewatch quickstart --no-tui` in early install/quickstart examples even though the CLI and postinstall surfaces now lead with plain `quickstart`
+
+### Prioritized findings
+#### [x] P1 — README install-path copy still lags the calmer `quickstart`-first product shape now used by the actual CLI and install surfaces
+**Why this matters:** This is small, but it lands in one of the highest-visibility first impressions. Right now the shipped product teaches a nicer mental model than the README does. Leading docs with `--no-tui` makes setup feel a bit more technical than the runtime product actually is.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Open `README.md`
+3. Compare the early setup examples with the live CLI help/runtime surfaces:
+   - README currently shows `npx idlewatch quickstart --no-tui` in the install section
+   - README currently shows `idlewatch quickstart --no-tui` as the main quickstart command
+   - live CLI help/postinstall instead lead with plain `quickstart` and keep `--no-tui` as the explicit fallback
+4. Observe that the docs are now slightly more technical than the product they describe
+
+**Acceptance checks**
+- README install and quickstart sections should lead with plain `idlewatch quickstart` / `npx idlewatch quickstart`
+- `--no-tui` should remain visible, but as the explicit plain-text fallback rather than the headline command
+- The existing clarity about config persistence, `install-agent`, one-off `npx` usage, and local/cloud mode should remain intact
+- No auth, ingest, packaging, launch-agent semantics, or runtime behavior changes are needed for this docs-only polish
+
+**Last updated:** Saturday, March 28th, 2026 — 8:18 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one remaining docs-level install-path clarity seam from a fresh live pass
+
 ## Cycle R740 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one last tiny install-help truthfulness seam and shipped the smallest useful fix.
