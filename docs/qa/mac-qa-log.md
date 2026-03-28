@@ -1110,6 +1110,45 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R643 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining uninstall off-ramp truthfulness seam in the main CLI and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: after the install-before-setup path, the main `uninstall-agent` CLI still said `Local logs stay in ~/.idlewatch/logs` even when no local telemetry log had ever been created. Nothing functional was broken, but that landed in the exact calm reversible `never mind` moment where the product should stay fully literal. The root cause was small and easy to miss: background install creates the shared log directory for agent stdout/stderr, and the uninstall summary was treating that directory as proof that retained telemetry logs existed. The right fix was tiny: only count default local telemetry logs as existing when the directory actually contains `.ndjson` telemetry files.
+
+### What changed
+- [x] Tightened `printUninstallRetentionSummary()` in `bin/idlewatch-agent.js` so the default `~/.idlewatch/logs` path only counts as an existing retained telemetry log target when it contains `.ndjson` telemetry files
+- [x] Kept the existing `stays` wording for real retained telemetry logs and for custom local-log paths that already exist
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs` for the install-before-setup uninstall path where the log directory exists only because background integration created agent stdout/stderr files
+- [x] Left setup, reconfigure, launch-agent behavior, packaging, auth/ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live install-before-setup off-ramp spot check with a stubbed `launchctl` now says:
+  - `✅ Background mode turned off.`
+  - `Saved config would live at ~/.idlewatch/idlewatch.env`
+  - `Local logs would go in ~/.idlewatch/logs`
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] Confirmed the background-integration-created log directory alone no longer flips the summary to the more optimistic `Local logs stay in ...` wording
+- [x] Focused `node --test` slices in this environment still show the previously logged sticky-runner behavior, so sign-off for this tiny patch used syntax checks plus direct live repro/verification
+
+### Prioritized findings
+#### [x] P1 — `uninstall-agent` now stays truthful when install-before-setup created the default log directory but no telemetry log exists yet
+**Why this mattered:** This is tiny, but it lands right at the product off-ramp. If IdleWatch says logs `stay` when the only thing on disk is background agent stdout/stderr scaffolding, the uninstall story feels slightly less trustworthy than the rest of the setup flow. Saying where local telemetry logs *would* go until a real telemetry file exists keeps the off-ramp neat and literal.
+
+**Acceptance checks**
+- `uninstall-agent` after install-before-setup still exits successfully and keeps the same simple off-ramp
+- The default `~/.idlewatch/logs` directory no longer counts as a retained local telemetry log just because background integration created it
+- That path now says `Local logs would go in ...` until a real default `.ndjson` telemetry log exists
+- Existing retained local-log paths still keep the current `stays` wording when a real log target exists
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this tiny wording truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 10:45 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall off-ramp truthfulness fix for default log directories created before setup
+
 ## Cycle R640 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script.

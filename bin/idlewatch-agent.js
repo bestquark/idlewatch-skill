@@ -896,9 +896,12 @@ function printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assume
   const defaultLogDir = path.join(dataDir, 'logs')
   const hasSavedConfig = fs.existsSync(envFile)
   const hasKnownLocalLog = Boolean(localLogPath)
+  const hasDefaultTelemetryLogs = fs.existsSync(defaultLogDir)
+    ? fs.readdirSync(defaultLogDir).some((entry) => entry.endsWith('.ndjson'))
+    : false
   const hasExistingLogTarget = hasKnownLocalLog
     ? fs.existsSync(localLogPath) || fs.existsSync(path.dirname(localLogPath))
-    : fs.existsSync(defaultLogDir)
+    : hasDefaultTelemetryLogs
 
   const friendlyEnvFile = formatPathForHelp(envFile)
   const friendlyLocalLogPath = hasKnownLocalLog ? formatPathForHelp(localLogPath) : null

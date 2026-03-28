@@ -39,19 +39,19 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 97 - COMPLETE ✅
+## Cycle Status: Cycle 98 - COMPLETE ✅
 
-**Finding:** Re-ran the exact current installer/CLI polish scope in the live checkout and did not surface another product-facing issue worth shipping.
+**Finding:** Found one final tiny uninstall truthfulness seam in the main CLI and shipped the smallest useful fix.
 - Install-before-setup still stays truthful and low-noise (`Background integration installed`, then `stays off for now`)
 - Saved setup + reconfigure still keep device identity continuity and metric persistence visible inline
 - Global npm-install handoff still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary
 - One-off setup/run/configure hints still stay literally runnable as `npx idlewatch ...`
 - The durable background-mode handoff still stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`
-- Standalone macOS uninstall still stays truthful in a fresh no-setup/no-log home (`Saved config would live ...`, `Logs would go in ...`)
-- Uninstall remains a calm reversible off-ramp, and the now-working telemetry path stayed untouched
-- The right move this cycle was to log the clean verification pass and avoid speculative churn that might disturb the working setup/install path
+- Main CLI uninstall now says `Local logs would go in ...` after install-before-setup when the default log directory exists only because background integration created agent stdout/stderr files
+- Existing retained local-log paths still keep the calmer `stays` wording when a real telemetry log target exists
+- The now-working telemetry path stayed untouched; the fix only tightened truthfulness in the uninstall summary
 
-**Last updated:** Friday, March 27th, 2026 — 10:40 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 10:45 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle

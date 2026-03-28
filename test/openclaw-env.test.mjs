@@ -1552,6 +1552,39 @@ test('uninstall-agent runtime keeps the retained-data summary truthful when setu
   }
 })
 
+test('uninstall-agent after install-before-setup keeps local telemetry log wording truthful', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-installed-before-setup-'))
+  const launchAgentsDir = path.join(tempDir, 'Library', 'LaunchAgents')
+  const plistPath = path.join(launchAgentsDir, 'com.idlewatch.agent.plist')
+  const backgroundLogDir = path.join(tempDir, '.idlewatch', 'logs')
+
+  fs.mkdirSync(launchAgentsDir, { recursive: true })
+  fs.mkdirSync(backgroundLogDir, { recursive: true })
+  writeFileSync(plistPath, '<plist/>')
+  writeFileSync(path.join(backgroundLogDir, 'agent-stdout.log'), '')
+  writeFileSync(path.join(backgroundLogDir, 'agent-stderr.log'), '')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: { ...process.env, HOME: tempDir, PATH: process.env.PATH },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background mode turned off\./)
+    assert.match(run.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
+    assert.match(run.stdout, /Local logs would go in .*\.idlewatch\/logs/)
+    assert.doesNotMatch(run.stdout, /Local logs stay in .*\.idlewatch\/logs/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent when nothing is installed stays honest about future config and log paths', () => {
   if (process.platform !== 'darwin') {
     return
