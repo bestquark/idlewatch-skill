@@ -1516,7 +1516,7 @@ test('uninstall-agent help in npx context stays simple and matches the real off-
   assert.doesNotMatch(run.stdout, /Turn it back on later with the durable install:/)
 })
 
-test('uninstall-agent runtime output keeps the saved-config wording calm', () => {
+test('uninstall-agent runtime keeps the retained-data summary truthful when setup was never saved', () => {
   if (process.platform !== 'darwin') {
     return
   }
@@ -1538,11 +1538,13 @@ test('uninstall-agent runtime output keeps the saved-config wording calm', () =>
     assert.equal(run.status, 0, run.stderr)
     assert.match(run.stdout, /Background mode turned off\./)
     assert.doesNotMatch(run.stdout, /LaunchAgent removed — background collection stopped\./)
-    assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env/)
-    assert.match(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs/)
+    assert.match(run.stdout, /Saved config would live at ~\/\.idlewatch\/idlewatch\.env/)
+    assert.match(run.stdout, /Local logs would go in ~\/\.idlewatch\/logs/)
     assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
     assert.doesNotMatch(run.stdout, /Turn it back on:\s+idlewatch install-agent/)
     assert.doesNotMatch(run.stdout, /Turn background mode back on later with node bin\/idlewatch-agent\.js install-agent\./)
+    assert.doesNotMatch(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(run.stdout, /Local logs stay in ~\/\.idlewatch\/logs/)
     assert.doesNotMatch(run.stdout, /Saved config and local logs stay in/)
     assert.doesNotMatch(run.stdout, /Your config and logs were kept in/)
   } finally {

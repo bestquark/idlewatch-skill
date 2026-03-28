@@ -803,6 +803,44 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R627 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny uninstall off-ramp truthfulness fix for install-before-setup states.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: if someone turned on the background integration first and then immediately ran `uninstall-agent` before ever saving setup, the off-ramp still said `Saved config stays at ...` and `Local logs stay in ...` even though neither existed yet. Nothing functional was broken, but the wording slightly over-claimed state in the exact reversible moment where the product should feel most literal and trustworthy. The right fix was tiny: keep the same calm uninstall flow, but let the runtime summary say `would live` / `would go` unless those saved paths really exist.
+
+### What changed
+- Reused the existing truthfulness-aware uninstall retention helper in the `uninstall-agent` runtime path instead of forcing the optimistic `stays` wording after every uninstall
+- Kept the saved-setup off-ramp behavior intact: when config or log paths really exist, the same runtime summary still says they stay in place
+- Updated the focused regression in `test/openclaw-env.test.mjs` so the install-before-setup uninstall path stays honest about future config/log locations
+- Left setup, reconfigure, telemetry, auth, ingest, packaging, and launch-agent semantics unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live install-before-setup off-ramp spot check with a stubbed `launchctl` now says:
+  - `✅ Background mode turned off.`
+  - `Saved config would live at ~/.idlewatch/idlewatch.env`
+  - `Local logs would go in ~/.idlewatch/logs`
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] Confirmed the focused uninstall `node --test` slice still hit the previously logged sticky-runner behavior in this environment, so sign-off for this tiny patch used syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — uninstall runtime now stays truthful when background mode was installed before setup was ever saved
+**Why this mattered:** This is tiny, but it lands in the exact “never mind, back this out” moment where people decide whether the product feels clean and reversible. Saying config/logs “stay” when they were never created adds a little unnecessary doubt. Saying where they *would* live keeps the off-ramp calm without pretending anything exists yet.
+
+**Acceptance checks**
+- `uninstall-agent` after an install-before-setup flow still exits successfully and keeps the same simple off-ramp
+- That runtime path now says `Saved config would live at ...` instead of `Saved config stays at ...` when no saved setup exists yet
+- The same runtime path now says `Local logs would go in ...` instead of `Local logs stay in ...` when no retained logs exist yet
+- Saved-config/log uninstall paths still keep the existing `stays` wording when those retained paths really exist
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 9:19 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny uninstall off-ramp truthfulness fix for install-before-setup states
+
 ## Cycle R626 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout, including install-before-setup, saved setup + reconfigure, loaded-background apply, local-only `--test-publish`, true-`npx`, and true-`npx` + custom-saved-config handoffs, and did not surface another small product-facing issue worth shipping.
