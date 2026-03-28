@@ -1,3 +1,48 @@
+## Cycle R759 Status: COMPLETE ✅
+
+Fresh live installer/CLI polish pass found one still-real recovery-copy seam in the install-before-setup → finish-setup flow when the launch agent is already loaded.
+
+### Priority call
+One small issue still clears the bar: if someone runs `install-agent` first, then finishes setup while the launch agent is already loaded, the setup success screen still falls back to the generic `Turn on background mode` handoff instead of the more truthful `Apply saved config` style guidance already used elsewhere for running background mode. The product still works, but this recovery path asks the user to mentally reconcile two different stories about the same state. In a setup flow, that tiny mismatch feels noisier than it should.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh install-before-setup repro with a stubbed running `launchctl`:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status`
+- [x] Observed in that live pass:
+  - `install-agent` still correctly says `Setup isn't saved yet, so background mode stays off for now.`
+  - completing setup in that same already-loaded environment currently prints:
+    - `For background mode:`
+    - `idlewatch install-agent   Turn on background mode`
+  - but the nearby saved-config-running surfaces already teach the more accurate mental model:
+    - `Background mode: already running`
+    - `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+  - so the product currently describes the same recovery state with two different stories depending on which screen the user lands on first
+
+### Prioritized findings
+#### [x] P1 — post-setup handoff after install-before-setup still sounds like a fresh enable instead of a saved-config apply when the launch agent is already loaded
+**Why this matters:** This is tiny, but it lands in one of the exact flows this lane cares about: install first, then finish setup, then make background mode actually pick up the saved config. `Turn on background mode` is fine when the agent is not loaded yet; it is slightly misleading when the next step is really “re-apply the now-saved config to the already-loaded background integration.” The calmer product move is to keep the handoff literal and state-shaped.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim whose `print` action exits zero and whose install/uninstall actions succeed
+3. Run `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js install-agent`
+4. Run `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+5. Observe that the setup success block currently says `For background mode:` then `idlewatch install-agent   Turn on background mode`
+6. Run `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status` and compare the more accurate running-state guidance there
+
+**Acceptance checks**
+- In the install-before-setup recovery path, if the launch agent is already loaded by the time setup completes, the setup success handoff should use the same saved-config mental model as the running-state surfaces
+- The next step should stay literally runnable as `idlewatch install-agent`
+- The wording should stay short and low-noise — something in the `Apply saved config` family is better than adding a new branchy explanation
+- The existing calmer `Turn on background mode` handoff should remain unchanged for the genuinely installed-but-not-running state
+- No auth, ingest, packaging, metric persistence, device identity, or launch-agent behavior changes are needed beyond this recovery-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real install-first recovery-copy seam from a fresh live pass
+
 ## Cycle R758 Status: COMPLETE ✅
 
 Fresh live installer/CLI polish pass found the same setup-story regression cluster still present in the current checkout, with one additional confirmation that normal help has drifted too.
