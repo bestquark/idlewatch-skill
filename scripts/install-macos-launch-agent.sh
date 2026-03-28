@@ -53,6 +53,31 @@ with_config_command() {
   fi
 }
 
+with_install_agent_command() {
+  local command="$1"
+  local prefix=''
+
+  if [[ "$PLIST_LABEL" != "$DEFAULT_PLIST_LABEL" ]]; then
+    prefix="IDLEWATCH_LAUNCH_AGENT_LABEL=$(printf '%q' "$PLIST_LABEL")"
+  fi
+
+  if [[ "$CONFIG_ENV_PATH" != "$DEFAULT_CONFIG_ENV_PATH" ]]; then
+    local config_prefix
+    config_prefix="IDLEWATCH_CONFIG_ENV_PATH=$(printf '%q' "$CONFIG_ENV_PATH")"
+    if [[ -n "$prefix" ]]; then
+      prefix="$prefix $config_prefix"
+    else
+      prefix="$config_prefix"
+    fi
+  fi
+
+  if [[ -n "$prefix" ]]; then
+    printf '%s %s\n' "$prefix" "$command"
+  else
+    printf '%s\n' "$command"
+  fi
+}
+
 xml_escape() {
   printf '%s' "$1" \
     | sed -e 's/&/\&amp;/g' \
@@ -217,7 +242,7 @@ else
     printf '   %s\n' "$(with_config_command 'idlewatch run')"
     echo ""
     echo "Turn on background mode after setup:"
-    printf '   %s\n' "$(with_config_command 'idlewatch install-agent')"
+    printf '   %s\n' "$(with_install_agent_command 'idlewatch install-agent')"
     echo ""
     echo "Check:"
     printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command 'idlewatch status')"
@@ -229,7 +254,7 @@ else
     printf '   %s\n' "$(with_config_command "$BIN_PATH run")"
     echo ""
     echo "Turn on background mode after setup:"
-    printf '   %s\n' "$(with_config_command "$BIN_PATH install-agent")"
+    printf '   %s\n' "$(with_install_agent_command "$BIN_PATH install-agent")"
     echo ""
     echo "Check:"
     printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command "$BIN_PATH status")"
