@@ -1,3 +1,59 @@
+## Cycle R729 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for one still-real high-visibility setup-handoff regression across help, install-before-setup recovery, global npm postinstall, and the standalone macOS install script.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: several first-scan setup surfaces had drifted back to leading with the more technical `quickstart --no-tui` command instead of plain `quickstart`. Nothing functional was broken, but this lands right at the “what should I run first?” moment. The calmer product shape this lane had already converged on was better: lead with plain `quickstart`, then keep `quickstart --no-tui` one line below as the plain-text fallback.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored top-level help to lead with plain `quickstart`, with `quickstart --no-tui` kept one line below as the fallback
+- [x] Restored `install-agent --help` and the true-`npx` install-before-setup recovery output to the same calmer setup-first shape
+- [x] Restored the standalone macOS install script no-setup handoff to lead with `quickstart`, while preserving the literal `--no-tui` fallback right below it
+- [x] Restored global npm postinstall to lead with `idlewatch quickstart`, with the plain-text fallback kept visible
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`, `test/postinstall.test.mjs`, and `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging semantics, saved-config handling, launch-agent behavior, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Focused `openclaw-env` regression checks passed for the touched help/setup/status paths:
+  - `install-agent help/runtime preserve one-off command hints under npm exec`
+  - `install-agent help keeps custom saved-config npx handoffs literally runnable`
+  - `install-agent help keeps the durable setup path short and clear`
+  - `install-agent help in npx context points straight to the durable path`
+  - `uninstall-agent help in npx context keeps the durable off-ramp literally runnable`
+  - `uninstall-agent after install-before-setup keeps local telemetry log wording truthful`
+  - `install-agent follow-up uses source checkout command path`
+  - `status command preserves installed-but-waiting-for-setup state after install-agent ran before setup`
+  - `source checkout does not drift into npx wording from a stray npm_command env alone`
+- [x] Observed in the touched surfaces:
+  - top-level help now leads with `Get started:  idlewatch quickstart`
+  - top-level help keeps `idlewatch quickstart --no-tui   # plain text fallback` one line below
+  - normal `install-agent --help` now leads with `Set up now: idlewatch quickstart`
+  - true-`npx` `install-agent --help` now leads with `Set up now: npx idlewatch quickstart`
+  - install-before-setup recovery now leads with `Finish setup: idlewatch quickstart`, with the fallback one line below
+  - global npm postinstall now leads with `idlewatch quickstart`, with the fallback one line below
+  - standalone macOS install-before-setup now leads with `idlewatch quickstart`, with the fallback one line below
+
+### Prioritized findings
+#### [x] P1 — highest-visibility setup handoffs now lead with plain `quickstart` again, with `--no-tui` preserved as the secondary fallback
+**Why this mattered:** This is tiny, but it lands in the exact “what do I run first?” moment. Leading with the fallback made setup feel a little more technical and implementation-shaped than it needed to. Restoring plain `quickstart` first keeps the product calmer without removing the literal headless path.
+
+**Acceptance checks**
+- Normal top-level help leads with `Get started:  idlewatch quickstart`
+- True-`npx` top-level help leads with `Get started:  npx idlewatch quickstart`
+- Normal `install-agent --help` leads with `Set up now: idlewatch quickstart`
+- True-`npx` `install-agent --help` leads with `Set up now: npx idlewatch quickstart`
+- Install-before-setup recovery, global npm postinstall, and standalone macOS install-before-setup all lead with plain `quickstart`
+- Those same surfaces still keep the literal `quickstart --no-tui` fallback one line below
+- No auth, ingest, packaging, launch-agent, saved-config, or telemetry-path behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:18 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny setup-handoff friendliness regression fix
+
 ## Cycle R728 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real high-visibility setup-handoff regression across the main help, durable-background help, install-before-setup recovery, global npm postinstall, and standalone macOS install script no-setup flow.
