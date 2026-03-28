@@ -205,7 +205,11 @@ PLIST_ID="gui/$USER_GUID/$PLIST_LABEL"
 WAS_ALREADY_LOADED=0
 if launchctl print "$PLIST_ID" >/dev/null 2>&1; then
   WAS_ALREADY_LOADED=1
-  echo "Background mode is already running. Refreshing its configuration."
+  if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
+    echo "Background mode is already running. Refreshing its configuration."
+  else
+    echo "Background integration is already installed. Refreshing it."
+  fi
   launchctl bootout "$PLIST_ID" || true
 fi
 

@@ -1,3 +1,44 @@
+## Cycle R726 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for one remaining standalone macOS side-by-side reinstall-before-setup truthfulness seam.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: when the standalone macOS installer is rerun for an already-loaded side-by-side/custom-label launch agent before setup has ever been saved, the script opened with `Background mode is already running. Refreshing its configuration.` and `✅ Background mode refreshed.` — then later said `Setup isn't saved yet, so background mode stays off for now.` Nothing functional was broken in the launch-agent wiring, but this read as self-contradictory in a trust-heavy setup/reconfigure moment. The right fix was tiny: if setup still is not saved, keep the opening line narrow and implementation-light by talking about `background integration` instead of claiming meaningful background mode is already running.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the standalone macOS install script’s already-loaded no-saved-setup headline from `Background mode is already running. Refreshing its configuration.` to `Background integration is already installed. Refreshing it.`
+- [x] Kept the existing `✅ Background mode refreshed.` success line unchanged so the end state still reads short and calm
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs` for the side-by-side/custom-label no-setup refresh path
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs --test-name-pattern='packaged macOS install script keeps the no-setup refresh path truthful for custom side-by-side labels|packaged macOS install script keeps custom launch-agent labels literal in the background-mode handoff before setup'`
+- [x] Observed the already-loaded custom-label no-saved-setup path now prints:
+  - `Background integration is already installed. Refreshing it.`
+  - `✅ Background mode refreshed.`
+  - later: `Setup isn't saved yet, so background mode stays off for now.`
+- [x] Observed the old contradictory opener is gone from that same path:
+  - `Background mode is already running. Refreshing its configuration.`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS side-by-side reinstall-before-setup now opens truthfully when setup still has not been saved
+**Why this mattered:** This is tiny, but it lands in exactly the sort of edge-case recovery moment where the copy needs to be most trustworthy. If setup still is not saved, the product should not imply useful background collection is already on just because a launch agent/plist happens to be loaded.
+
+**Acceptance checks**
+- In the standalone macOS install script’s side-by-side/custom-label no-saved-setup refresh path, the opening headline now stays narrow and truthful about `background integration` instead of claiming background mode is already running
+- The existing `✅ Background mode refreshed.` success line remains unchanged
+- The existing no-saved-setup handoffs remain unchanged and literally runnable:
+  - `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch run`
+  - `IDLEWATCH_LAUNCH_AGENT_LABEL=... idlewatch install-agent`
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced beyond this truthfulness polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS no-setup refresh truthfulness fix
+
 ## Cycle R725 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny truthfulness seam in the standalone macOS side-by-side install-before-setup refresh path.

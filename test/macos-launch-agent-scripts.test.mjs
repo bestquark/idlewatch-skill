@@ -225,6 +225,53 @@ exit 0
   }
 })
 
+test('packaged macOS install script keeps the no-setup refresh path truthful for custom side-by-side labels', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-label-refresh-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-label-refresh-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const customLabel = 'com.idlewatch.agent.qa'
+  const customLabelPattern = customLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 0
+fi
+if [[ "$cmd" == "bootout" || "$cmd" == "bootstrap" || "$cmd" == "enable" ]]; then
+  exit 0
+fi
+exit 0
+`)
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath,
+      IDLEWATCH_LAUNCH_AGENT_LABEL: customLabel
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /Background integration is already installed\. Refreshing it\./)
+    assert.match(install.stdout, /✅ Background mode refreshed\./)
+    assert.match(install.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
+    assert.match(install.stdout, new RegExp(`Service:\\s+gui/\\d+/${customLabelPattern}`))
+    assert.doesNotMatch(install.stdout, /Background mode is already running\. Refreshing its configuration\./)
+    assert.doesNotMatch(install.stdout, /✅ Background integration installed\./)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS install script shows the exact refresh command when idlewatch is not on PATH yet', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-cli-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-cli-bin-'))
