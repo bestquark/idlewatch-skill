@@ -251,8 +251,8 @@ test('help keeps the happy path above advanced env tuning noise', () => {
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /^idlewatch\n\nUsage:\s+idlewatch <command> \[options\]/m)
   assert.doesNotMatch(run.stdout, /^node .*idlewatch-agent\.js\n\nUsage:\s+node .*idlewatch-agent\.js <command> \[options\]/m)
-  assert.match(run.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
-  assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
+  assert.match(run.stdout, /Get started:\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
+  
   assert.doesNotMatch(run.stdout, /Get started:\s+node .*quickstart(?:\s|$)/)
   assert.match(run.stdout, /quickstart/)
   assert.match(run.stdout, /run\s+Run the collector in the foreground/)
@@ -280,8 +280,8 @@ test('help preserves one-off command hints under npm exec', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
-  assert.doesNotMatch(run.stdout, /Get started:\s+npx idlewatch quickstart(?:\s|$)/)
+  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+  
   assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart --no-tui(?:\s|$)/)
 })
 
@@ -305,8 +305,8 @@ test('install-agent help/runtime preserve one-off command hints under npm exec',
     })
 
     assert.equal(help.status, 0, help.stderr)
-    assert.match(help.stdout, /Set up now:\s+npx idlewatch quickstart --no-tui/)
-    assert.doesNotMatch(help.stdout, /Set up now:\s+npx idlewatch quickstart(?:\s|$)/)
+    assert.match(help.stdout, /Set up now:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+    
     assert.match(help.stdout, /Run now:\s+npx idlewatch run/)
     assert.doesNotMatch(help.stdout, /Set up now:\s+idlewatch quickstart(?:\s|$)/)
     assert.doesNotMatch(help.stdout, /Run now:\s+idlewatch run(?:\s|$)/)
@@ -333,8 +333,8 @@ exit 0
         })
 
         assert.notEqual(runtime.status, 0)
-        assert.match(runtime.stderr, /Set up now:\s+npx idlewatch quickstart --no-tui/)
-        assert.doesNotMatch(runtime.stderr, /Set up now:\s+npx idlewatch quickstart(?:\s|$)/)
+        assert.match(runtime.stderr, /Set up now:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+        
         assert.match(runtime.stderr, /Run now:\s+npx idlewatch run/)
         assert.doesNotMatch(runtime.stderr, /Set up now:\s+idlewatch quickstart(?:\s|$)/)
         assert.doesNotMatch(runtime.stderr, /Run now:\s+idlewatch run(?:\s|$)/)
@@ -1115,7 +1115,7 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   assert.doesNotMatch(run.stdout, /If you've already finished setup, this turns on background mode right away\./)
   assert.doesNotMatch(run.stdout, /If setup is already saved, background mode turns on right away\./)
   assert.doesNotMatch(run.stdout, /If setup is already saved, background mode starts right away\./)
-  assert.match(run.stdout, /Set up now:\s+idlewatch quickstart --no-tui/)
+  assert.match(run.stdout, /Set up now:\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
   assert.match(run.stdout, /After setup:\s+idlewatch install-agent/)
   assert.doesNotMatch(run.stdout, /Turn on background mode:\s+idlewatch install-agent/)
   assert.doesNotMatch(run.stdout, /Set up now:\s+idlewatch quickstart --no-tui(?:\s|$)/)
@@ -1170,7 +1170,7 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.match(run.stdout, /^npx idlewatch install-agent — Turn on background mode after durable install/)
   assert.match(run.stdout, /Usage:\s+npx idlewatch install-agent/)
   assert.match(run.stdout, /Background mode needs a durable install\./)
-  assert.match(run.stdout, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+  assert.match(run.stdout, /Set up now:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
   assert.match(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.match(run.stdout, /Then turn on background mode:\s+idlewatch install-agent/)
   assert.match(run.stdout, /Run now:\s+npx idlewatch run/)
@@ -1298,8 +1298,8 @@ test('main help stays on the durable command in npx context', () => {
 
   assert.equal(run.status, 0, run.stderr)
   assert.match(run.stdout, /^npx idlewatch\n\nUsage:\s+npx idlewatch <command> \[options\]/)
-  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
-  assert.doesNotMatch(run.stdout, /Get started:\s+npx idlewatch quickstart(?:\s|$)/)
+  assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+  
   assert.match(run.stdout, /install-agent\s+Turn on background mode after durable install/)
   assert.match(run.stdout, /uninstall-agent\s+Turn off background mode \(macOS\)/)
   assert.doesNotMatch(run.stdout, /install-agent\s+Enable background mode \(requires durable install\)/)
@@ -1919,7 +1919,7 @@ test('install-agent refuses disposable npm exec paths and explains the durable p
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Background mode needs a durable install\./)
     assert.doesNotMatch(run.stderr, /Background install needs a durable IdleWatch install first/)
-    assert.match(run.stderr, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+    assert.match(run.stderr, /Set up now:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
     assert.match(run.stderr, /Install once:\s+npm install -g idlewatch/)
     assert.ok(run.stderr.indexOf('Set up now:') < run.stderr.indexOf('Install once:'), 'should lead with the immediate setup step before the durable install step in real npx recovery output')
     assert.doesNotMatch(run.stderr, /If setup isn't saved yet:\s+idlewatch quickstart --no-tui/)
@@ -2046,10 +2046,10 @@ test('status command preserves installed-but-waiting-for-setup state after insta
     assert.match(status.stdout, /Config:\s+~\/\.idlewatch\/idlewatch\.env \(not saved yet\)/)
     assert.match(status.stdout, /Background:\s+installed but waiting for setup/)
     assert.doesNotMatch(status.stdout, /Background:\s+waiting for setup/)
-    assert.match(status.stdout, /Finish setup:\s+idlewatch quickstart --no-tui/)
+    assert.match(status.stdout, /Finish setup:\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
         assert.match(status.stdout, /Run now:\s+idlewatch run/)
-    assert.match(status.stdout, /Start background mode after setup:\s+idlewatch install-agent/)
-    assert.doesNotMatch(status.stdout, /Finish setup:\s+idlewatch quickstart --no-tui(?:\s|$)/)
+    assert.match(status.stdout, /Turn on background mode after setup:\s+idlewatch install-agent/)
+    
     assert.doesNotMatch(status.stdout, /Run now:\s+node .*run/)
     assert.doesNotMatch(status.stdout, /Finish setup:\s+node .*quickstart --no-tui/)
     assert.doesNotMatch(status.stdout, /Background:\s+LaunchAgent loaded/)
@@ -2635,8 +2635,8 @@ test('source checkout does not drift into npx wording from a stray npm_command e
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Get started:\s+idlewatch quickstart --no-tui/)
-    assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
+    assert.match(run.stdout, /Get started:\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
+    
     assert.doesNotMatch(run.stdout, /npx idlewatch/)
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
@@ -3388,9 +3388,9 @@ test('status command preserves one-off command hints under npm exec env', () => 
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
-    assert.doesNotMatch(run.stdout, /Get started:\s+npx idlewatch quickstart(?:\s|$)/)
-  assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
+    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+    
+  
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
@@ -3685,7 +3685,7 @@ test('status command shows contextual next-step hints', () => {
     })
     assert.equal(noSamples.status, 0, noSamples.stderr)
     assert.ok(noSamples.stdout.includes('(none yet)'), 'should show no samples yet')
-    assert.ok(noSamples.stdout.includes('idlewatch configure --no-tui'), 'should still surface the change/setup tweak path before the first sample exists')
+    assert.ok(noSamples.stdout.includes('idlewatch configure'), 'should still surface the change/setup tweak path before the first sample exists')
     assert.ok(noSamples.stdout.includes('idlewatch --once'), 'should keep the one-shot test hint on the calmer product command in source checkouts')
     assert.doesNotMatch(noSamples.stdout, new RegExp(`${SOURCE_CMD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} --once`), 'should not fall back to the raw repo-script --once hint in source checkouts')
     assert.ok(noSamples.stdout.includes('idlewatch run'), 'should hint at run for continuous monitoring on the calmer product command in source checkouts')

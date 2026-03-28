@@ -363,8 +363,12 @@ function installAgentHelpText() {
   const installAgentHelpCommand = preferredProductCommand('install-agent')
   const quickstartSetupCommand = preferredPrimarySetupCommand('quickstart')
   const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-  const quickstartSetupLines = `Set up now:                ${quickstartFallbackCommand || quickstartSetupCommand}`
-  const quickstartSetupLinesInstalled = `Set up now:              ${quickstartFallbackCommand || quickstartSetupCommand}`
+  const quickstartSetupLines = quickstartFallbackCommand
+    ? `Set up now:                ${quickstartSetupCommand}\n                            ${quickstartFallbackCommand}   # plain text fallback`
+    : `Set up now:                ${quickstartSetupCommand}`
+  const quickstartSetupLinesInstalled = quickstartFallbackCommand
+    ? `Set up now:              ${quickstartSetupCommand}\n                           ${quickstartFallbackCommand}   # plain text fallback`
+    : `Set up now:              ${quickstartSetupCommand}`
 
   if (invocation.kind === 'npx') {
     return `${installAgentHelpCommand} — Turn on background mode after durable install
@@ -540,7 +544,9 @@ function printHelp() {
     .join('\n')
   const quickstartSetupCommand = preferredPrimarySetupCommand('quickstart')
   const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-  const getStartedLines = `Get started:  ${quickstartFallbackCommand || quickstartSetupCommand}`
+  const getStartedLines = quickstartFallbackCommand
+    ? `Get started:  ${quickstartSetupCommand}\n              ${quickstartFallbackCommand}   # plain text fallback`
+    : `Get started:  ${quickstartSetupCommand}`
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
@@ -1494,8 +1500,12 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     if (!shouldStartImmediately) {
       console.log('✅ Background integration installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
-      const finishSetupCommand = preferredSetupFallbackCommand('quickstart') || preferredPrimarySetupCommand('quickstart')
-      console.log(`   Finish setup: ${finishSetupCommand}`)
+      const finishSetupPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+      const finishSetupFallbackCommand = preferredSetupFallbackCommand('quickstart')
+      console.log(`   Finish setup: ${finishSetupPrimaryCommand}`)
+      if (finishSetupFallbackCommand) {
+        console.log(`                 ${finishSetupFallbackCommand}   # plain text fallback`)
+      }
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
@@ -2110,8 +2120,12 @@ if (statusRequested) {
     const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
     const setupWaitingForInstalledBackground = launchAgent?.state === 'installed-not-loaded'
     const setupLabel = setupWaitingForInstalledBackground ? 'Finish setup' : 'Get started'
-    const setupCommand = preferredSetupFallbackCommand('quickstart') || preferredPrimarySetupCommand('quickstart')
-    console.log(`  ${setupLabel}:  ${setupCommand}`)
+    const setupPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+    const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
+    console.log(`  ${setupLabel}:  ${setupPrimaryCommand}`)
+    if (setupFallbackCommand) {
+      console.log(`                 ${setupFallbackCommand}   # plain text fallback`)
+    }
     if (setupWaitingForInstalledBackground) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
       console.log(`  Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)

@@ -5,6 +5,12 @@ Fresh installer/CLI polish pass found one still-real setup-story regression in t
 ### Priority call
 One medium-severity product-taste issue clearly still clears the bar: several first-scan setup/install surfaces have drifted back to presenting `--no-tui` as the headline path instead of the plain `quickstart` flow the rest of this lane had converged on. Nothing functional appears broken, but this makes setup feel more technical and more implementation-shaped than it needs to in exactly the moments where users decide whether the product is simple. The drift is visible in normal help, installed `install-agent --help`, and global npm postinstall.
 
+### What shipped
+- [x] Restored plain `quickstart` as the lead line in top-level help, install-before-setup/status no-setup hints, and installed `install-agent --help`
+- [x] Kept `quickstart --no-tui` visible directly underneath as the explicit `# plain text fallback`
+- [x] Restored the calmer postinstall copy: `turn on background mode after setup`
+- [x] Left telemetry, auth/ingest flow, saved-config semantics, and broader launch-agent behavior untouched
+
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
 - [x] Fresh live setup/help spot checks from the current checkout:
