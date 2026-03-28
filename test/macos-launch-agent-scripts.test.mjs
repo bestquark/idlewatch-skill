@@ -126,7 +126,7 @@ exit 0
     assert.match(install.stdout, /✅ Background integration installed\./)
     assert.doesNotMatch(install.stdout, /✅ Background mode installed\./)
     assert.match(install.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
-    assert.match(install.stdout, /Finish setup:\s+idlewatch quickstart\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
+    assert.match(install.stdout, /Finish setup:\s+idlewatch quickstart --no-tui/)
     assert.match(install.stdout, /Run now:\s+idlewatch run/)
     assert.match(install.stdout, /Turn on background mode after setup:\s+idlewatch install-agent/)
     assert.doesNotMatch(install.stdout, /Turn on background mode:\s+idlewatch install-agent/)
@@ -173,8 +173,7 @@ exit 0
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, new RegExp(`Finish setup:\\s+${expectedPrefix} idlewatch quickstart`))
-    assert.match(install.stdout, new RegExp(`${expectedPrefix} idlewatch quickstart --no-tui\\s+# plain text fallback`))
+    assert.match(install.stdout, new RegExp(`Finish setup:\\s+${expectedPrefix} idlewatch quickstart --no-tui`))
     assert.match(install.stdout, new RegExp(`Run now:\\s+${expectedPrefix} idlewatch run`))
     assert.match(install.stdout, new RegExp(`Turn on background mode after setup:\\s+${expectedPrefix} idlewatch install-agent`))
     assert.match(install.stdout, new RegExp(`Check:\\s+${expectedPrefix} idlewatch status\\s+See your saved config, background mode state, and last publish result`))
@@ -206,7 +205,7 @@ test('packaged macOS install script shows the exact refresh command when idlewat
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
-    assert.match(install.stdout, /Finish setup:\s+.*Contents\/MacOS\/IdleWatch quickstart\s+.*Contents\/MacOS\/IdleWatch quickstart --no-tui\s+# plain text fallback/)
+    assert.match(install.stdout, /Finish setup:\s+.*Contents\/MacOS\/IdleWatch quickstart --no-tui/)
     assert.match(install.stdout, /Turn on background mode after setup:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.match(install.stdout, /Check:\s+.*Contents\/MacOS\/IdleWatch status\s+See your saved config, background mode state, and last publish result/)
     assert.doesNotMatch(install.stdout, /Turn on background mode:\s+.*Contents\/MacOS\/IdleWatch install-agent/)

@@ -31982,3 +31982,33 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 - Kept interactive/TTY guidance unchanged.
 - Reworded `scripts/postinstall.mjs` so the global install handoff also prints only `idlewatch quickstart --no-tui`.
 - Updated the focused regression coverage in `test/postinstall.test.mjs`.
+
+## Cycle R668 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny packaged-install/setup-handoff polish fix in the installer/CLI lane.
+- Two scan-first setup surfaces had drifted back to a two-choice block (`quickstart`, then `quickstart --no-tui` as a fallback) even though the rest of the current headless setup story already prefers one obvious text-first command.
+- Global npm `postinstall` now prints only `idlewatch quickstart --no-tui`.
+- The packaged macOS install-before-setup handoff now prints only `quickstart --no-tui` as well, both for the PATH-installed CLI and the direct app-binary path.
+- Saved-config handling, background/install behavior, and the now-working telemetry path remain unchanged.
+
+### R668 spot-check coverage
+- [x] `node --test test/postinstall.test.mjs test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+#### [x] L154 — packaged/global install handoffs now stick to one calmer `quickstart --no-tui` command in text-first setup moments
+**Why it matters:** This is tiny, but it lands right after install in exactly the copy-paste moment where people should get one obvious next step. Reintroducing both `quickstart` and `quickstart --no-tui` adds a needless choice and makes the setup story feel less crisp than the rest of the current CLI.
+
+**What shipped**
+- Reworded `scripts/postinstall.mjs` so the global install handoff now prints only `idlewatch quickstart --no-tui`.
+- Reworded `scripts/install-macos-launch-agent.sh` so the install-before-setup branch now prints only `quickstart --no-tui`, both with `idlewatch` on PATH and with the packaged app binary path.
+- Updated focused regression coverage in `test/postinstall.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`.
+
+**Acceptance checks**
+- [x] Global npm postinstall now says `idlewatch quickstart --no-tui`
+- [x] Global npm postinstall no longer prints a second `# plain text fallback` setup line
+- [x] Packaged macOS install-before-setup now says `Finish setup: ... quickstart --no-tui`
+- [x] Packaged macOS install-before-setup no longer prints a second setup-command choice
+- [x] Background/install behavior and telemetry behavior stay unchanged
+
+**Last updated:** Saturday, March 28th, 2026 — 4:17 AM (America/Toronto)
