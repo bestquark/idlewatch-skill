@@ -1,6 +1,6 @@
 # IdleWatch Installer QA polish log
 
-## Cycle R779 Status: COMPLETE ✅
+## Cycle R780 Status: COMPLETE ✅
 
 **Cycle outcome:** Automated QA polish cycle completed with no actionable issues found. The product remains in a verified "stable" state.
 
@@ -12,6 +12,6 @@ No new installer/CLI polish issues identified in scope. All items from the curre
 
 ### Repository state
 - Working tree: Clean on main branch
-- Latest commit: `docs: update QA log cycle R778 — no issues found` (R779 being this completion)
+- Latest commit: `docs: update QA log cycle R779 — no issues found` (R780 being this completion)
 
-**Last updated:** Saturday, March 28th, 2026 — 2:10 PM (America/Toronto)
+**Last updated:** Saturday, March 28th, 2026 — 3:15 PM (America/Toronto)
