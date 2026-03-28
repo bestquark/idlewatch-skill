@@ -1,3 +1,38 @@
+## Cycle R754 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny docs-level wording seam in the packaged macOS background-mode guide and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `docs/packaging/macos-launch-agent.md` still described the post-setup handoff as `re-run the install script once to turn background mode on or apply the saved config.` That wording was technically fine, but a little flatter and more branchy than the product itself. The CLI already teaches the calmer mental model this lane wants: run setup, then re-run the background-mode command; if background mode is already on, that applies the saved config, and if not, it turns background mode on. The smallest useful fix was to make that one sentence read the same way.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened `docs/packaging/macos-launch-agent.md` so the re-run handoff now reads as a simple sequence instead of a split branch
+- [x] Kept `idlewatch quickstart` as the default saved-setup path and `idlewatch quickstart --no-tui` as the plain-text fallback
+- [x] Left auth/ingest behavior, packaging behavior, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `docs/packaging/macos-launch-agent.md`
+- [x] Observed the reconfigure/apply sentence now says:
+  - `After running idlewatch quickstart or changing settings, re-run the install script once. If background mode is already on, that applies the saved config. If not, it turns background mode on.`
+- [x] Observed the surrounding doc shape stayed aligned:
+  - `idlewatch quickstart` still appears as the default saved-setup path
+  - `idlewatch quickstart --no-tui` still appears as the plain-text fallback
+
+### Prioritized findings
+#### [x] P1 — packaged macOS background-mode docs now match the calmer re-run/apply mental model the CLI already teaches
+**Why this mattered:** This is tiny, but it lands in the exact “what do I do after setup or reconfigure?” scan path. The commands were already correct; the remaining friction was just sentence shape. Tightening it makes the guide read more like a product and less like an implementation note.
+
+**Acceptance checks**
+- `docs/packaging/macos-launch-agent.md` now explains the re-run handoff as a short sequence: re-run once, then either apply the saved config (if already on) or turn background mode on
+- `idlewatch quickstart` remains the default saved-setup path in that doc
+- `idlewatch quickstart --no-tui` remains visible as the plain-text fallback
+- No auth, ingest, packaging behavior, launch-agent semantics, or telemetry-path behavior changes were introduced beyond this docs-only polish
+
+**Last updated:** Saturday, March 28th, 2026 — 9:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged macOS re-run/apply wording polish fix
+
 ## Cycle R753 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan and did not surface another small product-facing issue worth shipping.
