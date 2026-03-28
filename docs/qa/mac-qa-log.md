@@ -2050,6 +2050,48 @@ No new polish issue cleared the bar this cycle. The current product still feels 
 **Last updated:** Saturday, March 28th, 2026 — 7:20 AM (America/Toronto)  
 **Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
 
+## Cycle R723 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny setup-handoff consistency fix across help, postinstall, and the standalone macOS installer.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: several first-scan setup surfaces had drifted back to leading with the more technical `quickstart --no-tui` command instead of plain `quickstart`, and the postinstall / standalone macOS installer copy had also regressed from the calmer `turn on background mode after setup` wording back to `start background mode after setup`. Nothing functional was broken, but this is exactly the sort of tiny regression that makes setup feel more technical than it needs to.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored help/install-before-setup setup prompts to lead with plain `quickstart`, with `quickstart --no-tui` kept visible as the explicit plain-text fallback
+- [x] Restored global npm postinstall to lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- [x] Tightened postinstall and standalone macOS installer wording from `start background mode after setup` to `turn on background mode after setup`
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`, `test/postinstall.test.mjs`, and `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging shape, saved-config handling, launch-agent semantics, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='^(postinstall stays CLI-first by default|postinstall keeps the durable install handoff neat and macOS guidance user-facing|postinstall can still print the setup handoff when explicitly requested|help keeps the happy path above advanced env tuning noise|help preserves one-off command hints under npm exec|install-agent help/runtime preserve one-off command hints under npm exec|install-agent help keeps custom saved-config npx handoffs literally runnable|install-agent refuses disposable npm exec paths and explains the durable path|install-agent runtime in npx context keeps custom saved-config handoffs literally runnable|install-agent follow-up uses source checkout command path|status command preserves installed-but-waiting-for-setup state after install-agent ran before setup|configure --no-tui fails clearly when no saved setup exists yet|configure --no-tui keeps the calmer setup-first recovery copy in true npx mode when no saved setup exists yet|packaged macOS install script keeps the no-setup status hint config-first|packaged macOS install script keeps custom saved-config handoffs literal before setup|packaged macOS install script keeps custom launch-agent labels literal in the background-mode handoff before setup|packaged macOS install script shows the exact refresh command when idlewatch is not on PATH yet)$'`
+- [x] Observed the targeted setup-handoff surfaces now lead with plain `quickstart` and keep `--no-tui` as the explicit fallback instead of the default shape
+- [x] Observed postinstall and the standalone macOS installer now both say `turn on background mode after setup`
+- [x] Observed source-checkout and true-`npx` handoffs still keep their commands literally runnable, including saved-config-prefixed forms
+- [x] Noted unrelated pre-existing/environment-specific failures still remain outside this polish slice (OpenClaw probe strict-mode cases, one `script`-based TTY case on this host, and one uninstall no-op log-path expectation)
+
+### Prioritized findings
+#### [x] P1 — setup-handoff copy is back to the calmer `quickstart`-first shape across the first-scan installer/CLI surfaces in scope
+**Why this mattered:** These are the copy/paste-heavy trust moments during setup and reconfigure. Leading with the friendlier default command and keeping the plain-text path clearly secondary makes the product feel simpler without changing behavior.
+
+**Acceptance checks**
+- Top-level help, `install-agent --help`, install-before-setup recovery, and saved-config waiting-for-setup status now lead with plain `quickstart`
+- Global npm postinstall now leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- Standalone macOS install-before-setup output now leads with plain `quickstart` in both the `idlewatch`-on-PATH and packaged-app paths
+- Postinstall and standalone macOS installer now say `turn on background mode after setup`
+- Source-checkout and true-`npx` handoffs remain literally runnable, including custom saved-config prefixes
+- No auth, ingest, packaging, launch-agent semantics, saved-config handling, or telemetry-path behavior changes were introduced beyond this wording/setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 9:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny setup-handoff consistency fix across help, postinstall, and standalone macOS install flows
+
 ## Cycle R722 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny wording consistency seam in the saved-config `install-agent` success path and shipped the smallest useful fix.

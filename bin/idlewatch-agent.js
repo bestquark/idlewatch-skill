@@ -159,17 +159,14 @@ function preferredRecoveryCommand(command = 'configure') {
 }
 
 function preferredPrimarySetupCommand(command = 'quickstart') {
-  const wantsPlainText = !process.stdin.isTTY
-  const setupCommand = wantsPlainText ? `${command} --no-tui` : command
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
-    return withCustomConfigEnv(`idlewatch ${setupCommand}`)
+    return withCustomConfigEnv(`idlewatch ${command}`)
   }
-  return inferCliCommand(setupCommand)
+  return inferCliCommand(command)
 }
 
 function preferredSetupFallbackCommand(command = 'quickstart') {
-  if (!process.stdin.isTTY) return ''
   const primary = preferredPrimarySetupCommand(command)
   const fallback = preferredProductCommand(`${command} --no-tui`)
   if (!fallback || fallback === primary) return ''
