@@ -1,3 +1,43 @@
+## Cycle R740 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny install-help truthfulness seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the main `install-agent --help` screen title had already been tightened to `Turn on background mode after setup (macOS)`, but the very next body line still said `Turns on background mode on macOS.` Nothing functional was broken, yet this left a tiny wording mismatch in one of the most copy/paste-heavy setup moments. The clean fix was to make the body line match the setup-first story the rest of the help surface already tells.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the installed `install-agent --help` body line from `Turns on background mode on macOS.` to `Turns on background mode after setup on macOS.`
+- [x] Kept the `If setup is already saved, background mode turns on right away.` line unchanged
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help keeps the durable setup path short and clear'`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the installed help body now prints:
+  - `Turns on background mode after setup on macOS.`
+- [x] Observed the surrounding help surface stays aligned and low-noise:
+  - `idlewatch install-agent — Turn on background mode after setup (macOS)`
+  - `If setup is already saved, background mode turns on right away.`
+  - `Set up now: idlewatch quickstart`
+  - `After setup: idlewatch install-agent`
+- [x] Observed the older looser body line is gone:
+  - `Turns on background mode on macOS.`
+
+### Prioritized findings
+#### [x] P1 — installed `install-agent --help` body text now matches the product’s setup-first truth instead of sounding slightly more immediate than the title
+**Why this mattered:** This is tiny, but it lands exactly where someone is deciding whether the setup flow feels deliberate. Matching the body to the title removes one more subtle trust wobble without adding options, steps, or behavior.
+
+**Acceptance checks**
+- `idlewatch install-agent --help` now includes `Turns on background mode after setup on macOS.`
+- The surrounding `If setup is already saved, background mode turns on right away.` line remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 8:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed `install-agent --help` body-copy consistency fix
+
 ## Cycle R739 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
