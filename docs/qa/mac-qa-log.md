@@ -1514,6 +1514,53 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R669 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny true-`npx` durable-install help consistency fix in the live checkout.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the true-`npx` `install-agent --help` surface had drifted back to leading with only the more technical `npx idlewatch quickstart --no-tui` command instead of the calmer plain `npx idlewatch quickstart` first with `--no-tui` one line below as the plain-text fallback. Nothing functional was broken, but this lands in the exact copy/paste moment where the product should feel least technical. The runtime recovery output already had the nicer shape; the help surface should match it.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the true-`npx` `install-agent --help` surface to lead with `npx idlewatch quickstart`
+- [x] Kept `npx idlewatch quickstart --no-tui` visible one line below as the plain-text fallback in non-TTY `npx` help
+- [x] Left the existing one-off/durable split unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable install stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- [x] Left the already-correct runtime recovery output unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` help repro:
+  - `HOME="$TMPHOME" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the live pass now prints:
+  - `Set up now:                npx idlewatch quickstart`
+  - `                           npx idlewatch quickstart --no-tui   # plain text fallback`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] Focused `node --test` was avoided for sign-off because the Node test runner still shows the previously logged sticky behavior in this environment; verification for this tiny help-surface patch used syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — true-`npx` durable-install help now matches the calmer setup-first handoff already used by the runtime recovery output
+**Why this mattered:** This is tiny, but it lands right where someone copies the next command verbatim. Leading with the friendlier setup command makes the help surface feel more polished without changing behavior or blurring the one-off vs durable split.
+
+**Acceptance checks**
+- In the true `npx` `install-agent --help` surface, the first setup hint now says `npx idlewatch quickstart`
+- That same true-`npx` help surface still keeps `npx idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- The existing one-off/durable split remains unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable install stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- `Run now: npx idlewatch run` remains unchanged
+- Main CLI runtime flows, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics remain untouched beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 1:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` install-agent help consistency fix
+
+
 ## Cycle R665 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny main-CLI `install-agent --help` setup-handoff consistency fix in the live checkout.

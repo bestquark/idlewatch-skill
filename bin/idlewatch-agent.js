@@ -354,20 +354,20 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentHelpCommand = preferredProductCommand('install-agent')
-  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
-  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
+  const quickstartPrimaryCommand = invocation.kind === 'npx'
+    ? inferCliCommand('quickstart')
+    : preferredPrimarySetupCommand('quickstart')
+  const quickstartFallbackCommand = invocation.kind === 'npx'
+    ? (!process.stdin.isTTY ? inferCliCommand('quickstart --no-tui') : '')
+    : preferredSetupFallbackCommand('quickstart')
   const quickstartFallbackLine = quickstartFallbackCommand
     ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
     : ''
 
   if (invocation.kind === 'npx') {
-    const npxFallbackLine = quickstartFallbackCommand
-      ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
-      : ''
-
     return `Background mode needs a durable install.
 
-Set up now:                ${quickstartPrimaryCommand}${npxFallbackLine}
+Set up now:                ${quickstartPrimaryCommand}${quickstartFallbackLine}
 Install once:              npm install -g idlewatch
 Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
 
