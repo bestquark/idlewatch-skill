@@ -360,7 +360,11 @@ function installAgentHelpText() {
     : ''
 
   if (invocation.kind === 'npx') {
-    return `Background mode needs a durable install.
+    return `${installAgentHelpCommand} — Turn on background mode after setup (macOS)
+
+Usage:  ${installAgentHelpCommand}
+
+Background mode needs a durable install.
 
 Set up now:                ${quickstartPrimaryCommand}${quickstartFallbackLine}
 Install once:              npm install -g idlewatch

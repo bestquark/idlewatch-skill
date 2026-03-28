@@ -1,3 +1,54 @@
+## Cycle R716 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for the last tiny true-`npx` durable-help framing seam.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the true-`npx` `install-agent --help` surface kept the right one-off/durable guidance, but it still opened like a warning interstitial instead of a normal help screen. Nothing functional was broken, yet this lands in a copy/paste-heavy moment and felt slightly rougher than the installed help. The right fix was tiny: keep the literal commands and durable-install guidance exactly as-is, but restore the same calm command-title/usage framing the installed help already uses.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored a normal command title to the true-`npx` `install-agent --help` surface
+- [x] Restored a `Usage:` line to that same true-`npx` help screen
+- [x] Kept the existing literal commands unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test --test-name-pattern='install-agent --help' test/openclaw-env.test.mjs`
+- [x] Observed the true-`npx` help surface now opens with:
+  - `npx idlewatch install-agent — Turn on background mode after setup (macOS)`
+  - `Usage:  npx idlewatch install-agent`
+  - then the existing durable-install guidance
+- [x] Observed the installed help surface remains unchanged and calm
+
+### Prioritized findings
+#### [x] P1 — true-`npx` `install-agent --help` now keeps the same calm help-screen framing as the installed command instead of opening abruptly with prose alone
+**Why this mattered:** This is tiny, but it lands in the exact “is this polished enough to trust?” moment. Reusing the normal help frame makes the durable-install handoff feel deliberate instead of error-ish, without changing any behavior.
+
+**Acceptance checks**
+- In true `npx` context, `install-agent --help` now opens with a command title instead of bare prose
+- That same surface now includes a `Usage:` line
+- The existing literal commands remain unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- No auth, ingest, packaging, telemetry-path, or launch-agent behavior changes were introduced beyond this help-surface polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` durable-help framing polish fix
+
 ## Cycle R715 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny help-surface consistency seam in the true-`npx` durable-install path.
