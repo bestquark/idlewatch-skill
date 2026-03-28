@@ -1,3 +1,53 @@
+## Cycle R715 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny help-surface consistency seam in the true-`npx` durable-install path.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the true-`npx` `install-agent --help` surface is functionally correct, but it now opens abruptly with `Background mode needs a durable install.` and skips the normal command-title/usage framing that the installed CLI still shows (`idlewatch install-agent — Turn on background mode after setup (macOS)`, then `Usage:  idlewatch install-agent`). Nothing functional is broken and the one-off/durable split remains right, but this lands in a copy/paste-heavy help moment and reads slightly more like an error interstitial than a polished command help screen. Product taste says the `npx` durable-install help should keep the same calm structure as the installed help while still preserving the one-off/durable guidance.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal help spot check still shows the calmer command framing:
+  - `node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh true-`npx` help spot check reproduced the seam with explicit npm-exec env vars:
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed in the same live pass:
+  - normal installed help still opens with:
+    - `idlewatch install-agent — Turn on background mode after setup (macOS)`
+    - `Usage:  idlewatch install-agent`
+  - but true `npx` help currently opens with only:
+    - `Background mode needs a durable install.`
+    - then jumps straight into `Set up now: ...`, `Install once: ...`, and `Turn on background mode: ...`
+  - the underlying setup guidance still remains correct and literal:
+    - `npx idlewatch quickstart`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+    - `npm install -g idlewatch`
+    - `idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — true-`npx` `install-agent --help` currently loses the normal command-title/usage framing and reads more abruptly than the installed help surface
+**Why this matters:** This is tiny, but it lands in the exact moment where someone is deciding whether the CLI feels polished and trustworthy. The current text is correct, yet it feels more like a warning banner than a proper help screen. Keeping the same calm command-title/usage structure as the installed path would reduce that “rough edge” feeling without changing any behavior.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js install-agent --help`
+3. Run `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+4. Observe that the installed help opens with a proper command title and `Usage:` line, while the true-`npx` help currently opens with bare prose (`Background mode needs a durable install.`)
+
+**Acceptance checks**
+- In true `npx` context, `install-agent --help` should keep the one-off/durable guidance exactly correct
+- That same surface should regain a calm help-screen frame comparable to the installed path, e.g. a command title and `Usage:` line instead of opening abruptly with prose alone
+- The existing literal commands should remain unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+- `Run now: npx idlewatch run` should remain unchanged
+- No auth, ingest, packaging, launch-agent semantics, or install-path behavior changes should be introduced beyond this help-surface polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:50 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` help-surface framing seam from a fresh live pass
+
 ## Cycle R714 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one final tiny help-copy truthfulness seam in the main CLI and shipped the smallest useful fix.
