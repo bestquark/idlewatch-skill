@@ -1110,6 +1110,50 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R640 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch-agent.sh` now correctly says `No plist was installed at ...` when nothing had been installed yet, but in that same no-setup / no-log path it still says `Logs stay in ...` even though no retained log folder exists yet. Nothing functional is broken, but this lands in the exact reversible `never mind` moment where the product should stay fully literal and low-drama. The calmer CLI uninstall path already uses `would go` language when local logs do not exist; the standalone script should match that standard instead of sounding like it preserved logs that were never created.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh standalone macOS uninstall-script no-setup repro from a clean temporary HOME:
+  - `HOME="$TMPHOME" PATH=/usr/bin:/bin:/opt/homebrew/bin:$PATH bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - `✅ Background mode turned off.`
+  - `No plist was installed at .../Library/LaunchAgents/com.idlewatch.agent.plist`
+  - `Saved config would live at .../.idlewatch/idlewatch.env`
+  - `Logs stay in .../Library/Logs/IdleWatch`
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] The same clean temporary HOME had no retained IdleWatch log directory before running the script
+- [x] The core CLI polish lane still stayed clean in the same pass: install-before-setup remained truthful, saved setup + reconfigure kept device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` stayed intentionally lightweight, and npm/`npx` handoffs remained literal
+
+### Prioritized findings
+#### [ ] P1 — standalone macOS uninstall script still says `Logs stay in ...` when no retained log folder exists yet
+**Why this matters:** This is tiny, but it is exactly the kind of needless over-claim that makes an uninstall/off-ramp feel less trustworthy than the rest of the product. If setup/logs do not exist yet, the script should say where logs *would* go rather than implying it preserved something.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Use a fresh temporary HOME with no IdleWatch config, plist, or logs
+3. Run `HOME="$TMPHOME" PATH=/usr/bin:/bin:/opt/homebrew/bin:$PATH bash scripts/uninstall-macos-launch-agent.sh`
+4. Observe that the script currently says:
+   - `No plist was installed at ...`
+   - `Saved config would live at ...`
+   - `Logs stay in ...`
+5. Confirm no retained `~/Library/Logs/IdleWatch` directory exists in that clean HOME
+
+**Acceptance criteria**
+- In the standalone macOS uninstall script’s no-setup / no-log path, the summary should say `Logs would go in ...` instead of `Logs stay in ...`
+- Saved-config / retained-log paths should keep the existing calm `stays` wording when those paths really exist
+- The existing `No plist was installed at ...` truthfulness fix should remain intact
+- The reinstall handoff should stay short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
+
+**Last updated:** Friday, March 27th, 2026 — 10:32 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny standalone macOS uninstall-script retained-log truthfulness seam from a fresh live pass
+
 ## Cycle R639 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
