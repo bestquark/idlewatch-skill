@@ -1332,6 +1332,64 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R658 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny setup-handoff inconsistency in the main CLI and logged it from a fresh live pass.
+
+### Priority call
+One low-risk polish issue still clears the bar: the main CLI’s install-before-setup and first follow-up `status` surfaces still lead with the more technical `idlewatch quickstart --no-tui` command, even though the rest of the product now prefers the calmer plain `idlewatch quickstart` first and keeps `--no-tui` as a secondary plain-text fallback. Nothing functional is broken, but this lands in the exact install/setup moment where the product should feel least technical and most welcoming. The standalone macOS installer and global npm-install handoff already use the nicer pattern; the main CLI should match.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/global-style lifecycle spot checks with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh global-install postinstall spot check:
+  - `HOME="$TMPHOME2" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent --help`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - main CLI install-before-setup currently says `Finish setup: idlewatch quickstart --no-tui`
+  - the immediate follow-up `status` currently says `Finish setup: idlewatch quickstart --no-tui`
+  - meanwhile global npm-install postinstall already leads with:
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - and the standalone macOS install script already matches that same calmer shape in both the CLI-friendly and packaged-app fallback paths
+  - saved setup + reconfigure still keep device identity continuity explicit inline and metric toggles visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight
+  - uninstall still keeps the reversible saved-config/local-log story short and truthful
+  - true `npx` still correctly keeps one-off commands literal while background mode stays on the explicit durable-install handoff
+
+### Prioritized findings
+#### [x] P1 — main CLI install-before-setup and first follow-up `status` still lead with the more technical `quickstart --no-tui` instead of the calmer plain `quickstart`
+**Why this matters:** This is tiny, but it is exactly the sort of product-taste seam people feel more than they consciously notice. The product has already converged on a nicer setup default everywhere else. Keeping the main CLI on the older, more technical command makes the most important first-run handoff feel slightly harsher than necessary.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+4. Observe the install-before-setup handoff currently leads with `Finish setup: idlewatch quickstart --no-tui`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+6. Observe the first follow-up `status` currently repeats `Finish setup: idlewatch quickstart --no-tui`
+7. Compare that with the calmer global/standalone install handoffs that already lead with plain `idlewatch quickstart`
+
+**Acceptance checks**
+- In the main CLI install-before-setup path, the first setup hint should be `idlewatch quickstart`
+- That same main-CLI surface should still keep `idlewatch quickstart --no-tui` visible as a secondary plain-text fallback
+- The immediate follow-up first-run `status` should match that same calmer setup-handoff shape
+- `Run now`, `Start background mode after setup`, `Check`, and `Remove` should remain unchanged and low-noise
+- Global npm-install, true-`npx`, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics should remain untouched beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 12:30 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real main-CLI setup-handoff inconsistency from a fresh live pass
+
 ## Cycle R657 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one last tiny main-CLI install follow-up inconsistency and shipped the smallest useful fix.
