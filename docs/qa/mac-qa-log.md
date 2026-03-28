@@ -1,3 +1,61 @@
+## Cycle R672 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The current checkout still feels neat in the moments most likely to create setup friction: install-before-setup stays truthful and low-noise, saved setup + reconfigure keep device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` stays intentionally lightweight, uninstall remains a calm reversible off-ramp, global npm-install still leads with the friendlier `idlewatch quickstart`, and true-`npx` still keeps one-off commands literal while background mode stays on the explicit durable-install handoff.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Syntax spot checks still pass:
+  - `node --check bin/idlewatch-agent.js`
+  - `node --check scripts/postinstall.mjs`
+  - `node --check test/openclaw-env.test.mjs`
+  - `node --check test/postinstall.test.mjs`
+  - `node --check test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh source/global-style lifecycle spot checks with a stubbed `launchctl` still keep the calmer setup-first handoff:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh global-install postinstall spot check still keeps the calmer setup-first shape:
+  - `HOME="$TMPHOME2" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh true-`npx` help/setup/status spot checks with explicit npm-exec env vars:
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - install-before-setup still says `✅ Background integration installed.` and keeps the honest `Setup isn't saved yet, so background mode stays off for now.` handoff
+  - the main CLI install-before-setup and first follow-up `status` still both lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept one line below as the plain-text fallback
+  - saved setup + reconfigure still keep device identity continuity explicit inline (`Device ID: ... kept from original setup for continuity`) and metric toggles visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight instead of turning into a second workflow
+  - uninstall still keeps the reversible saved-config/local-log story short and truthful
+  - global npm-install postinstall still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary as a plain-text fallback
+  - true `npx` `install-agent --help` still leads with `npx idlewatch quickstart`, keeps `npx idlewatch quickstart --no-tui` visible one line below as the plain-text fallback, and preserves the explicit durable-install handoff on `npm install -g idlewatch`, then `idlewatch install-agent`
+  - true `npx` saved setup + reconfigure still keep one-off actions literal (`npx idlewatch run`, `npx idlewatch configure --no-tui`) while background mode stays on the separate durable-install handoff
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after a fresh live pass
+**Why this matters:** This lane is about removing friction, not manufacturing activity. When the current product already feels minimal, copy-safe, and trustworthy across setup, reconfigure, uninstall, and install-path handoffs, the right move is to log the clean verification pass and avoid speculative churn.
+
+**Acceptance checks**
+- Install-before-setup remains truthful and low-noise
+- The main CLI, global npm-install, and true-`npx` setup handoffs remain calm and literally runnable for their respective install modes
+- Device IDs still persist through rename/reconfigure and stay visible inline where continuity matters
+- Metric toggles still persist cleanly and show up clearly in saved-setup `status`
+- Launch-agent install/uninstall behavior remains clear, reversible, and low-noise
+- Local-only `--test-publish` stays intentionally lightweight rather than growing into a second setup flow
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced in this verification-only pass
+
+**Last updated:** Saturday, March 28th, 2026 — 2:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
 ## Cycle R671 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
