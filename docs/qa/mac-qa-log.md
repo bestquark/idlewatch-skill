@@ -1332,6 +1332,54 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R662 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny main-CLI setup-handoff consistency fix in the non-TTY install-before-setup path.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the main CLI’s non-TTY install-before-setup and immediate follow-up `status` surfaces still led with the more technical `idlewatch quickstart --no-tui` command even though the rest of the installer/CLI already preferred the calmer plain `idlewatch quickstart` first and kept `--no-tui` one line below as a plain-text fallback. Nothing functional was broken, but this landed in the exact first-run setup moment where the product should feel least technical. The right fix was tiny: keep the same behavior, lead with plain `quickstart`, keep `quickstart --no-tui` visible right below, and leave the surrounding run/install/status/remove handoff unchanged.
+
+### What changed
+- [x] Reworked the main CLI install-before-setup handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- [x] Matched the immediate first-run `status` no-config handoff to that same calmer two-line setup shape
+- [x] Left `Run now`, `Start background mode after setup`, `Check`, `Remove`, auth/ingest behavior, packaging, launch-agent semantics, and the now-working telemetry path unchanged
+- [x] Updated focused regression expectations in `test/openclaw-env.test.mjs`
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live source/global-style install-before-setup repro with a stubbed `launchctl` and clean temporary HOME:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed the live pass now prints:
+  - install-before-setup:
+    - `Finish setup: idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - immediate follow-up `status`:
+    - `Finish setup:  idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - surrounding handoff still stays minimal and literal:
+    - `Run now: idlewatch run`
+    - `Start background mode after setup: idlewatch install-agent`
+    - `Check: idlewatch status   See your saved config, background mode state, and last publish result`
+    - `Remove: idlewatch uninstall-agent`
+
+### Prioritized findings
+#### [x] P1 — main CLI non-TTY install-before-setup and follow-up `status` now match the calmer setup-handoff shape already used elsewhere
+**Why this mattered:** This is tiny, but it lands in one of the most trust-building moments in the product. Leading with the friendlier default setup command makes the first-run handoff feel calmer without adding options or changing behavior.
+
+**Acceptance checks**
+- The main CLI install-before-setup path now leads with `idlewatch quickstart`
+- That same surface still keeps `idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- The immediate follow-up first-run `status` now matches that same calmer two-line setup-handoff shape
+- `Run now`, `Start background mode after setup`, `Check`, and `Remove` remain unchanged and low-noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 12:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny main-CLI non-TTY setup-handoff consistency fix
+
 ## Cycle R661 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny setup-handoff inconsistency in the main CLI’s non-TTY install-before-setup path.

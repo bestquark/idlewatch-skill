@@ -158,6 +158,22 @@ function preferredRecoveryCommand(command = 'configure') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function preferredPrimarySetupCommand(command = 'quickstart') {
+  const invocation = detectCliInvocation()
+  if (!process.stdin.isTTY && invocation.kind !== 'npx') {
+    return preferredProductCommand(command)
+  }
+  return preferredHelpSetupCommand(command)
+}
+
+function preferredSetupFallbackCommand(command = 'quickstart') {
+  const invocation = detectCliInvocation()
+  if (!process.stdin.isTTY && invocation.kind !== 'npx') {
+    return preferredProductCommand(`${command} --no-tui`)
+  }
+  return ''
+}
+
 function preferredProductCommand(command = '') {
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
@@ -1434,7 +1450,11 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     if (!shouldStartImmediately) {
       console.log('✅ Background integration installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
-      console.log(`   Finish setup: ${preferredHelpSetupCommand('quickstart')}`)
+      console.log(`   Finish setup: ${preferredPrimarySetupCommand('quickstart')}`)
+      const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
+      if (setupFallbackCommand) {
+        console.log(`                 ${setupFallbackCommand}   # plain text fallback`)
+      }
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Start background mode after setup:  ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
@@ -2050,7 +2070,11 @@ if (statusRequested) {
     const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
     const setupWaitingForInstalledBackground = launchAgent?.state === 'installed-not-loaded'
     const setupLabel = setupWaitingForInstalledBackground ? 'Finish setup' : 'Get started'
-    console.log(`  ${setupLabel}:  ${preferredHelpSetupCommand('quickstart')}`)
+    console.log(`  ${setupLabel}:  ${preferredPrimarySetupCommand('quickstart')}`)
+    const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
+    if (setupFallbackCommand) {
+      console.log(`               ${setupFallbackCommand}   # plain text fallback`)
+    }
     if (setupWaitingForInstalledBackground) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
     }
