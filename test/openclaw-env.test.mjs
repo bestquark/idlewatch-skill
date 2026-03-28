@@ -1349,16 +1349,39 @@ test('quickstart help stays clean in non-TTY mode', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /quickstart — Set up this device\n\nUsage:\s+idlewatch quickstart --no-tui\n/)
+  assert.match(run.stdout, /quickstart — Set up this device\n\nUsage:\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback\n/)
   assert.doesNotMatch(run.stdout, /quickstart --no-tui — Set up this device/)
   assert.match(run.stdout, /Walks you through device name, metrics, and an optional cloud link\./)
+  assert.doesNotMatch(run.stdout, /Usage:\s+node .*quickstart\n/)
   assert.doesNotMatch(run.stdout, /Usage:\s+node .*quickstart --no-tui\n/)
   assert.match(run.stdout, /Uses the simple setup flow\. Set IDLEWATCH_ENROLL_\* env vars first\./)
   assert.doesNotMatch(run.stdout, /Uses simple prompts\. Set IDLEWATCH_ENROLL_\* env vars first\./)
   assert.doesNotMatch(run.stdout, /Runs non-interactively\. Set IDLEWATCH_ENROLL_\* env vars first\./)
   assert.doesNotMatch(run.stdout, /Walks you through API key, device name, and metric selection\./)
   assert.doesNotMatch(run.stdout, /Usage:\s+.*quickstart --no-tui \[--no-tui\]/)
+  assert.doesNotMatch(run.stdout, /quickstart — Set up this device\n\nUsage:\s+idlewatch quickstart --no-tui\n/)
   assert.doesNotMatch(run.stdout, /Use --no-tui for simple prompts\./)
+})
+
+test('quickstart help keeps the same calm usage shape in true npx mode', () => {
+  const run = spawnSync(process.execPath, [BIN, 'quickstart', '--help'], {
+    env: {
+      ...process.env,
+      PATH: process.env.PATH,
+      npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+      npm_command: 'exec',
+      npm_lifecycle_event: 'npx',
+      npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+    },
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.match(run.stdout, /quickstart — Set up this device\n\nUsage:\s+npx idlewatch quickstart\n\s+npx idlewatch quickstart --no-tui\s+# plain text fallback\n/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+npx idlewatch quickstart --no-tui\n/)
+  assert.doesNotMatch(run.stdout, /Usage:\s+idlewatch quickstart\n/)
+  assert.match(run.stdout, /Uses the simple setup flow\. Set IDLEWATCH_ENROLL_\* env vars first\./)
 })
 
 test('configure help stays clean in non-TTY mode and keeps saved-config reload wording short', () => {

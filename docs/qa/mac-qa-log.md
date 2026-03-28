@@ -1,3 +1,48 @@
+## Cycle R762 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny setup-help seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: `quickstart --help` in non-TTY help output still looked like the plain-text fallback was the only setup path because the `Usage:` block only showed `quickstart --no-tui`. That was technically runnable, but it made one of the first setup surfaces feel more implementation-shaped than the rest of the product, which already leads with plain `quickstart` and keeps `--no-tui` secondary. The smallest useful fix was to make `quickstart --help` teach the same calm two-line setup shape in both normal and true-`npx` contexts.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated `quickstart --help` to show plain `quickstart` first, with `quickstart --no-tui   # plain text fallback` one line below
+- [x] Matched true-`npx` `quickstart --help` to that same usage shape
+- [x] Kept the existing body copy and simple setup/env-var hint intact
+- [x] Added focused coverage in `test/openclaw-env.test.mjs` for the true-`npx` quickstart help surface
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] Focused command-level verification for the touched help surfaces:
+  - `node bin/idlewatch-agent.js quickstart --help`
+  - `HOME="$TMPHOME" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js quickstart --help`
+- [x] Observed normal `quickstart --help` now prints:
+  - `Usage:  idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed true-`npx` `quickstart --help` now prints:
+  - `Usage:  npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed the old more technical headline shape is gone from those touched help surfaces:
+  - `Usage:  idlewatch quickstart --no-tui`
+  - `Usage:  npx idlewatch quickstart --no-tui`
+
+### Prioritized findings
+#### [x] P1 — `quickstart --help` now matches the calmer setup-first product shape instead of making the fallback look like the default path
+**Why this mattered:** This is tiny, but it lands in a first-scan setup surface. Leading help with the fallback made setup feel slightly more technical than the rest of the product. Showing both lines in order keeps the help screen aligned with the actual setup story: default path first, plain-text fallback second.
+
+**Acceptance checks**
+- Normal `quickstart --help` now shows `idlewatch quickstart` first and `idlewatch quickstart --no-tui` one line below as the fallback
+- True-`npx` `quickstart --help` now shows `npx idlewatch quickstart` first and `npx idlewatch quickstart --no-tui` one line below as the fallback
+- The existing setup body copy and env-var hint remain intact
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:50 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny quickstart help usage polish fix
+
 ## Cycle R761 Status: COMPLETE ✅
 
 Fresh live installer/CLI polish pass reran the scoped lane from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.

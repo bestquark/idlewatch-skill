@@ -1290,10 +1290,11 @@ if (args.has('--help-env')) {
 if (args.has('--help') || args.has('-h')) {
   const subCmd = argv.find(a => !a.startsWith('-'))
   const quickstartCommand = preferredProductCommand('quickstart')
-  const quickstartUsageCommand = preferredHelpSetupCommand('quickstart')
-  const quickstartUsage = process.stdin.isTTY ? `${quickstartUsageCommand} [--no-tui]` : quickstartUsageCommand
+  const quickstartUsageCommand = quickstartCommand
+  const quickstartFallbackCommand = preferredHelpSetupCommand('quickstart')
+  const quickstartUsage = `Usage:  ${quickstartUsageCommand}\n        ${quickstartFallbackCommand}   # plain text fallback`
   const quickstartPromptHint = process.stdin.isTTY
-    ? 'Use --no-tui for simple prompts.'
+    ? 'Use --no-tui if you want the plain-text setup path.'
     : 'Uses the simple setup flow. Set IDLEWATCH_ENROLL_* env vars first.'
   const configureCommand = preferredProductCommand('configure')
   const configureUsageCommand = preferredHelpSetupCommand('configure')
@@ -1316,7 +1317,7 @@ if (args.has('--help') || args.has('-h')) {
   const subHelp = {
     quickstart: `${quickstartCommand} — Set up this device
 
-Usage:  ${quickstartUsage}
+${quickstartUsage}
 
 Walks you through device name, metrics, and an optional cloud link.
 ${quickstartPromptHint}`,
