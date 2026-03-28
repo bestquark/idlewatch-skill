@@ -1,3 +1,46 @@
+## Cycle R725 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny truthfulness seam in the standalone macOS side-by-side install-before-setup refresh path.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: when the standalone macOS installer is rerun for an already-loaded side-by-side/custom-label launch agent **before setup has ever been saved**, the script currently opens with `Background mode is already running. Refreshing its configuration.` and `✅ Background mode refreshed.` — then immediately says `Setup isn't saved yet, so background mode stays off for now.` Nothing functional appears broken in the underlying install path, but this lands in a trust-heavy moment and reads as self-contradictory. Product taste says this surface should stay literal and low-noise: if setup is still missing, the headline should not make it sound like meaningful background collection is already on.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Created a fake `launchctl` shim that returns success for `print`, `bootstrap`, `bootout`, `enable`, `disable`, and `kickstart`
+- [x] Created a temporary app bundle containing `Contents/MacOS/IdleWatch`
+- [x] Ran the standalone side-by-side/custom-label install-before-setup flow with an already-"running" shim:
+  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+- [x] Observed the install summary currently prints:
+  - `Background mode is already running. Refreshing its configuration.`
+  - `✅ Background mode refreshed.`
+  - then later: `Setup isn't saved yet, so background mode stays off for now.`
+- [x] Observed the main CLI no-setup `install-agent` path stays calmer in the same broad condition and does **not** make the same contradictory running/refreshed claim
+
+### Prioritized findings
+#### [x] P1 — standalone macOS side-by-side reinstall-before-setup can currently sound like background mode is both already running and still off
+**Why this matters:** This is tiny, but it lands in exactly the sort of edge-case recovery moment where the copy needs to be most trustworthy. Even if the launch agent is technically loaded, the product should not imply useful background collection is already happening when setup has not been saved yet.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits `0` for `print`, `bootstrap`, `bootout`, `enable`, `disable`, and `kickstart`
+3. Create a temporary app bundle containing `Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+5. Observe that the script currently opens with `Background mode is already running. Refreshing its configuration.` / `✅ Background mode refreshed.` and then later says `Setup isn't saved yet, so background mode stays off for now.`
+
+**Acceptance checks**
+- In the standalone macOS install script’s side-by-side/custom-label no-saved-setup refresh path, the first headline should stay truthful about setup still being missing instead of implying meaningful background mode is already on
+- If the script wants to acknowledge that the launch agent/plist already exists, that wording should stay narrow and implementation-light (for example, “background integration” or equivalent) rather than claiming background mode is already running
+- The existing no-saved-setup handoffs should remain unchanged and literally runnable:
+  - `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui`
+  - `idlewatch run`
+  - `IDLEWATCH_LAUNCH_AGENT_LABEL=... idlewatch install-agent`
+- No auth, ingest, packaging, or major launch-agent behavior changes should be introduced beyond this truthfulness polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:32 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real standalone macOS side-by-side reinstall-before-setup truthfulness seam from a fresh live pass
+
 ## Cycle R724 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny wording seam in the main CLI uninstall summary and shipped the smallest useful fix.
