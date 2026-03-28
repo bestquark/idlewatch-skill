@@ -1,3 +1,45 @@
+## Cycle R611 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny custom-saved-config command-literalness fix in the true-`npx` / durable-background handoff.
+
+### Priority call
+One small, real usability seam still cleared the bar: when setup was saved to a custom env path, the true-`npx` setup/status background-mode hints sometimes dropped the required `IDLEWATCH_CONFIG_ENV_PATH=...` prefix exactly where the product was telling people to hand off from one-off setup to the durable install. The telemetry path was fine; the issue was just that the copy-paste follow-up command could quietly target the default config instead of the saved one.
+
+### What changed
+- Kept the existing background-mode/durable-install split intact; no flow redesign
+- Taught the durable `idlewatch install-agent` handoff helper to preserve the custom saved-config env prefix when the saved config lives outside the default path
+- Reused that helper on the remaining true-`npx` setup/status surfaces that had still been printing a hardcoded bare `idlewatch install-agent`
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for true-`npx` `status` and `quickstart --no-tui` with a custom saved-config path
+- Left auth, ingest, packaging, launch-agent semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` `quickstart --no-tui` spot check with `IDLEWATCH_CONFIG_ENV_PATH="$CUSTOM"` now shows:
+  - `Run now:     IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch run`
+  - `Turn on background mode: IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' idlewatch install-agent`
+- [x] Fresh live true-`npx` `status` spot check with `IDLEWATCH_CONFIG_ENV_PATH="$CUSTOM"` now shows:
+  - `Change:   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch configure --no-tui`
+  - `Run now:  IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch run`
+  - `Turn on background mode: IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' idlewatch install-agent`
+- [x] Observed that the durable-install handoff stays minimalistic and literal instead of adding any new options or words
+- [x] Focused `node --test ... --test-name-pattern='npx (status|quickstart) keeps the durable background-mode hint literally runnable with a custom saved-config path'` was attempted, but the Node test runner stayed stuck in this environment before producing output; verification for this tiny patch was completed with syntax checks plus live repros instead
+
+### Prioritized findings
+#### [x] P1 — true-`npx` custom-path setup/status now keep the durable background-mode follow-up command literally runnable
+**Why this mattered:** This is exactly the kind of tiny friction that causes annoying reconfigure confusion: setup appears saved, but the next copied command quietly points the durable install back at the default config path. Keeping the custom-path prefix attached makes the handoff feel neat, trustworthy, and copy-safe.
+
+**Acceptance checks**
+- True-`npx` local setup with a custom saved-config path now keeps `Run now` on `IDLEWATCH_CONFIG_ENV_PATH=... npx idlewatch run`
+- The same setup success surface now keeps the durable background-mode handoff on `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch install-agent`
+- True-`npx` `status` with a custom saved-config path now keeps `Change`, `Run now`, and background-mode follow-up commands on the same saved-config path
+- The durable-install wording stays short and calm (`Turn on background mode`) rather than growing extra explanatory text
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:15 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` custom-config handoff fix
+
 ## Cycle R610 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout and did not surface another small product-facing issue worth shipping.

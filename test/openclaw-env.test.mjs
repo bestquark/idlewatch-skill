@@ -3398,6 +3398,96 @@ test('status command keeps custom saved-config follow-up commands literally runn
   }
 })
 
+test('npx status keeps the durable background-mode hint literally runnable with a custom saved-config path', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-custom-config-npx-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-custom-config-npx-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const configRoot = path.join(tempDir, 'configs')
+    fs.mkdirSync(configRoot, { recursive: true })
+    const customConfigPath = path.join(configRoot, 'idlewatch custom.env')
+    fs.writeFileSync(customConfigPath, [
+      'IDLEWATCH_DEVICE_NAME=Custom NPX Path Box',
+      'IDLEWATCH_DEVICE_ID=custom-npx-path-box',
+      'IDLEWATCH_ENROLL_MODE=local',
+      'IDLEWATCH_MONITOR_TARGETS=cpu,memory'
+    ].join('\n') + '\n')
+
+    const run = spawnSync(process.execPath, [BIN, 'status'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        IDLEWATCH_CONFIG_ENV_PATH: customConfigPath,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+    assert.equal(run.status, 0, run.stderr)
+    const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
+    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} npx idlewatch configure --no-tui`))
+    assert.match(run.stdout, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch run`))
+    assert.match(run.stdout, new RegExp(`Turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
+    assert.doesNotMatch(run.stdout, /Turn on background mode:\s+idlewatch install-agent/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('npx quickstart keeps the durable background-mode hint literally runnable with a custom saved-config path', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-config-npx-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-config-npx-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  try {
+    writeFileSync(fakeLaunchctl, '#!/usr/bin/env bash\nset -euo pipefail\ncmd="${1:-}"\nif [[ "$cmd" == "print" ]]; then\n  exit 1\nfi\nif [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then\n  exit 0\nfi\nexit 0\n', { encoding: 'utf8' })
+    chmodSync(fakeLaunchctl, 0o755)
+
+    const customConfigPath = path.join(tempDir, 'configs', 'idlewatch custom.env')
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: `${fakeBinDir}:${process.env.PATH}`,
+        IDLEWATCH_CONFIG_ENV_PATH: customConfigPath,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'QA Custom NPX Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 20000
+    })
+    assert.equal(run.status, 0, run.stderr)
+    const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
+    assert.match(run.stdout, new RegExp(`Run now:\n\\s+${escapeRegex(expectedPrefix)} npx idlewatch run\\s+Run in the foreground`))
+    assert.match(run.stdout, new RegExp(`Turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
+    assert.doesNotMatch(run.stdout, /Turn on background mode:\s+idlewatch install-agent/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('status command keeps placeholder-device rename hint on the calmer product command', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-status-rename-hint-'))
   try {

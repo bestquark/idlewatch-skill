@@ -255,7 +255,7 @@ function savedConfigNeedsBackgroundApply({ envFile, launchAgentState, plistPath 
 
 function backgroundInstallCommandForInvocation(invocation = detectCliInvocation()) {
   if (invocation.kind === 'npx' || invocation.kind === 'source') {
-    return 'idlewatch install-agent'
+    return withCustomConfigEnv('idlewatch install-agent')
   }
   return inferCliCommand('install-agent')
 }
@@ -405,7 +405,7 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     console.log(`     ${runCommand}   Run in the foreground`)
     console.log('\n   For background mode:')
     console.log('     Install once: npm install -g idlewatch')
-    console.log('     Turn on background mode: idlewatch install-agent')
+    console.log(`     Turn on background mode: ${backgroundInstallCommand}`)
     return
   }
 
@@ -2023,14 +2023,15 @@ if (statusRequested) {
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Run now:  ${inferCliCommand('run')}`)
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
+      const backgroundInstallCommand = backgroundInstallCommandForInvocation()
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log('  Start background mode:     idlewatch install-agent')
+        console.log(`  Start background mode:     ${backgroundInstallCommand}`)
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
-        console.log('    Turn on background mode: idlewatch install-agent')
+        console.log(`    Turn on background mode: ${backgroundInstallCommand}`)
       }
     } else {
       console.log(`  Run now:  ${preferredProductCommand('run')}`)
@@ -2059,14 +2060,15 @@ if (statusRequested) {
 
     if (invocation.kind === 'npx') {
       const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
+      const backgroundInstallCommand = backgroundInstallCommandForInvocation(invocation)
       if (launchAgent?.state === 'running' || launchAgent?.state === 'loaded') {
         console.log('  Background: already on via the durable install')
       } else if (launchAgent?.state === 'installed-not-loaded') {
-        console.log('  Start background mode:     idlewatch install-agent')
+        console.log(`  Start background mode:     ${backgroundInstallCommand}`)
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
-        console.log('    Turn on background mode: idlewatch install-agent')
+        console.log(`    Turn on background mode: ${backgroundInstallCommand}`)
       }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
