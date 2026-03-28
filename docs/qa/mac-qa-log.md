@@ -1,3 +1,48 @@
+## Cycle R744 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny `npx` durable-install sequencing seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the `npx` durable-install guidance was already correct, but a few help/status/setup surfaces still presented the two-step handoff as if the steps were parallel — `Install once:` followed by `Turn on background mode:` — instead of explicitly sequential. Nothing functional was broken, but in a copy/paste-heavy one-off setup flow this made the durable path read slightly flatter than it should. The clean fix was to keep the exact commands untouched and only tighten the label to `Then turn on background mode:` in the `npx`-only durable-install guidance.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the `npx` durable-install wording in `install-agent --help` from `Turn on background mode:` to `Then turn on background mode:`
+- [x] Matched the real `npx idlewatch install-agent` runtime refusal output to that same calmer sequential wording
+- [x] Matched the saved-setup `npx` quickstart/configure/status durable-install hint blocks to that same sequential wording
+- [x] Kept installed/non-`npx` wording unchanged
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='install-agent help in npx context points straight to the durable path|quickstart and configure keep one-off runs honest about background install handoff|status command keeps npx background hints short and durable-install oriented|status command shows contextual next-step hints' test/openclaw-env.test.mjs`
+- [x] Fresh true-`npx` help now prints:
+  - `Install once:              npm install -g idlewatch`
+  - `Then turn on background mode: idlewatch install-agent`
+- [x] Fresh true-`npx` runtime refusal now prints that same sequential handoff after the plain `Background mode needs a durable install.` line
+- [x] Observed the touched `npx` status/setup surfaces now keep the same sequence language in their `For background mode:` blocks
+- [x] Observed installed/non-`npx` surfaces still keep the existing `Turn on background mode:` wording
+
+### Prioritized findings
+#### [x] P1 — `npx` durable-install guidance now makes the two-step handoff read in the order people actually follow it
+**Why this mattered:** This is tiny, but it lands in the exact “okay, what do I do after the one-off run?” moment. The commands were already correct; the remaining friction was just the sentence shape. Adding `Then` makes the durable path read more literally without adding any new options or complexity.
+
+**Acceptance checks**
+- In `npx` help/runtime/setup/status durable-install guidance, the second step now says `Then turn on background mode: idlewatch install-agent`
+- The literal commands remain unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- Installed/non-`npx` wording remains unchanged and low-noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 8:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `npx` durable-install sequencing wording polish fix
+
 ## Cycle R743 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped live lane from the current polish plan and did not surface another small end-user issue worth shipping.

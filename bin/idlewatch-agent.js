@@ -373,7 +373,7 @@ Background mode needs a durable install.
 
 ${quickstartSetupLines}
 Install once:              npm install -g idlewatch
-Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
+Then turn on background mode: ${backgroundInstallHelpCommand(invocation)}
 
 Run now:                   ${inferCliCommand('run')}`
   }
@@ -477,8 +477,8 @@ function printSetupNextSteps({ isReconfigure, launchAgentState }) {
     console.log('\n   Run now:')
     console.log(`     ${runCommand}   Run in the foreground`)
     console.log('\n   For background mode:')
-    console.log('     Install once: npm install -g idlewatch')
-    console.log(`     Turn on background mode: ${backgroundInstallCommand}`)
+    console.log('     Install once:            npm install -g idlewatch')
+    console.log(`     Then turn on background mode: ${backgroundInstallCommand}`)
     return
   }
 
@@ -1428,7 +1428,7 @@ const subcommandPromise = (async () => {
         console.error(`                            ${setupFallbackCommand}   # plain text fallback`)
       }
       console.error('Install once:              npm install -g idlewatch')
-      console.error(`Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}`)
+      console.error(`Then turn on background mode: ${backgroundInstallHelpCommand(invocation)}`)
       console.error('')
       console.error(`Run now:                   ${inferCliCommand('run')}`)
       process.exit(1)
@@ -2132,7 +2132,7 @@ if (statusRequested) {
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
-        console.log(`    Turn on background mode: ${backgroundInstallCommand}`)
+        console.log(`    Then turn on background mode: ${backgroundInstallCommand}`)
       }
     } else {
       console.log(`  Run now:  ${preferredProductCommand('run')}`)
@@ -2169,7 +2169,7 @@ if (statusRequested) {
       } else {
         console.log('  For background mode:')
         console.log('    Install once:            npm install -g idlewatch')
-        console.log(`    Turn on background mode: ${backgroundInstallCommand}`)
+        console.log(`    Then turn on background mode: ${backgroundInstallCommand}`)
       }
     } else if (process.platform === 'darwin') {
       const launchAgent = probeOwnedLaunchAgentState()
