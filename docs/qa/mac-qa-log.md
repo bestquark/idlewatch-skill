@@ -1,3 +1,41 @@
+## Cycle R704 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny custom-saved-config seam in the standalone macOS uninstall off-ramp and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the standalone `scripts/uninstall-macos-launch-agent.sh` flow already surfaced the correct custom saved-config path in its uninstall summary, but the final reinstall hint still dropped back to bare `idlewatch install-agent`. In custom saved-config setups, that made the exact copy/paste “turn it back on later” command quietly drift back to the default config path. Nothing about auth, ingest, packaging, launch-agent semantics, or the now-working telemetry path was broken; this was a tiny saved-config handling gap in a reversible off-ramp moment.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Added the same tiny custom-config command prefix helper shape already used in the standalone install script
+- [x] Taught the standalone macOS uninstall script’s reinstall hint to preserve `IDLEWATCH_CONFIG_ENV_PATH=...` when background mode was using a non-default saved config path
+- [x] Kept the default-path uninstall experience unchanged and low-noise
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging shape, launch-agent semantics, uninstall summary wording, and retained-log behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh standalone macOS uninstall spot check with a custom `IDLEWATCH_CONFIG_ENV_PATH` and `idlewatch` on `PATH` now prints:
+  - `Saved config stays at .../Library/Application Support/IdleWatch QA/idlewatch.env`
+  - `Local log stays at .../.idlewatch/logs/box.ndjson`
+  - `Turn background mode back on later with IDLEWATCH_CONFIG_ENV_PATH=... idlewatch install-agent.`
+- [x] Observed: the default-path reinstall hint remains the calm bare `idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS uninstall now keeps the reinstall hint literally runnable for custom saved-config setups
+**Why this mattered:** This is tiny, but it lands in the exact “okay, I can turn it back on later” moment. If the uninstall summary already knows which saved config is being kept, the final reinstall command should keep pointing at that same file instead of making the user mentally reconstruct the env prefix.
+
+**Acceptance checks**
+- When the standalone macOS uninstall script is run with a custom `IDLEWATCH_CONFIG_ENV_PATH`, the final reinstall hint now preserves that same `IDLEWATCH_CONFIG_ENV_PATH=...` prefix
+- Default-path setups still keep the calmer bare `idlewatch install-agent` hint
+- The saved-config and retained-log summary lines remain unchanged and truthful
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this saved-config handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:50 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall custom-saved-config reinstall-hint fix
+
 ## Cycle R703 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

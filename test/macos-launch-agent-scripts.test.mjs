@@ -332,11 +332,13 @@ test('packaged macOS uninstall script names a custom saved config path when one 
   const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
   const customConfigPath = path.join(tempHome, 'Library', 'Application Support', 'IdleWatch QA', 'idlewatch.env')
   const customLocalLogPath = path.join(tempHome, '.idlewatch', 'logs', 'qa-script-box-metrics.ndjson')
+  const expectedInstallHint = `IDLEWATCH_CONFIG_ENV_PATH=${customConfigPath.replace(/ /g, '\\ ')} idlewatch install-agent`
 
   try {
     fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
     writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
     writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
     fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
     fs.mkdirSync(path.dirname(customLocalLogPath), { recursive: true })
     fs.writeFileSync(customConfigPath, `IDLEWATCH_DEVICE_NAME=QA Box\nIDLEWATCH_LOCAL_LOG_PATH=${customLocalLogPath}\n`, 'utf8')
@@ -354,8 +356,10 @@ test('packaged macOS uninstall script names a custom saved config path when one 
     assert.equal(uninstall.status, 0, uninstall.stderr)
     assert.match(uninstall.stdout, new RegExp(`Saved config stays at ${customConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
     assert.match(uninstall.stdout, new RegExp(`Local log stay[s]? at ${customLocalLogPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.match(uninstall.stdout, new RegExp(`Turn background mode back on later with ${expectedInstallHint.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.`))
     assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
+    assert.doesNotMatch(uninstall.stdout, /Turn background mode back on later with idlewatch install-agent\./)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
     fs.rmSync(tempHome, { recursive: true, force: true })
