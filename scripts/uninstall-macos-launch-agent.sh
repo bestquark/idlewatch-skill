@@ -11,21 +11,31 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REINSTALL_SCRIPT="$SCRIPT_DIR/install-macos-launch-agent.sh"
 REINSTALL_HINT="./scripts/install-macos-launch-agent.sh"
 
-with_config_command() {
+with_launch_agent_context_command() {
   local command="$1"
+  local prefix_parts=()
+
+  if [[ "$PLIST_LABEL" != "com.idlewatch.agent" ]]; then
+    prefix_parts+=("IDLEWATCH_LAUNCH_AGENT_LABEL=$(printf '%q' "$PLIST_LABEL")")
+  fi
+
   if [[ "$CONFIG_ENV_PATH" != "$DEFAULT_CONFIG_ENV_PATH" ]]; then
-    printf 'IDLEWATCH_CONFIG_ENV_PATH=%q %s\n' "$CONFIG_ENV_PATH" "$command"
+    prefix_parts+=("IDLEWATCH_CONFIG_ENV_PATH=$(printf '%q' "$CONFIG_ENV_PATH")")
+  fi
+
+  if [[ ${#prefix_parts[@]} -gt 0 ]]; then
+    printf '%s %s\n' "${prefix_parts[*]}" "$command"
   else
     printf '%s\n' "$command"
   fi
 }
 
 if command -v idlewatch >/dev/null 2>&1; then
-  REINSTALL_HINT="$(with_config_command 'idlewatch install-agent')"
+  REINSTALL_HINT="$(with_launch_agent_context_command 'idlewatch install-agent')"
 elif [[ -x "$REINSTALL_SCRIPT" ]]; then
   case "$SCRIPT_DIR" in
     */Contents/Resources/payload/package/scripts)
-      REINSTALL_HINT="$(with_config_command "$REINSTALL_SCRIPT")"
+      REINSTALL_HINT="$(with_launch_agent_context_command "$REINSTALL_SCRIPT")"
       ;;
   esac
 fi

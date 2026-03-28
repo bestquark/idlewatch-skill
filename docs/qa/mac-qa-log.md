@@ -1,3 +1,40 @@
+## Cycle R710 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for the last still-real standalone macOS custom-label reinstall-hint seam.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: in the standalone macOS side-by-side/custom-label uninstall path, the final off-ramp still ended with bare `idlewatch install-agent`. That was directionally fine for the default label, but it stopped being literally runnable in the exact copy/paste moment where the script already knew it was operating on a custom launch-agent label like `com.idlewatch.agent.qa`. The right fix was tiny: keep the default-label path calm, but preserve `IDLEWATCH_LAUNCH_AGENT_LABEL=...` in the reinstall hint when the uninstall flow is clearly scoped to a side-by-side label.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Replaced the uninstall script’s reinstall-hint helper with a tiny context-aware wrapper that preserves custom launch-agent labels and custom saved-config paths together when needed
+- [x] Kept the default-label uninstall path on the calmer bare `idlewatch install-agent` hint
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs` for the custom-label uninstall off-ramp
+- [x] Left saved-config/local-log summary wording, auth/ingest behavior, packaging, and launch-agent semantics unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh standalone custom-label uninstall repro now prints:
+  - `Turn background mode back on later with IDLEWATCH_LAUNCH_AGENT_LABEL=com.idlewatch.agent.qa idlewatch install-agent.`
+- [x] Observed the default-label uninstall path still keeps the calmer bare hint:
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] Observed the saved-config and retained-log summary lines stay unchanged and truthful in the same pass
+
+### Prioritized findings
+#### [x] P1 — standalone macOS custom-label uninstall now keeps the final reinstall hint literally runnable for that same side-by-side label
+**Why this mattered:** This is tiny, but it lands in the exact “okay, turn this side-by-side install back on later” moment. If the uninstall summary already knows it just removed `com.idlewatch.agent.qa`, the final command hint should keep pointing at that same install identity instead of quietly drifting back to the default label.
+
+**Acceptance checks**
+- In the standalone macOS uninstall script’s custom-label path, the final reinstall hint now preserves the same `IDLEWATCH_LAUNCH_AGENT_LABEL=...` prefix needed to turn that same side-by-side install back on later
+- The default-label uninstall path keeps the calmer bare `idlewatch install-agent` hint
+- The saved-config and local-log summary lines remain unchanged and truthful
+- No auth, ingest, packaging, telemetry-path, or major launch-agent behavior changes were introduced beyond this reinstall-hint literalness polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS custom-label reinstall-hint fix
+
 ## Cycle R709 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny side-by-side reinstall-hint seam in the standalone macOS uninstall script.

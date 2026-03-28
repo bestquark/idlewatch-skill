@@ -324,6 +324,40 @@ test('packaged macOS install script uses a configured custom saved-config path',
   }
 })
 
+test('packaged macOS uninstall script keeps custom launch-agent labels literal in the reinstall hint', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-label-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-label-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const customLabel = 'com.idlewatch.agent.qa'
+  const expectedInstallHint = `IDLEWATCH_LAUNCH_AGENT_LABEL=${customLabel} idlewatch install-agent`
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath,
+      IDLEWATCH_LAUNCH_AGENT_LABEL: customLabel
+    }
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, new RegExp(`No plist was installed at .*${customLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.plist`))
+    assert.match(uninstall.stdout, new RegExp(`Turn background mode back on later with ${expectedInstallHint.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.`))
+    assert.doesNotMatch(uninstall.stdout, /Turn background mode back on later with idlewatch install-agent\./)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS uninstall script names a custom saved config path when one is configured', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-config-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-config-bin-'))
