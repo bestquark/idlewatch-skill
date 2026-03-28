@@ -1,3 +1,66 @@
+## Cycle R757 Status: COMPLETE ✅
+
+Fresh live installer/CLI polish pass found one still-real setup-story regression cluster, plus one smaller copy mismatch inside that same cluster.
+
+### Priority call
+One issue still clearly clears the bar: the product has drifted back toward a more technical `--no-tui`-first setup story across the exact first-scan surfaces that shape trust and perceived simplicity. In the current checkout, normal `install-agent --help`, true-`npx` durable-install help, the main CLI install-before-setup recovery, global npm postinstall, and the standalone macOS install-before-setup script all headline `quickstart --no-tui` instead of plain `quickstart`. On top of that, postinstall and the standalone script still say `start background mode after setup`, which reads noisier than the calmer `turn on background mode` wording already used in the main CLI. The product still works, but the setup story feels more technical and less deliberate than it should.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/test grep pass from the live checkout showed the regression is not just stale log text:
+  - `scripts/postinstall.mjs` still prints `idlewatch quickstart --no-tui`
+  - `scripts/postinstall.mjs` still prints `idlewatch install-agent   # start background mode after setup`
+  - `scripts/install-macos-launch-agent.sh` still prints `Finish setup:` then `idlewatch quickstart --no-tui`
+  - `scripts/install-macos-launch-agent.sh` still prints `Start background mode after setup:`
+  - `bin/idlewatch-agent.js` still renders `Set up now: ... quickstart --no-tui` in installed and true-`npx` durable-help paths
+  - matching tests currently expect the same regressed strings in `test/openclaw-env.test.mjs`, `test/postinstall.test.mjs`, and `test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh runtime spot checks from the live checkout:
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `npm_config_global=true node scripts/postinstall.mjs`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+- [x] Observed in that live pass:
+  - installed `install-agent --help` currently says `Set up now:              idlewatch quickstart --no-tui`
+  - global npm postinstall currently says:
+    - `idlewatch quickstart --no-tui`
+    - `idlewatch install-agent   # start background mode after setup`
+  - main CLI install-before-setup currently says `Finish setup: idlewatch quickstart --no-tui`
+  - true-`npx` `install-agent --help` currently says `Set up now:                npx idlewatch quickstart --no-tui`
+  - standalone macOS install-before-setup currently says:
+    - `Finish setup:` then `idlewatch quickstart --no-tui`
+    - `Start background mode after setup:`
+  - meanwhile the calmer wording already exists elsewhere in the same product:
+    - main CLI install-before-setup still says `Turn on background mode after setup: idlewatch install-agent`
+    - true-`npx` durable handoff still says `Then turn on background mode: idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — setup-first help/install surfaces still lead with the fallback command, and packaged follow-ups still use the noisier `start background mode` wording
+**Why this matters:** This is small, but it lands exactly where people decide whether setup feels calm or technical. `--no-tui` is the fallback, not the headline. Leading with it makes the product feel more implementation-shaped than necessary. The wording split between `start background mode` and `turn on background mode` adds avoidable visual noise at the same moment.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js install-agent --help`
+3. Run `npm_config_global=true node scripts/postinstall.mjs`
+4. With a stubbed non-running `launchctl`, run `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+5. In true `npx` context, run `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+6. With a stubbed non-running `launchctl` and custom label, run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+7. Observe that those setup-first surfaces currently headline `quickstart --no-tui`, and that postinstall / standalone macOS still say `start background mode after setup`
+
+**Acceptance checks**
+- Installed `install-agent --help` should lead with `Set up now: idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept one line below as the plain-text fallback
+- Main CLI install-before-setup recovery should say `Finish setup: idlewatch quickstart`, with the `--no-tui` command kept secondary
+- True-`npx` `install-agent --help` should lead with `Set up now: npx idlewatch quickstart`, while keeping:
+  - `Install once: npm install -g idlewatch`
+  - `Then turn on background mode: idlewatch install-agent`
+  - `Run now: npx idlewatch run`
+- Global npm postinstall should lead with `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` secondary, and say `idlewatch install-agent   # turn on background mode after setup`
+- Standalone macOS install-before-setup should lead with `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` secondary, and say `Turn on background mode after setup:` while keeping the custom-label command literally runnable
+- No auth, ingest, device identity, metric persistence, config-reload semantics, or major launch-agent behavior changes are needed beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 9:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real setup-story regression cluster from a fresh live pass
+
 ## Cycle R756 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found a still-real high-visibility regression in the setup-first handoffs across the live checkout.
