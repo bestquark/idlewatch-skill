@@ -1,3 +1,55 @@
+## Cycle R770 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one last tiny status-surface next-step cleanup from the current plan.
+
+### Priority call
+One low-risk issue still clearly cleared the bar: `status` still taught `configure --no-tui` as the main change-settings path even though the rest of the product now consistently leads with plain `configure` and treats `--no-tui` as the explicit plain-text fallback. Nothing functional was broken, but this landed in one of the highest-frequency “change one thing” moments after setup. The smallest useful fix was to make the status and rename hints match the calmer default-first product shape without touching the telemetry path or broader setup behavior.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated saved-setup `status` to headline `Change:   idlewatch configure` instead of `configure --no-tui`
+- [x] Updated true-`npx` saved-setup `status` to headline `Change:   npx idlewatch configure`
+- [x] Matched the placeholder-name rename hint to that same calmer `configure`-first shape
+- [x] Kept the surrounding run/background/install guidance unchanged
+- [x] Updated focused expectations in `test/openclaw-env.test.mjs`
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='status command keeps custom saved-config follow-up commands literally runnable|npx status keeps the durable background-mode hint literally runnable with a custom saved-config path' test/openclaw-env.test.mjs`
+- [x] Fresh live saved-setup spot check:
+  - `HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Status Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+- [x] Fresh live true-`npx` saved-setup spot check:
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed in that live pass:
+  - saved local status now says `Change:   idlewatch configure`
+  - true-`npx` status now says `Change:   npx idlewatch configure`
+  - the older more technical headline shape is gone from those touched status surfaces:
+    - `Change:   idlewatch configure --no-tui`
+    - `Change:   npx idlewatch configure --no-tui`
+  - the surrounding handoffs stayed intact:
+    - `Run now:  idlewatch run`
+    - `Run now:  npx idlewatch run`
+    - `Then turn on background mode: idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — `status` and the rename hint now match the calmer `configure`-first product shape instead of headlining the plain-text fallback
+**Why this mattered:** This is tiny, but it lands in a high-trust “what do I do next?” surface. The product already did the work to make `configure` feel like the primary path elsewhere. Matching `status` and the rename nudge to that same shape removes one more little bit of avoidable technical noise.
+
+**Acceptance checks**
+- Saved-setup `status` now says `Change:   idlewatch configure`
+- True-`npx` saved-setup `status` now says `Change:   npx idlewatch configure`
+- The placeholder-name rename hint now uses that same calmer `configure`-first shape
+- Run/install/background guidance remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this status-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny status next-step wording cleanup
+
 ## Cycle R769 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny status-next-step seam in the saved-setup flow.

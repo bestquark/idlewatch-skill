@@ -158,6 +158,14 @@ function preferredRecoveryCommand(command = 'configure') {
   return inferCliCommand(`${command}${suffix}`)
 }
 
+function preferredPrimaryRecoveryCommand(command = 'configure') {
+  const invocation = detectCliInvocation()
+  if (invocation.kind === 'source') {
+    return withCustomConfigEnv(`idlewatch ${command}`)
+  }
+  return inferCliCommand(command)
+}
+
 function preferredPrimarySetupCommand(command = 'quickstart') {
   const invocation = detectCliInvocation()
   if (invocation.kind === 'source') {
@@ -2107,7 +2115,7 @@ if (statusRequested) {
   const placeholderNames = new Set(['test', 'device', 'my-device', 'default', 'localhost', 'unnamed'])
   const isPlaceholderName = hasConfig && placeholderNames.has(DEVICE_NAME.toLowerCase().trim())
   if (isPlaceholderName) {
-    console.log(`  ℹ️  Rename this device:  ${preferredRecoveryCommand('configure')}`)
+    console.log(`  ℹ️  Rename this device:  ${preferredPrimaryRecoveryCommand('configure')}`)
   }
 
   console.log('')
@@ -2126,7 +2134,7 @@ if (statusRequested) {
       console.log(`  Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
     }
   } else if (!hasSamples) {
-    console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
+    console.log(`  Change:   ${preferredPrimaryRecoveryCommand('configure')}`)
     console.log(`  Test:     ${preferredProductCommand('--once')}  (alias: --test-publish)`)
     if (detectCliInvocation().kind === 'npx') {
       console.log(`  Run now:  ${inferCliCommand('run')}`)
@@ -2163,7 +2171,7 @@ if (statusRequested) {
     const runCommand = invocation.kind === 'npx'
       ? inferCliCommand('run')
       : preferredProductCommand('run')
-    console.log(`  Change:   ${preferredRecoveryCommand('configure')}`)
+    console.log(`  Change:   ${preferredPrimaryRecoveryCommand('configure')}`)
     console.log(`  Run now:  ${runCommand}`)
 
     if (invocation.kind === 'npx') {

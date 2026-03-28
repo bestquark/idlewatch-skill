@@ -3453,9 +3453,9 @@ test('status command keeps npx background hints short and durable-install orient
     })
 
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure --no-tui/)
+    assert.match(withSamples.stdout, /Change:\s+npx idlewatch configure(?:\s|$)/)
     assert.match(withSamples.stdout, /Run now:\s+npx idlewatch run/)
-    assert.doesNotMatch(withSamples.stdout, /Change:\s+npx idlewatch configure(?! --no-tui)(?:\s|$)/)
+    assert.doesNotMatch(withSamples.stdout, /Change:\s+npx idlewatch configure --no-tui/)
     assert.match(withSamples.stdout, /For background mode:\n\s{4}Install once:\s+npm install -g idlewatch\n\s{4}Then turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Then enable:\s+idlewatch install-agent/)
     assert.doesNotMatch(withSamples.stdout, /Background:\s+install IdleWatch globally first, then run idlewatch install-agent/)
@@ -3724,9 +3724,10 @@ test('status command shows contextual next-step hints', () => {
       timeout: 10000
     })
     assert.equal(withSamples.status, 0, withSamples.stderr)
-    assert.ok(withSamples.stdout.includes('idlewatch configure --no-tui'), 'should keep the configure hint on the calmer product command in source checkouts')
+    assert.ok(withSamples.stdout.includes('Change:   idlewatch configure'), 'should keep the configure hint on the calmer product command in source checkouts')
     assert.ok(withSamples.stdout.includes('idlewatch run'), 'should keep the foreground run hint visible after setup is already saved on the calmer product command in source checkouts')
-    assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?! --no-tui)(?:\s|$)/, 'should not fall back to plain configure in non-TTY status hints')
+    assert.doesNotMatch(withSamples.stdout, /Change:\s+node .*configure(?:\s|$)/, 'should not fall back to source-script configure hints in status output')
+    assert.doesNotMatch(withSamples.stdout, /Change:\s+idlewatch configure --no-tui/, 'should not headline the plain-text fallback in status hints')
     assert.ok(!withSamples.stdout.includes('(none yet)'), 'should not show none yet when samples exist')
 
     if (process.platform === 'darwin') {
@@ -3807,7 +3808,8 @@ test('status command keeps custom saved-config follow-up commands literally runn
     })
     assert.equal(run.status, 0, run.stderr)
     const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
-    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} idlewatch configure --no-tui`))
+    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} idlewatch configure(?:\\s|$)`))
+    assert.doesNotMatch(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} idlewatch configure --no-tui`))
     assert.match(run.stdout, new RegExp(`Test:\\s+${escapeRegex(expectedPrefix)} idlewatch --once`))
     assert.match(run.stdout, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} idlewatch run`))
     if (process.platform === 'darwin') {
@@ -3858,7 +3860,8 @@ test('npx status keeps the durable background-mode hint literally runnable with 
     })
     assert.equal(run.status, 0, run.stderr)
     const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
-    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} npx idlewatch configure --no-tui`))
+    assert.match(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} npx idlewatch configure(?:\\s|$)`))
+    assert.doesNotMatch(run.stdout, new RegExp(`Change:\\s+${escapeRegex(expectedPrefix)} npx idlewatch configure --no-tui`))
     assert.match(run.stdout, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch run`))
     assert.match(run.stdout, new RegExp(`Then turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
     assert.doesNotMatch(run.stdout, /Turn on background mode:\s+idlewatch install-agent/)
@@ -3931,9 +3934,11 @@ test('status command keeps placeholder-device rename hint on the calmer product 
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.ok(run.stdout.includes('Rename this device:  idlewatch configure --no-tui'), 'should keep the rename hint on the calmer product command in source checkouts')
+    assert.ok(run.stdout.includes('Rename this device:  idlewatch configure'), 'should keep the rename hint on the calmer product command in source checkouts')
     assert.doesNotMatch(run.stdout, /Rename this device:\s+node .*configure(?:\s|$)/, 'should not fall back to the source checkout command in the rename hint')
-    assert.match(run.stdout, /Change:\s+idlewatch configure --no-tui/, 'should still keep the normal change action visible while nudging placeholder names toward rename')
+    assert.doesNotMatch(run.stdout, /Rename this device:\s+idlewatch configure --no-tui/, 'should not headline the plain-text fallback in the rename hint')
+    assert.match(run.stdout, /Change:\s+idlewatch configure(?:\s|$)/, 'should still keep the normal change action visible while nudging placeholder names toward rename')
+    assert.doesNotMatch(run.stdout, /Change:\s+idlewatch configure --no-tui/, 'should not headline the plain-text fallback while nudging placeholder names toward rename')
     assert.match(run.stdout, /Run now:\s+idlewatch run/, 'should not turn placeholder-name status into a dead end')
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
