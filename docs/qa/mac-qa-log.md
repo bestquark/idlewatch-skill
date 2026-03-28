@@ -1,3 +1,50 @@
+## Cycle R709 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny side-by-side reinstall-hint seam in the standalone macOS uninstall script.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: in the standalone macOS side-by-side/custom-label uninstall path, the final off-ramp still ends with bare `idlewatch install-agent`. That is directionally fine for the default label, but it stops being literally runnable in the exact copy/paste moment where the script already knows it is operating on a custom launch-agent label like `com.idlewatch.agent.qa`. A side-by-side QA/dev install should not quietly drift back to the default label when the user follows the reinstall hint.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Created a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+- [x] Created a temporary app bundle containing `Contents/MacOS/IdleWatch`
+- [x] Ran the standalone side-by-side install/uninstall flow with a custom label:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed the uninstall summary currently prints:
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] Observed the same uninstall summary already knows it is working on the custom side-by-side label:
+  - `Removed plist: .../com.idlewatch.agent.qa.plist`
+- [x] Observed the rest of the scoped lane still feels calm and in-shape in the same live pass:
+  - help still leads with plain `quickstart`
+  - install-before-setup still stays truthful and low-noise
+  - saved setup + reconfigure still keep device identity continuity and metric toggles visible inline
+  - local-only `--test-publish` still stays intentionally lightweight
+  - true-`npx` still keeps one-off commands literal while durable background mode stays on the explicit install handoff
+  - global npm-install still leads with `idlewatch quickstart`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS custom-label uninstall still drops the custom launch-agent label in the final reinstall hint
+**Why this matters:** This is tiny, but it lands in the exact “okay, turn this side-by-side install back on later” moment. If the uninstall summary already knows it just removed `com.idlewatch.agent.qa`, the final command hint should not quietly send the user back to the default-label install path.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+3. Create a temporary app bundle containing `Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+5. Run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+6. Observe that the uninstall summary currently ends with bare `idlewatch install-agent` even though the flow is explicitly operating on `com.idlewatch.agent.qa`
+
+**Acceptance checks**
+- In the standalone macOS uninstall script’s custom-label path, the final reinstall hint should preserve the same `IDLEWATCH_LAUNCH_AGENT_LABEL=...` prefix the user would need to turn that same side-by-side install back on later
+- The default-label uninstall path should keep the calmer bare `idlewatch install-agent` hint
+- The saved-config and local-log summary lines should remain unchanged and truthful
+- No auth, ingest, packaging, telemetry-path, or major launch-agent behavior changes should be introduced beyond this reinstall-hint literalness polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:24 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real standalone macOS custom-label reinstall-hint seam from a fresh live pass
+
 ## Cycle R708 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny true-`npx` uninstall off-ramp seam and shipped the smallest useful fix.
