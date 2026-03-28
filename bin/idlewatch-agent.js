@@ -515,6 +515,11 @@ function printHelp() {
   const commandLines = commands
     .map(([name, summary]) => `  ${name.padEnd(commandWidth)}   ${summary}`)
     .join('\n')
+  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
+  const quickstartFallbackLine = quickstartFallbackCommand
+    ? `\n               ${quickstartFallbackCommand}   # plain text fallback`
+    : ''
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
@@ -529,7 +534,7 @@ Options:
   --help                  Show this help
   --help-env              Show all environment variables
 
-Get started:  ${preferredHelpSetupCommand('quickstart')}`)
+Get started:  ${quickstartPrimaryCommand}${quickstartFallbackLine}`)
 }
 
 function printHelpEnv() {

@@ -1683,6 +1683,52 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R678 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny top-level help copy seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the top-level `idlewatch --help` surface, including true-`npx`, still led with only the more technical `quickstart --no-tui` command even though the rest of the installer/CLI already preferred the calmer plain `quickstart` first and kept `--no-tui` one line below as the plain-text fallback. Nothing functional was broken, but this landed in the exact first-copy/paste moment where the product should feel least technical and most welcoming.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the shared top-level help handoff so normal `idlewatch --help` now leads with `idlewatch quickstart`
+- [x] Matched true-`npx` help to that same calmer setup-first shape with `npx idlewatch quickstart`
+- [x] Kept `quickstart --no-tui` visible one line below as the plain-text fallback in both help modes
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left setup/runtime behavior, launch-agent semantics, auth/ingest behavior, packaging, and telemetry unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live global help repro:
+  - `node bin/idlewatch-agent.js --help`
+- [x] Fresh live true-`npx` help repro:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+- [x] Observed the live pass now prints:
+  - global help:
+    - `Get started:  idlewatch quickstart`
+    - `               idlewatch quickstart --no-tui   # plain text fallback`
+  - true `npx` help:
+    - `Get started:  npx idlewatch quickstart`
+    - `               npx idlewatch quickstart --no-tui   # plain text fallback`
+
+### Prioritized findings
+#### [x] P1 — top-level help now uses the calmer setup-first handoff already used elsewhere
+**Why this mattered:** This is tiny, but it lands in one of the highest-leverage product surfaces: the first help screen someone opens while deciding what to run next. Leading with the friendlier setup command removes one more small bit of friction without changing any behavior.
+
+**Acceptance checks**
+- Global `idlewatch --help` now leads with `idlewatch quickstart`
+- That same help surface still keeps `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- True-`npx` help now leads with `npx idlewatch quickstart`
+- That same true-`npx` help surface still keeps `npx idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- The older single-line `Get started: ... quickstart --no-tui` copy is gone from both help modes
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 2:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny top-level help setup-handoff polish fix
+
 ## Cycle R676 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout, including a corrected standalone macOS app-bundle script repro, and still did not surface another product-facing polish issue worth shipping.
