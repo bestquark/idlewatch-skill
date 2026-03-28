@@ -1332,6 +1332,52 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R655 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining CLI-friendly setup-handoff regression in the standalone macOS install script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: in the standalone macOS install script’s no-saved-setup path when the friendly `idlewatch` CLI is available on `PATH`, the script had drifted back to leading with the more technical `idlewatch quickstart --no-tui` command instead of the calmer plain `idlewatch quickstart` that the rest of the installer/CLI now prefers. The packaged-app fallback path had the same drift. Nothing functional was broken, but this lands in the exact install-before-setup moment where the product should feel least technical. The right fix was tiny: lead with plain `quickstart`, keep `quickstart --no-tui` one line below as the plain-text fallback, and leave the rest of the handoff untouched.
+
+### What changed
+- [x] Reworked the standalone macOS install script’s CLI-friendly no-setup handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` visible as a secondary plain-text fallback one line below
+- [x] Matched the packaged-app no-CLI fallback to the same product shape with literal packaged commands
+- [x] Left `Run now`, `Start background mode after setup`, and `Check` unchanged and low-noise
+- [x] Updated focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth, ingest, packaging shape, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone install-script no-setup CLI-friendly handoff now prints:
+  - `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `idlewatch run`
+  - `idlewatch install-agent`
+  - `idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Observed the packaged-app no-CLI fallback now prints:
+  - `.../Contents/MacOS/IdleWatch quickstart`
+  - `.../Contents/MacOS/IdleWatch quickstart --no-tui   # plain text fallback`
+  - `.../Contents/MacOS/IdleWatch run`
+  - `.../Contents/MacOS/IdleWatch install-agent`
+  - `.../Contents/MacOS/IdleWatch status   See your saved config, background mode state, and last publish result`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install script now leads with the friendlier setup command again while keeping the plain-text fallback one line below
+**Why this mattered:** This is tiny, but it lands in the exact install-before-setup moment where someone decides whether the product feels welcoming or overly technical. Leading with the nicest default setup command removes a little friction without changing any behavior.
+
+**Acceptance checks**
+- The standalone macOS install script’s CLI-friendly no-setup path now leads with `idlewatch quickstart`
+- That same surface still keeps `idlewatch quickstart --no-tui` visible as a secondary plain-text fallback one line below
+- The packaged-app no-CLI fallback now follows the same product direction with literal packaged commands
+- `Run now`, `Start background mode after setup`, and `Check` remain unchanged and low-noise
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Friday, March 27th, 2026 — 11:59 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS install-script setup-handoff polish fix
+
 ## Cycle R650 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining packaged-app setup handoff gap in the standalone macOS install script and shipped the smallest useful fix.

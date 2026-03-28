@@ -200,7 +200,8 @@ else
   echo "Setup isn't saved yet, so background mode stays off for now."
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
-    echo "   idlewatch quickstart --no-tui"
+    echo "   idlewatch quickstart"
+    echo "   idlewatch quickstart --no-tui   # plain text fallback"
     echo ""
     echo "Run now:"
     echo "   idlewatch run"
@@ -211,7 +212,8 @@ else
     echo "Check:"
     echo "   idlewatch status   See your saved config, background mode state, and last publish result"
   else
-    echo "   $BIN_PATH quickstart --no-tui"
+    echo "   $BIN_PATH quickstart"
+    echo "   $BIN_PATH quickstart --no-tui   # plain text fallback"
     echo ""
     echo "Run now:"
     echo "   $BIN_PATH run"
