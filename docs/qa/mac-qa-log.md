@@ -1,3 +1,41 @@
+## Cycle R714 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one final tiny help-copy truthfulness seam in the main CLI and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: `install-agent --help` already kept the calmer setup-first commands and runtime truthfulness, but its own headline still said `Turn on background mode (macOS)` instead of the more accurate `Turn on background mode after setup (macOS)` the rest of the product already used. Nothing functional was broken, but this first-line label lands in a high-visibility copy/paste moment and should not imply that background mode is simply ready with no saved setup.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the main CLI `install-agent --help` headline to `Turn on background mode after setup (macOS)`
+- [x] Kept the surrounding help body, setup handoff, runtime behavior, and durable-install guidance unchanged
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and uninstall flows unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the help header now prints:
+  - `idlewatch install-agent — Turn on background mode after setup (macOS)`
+- [x] Observed the surrounding body stays unchanged and low-noise:
+  - `Turns on background mode on macOS.`
+  - `If setup is already saved, background mode turns on right away.`
+  - `Set up now: idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Turn on background mode: idlewatch install-agent`
+
+### Prioritized findings
+#### [x] P1 — `install-agent --help` headline now matches the product’s setup-first truthfulness instead of implying background mode is ready before setup exists
+**Why this mattered:** This is tiny, but the headline is one of the first lines people scan. Matching the calmer `after setup` wording used elsewhere keeps the setup/reconfigure story consistent without adding any new steps or options.
+
+**Acceptance checks**
+- `idlewatch install-agent --help` now starts with `idlewatch install-agent — Turn on background mode after setup (macOS)`
+- The surrounding help body remains unchanged and low-noise
+- No auth, ingest, packaging, telemetry-path, or launch-agent behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:30 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny `install-agent --help` truthfulness polish fix
+
 ## Cycle R713 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

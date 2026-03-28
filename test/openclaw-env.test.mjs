@@ -1109,7 +1109,7 @@ test('install-agent help keeps the durable setup path short and clear', () => {
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /idlewatch install-agent — Turn on background mode \(macOS\)/)
+  assert.match(run.stdout, /idlewatch install-agent — Turn on background mode after setup \(macOS\)/)
   assert.doesNotMatch(run.stdout, /idlewatch install-agent — Enable background mode \(macOS\)/)
   assert.match(run.stdout, /Turns on background mode on macOS\./)
   assert.doesNotMatch(run.stdout, /Enables background mode on macOS\./)

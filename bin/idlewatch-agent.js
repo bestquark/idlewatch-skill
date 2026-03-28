@@ -369,7 +369,7 @@ Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
 Run now:                   ${inferCliCommand('run')}`
   }
 
-  return `${installAgentHelpCommand} — Turn on background mode (macOS)
+  return `${installAgentHelpCommand} — Turn on background mode after setup (macOS)
 
 Usage:  ${installAgentHelpCommand}
 
