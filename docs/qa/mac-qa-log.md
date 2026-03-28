@@ -803,6 +803,50 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R624 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real install-before-setup confirmation wording seam in the live checkout.
+
+### Priority call
+One tiny but clearly product-facing seam still cleared the bar: `install-agent` before any saved setup currently opens with `✅ Background mode installed.` even though the very next line correctly says `Setup isn't saved yet, so background mode stays off for now.` Nothing functional is broken — launch-agent install/uninstall behavior and the install-before-setup memory are working — but the first line slightly over-claims success in the exact moment where the product should be most literal. Product taste is better if that top confirmation says what actually happened: the background integration was installed, but background mode itself is still waiting for setup.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh clean-home install-before-setup repro with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - install-before-setup runtime currently says:
+    - `✅ Background mode installed.`
+    - `Setup isn't saved yet, so background mode stays off for now.`
+    - `Finish setup: idlewatch quickstart --no-tui`
+    - `Run now:      idlewatch run`
+    - `Start background mode after setup:  idlewatch install-agent`
+  - immediate follow-up `status` correctly says `Background: installed but waiting for setup`
+- [x] The same pass still confirms the rest of the requested polish lane remains calm and useful: reconfigure-without-setup stays direct, device IDs persist through rename/reconfigure, metric toggles persist in status, local-only `--test-publish` stays intentionally lightweight, uninstall remains a clean reversible off-ramp, and true-`npx` / custom-saved-config handoffs stay literal
+
+### Prioritized findings
+#### [x] P1 — install-before-setup confirmation currently overstates success by saying `Background mode installed` even though background mode is still off
+**Why this matters:** This is tiny, but it lands in the exact setup/install handoff where users decide whether they are done. The rest of the surface is already honest. Leading with `Background mode installed` makes the product sound a touch more finished than it really is, then immediately asks the user to reconcile that with `stays off for now.` A calmer top line like `Background integration installed` or `Background mode is ready once setup is saved` would read more truthfully without changing the flow.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
+3. Run:
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+   - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+4. Observe that the install command currently opens with `✅ Background mode installed.` while `status` immediately after more precisely says `Background: installed but waiting for setup`
+
+**Acceptance criteria**
+- Install-before-setup confirmation should not imply that background mode is already on when saved setup does not exist yet
+- The top confirmation line should stay short and low-noise, but read truthfully alongside `Setup isn't saved yet, so background mode stays off for now.`
+- The working install-before-setup memory should remain intact: follow-up `status` should still say `Background: installed but waiting for setup`
+- The next-step handoff should stay minimal and literal (`Finish setup`, `Run now`, then the durable background-mode command after setup)
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond making this confirmation copy more accurate
+
+**Last updated:** Friday, March 27th, 2026 — 9:12 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one tiny install-before-setup confirmation wording seam from a fresh live pass
+
 ## Cycle R623 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout, including the install-before-setup, reconfigure-first-run, true-`npx`, and true-`npx` + custom-saved-config handoffs, and did not surface another small product-facing issue worth shipping.
