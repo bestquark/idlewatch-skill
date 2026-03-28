@@ -1861,6 +1861,59 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R689 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the latest true-`npx` command-literalness lane from the QA log in the live checkout and did not surface another small product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The most recent logged regression claim (true-`npx` quickstart/status/configure drifting back to plain `idlewatch ...` commands) no longer reproduces in the live checkout: post-setup `Run now` and saved-setup `Change` stay literally runnable as `npx idlewatch ...`, while the durable background-mode handoff still stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`. In this lane, the right move is to log the clean verification pass and avoid speculative edits that could disturb the now-working telemetry path.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+- [x] Fresh true-`npx` help spot checks still keep the one-off/durable split correct:
+  - `HOME="$HOME1" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$HOME1" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh true-`npx` lifecycle spot checks with a stubbed `launchctl` now keep the same literal one-off/durable split through setup success and saved status:
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed in the live pass:
+  - true-`npx` top-level help still says:
+    - `Get started:  npx idlewatch quickstart`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+  - true-`npx` `install-agent --help` still says:
+    - `Set up now:                npx idlewatch quickstart`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+  - true-`npx` `quickstart --no-tui` success now keeps:
+    - `Run now:` then `npx idlewatch run   Run in the foreground`
+    - `For background mode:` then `npm install -g idlewatch`, then `idlewatch install-agent`
+  - true-`npx` saved-setup `status` now keeps:
+    - `Change:   npx idlewatch configure --no-tui`
+    - `Run now:  npx idlewatch run`
+    - `Turn on background mode:  idlewatch install-agent` or the equivalent two-line durable handoff depending on launch-agent state
+  - true-`npx` `configure --no-tui` keeps the same one-off-safe `npx idlewatch run` foreground next step and the separate durable background handoff
+  - the normal installed CLI, install-before-setup truthfulness, device ID continuity, metric-toggle persistence, local-only `--test-publish`, uninstall messaging, and global npm-install postinstall messaging all stayed calm in the same pass
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found after rerunning the latest true-`npx` lane
+**Why this matters:** This lane is about reducing friction, not manufacturing motion. When the live checkout already keeps the highest-copy-risk one-off `npx` commands literal while leaving the durable background handoff separate and truthful, the right move is to log that cleanly and stop.
+
+**Acceptance checks**
+- True-`npx` `quickstart --no-tui` success says `Run now: npx idlewatch run`
+- True-`npx` saved-setup `status` says `Change: npx idlewatch configure --no-tui`
+- True-`npx` saved-setup `status` says `Run now: npx idlewatch run`
+- True-`npx` `configure --no-tui` keeps the same one-off-safe `npx idlewatch ...` next steps
+- The durable background-mode handoff stays separate and explicit (`npm install -g idlewatch`, then `idlewatch install-agent`)
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced in this verification-only pass
+
+**Last updated:** Saturday, March 28th, 2026 — 4:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the latest true-`npx` polish lane and confirmed no additional product change was needed
+
 ## Cycle R688 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real higher-priority true-`npx` command-literalness regression in the live checkout.
