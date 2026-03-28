@@ -1,3 +1,46 @@
+## Cycle R776 Status: COMPLETE ✅
+
+Shipped the one still-live standalone macOS install-script setup-copy polish fix from the latest QA pass.
+
+### Priority call
+One medium-severity product-taste issue still clearly cleared the bar: the standalone macOS `scripts/install-macos-launch-agent.sh` install-before-setup path was still leading with the plain-text fallback (`quickstart --no-tui`) and slightly noisier `Start background mode after setup:` wording even though the main CLI and global npm handoff had already converged on a calmer `quickstart`-first story. Nothing functional was broken; this was a tiny first-impression drift in the packaged/macOS-first setup path.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated the standalone macOS install-before-setup handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` directly underneath as the plain-text fallback
+- [x] Tightened the same surface from `Start background mode after setup:` to `Turn on background mode after setup:`
+- [x] Kept `Run now:` and `Check:` handoffs unchanged
+- [x] Updated focused expectations in `test/macos-launch-agent-scripts.test.mjs`
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `scripts/install-macos-launch-agent.sh`
+- [x] Updated `test/macos-launch-agent-scripts.test.mjs`
+- [x] `node --test --test-name-pattern='packaged macOS install script keeps the no-setup status hint config-first|packaged macOS install script keeps custom saved-config handoffs literal before setup|packaged macOS install script keeps custom launch-agent labels literal in the background-mode handoff before setup|packaged macOS install script shows the exact refresh command when idlewatch is not on PATH yet' test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the touched standalone install-before-setup surfaces now print:
+  - `Finish setup:` then `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui` one line below as the fallback
+  - `Turn on background mode after setup:`
+- [x] Observed the surrounding handoffs stayed intact:
+  - `Run now:  idlewatch run`
+  - `Check:    idlewatch status   See setup state, background mode state, and last publish result`
+  - custom config/custom label follow-up commands stay literally runnable
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install-before-setup now matches the calmer setup story already used by the main CLI and postinstall handoff
+**Why this mattered:** This is tiny, but it lands in one of the highest-trust first-run surfaces for packaged macOS users. Leading with the normal `quickstart` path makes setup feel simpler; keeping `--no-tui` immediately underneath preserves the fallback without making it look like the product default.
+
+**Acceptance checks**
+- Standalone macOS install-before-setup now leads with `idlewatch quickstart`
+- `idlewatch quickstart --no-tui` remains visible one line below as the fallback
+- The same surface now says `Turn on background mode after setup:`
+- `Run now:` and `Check:` handoffs remain unchanged
+- No auth, ingest, config persistence, device identity, metric persistence, config-reload semantics, or launch-agent behavior changes were introduced beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 11:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped the standalone macOS install-before-setup copy fix from the latest QA pass
+
 ## Cycle R775 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-live setup-story mismatch in the standalone macOS install script.
