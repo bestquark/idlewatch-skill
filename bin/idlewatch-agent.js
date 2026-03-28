@@ -1578,7 +1578,17 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const expectedConfigFile = enrollmentOutputEnvFilePath()
       if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
         console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
-        console.error(`Run ${preferredHelpSetupCommand('quickstart')} to create your first setup.`)
+        const invocation = detectCliInvocation()
+        const quickstartPrimaryCommand = invocation.kind === 'npx'
+          ? inferCliCommand('quickstart')
+          : preferredPrimarySetupCommand('quickstart')
+        const quickstartFallbackCommand = invocation.kind === 'npx'
+          ? (!process.stdin.isTTY ? inferCliCommand('quickstart --no-tui') : '')
+          : preferredSetupFallbackCommand('quickstart')
+        console.error(`Start with ${quickstartPrimaryCommand}.`)
+        if (quickstartFallbackCommand) {
+          console.error(`           ${quickstartFallbackCommand}   # plain text fallback`)
+        }
         process.exit(1)
       }
 

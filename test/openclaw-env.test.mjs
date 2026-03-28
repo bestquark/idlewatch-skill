@@ -2611,10 +2611,41 @@ test('configure --no-tui fails clearly when no saved setup exists yet', () => {
 
       assert.equal(run.status, 1)
       assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
-      assert.match(run.stderr, /Run idlewatch quickstart --no-tui to create your first setup\./)
+      assert.match(run.stderr, /Start with idlewatch quickstart\./)
+      assert.match(run.stderr, /idlewatch quickstart --no-tui\s+# plain text fallback/)
+      assert.doesNotMatch(run.stderr, /Run idlewatch quickstart --no-tui to create your first setup\./)
       assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)
       assert.equal(run.stdout, '')
     }
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('configure --no-tui keeps the calmer setup-first recovery copy in true npx mode when no saved setup exists yet', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-configure-no-setup-npx-home-'))
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'configure', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.equal(run.status, 1)
+    assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
+    assert.match(run.stderr, /Start with npx idlewatch quickstart\./)
+    assert.match(run.stderr, /npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+    assert.doesNotMatch(run.stderr, /Run npx idlewatch quickstart --no-tui to create your first setup\./)
+    assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)
+    assert.equal(run.stdout, '')
   } finally {
     rmSync(tempHome, { recursive: true, force: true })
   }

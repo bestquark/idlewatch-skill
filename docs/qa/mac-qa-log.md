@@ -1624,6 +1624,53 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R673 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny first-run reconfigure recovery copy seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: first-run `configure --no-tui` with no saved setup still led with only the more technical `quickstart --no-tui` command, even though the rest of the installer/CLI now prefers the calmer plain `quickstart` first and keeps `--no-tui` one line below as the plain-text fallback. Nothing functional was broken, but this landed in the exact “I tried to reconfigure before setup exists” moment where the product should feel least technical and most self-correcting.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the no-saved-setup `configure --no-tui` recovery copy to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- [x] Matched the true-`npx` no-saved-setup recovery copy to that same calmer two-line setup shape
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs` for both source/global-style and true-`npx` first-run `configure --no-tui`
+- [x] Left saved-setup reconfigure behavior, launch-agent semantics, auth/ingest behavior, packaging, and telemetry unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live no-saved-setup source/global-style repro:
+  - `HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 node bin/idlewatch-agent.js configure --no-tui`
+- [x] Fresh live no-saved-setup true-`npx` repro:
+  - `HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js configure --no-tui`
+- [x] Observed the live pass now prints:
+  - source/global-style:
+    - `Start with idlewatch quickstart.`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - true `npx`:
+    - `Start with npx idlewatch quickstart.`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed the older single-line `Run ... quickstart --no-tui to create your first setup.` copy is gone from this first-run reconfigure path
+
+### Prioritized findings
+#### [x] P1 — first-run `configure --no-tui` now uses the calmer setup-first recovery handoff already used elsewhere
+**Why this mattered:** This is tiny, but it lands right at a common recovery moment. If setup does not exist yet, the product should steer people to the nicest setup command first instead of only surfacing the more technical plain-text fallback.
+
+**Acceptance checks**
+- First-run source/global-style `configure --no-tui` now leads with `idlewatch quickstart`
+- That same recovery surface still keeps `idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- First-run true-`npx` `configure --no-tui` now leads with `npx idlewatch quickstart`
+- That same true-`npx` surface still keeps `npx idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- The old single-line `Run ... quickstart --no-tui to create your first setup.` copy is gone for this path
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 1:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny first-run reconfigure recovery copy polish fix
+
 ## Cycle R670 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
