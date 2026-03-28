@@ -1,3 +1,44 @@
+## Cycle R682 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny top-level command-summary truthfulness seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the top-level `idlewatch --help` command list still described `install-agent` as if background mode were simply ready to turn on in the normal installed flow, even before setup had been saved. Nothing functional was broken and the runtime flow already stayed truthful, but this first-scan summary was slightly looser than the calmer setup-first wording now used across install-before-setup and postinstall surfaces. The right fix was tiny: keep the same command list, but make the `install-agent` summary explicitly say `after setup` in normal installed mode and `after durable install` in true-`npx` mode.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the normal top-level help summary from `Turn on background mode (macOS)` to `Turn on background mode after setup (macOS)`
+- [x] Tightened the true-`npx` top-level help summary from `Turn on background mode (requires durable install)` to `Turn on background mode after durable install`
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left setup/runtime behavior, launch-agent semantics, auth/ingest behavior, packaging, and telemetry unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live global help repro:
+  - `node bin/idlewatch-agent.js --help`
+- [x] Fresh live true-`npx` help repro:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+- [x] Observed the live pass now prints:
+  - global help:
+    - `install-agent     Turn on background mode after setup (macOS)`
+  - true `npx` help:
+    - `install-agent     Turn on background mode after durable install`
+
+### Prioritized findings
+#### [x] P1 — top-level command summaries now stay truthful about setup/durable-install prerequisites
+**Why this mattered:** This is tiny, but it lands in one of the first product surfaces someone scans while deciding what to run next. Making the command summary match the calmer setup-first truthfulness already used elsewhere removes one more subtle assumption without adding any extra wording or steps.
+
+**Acceptance checks**
+- Global `idlewatch --help` now says `install-agent     Turn on background mode after setup (macOS)`
+- True-`npx` help now says `install-agent     Turn on background mode after durable install`
+- The surrounding command list stays short and unchanged otherwise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 3:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny top-level help truthfulness polish fix
+
 ## Cycle R677 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout and still did not surface another product-facing polish issue worth shipping.

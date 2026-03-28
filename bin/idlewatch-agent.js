@@ -496,8 +496,8 @@ function printHelp() {
   const invocation = detectCliInvocation()
   const cliBase = preferredProductCommand()
   const installAgentSummary = invocation.kind === 'npx'
-    ? 'Turn on background mode (requires durable install)'
-    : 'Turn on background mode (macOS)'
+    ? 'Turn on background mode after durable install'
+    : 'Turn on background mode after setup (macOS)'
   const uninstallAgentSummary = 'Turn off background mode (macOS)'
   const commands = [
     ['quickstart', 'Set up this device (name, metrics, optional cloud link)'],
