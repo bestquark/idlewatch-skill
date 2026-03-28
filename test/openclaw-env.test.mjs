@@ -343,6 +343,40 @@ exit 0
   }
 })
 
+test('install-agent help keeps custom saved-config npx handoffs literally runnable', () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-custom-'))
+  const customConfig = path.join(tempDir, 'configs', 'idlewatch custom.env')
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfig)}`
+  const npxEnv = {
+    ...process.env,
+    HOME: tempDir,
+    PATH: process.env.PATH,
+    IDLEWATCH_CONFIG_ENV_PATH: customConfig,
+    npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+    npm_command: 'exec',
+    npm_lifecycle_event: 'npx',
+    npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+  }
+
+  try {
+    const help = spawnSync(process.execPath, [BIN, 'install-agent', '--help'], {
+      env: npxEnv,
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(help.status, 0, help.stderr)
+    assert.match(help.stdout, new RegExp(`Set up now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch quickstart --no-tui`))
+    assert.match(help.stdout, new RegExp(`Turn on background mode:\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent`))
+    assert.match(help.stdout, new RegExp(`Run now:\\s+${escapeRegex(expectedPrefix)} npx idlewatch run`))
+    assert.doesNotMatch(help.stdout, /Set up now:\s+npx idlewatch quickstart --no-tui/)
+    assert.doesNotMatch(help.stdout, /Turn on background mode:\s+idlewatch install-agent/)
+    assert.doesNotMatch(help.stdout, /Run now:\s+npx idlewatch run/)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('setup mode prompt stays neutral and local-first friendly', () => {
   const prompt = promptModeText()
 

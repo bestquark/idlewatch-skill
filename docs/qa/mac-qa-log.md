@@ -762,6 +762,42 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R620 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny custom-saved-config `install-agent --help` truthfulness fix in the true-`npx` handoff.
+
+### Priority call
+One small but clearly product-facing seam still cleared the bar: when `IDLEWATCH_CONFIG_ENV_PATH` pointed at a custom saved env file, the true-`npx` `install-agent --help` surface still dropped that prefix on its copy-paste next steps. Nothing core was broken, yet this was exactly the kind of mismatch that makes a saved-config setup feel slightly less trustworthy at the durable-background handoff. If nearby setup/status surfaces already keep the custom env path literal, the help handoff should too.
+
+### What changed
+- Reused the existing invocation-aware command helpers inside `installAgentHelpText()` instead of hardcoding the true-`npx` help lines
+- Kept the default-path experience unchanged; the env prefix only appears when a genuinely custom saved-config path is active
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for true-`npx` `install-agent --help` with a custom saved-config path
+- Left auth, ingest, packaging, launch-agent behavior, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` custom-config `install-agent --help` spot check now shows:
+  - `Set up now:                IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch quickstart --no-tui`
+  - `Turn on background mode:   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' idlewatch install-agent`
+  - `Run now:                   IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' npx idlewatch run`
+- [x] Focused `node --test ... --test-name-pattern='install-agent help keeps custom saved-config npx handoffs literally runnable|install-agent help/runtime preserve one-off command hints under npm exec'` was attempted, but the Node test runner stayed stuck in this environment before producing output; verification for this tiny patch was completed with syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — true-`npx` `install-agent --help` now keeps custom saved-config handoff commands literally runnable
+**Why this mattered:** This is tiny, but it lands in the exact “I saved setup somewhere custom; now tell me the next command” moment. Dropping the env prefix on help made the durable handoff slightly less truthful than the nearby setup/status surfaces. Keeping that prefix attached makes the copy-paste path feel neat, trustworthy, and consistent.
+
+**Acceptance checks**
+- With a non-default `IDLEWATCH_CONFIG_ENV_PATH`, true-`npx` `install-agent --help` now keeps the same env-prefixed `quickstart`, `run`, and durable `idlewatch install-agent` handoff commands
+- Default-path true-`npx` help remains unchanged and does not gain extra env-var noise
+- The durable background-mode split stays explicit on `npm install -g idlewatch`, then `idlewatch install-agent`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` custom-config `install-agent --help` handoff fix
+
 ## Cycle R619 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression in the live checkout.

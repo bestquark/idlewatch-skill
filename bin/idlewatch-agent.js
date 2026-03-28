@@ -314,11 +314,11 @@ function installAgentHelpText() {
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
 
-Set up now:                npx idlewatch quickstart --no-tui
+Set up now:                ${quickstartCommand}
 Install once:              npm install -g idlewatch
-Turn on background mode:   idlewatch install-agent
+Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
 
-Run now:                   npx idlewatch run`
+Run now:                   ${inferCliCommand('run')}`
   }
 
   return `${installAgentHelpCommand} — Turn on background mode (macOS)
