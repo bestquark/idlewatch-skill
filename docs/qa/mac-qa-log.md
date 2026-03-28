@@ -1,3 +1,67 @@
+## Cycle R701 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real setup-handoff friendliness seam in the standalone macOS install script’s side-by-side/custom-label path.
+
+### Priority call
+One low-risk polish issue still clearly clears the bar: the standalone `scripts/install-macos-launch-agent.sh` no-saved-setup handoff still leads with the more technical `idlewatch quickstart --no-tui` when the script is run with a custom launch-agent label for a side-by-side QA/dev install. Nothing functional is broken, and the safety guard that requires a custom label in this path is correct, but once the script proceeds the first visible setup hint is slightly harsher and more implementation-shaped than the rest of the product. The calmer direction everywhere else in this lane is already better: lead with plain `idlewatch quickstart`, then keep `idlewatch quickstart --no-tui` one line below as the plain-text fallback.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/global-style lifecycle spot checks with a stubbed `launchctl` still keep the main CLI path calm and literal:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars still keep one-off commands literal:
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Fresh standalone macOS side-by-side install/uninstall checks with a stubbed `launchctl`, temporary app bundle, and custom label:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the same live pass:
+  - main help still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept one line below as the fallback
+  - main `install-agent --help` still leads with `Set up now: idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below
+  - install-before-setup in the main CLI still stays truthful and low-noise
+  - saved setup + reconfigure still keep device identity continuity and metric toggles visible inline
+  - local-only `--test-publish` still stays intentionally lightweight
+  - true-`npx` still keeps one-off commands literal while background mode stays on the explicit durable-install handoff
+  - but the standalone macOS install script side-by-side/custom-label no-setup handoff currently prints:
+    - `Finish setup:` then `idlewatch quickstart --no-tui`
+    - `Run now:` then `idlewatch run`
+    - `Turn on background mode after setup:` then `idlewatch install-agent`
+    - `Check:` then `idlewatch status   See your saved config, background mode state, and last publish result`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install script side-by-side/custom-label installs still headline the harsher `quickstart --no-tui` command
+**Why this matters:** This is small, but it lands in the exact “what should I run first?” moment for QA/dev installs — the path where people are already doing something a bit more advanced and most need the copy to stay calm. The rest of the product has already converged on the nicer pattern: plain `quickstart` first, plain-text fallback second.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+3. Create a temporary app bundle containing `Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+5. Observe that the no-saved-setup handoff currently leads with `idlewatch quickstart --no-tui` instead of plain `idlewatch quickstart`
+
+**Acceptance checks**
+- In the standalone macOS install script’s side-by-side/custom-label no-saved-setup path, the first setup hint should be `idlewatch quickstart`
+- That same surface should still keep `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- `Run now`, `Turn on background mode after setup`, and `Check` should remain unchanged and low-noise
+- The safety guard that blocks reusing the default label with a custom app path should remain unchanged
+- No auth, ingest, packaging, or major launch-agent behavior changes should be introduced beyond this setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real standalone macOS side-by-side install-script setup-handoff seam from a fresh live pass
+
 ## Cycle R700 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
