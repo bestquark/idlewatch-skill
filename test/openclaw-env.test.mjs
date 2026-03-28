@@ -3955,3 +3955,55 @@ finally:
     rmSync(tempHome, { recursive: true, force: true })
   }
 })
+
+test('true npx foreground run tip keeps the durable install handoff literal', () => {
+  const tempHome = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-run-tip-npx-'))
+
+  try {
+    const probe = spawnSync('python3', ['-c', `
+import os, subprocess, sys, time
+env = os.environ.copy()
+env['HOME'] = ${JSON.stringify(tempHome)}
+env['IDLEWATCH_OPENCLAW_USAGE'] = 'off'
+env['IDLEWATCH_INTERVAL_MS'] = '60000'
+env['npm_execpath'] = '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js'
+env['npm_command'] = 'exec'
+env['npm_lifecycle_event'] = 'npx'
+env['npm_config_user_agent'] = 'npm/11.9.0'
+p = subprocess.Popen([${JSON.stringify(process.execPath)}, ${JSON.stringify(BIN)}, 'run'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+out = ''
+err = ''
+try:
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        line = p.stdout.readline()
+        if not line:
+            break
+        out += line
+        if 'Tip: One-off npx runs are great for testing.' in out:
+            sys.stdout.write(out)
+            raise SystemExit(0)
+    err += p.stderr.read() or ''
+    sys.stderr.write('Timed out waiting for npx run tip.\\nstdout:\\n' + out + '\\nstderr:\\n' + err)
+    raise SystemExit(1)
+finally:
+    if p.poll() is None:
+        p.terminate()
+        try:
+            p.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.wait(timeout=5)
+`], {
+      encoding: 'utf8',
+      env: process.env,
+      timeout: 20000
+    })
+
+    assert.equal(probe.status, 0, probe.stderr)
+    assert.match(probe.stdout, /Tip: One-off npx runs are great for testing\. For background mode, install once with npm install -g idlewatch, then run idlewatch install-agent\./)
+    assert.doesNotMatch(probe.stdout, /Tip: One-off npx runs are great for testing\. For background mode, install IdleWatch once and then run idlewatch install-agent\./)
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true })
+  }
+})

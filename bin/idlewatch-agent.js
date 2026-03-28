@@ -3099,7 +3099,7 @@ subcommandPromise
       accessSync(launchAgentPath, constants.F_OK)
     } catch {
       if (detectCliInvocation().kind === 'npx') {
-        runLog.write(`Tip: One-off npx runs are great for testing. For background mode, install IdleWatch once and then run idlewatch install-agent.\n`)
+        runLog.write('Tip: One-off npx runs are great for testing. For background mode, install once with npm install -g idlewatch, then run idlewatch install-agent.\n')
       } else {
         runLog.write(`Tip: Turn on background mode with ${inferCliCommand('install-agent')}, or use ${inferCliCommand('menubar')} for the menu bar app.\n`)
       }

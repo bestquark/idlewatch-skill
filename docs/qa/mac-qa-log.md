@@ -1,3 +1,36 @@
+## Cycle R633 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny but still product-facing literal-command seam in the true-`npx` foreground `run` tip, and shipped the smallest useful fix.
+
+### Priority call
+One small follow-up still cleared the bar after the broader `npx` command-literalness cleanup: in a real `npx` / `npm exec` foreground `run`, the startup tip still said to "install IdleWatch once" before `idlewatch install-agent`, which was directionally correct but no longer literally copy/pasteable. This is exactly the sort of tiny setup friction the polish lane should remove. The durable background handoff now stays explicit and literal there too: `npm install -g idlewatch`, then `idlewatch install-agent`.
+
+### What changed
+- [x] Kept the working telemetry/startup path intact; only tightened the foreground `npx` tip copy
+- [x] Changed the true-`npx` `run` tip to say `install once with npm install -g idlewatch, then run idlewatch install-agent`
+- [x] Added focused regression coverage for the true-`npx` foreground `run` tip wording
+- [x] Left auth/ingest behavior, setup flow structure, background semantics, and packaging untouched
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/openclaw-env.test.mjs --test-name-pattern "foreground run tip|true npx foreground run tip"`
+- [x] Observed the non-`npx` foreground tip still stays calm and unchanged (`Turn on background mode with ... install-agent, or use ... menubar`)
+- [x] Observed the true-`npx` foreground tip now stays literally actionable for the durable-install handoff (`npm install -g idlewatch`, then `idlewatch install-agent`)
+- [x] Confirmed no auth, ingest, telemetry-path, or packaging behavior changes were introduced in this pass
+
+### Prioritized findings
+#### [x] P1 — true-`npx` foreground `run` tip should keep the durable install handoff literally runnable
+**Why this matters:** This is a tiny copy seam, but it hits at exactly the moment someone is testing the product one-off and deciding whether to keep it running. Literal copy/paste guidance beats vague wording there.
+
+**Acceptance criteria**
+- The true-`npx` foreground `run` tip should say `install once with npm install -g idlewatch, then run idlewatch install-agent`
+- The calmer non-`npx` run tip should remain unchanged
+- The telemetry/startup path should remain untouched
+- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording polish
+
+**Last updated:** Friday, March 27th, 2026 — 9:58 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped the tiny literal durable-install handoff fix in the true-`npx` foreground run tip
+
 ## Cycle R632 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real true-`npx` command-literalness regression in the live checkout.
