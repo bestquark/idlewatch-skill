@@ -1,3 +1,64 @@
+## Cycle R743 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the scoped live lane from the current polish plan and did not surface another small end-user issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The product still feels appropriately calm in the setup and recovery moments this lane cares about: setup still leads with plain `quickstart`, install-before-setup stays truthful and low-noise, saved setup + reconfigure still keep device identity continuity and metric-toggle persistence explicit inline, reload/apply guidance still stays predictable when background mode is already on, local-only `--test-publish` still stays intentionally lightweight, uninstall remains a short reversible off-ramp, and the global npm + standalone macOS install surfaces still keep the durable/background split literal without getting more technical than needed.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal help + install-before-setup + saved-setup + test-publish + uninstall spot checks with a stubbed non-running `launchctl`:
+  - `node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh saved-setup + reconfigure + reload/apply spot checks with a stubbed running `launchctl`:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh global npm-install + standalone macOS side-by-side install/uninstall spot checks:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the same pass:
+  - top-level help still leads with `Get started:  idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+  - install-before-setup still says `✅ Background integration installed.` and keeps the honest `Setup isn't saved yet, so background mode stays off for now.` handoff
+  - saved setup still keeps the next step short and literal (`Turn on background mode: idlewatch install-agent`)
+  - running-background reconfigure/status still say `Apply saved config:  re-run idlewatch install-agent to apply the saved config`
+  - device identity continuity still stays explicit inline (`Device ID: ... kept from original setup for continuity`)
+  - metric-toggle persistence still stays visible in `status`
+  - local-only `--test-publish` still stays intentionally lightweight
+  - uninstall still keeps the reversible saved-config/local-log story short and truthful
+  - global npm postinstall still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary as the fallback
+  - standalone macOS custom-label install/uninstall still keep their follow-up commands literally runnable for that same label
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after another fresh live pass
+**Why this matters:** This lane is about reducing friction, not manufacturing churn. The current installer/CLI already reads like a neat setup product instead of a pile of implementation details, so the right move here was to verify the important paths and stop.
+
+**Exact repro / verification path**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create one fake `launchctl` shim that reports `print` as not running and one that reports it as already running; let both succeed for install/uninstall actions
+3. Run the normal help, install-before-setup, saved-setup, reconfigure, reload/apply, `--test-publish`, global postinstall, and standalone macOS side-by-side checks listed above
+4. Observe that the user-facing copy remains literal, low-noise, and consistent across those flows
+
+**Acceptance checks**
+- Top-level help and setup/recovery surfaces continue to lead with plain `quickstart`, with `--no-tui` kept secondary as the fallback
+- Install-before-setup remains truthful and low-noise
+- Device IDs still persist through rename/reconfigure and stay visible inline where continuity matters
+- Metric toggles still persist cleanly and show up clearly in saved-setup `status`
+- Config reload/apply guidance remains predictable when background mode is already on
+- Launch-agent install/uninstall behavior remains clear, reversible, and low-noise in both the main CLI and standalone macOS scripts
+- Local-only `--test-publish` stays intentionally lightweight rather than growing into a second setup flow
+- Global npm-install and standalone macOS setup handoffs remain literal and copy-safe
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced in this verification-only pass
+
+**Last updated:** Saturday, March 28th, 2026 — 8:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
 ## Cycle R742 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped the last still-real docs-level setup-path consistency fix in the README.
