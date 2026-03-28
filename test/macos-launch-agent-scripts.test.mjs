@@ -133,7 +133,8 @@ exit 0
     assert.doesNotMatch(install.stdout, /Turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(install.stdout, /Contents\/MacOS\/IdleWatch quickstart(?: --no-tui)?/)
-    assert.match(install.stdout, /Run 'idlewatch status' to see your saved config, background mode state, and last publish result\./)
+    assert.match(install.stdout, /Check:\s+idlewatch status\s+See your saved config, background mode state, and last publish result/)
+    assert.doesNotMatch(install.stdout, /💡 Quick status check:/)
     assert.doesNotMatch(install.stdout, /device state, metrics enabled/)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })

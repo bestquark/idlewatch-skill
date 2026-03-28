@@ -209,8 +209,8 @@ else
     echo "Start background mode after setup:"
     echo "   idlewatch install-agent"
     echo ""
-    echo "💡 Quick status check:"
-    echo "   Run 'idlewatch status' to see your saved config, background mode state, and last publish result."
+    echo "Check:"
+    echo "   idlewatch status   See your saved config, background mode state, and last publish result"
   else
     echo "   $BIN_PATH quickstart --no-tui"
     echo ""

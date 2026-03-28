@@ -1110,6 +1110,41 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R648 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining wording seam in the standalone macOS install script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the standalone `scripts/install-macos-launch-agent.sh` no-setup path still ended with a noisier `💡 Quick status check:` sentence block even though the rest of the installer/CLI has already settled on shorter, calmer labeled next steps. Nothing functional was broken, but this landed in the exact install-before-setup moment where the product should feel most scan-friendly. The right fix was tiny: keep the same `idlewatch status` hint, but present it in the same calm label-first shape as the surrounding setup, run, and background-mode handoffs.
+
+### What changed
+- [x] Reworked the standalone macOS install-script no-setup status hint from the noisier `💡 Quick status check:` sentence block to a shorter `Check:` label with the literal `idlewatch status` command inline
+- [x] Kept the meaning unchanged: it still points to the same `idlewatch status` follow-up and the same saved-config / background-mode / last-publish context
+- [x] Updated focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left setup, reconfigure, launch-agent behavior, packaging shape, auth/ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone install-script no-setup handoff now prints:
+  - `Check:`
+  - `idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Confirmed the rest of the no-setup handoff stayed unchanged (`idlewatch quickstart`, `idlewatch quickstart --no-tui`, `idlewatch run`, `idlewatch install-agent`)
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install script now keeps the status hint in the same calmer labeled shape as the rest of the setup handoff
+**Why this mattered:** This is tiny, but it makes the first-run install surface feel a little cleaner and easier to scan. The command was already good; the presentation was the only thing lagging behind the product direction.
+
+**Acceptance checks**
+- The standalone macOS install script no-setup path still points to `idlewatch status`
+- The same hint now uses a shorter `Check:` label instead of the noisier emoji sentence block
+- The surrounding `Finish setup`, `Run now`, and `Start background mode after setup` handoffs remain unchanged
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this wording simplification
+
+**Last updated:** Friday, March 27th, 2026 — 11:20 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS install-script status-hint simplification
+
 ## Cycle R647 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact current scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
