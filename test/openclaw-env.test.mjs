@@ -2702,7 +2702,9 @@ test('configure --no-tui fails clearly when no saved setup exists yet', () => {
 
       assert.equal(run.status, 1)
       assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
-      assert.match(run.stderr, /Start with idlewatch quickstart --no-tui\./)
+      assert.match(run.stderr, /Start with idlewatch quickstart\./)
+      assert.match(run.stderr, /Or use idlewatch quickstart --no-tui if you prefer plain text\./)
+      assert.doesNotMatch(run.stderr, /Start with idlewatch quickstart --no-tui\./)
       assert.doesNotMatch(run.stderr, /# plain text fallback/)
       assert.doesNotMatch(run.stderr, /Run idlewatch quickstart --no-tui to create your first setup\./)
       assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)
@@ -2732,7 +2734,9 @@ test('configure --no-tui keeps the calmer setup-first recovery copy in true npx 
 
     assert.equal(run.status, 1)
     assert.match(run.stderr, /IdleWatch is not set up yet\. No saved config was found at ~\/\.idlewatch\/idlewatch\.env\./)
-    assert.match(run.stderr, /Start with npx idlewatch quickstart --no-tui\./)
+    assert.match(run.stderr, /Start with npx idlewatch quickstart\./)
+    assert.match(run.stderr, /Or use npx idlewatch quickstart --no-tui if you prefer plain text\./)
+    assert.doesNotMatch(run.stderr, /Start with npx idlewatch quickstart --no-tui\./)
     assert.doesNotMatch(run.stderr, /# plain text fallback/)
     assert.doesNotMatch(run.stderr, /Run npx idlewatch quickstart --no-tui to create your first setup\./)
     assert.doesNotMatch(run.stderr, /Setup cancelled\. No changes saved\./)

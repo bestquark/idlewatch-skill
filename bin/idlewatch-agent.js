@@ -1593,10 +1593,12 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const expectedConfigFile = enrollmentOutputEnvFilePath()
       if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
         console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
-        const quickstartSetupCommand = process.stdin.isTTY
-          ? preferredPrimarySetupCommand('quickstart')
-          : preferredHelpSetupCommand('quickstart')
+        const quickstartSetupCommand = preferredPrimarySetupCommand('quickstart')
+        const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
         console.error(`Start with ${quickstartSetupCommand}.`)
+        if (quickstartFallbackCommand) {
+          console.error(`Or use ${quickstartFallbackCommand} if you prefer plain text.`)
+        }
         process.exit(1)
       }
 

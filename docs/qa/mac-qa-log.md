@@ -1,3 +1,48 @@
+## Cycle R731 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for one still-visible setup-recovery wording seam in `configure --no-tui` when no saved setup exists yet.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the no-saved-setup recovery path for `configure --no-tui` still opened with the harsher `Start with ... quickstart --no-tui.` line, even though the rest of the installer/CLI had already converged on the calmer product shape of leading with plain `quickstart` and keeping the plain-text path secondary. Nothing functional was broken, but this lands right in a copy/paste-heavy recovery moment where the CLI should stay neat and consistent.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the no-saved-setup `configure --no-tui` recovery hint to lead with plain `quickstart`
+- [x] Kept the plain-text route visible as a second sentence: `Or use ... quickstart --no-tui if you prefer plain text.`
+- [x] Preserved the source-checkout and true-`npx` command literalness in that same recovery path
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, saved-config semantics, launch-agent behavior, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='configure --no-tui keeps the calmer setup-first recovery copy in source checkouts when no saved setup exists yet' test/openclaw-env.test.mjs`
+- [x] `node --test --test-name-pattern='configure --no-tui keeps the calmer setup-first recovery copy in true npx mode when no saved setup exists yet' test/openclaw-env.test.mjs`
+- [x] Fresh source-checkout runtime repro now prints:
+  - `IdleWatch is not set up yet. No saved config was found at ~/.idlewatch/idlewatch.env.`
+  - `Start with idlewatch quickstart.`
+  - `Or use idlewatch quickstart --no-tui if you prefer plain text.`
+- [x] Fresh true-`npx` runtime repro now prints:
+  - `Start with npx idlewatch quickstart.`
+  - `Or use npx idlewatch quickstart --no-tui if you prefer plain text.`
+- [x] Observed the old harsher opener is gone from both paths:
+  - `Start with idlewatch quickstart --no-tui.`
+  - `Start with npx idlewatch quickstart --no-tui.`
+
+### Prioritized findings
+#### [x] P1 — `configure --no-tui` without saved setup now uses the same calmer setup-first recovery shape as the rest of the product
+**Why this mattered:** This is tiny, but it lands in the exact “I tried to reconfigure too early; what should I do next?” moment. Leading with plain `quickstart` keeps the recovery path less technical, while the second sentence still preserves the literal headless route for people who want it.
+
+**Acceptance checks**
+- When `configure --no-tui` is run before any setup exists, the recovery hint now starts with `Start with ... quickstart.`
+- That same recovery path still preserves the literal plain-text route on the next line: `Or use ... quickstart --no-tui if you prefer plain text.`
+- Source-checkout mode still keeps product-style `idlewatch ...` commands instead of drifting back to `node bin/...`
+- True-`npx` mode still keeps one-off-safe `npx idlewatch ...` commands
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this recovery-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny no-saved-setup `configure --no-tui` recovery-copy polish fix
+
 ## Cycle R730 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small user-facing issue worth shipping.
