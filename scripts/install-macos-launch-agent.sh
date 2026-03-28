@@ -249,7 +249,7 @@ else
     printf '   %s\n' "$(with_install_agent_command 'idlewatch install-agent')"
     echo ""
     echo "Check:"
-    printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command 'idlewatch status')"
+    printf '   %s   See setup state, background mode state, and last publish result\n' "$(with_config_command 'idlewatch status')"
   else
     printf '   %s\n' "$(with_config_command "$BIN_PATH quickstart")"
     printf '   %s\n' "$(with_config_command "$BIN_PATH quickstart --no-tui")   # plain text fallback"
@@ -261,6 +261,6 @@ else
     printf '   %s\n' "$(with_install_agent_command "$BIN_PATH install-agent")"
     echo ""
     echo "Check:"
-    printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command "$BIN_PATH status")"
+    printf '   %s   See setup state, background mode state, and last publish result\n' "$(with_config_command "$BIN_PATH status")"
   fi
 fi

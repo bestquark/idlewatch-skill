@@ -1,3 +1,32 @@
+## Cycle R772 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny truthfulness seam in the install-before-setup follow-up copy and shipped the smallest useful fix.
+
+### Priority call
+One low-risk issue still cleared the bar: in the install-before-setup flow, the `Check: idlewatch status` hint still said `See your saved config...` even though setup had not been saved yet. Nothing functional was broken and the command itself was already right, but this lands in a trust-heavy moment and read slightly more stateful than the product had actually earned. The right fix was tiny: keep the same command and layout, but make that no-setup hint say `See setup state, background mode state, and last publish result`.
+
+### What shipped
+- [x] Updated the main CLI install-before-setup `Check:` hint from `See your saved config...` to `See setup state...`
+- [x] Updated the standalone macOS install-before-setup script to use the same setup-state wording in both CLI-on-PATH and packaged-app paths
+- [x] Kept saved-setup and running-background `status` copy unchanged, so the calmer saved-config wording still appears only once setup actually exists
+- [x] Preserved the current telemetry path and all install/reconfigure behavior
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Focused source-checkout install-before-setup repro now prints:
+  - `HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `Check:        idlewatch status   See setup state, background mode state, and last publish result`
+- [x] Focused automated regressions:
+  - `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent before setup keeps calmer product command handoff in a source checkout|status command preserves installed-but-waiting-for-setup state after install-agent ran before setup'`
+  - `node --test test/macos-launch-agent-scripts.test.mjs --test-name-pattern='install script prints calmer product commands before setup when idlewatch is on PATH|packaged macOS install script keeps custom saved-config handoffs literal before setup'`
+- [x] Observed in the same pass:
+  - install-before-setup still says `✅ Background integration installed.` and keeps `Setup isn't saved yet, so background mode stays off for now.`
+  - the `Check:` hint is now truthful before setup exists without adding any extra steps or branching copy
+  - saved-setup and running-background surfaces still keep the existing `saved config` / `Apply saved config` mental model where it belongs
+
+### Outcome
+This is tiny, but it makes the install-before-setup recovery path read a little more honestly. The setup flow stays neat, the next steps stay literally runnable, and the product no longer implies a saved config exists before it does.
+
 ## Cycle R771 Status: COMPLETE ✅
 
 Fresh scoped installer/CLI polish pass reran the exact lanes from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.

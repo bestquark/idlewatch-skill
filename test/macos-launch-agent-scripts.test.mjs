@@ -133,7 +133,7 @@ exit 0
     assert.match(install.stdout, /Turn on background mode after setup:\s+idlewatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then turn on background mode:\s+idlewatch install-agent/)
     assert.doesNotMatch(install.stdout, /Contents\/MacOS\/IdleWatch quickstart(?: --no-tui)?/)
-    assert.match(install.stdout, /Check:\s+idlewatch status\s+See your saved config, background mode state, and last publish result/)
+    assert.match(install.stdout, /Check:\s+idlewatch status\s+See setup state, background mode state, and last publish result/)
     assert.doesNotMatch(install.stdout, /💡 Quick status check:/)
     assert.doesNotMatch(install.stdout, /device state, metrics enabled/)
   } finally {
@@ -177,7 +177,7 @@ exit 0
     assert.ok(install.stdout.includes(`Finish setup:\n   IDLEWATCH_CONFIG_ENV_PATH=${customConfigPath.replace(/ /g, '\\ ')} idlewatch quickstart\n   IDLEWATCH_CONFIG_ENV_PATH=${customConfigPath.replace(/ /g, '\\ ')} idlewatch quickstart --no-tui   # plain text fallback`))
     assert.match(install.stdout, new RegExp(`Run now:\\s+${expectedPrefix} idlewatch run`))
     assert.ok(install.stdout.includes(`Turn on background mode after setup:\n   IDLEWATCH_CONFIG_ENV_PATH=${customConfigPath.replace(/ /g, '\\ ')} idlewatch install-agent`))
-    assert.match(install.stdout, new RegExp(`Check:\\s+${expectedPrefix} idlewatch status\\s+See your saved config, background mode state, and last publish result`))
+    assert.match(install.stdout, new RegExp(`Check:\\s+${expectedPrefix} idlewatch status\\s+See setup state, background mode state, and last publish result`))
     assert.doesNotMatch(install.stdout, /Finish setup:\s+idlewatch quickstart --no-tui(?:\s|$)/)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
@@ -297,7 +297,7 @@ test('packaged macOS install script shows the exact refresh command when idlewat
     assert.match(install.stdout, /Finish setup:\s+.*Contents\/MacOS\/IdleWatch quickstart\n\s+.*Contents\/MacOS\/IdleWatch quickstart --no-tui\s+# plain text fallback/)
     assert.doesNotMatch(install.stdout, /Finish setup:\s+.*Contents\/MacOS\/IdleWatch quickstart --no-tui(?:\s|$)/)
     assert.match(install.stdout, /Turn on background mode after setup:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
-    assert.match(install.stdout, /Check:\s+.*Contents\/MacOS\/IdleWatch status\s+See your saved config, background mode state, and last publish result/)
+    assert.match(install.stdout, /Check:\s+.*Contents\/MacOS\/IdleWatch status\s+See setup state, background mode state, and last publish result/)
     assert.match(install.stdout, /Turn on background mode after setup:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then turn on background mode:\s+.*Contents\/MacOS\/IdleWatch install-agent/)
     assert.doesNotMatch(install.stdout, /Then run this install script again to turn on login startup with the saved config\./)

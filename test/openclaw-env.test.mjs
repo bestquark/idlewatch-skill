@@ -2010,7 +2010,7 @@ test('install-agent follow-up uses source checkout command path', () => {
     assert.ok(run.stdout.includes('Turn on background mode after setup: idlewatch install-agent'), 'should keep the follow-up background-mode hint literal once background mode is already installed in a source checkout')
     assert.doesNotMatch(run.stdout, /Then start:\s+idlewatch install-agent/)
     assert.ok(run.stdout.includes('Config path:  ~/.idlewatch/idlewatch.env'), 'should keep the source-checkout config path friendly before setup is saved')
-    assert.ok(run.stdout.includes('Check:        idlewatch status   See your saved config, background mode state, and last publish result'), 'should show the calmer product status command with the config-first hint in a source checkout')
+    assert.ok(run.stdout.includes('Check:        idlewatch status   See setup state, background mode state, and last publish result'), 'should show the calmer product status command with the setup-state hint in a source checkout before setup is saved')
     assert.ok(run.stdout.includes('Remove:       idlewatch uninstall-agent'), 'should show the calmer product uninstall command in a source checkout')
     assert.doesNotMatch(run.stdout, /node bin\/idlewatch-agent\.js (quickstart --no-tui|run|install-agent|status|uninstall-agent)/)
   } finally {

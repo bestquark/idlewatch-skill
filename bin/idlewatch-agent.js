@@ -1512,7 +1512,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
-      console.log(`   Check:        ${preferredProductCommand('status')}   See your saved config, background mode state, and last publish result`)
+      console.log(`   Check:        ${preferredProductCommand('status')}   See setup state, background mode state, and last publish result`)
       console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
