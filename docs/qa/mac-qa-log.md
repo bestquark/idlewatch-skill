@@ -1,3 +1,76 @@
+## Cycle R756 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found a still-real high-visibility regression in the setup-first handoffs across the live checkout.
+
+### Priority call
+One product-facing polish issue clearly still clears the bar: several first-scan setup and background-mode surfaces have drifted back to leading with the more technical `quickstart --no-tui` command instead of plain `quickstart`, even though this lane had already converged on the calmer `quickstart`-first story. In the same checkout, the global npm postinstall and standalone macOS install-before-setup handoff also drifted back to the noisier `start background mode after setup` wording. Nothing functional appears broken, but this is exactly the kind of regression that makes setup feel more technical and less deliberate than the product needs to.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal help spot checks from the live checkout:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh global npm-install spot check:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh install-before-setup spot check with a stubbed non-running `launchctl`:
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+- [x] Fresh saved-setup spot check with the same stubbed non-running `launchctl`:
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` help spot checks with explicit npm-exec env vars:
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh standalone macOS side-by-side install-before-setup spot check with a stubbed non-running `launchctl`, temporary app bundle, and custom label:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+- [x] Observed in the same live pass:
+  - normal top-level help currently leads with `Get started:  idlewatch quickstart --no-tui`
+  - normal `install-agent --help` currently says `Set up now:              idlewatch quickstart --no-tui`
+  - install-before-setup currently says `Finish setup: idlewatch quickstart --no-tui`
+  - true `npx` top-level help currently leads with `Get started:  npx idlewatch quickstart --no-tui`
+  - true `npx` `install-agent --help` currently says `Set up now:                npx idlewatch quickstart --no-tui`
+  - global npm postinstall currently says:
+    - `idlewatch quickstart --no-tui`
+    - `idlewatch install-agent   # start background mode after setup`
+  - standalone macOS install-before-setup currently says:
+    - `Finish setup:` then `idlewatch quickstart --no-tui`
+    - `Start background mode after setup:`
+  - meanwhile the saved-setup path is still in good shape once setup exists:
+    - quickstart success still keeps `idlewatch install-agent   Turn on background mode`
+    - saved `status` still keeps `Turn on background mode:  idlewatch install-agent`
+    - config persistence, device identity continuity, and metric-toggle visibility still look intact in this scoped pass
+
+### Prioritized findings
+#### [x] P1 — setup-first help/install surfaces have regressed back to `quickstart --no-tui` as the headline path, and packaged/global follow-ups have drifted back to slightly noisier wording
+**Why this matters:** This is small, but it lands in the exact “what do I run first?” and “what do I do next?” moments. `--no-tui` is the fallback, not the product’s default headline. Leading with it makes the setup flow feel more technical than necessary, and `start background mode after setup` is a little busier than the calmer `turn on background mode after setup` wording already used elsewhere.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js --help`
+3. Run `node bin/idlewatch-agent.js install-agent --help`
+4. Run `npm_config_global=true node scripts/postinstall.mjs`
+5. With a stubbed non-running `launchctl`, run `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+6. In true `npx` context, run:
+   - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+   - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+7. With a stubbed non-running `launchctl` and custom label, run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+8. Observe that those setup-first surfaces currently headline `quickstart --no-tui` and that postinstall / standalone macOS currently use `start background mode after setup`
+
+**Acceptance checks**
+- Normal top-level help should lead with `Get started:  idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- Normal `install-agent --help` should say `Set up now: idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback, and should keep `After setup: idlewatch install-agent`
+- Install-before-setup recovery should say `Finish setup: idlewatch quickstart`, with the `--no-tui` command kept secondary as the fallback rather than the headline step
+- True-`npx` top-level help should lead with `Get started:  npx idlewatch quickstart`, with `npx idlewatch quickstart --no-tui` one line below as the fallback
+- True-`npx` `install-agent --help` should say `Set up now: npx idlewatch quickstart`, while keeping the durable-install handoff unchanged:
+  - `Install once: npm install -g idlewatch`
+  - `Then turn on background mode: idlewatch install-agent`
+  - `Run now: npx idlewatch run`
+- Global npm postinstall should lead with `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` secondary, and say `idlewatch install-agent   # turn on background mode after setup`
+- Standalone macOS install-before-setup should lead with `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` secondary, and say `Turn on background mode after setup:` while keeping the custom-label command literally runnable
+- Saved-setup behavior should remain unchanged: no device identity, metric persistence, config reload/apply, auth, ingest, packaging, or major launch-agent behavior changes are needed beyond this setup-handoff copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 9:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real setup-handoff regression from a fresh live pass
+
 ## Cycle R755 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped live lane from the current polish plan and did not surface another small end-user issue worth shipping.
