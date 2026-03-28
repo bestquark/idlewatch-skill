@@ -1,3 +1,47 @@
+## Cycle R768 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny reconfigure-help seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk issue still cleared the bar: non-TTY `configure --help` and `reconfigure --help` still headlined `--no-tui` as if the plain-text fallback were the default path. That was technically runnable, but it made one of the main saved-setup/reconfigure surfaces feel more implementation-shaped than the rest of the product, which already leads with the plain command first and keeps `--no-tui` secondary. The smallest useful fix was to make those help screens teach the same calm two-line shape as `quickstart`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated non-TTY `configure --help` to show `idlewatch configure` first, with `idlewatch configure --no-tui   # plain text fallback` one line below
+- [x] Updated non-TTY `reconfigure --help` to match that same calmer usage shape
+- [x] Updated focused expectations in `test/openclaw-env.test.mjs`
+- [x] Left setup flow, saved-config handling, launch-agent behavior, and telemetry behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node bin/idlewatch-agent.js configure --help`
+- [x] `node bin/idlewatch-agent.js reconfigure --help`
+- [x] `node --test --test-name-pattern='configure help stays clean in non-TTY mode|reconfigure help stays clean in non-TTY mode' test/openclaw-env.test.mjs`
+- [x] Observed non-TTY help now says:
+  - `Usage:  idlewatch configure`
+  - `idlewatch configure --no-tui   # plain text fallback`
+  - `Usage:  idlewatch reconfigure`
+  - `idlewatch reconfigure --no-tui   # plain text fallback`
+- [x] Observed the older more technical headline shape is gone from those touched help surfaces:
+  - `Usage:  idlewatch configure --no-tui`
+  - `Usage:  idlewatch reconfigure --no-tui`
+
+### Prioritized findings
+#### [x] P1 — `configure --help` and `reconfigure --help` now match the calmer default-first setup shape instead of making the fallback look like the main path
+**Why this mattered:** This is tiny, but it lands in the exact reconfigure/help scan path where people decide whether changing settings will be simple or technical. Leading with the plain command keeps the product feeling deliberate; keeping `--no-tui` one line below still makes the fallback obvious when people want it.
+
+**Acceptance checks**
+- Non-TTY `configure --help` now shows `idlewatch configure` first and `idlewatch configure --no-tui` one line below as the fallback
+- Non-TTY `reconfigure --help` now shows `idlewatch reconfigure` first and `idlewatch reconfigure --no-tui` one line below as the fallback
+- The existing saved-config apply hint remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:35 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny reconfigure-help usage polish fix
+
 ## Cycle R767 Status: COMPLETE ✅
 
 Fresh scoped installer/CLI polish pass reran the exact lanes from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.

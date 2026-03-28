@@ -1297,8 +1297,11 @@ if (args.has('--help') || args.has('-h')) {
     ? 'Use --no-tui if you want the plain-text setup path.'
     : 'Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.'
   const configureCommand = preferredProductCommand('configure')
-  const configureUsageCommand = preferredHelpSetupCommand('configure')
-  const configureUsage = process.stdin.isTTY ? `${configureUsageCommand} [--no-tui]` : configureUsageCommand
+  const configureUsageCommand = preferredProductCommand('configure')
+  const configureFallbackCommand = preferredHelpSetupCommand('configure')
+  const configureUsage = process.stdin.isTTY
+    ? `${configureUsageCommand} [--no-tui]`
+    : `${configureUsageCommand}\n        ${configureFallbackCommand}   # plain text fallback`
   const configurePromptHint = process.stdin.isTTY
     ? 'Use --no-tui for simple prompts.'
     : 'Uses the simple setup flow. For unattended runs, set IDLEWATCH_ENROLL_* env vars first.'
@@ -1310,8 +1313,11 @@ if (args.has('--help') || args.has('-h')) {
   const uninstallAgentCommand = inferCliCommand('uninstall-agent')
   const menubarCommand = preferredProductCommand('menubar')
   const reconfigureCommand = preferredProductCommand('reconfigure')
-  const reconfigureUsageCommand = preferredHelpSetupCommand('reconfigure')
-  const reconfigureUsage = process.stdin.isTTY ? `${reconfigureUsageCommand} [--no-tui]` : reconfigureUsageCommand
+  const reconfigureUsageCommand = preferredProductCommand('reconfigure')
+  const reconfigureFallbackCommand = preferredHelpSetupCommand('reconfigure')
+  const reconfigureUsage = process.stdin.isTTY
+    ? `${reconfigureUsageCommand} [--no-tui]`
+    : `${reconfigureUsageCommand}\n        ${reconfigureFallbackCommand}   # plain text fallback`
   const dashboardCommand = preferredProductCommand('dashboard')
   const runCommand = preferredProductCommand('run')
   const subHelp = {
