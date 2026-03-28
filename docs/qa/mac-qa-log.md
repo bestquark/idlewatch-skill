@@ -29326,3 +29326,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the non-TTY help hint in `bin/idlewatch-agent.js` for `quickstart`, `configure`, and `reconfigure`.
 - Updated the matching assertions in `test/openclaw-env.test.mjs` so the wording does not drift back.
 - Re-ran the targeted headless-help regression slice and spot-checked all three live help surfaces.
+
+## Cycle R525 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny packaged-installer setup polish fix in the installer/CLI lane.
+- `scripts/install-macos-launch-agent.sh` no longer shows both bare `quickstart` and `quickstart --no-tui` in the install-before-setup branch.
+- That packaged no-setup handoff now keeps the calmer single setup command: `quickstart --no-tui`.
+- Background/install behavior, saved-config handling, and the now-working telemetry path remain unchanged.
+
+### R525 spot-check coverage
+- [x] `node --test --test-concurrency=1 test/macos-launch-agent-scripts.test.mjs`
+- [x] Live packaged-script spot check with fake app + fake `launchctl`
+
+### Prioritized findings
+#### [x] L150 — packaged macOS install-before-setup handoff now sticks to the calmer single `quickstart --no-tui` setup command
+**Why it matters:** This is tiny, but it lands in the exact install-before-setup moment where the user wants the shortest next step that will work. The rest of the polished setup story had already converged on `quickstart --no-tui` as the neat text-path here; showing both bare `quickstart` and `quickstart --no-tui` in the packaged installer reintroduced one unnecessary decision.
+
+**What shipped**
+- Reworded the packaged macOS install script’s no-setup branch to print only `quickstart --no-tui` for the setup step, both when `idlewatch` is on PATH and when the app binary path is shown directly.
+- Updated the matching regression assertions in `test/macos-launch-agent-scripts.test.mjs`.
+- Re-ran the full packaged launch-agent script regression file and a live fake-app shell spot check.
