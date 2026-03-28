@@ -1683,6 +1683,49 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R680 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny global-install postinstall truthfulness seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the global npm-install postinstall handoff still listed `idlewatch install-agent` under `Optional on macOS` as if it were a generally ready next step, even before setup had been saved. Nothing functional was broken, and the actual install flow already stayed truthful, but this first durable-install surface was slightly looser than the rest of the product. The right fix was tiny: keep the same short postinstall handoff, but make the background-mode line explicitly say `after setup`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the global npm-install postinstall macOS hint from `turn on background mode` to `turn on background mode after setup`
+- [x] Left the calmer setup-first handoff intact (`idlewatch quickstart`, then `idlewatch quickstart --no-tui`)
+- [x] Updated focused regression coverage in `test/postinstall.test.mjs`
+- [x] Left setup/runtime behavior, launch-agent semantics, auth/ingest behavior, packaging, and telemetry unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check scripts/postinstall.mjs`
+- [x] `node --check test/postinstall.test.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] Fresh live global postinstall repro:
+  - `HOME="$TMPHOME" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed the live pass now prints:
+  - `Set up this device:`
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Optional on macOS:`
+    - `idlewatch install-agent   # turn on background mode after setup`
+    - `idlewatch menubar         # menu bar app`
+
+### Prioritized findings
+#### [x] P1 — global postinstall now keeps the background-mode hint truthful before setup exists
+**Why this mattered:** This is tiny, but it lands in the exact install moment where the product is teaching someone what to do next. Saying `after setup` keeps that first handoff aligned with the calmer truthfulness the rest of the installer/CLI already has.
+
+**Acceptance checks**
+- Global npm-install postinstall still leads with `idlewatch quickstart`
+- The same surface still keeps `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- The macOS background-mode hint now says `idlewatch install-agent   # turn on background mode after setup`
+- The menubar hint remains unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 3:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny global postinstall truthfulness polish fix
+
 ## Cycle R679 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the remaining scope from the polish plan after the top-level help cleanup and did not surface another small product-facing issue worth shipping.

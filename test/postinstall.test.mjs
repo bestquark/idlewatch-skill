@@ -48,7 +48,7 @@ test('postinstall keeps the durable install handoff neat and macOS guidance user
   assert.doesNotMatch(run.stdout, /npx idlewatch quickstart\n/)
   assert.match(run.stdout, /Set up this device:\n\s+idlewatch quickstart\n\s+idlewatch quickstart --no-tui\s+# plain text fallback/)
   assert.doesNotMatch(run.stdout, /Set up this device:\n\s+idlewatch quickstart --no-tui\n/)
-  assert.match(run.stdout, /Optional on macOS:\n\s+idlewatch install-agent\s+# turn on background mode/)
+  assert.match(run.stdout, /Optional on macOS:\n\s+idlewatch install-agent\s+# turn on background mode after setup/)
   assert.match(run.stdout, /\n\s+idlewatch menubar\s+# menu bar app/)
   assert.doesNotMatch(run.stdout, /Optional on macOS: idlewatch install-agent/)
   assert.doesNotMatch(run.stdout, /Optional on macOS: idlewatch menubar/)
