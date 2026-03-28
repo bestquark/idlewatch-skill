@@ -1,3 +1,85 @@
+## Cycle R728 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real high-visibility setup-handoff regression across the main help, durable-background help, install-before-setup recovery, global npm postinstall, and standalone macOS install script no-setup flow.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: several first-scan setup surfaces have drifted back to leading with the more technical `quickstart --no-tui` command instead of plain `quickstart`. Nothing functional is broken and the product still works end to end, but this lands exactly where first impressions are formed. The calmer shape this lane had already converged on was better: lead with plain `quickstart`, then keep `quickstart --no-tui` one line below as the plain-text fallback. Right now the regression is broader than a single screen: normal top-level help, normal `install-agent --help`, install-before-setup recovery, global npm postinstall, true-`npx` help, true-`npx` durable-background help, and the standalone macOS side-by-side install-before-setup script all headline the fallback command instead of the friendlier default.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal help spot checks:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh global npm-install postinstall spot check:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh install-before-setup + saved-setup lifecycle spot checks with a stubbed `launchctl` that reports background mode as not running:
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh config-reload spot checks with a stubbed `launchctl` that reports background mode as already running:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Running Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN_RUNNING:$PATH" node bin/idlewatch-agent.js status`
+- [x] Fresh true-`npx` spot checks with explicit npm-exec env vars:
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Fresh standalone macOS side-by-side install/uninstall spot checks with a stubbed `launchctl`, temporary app bundle, and custom label:
+  - `HOME="$TMPHOME4" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME4" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the same fresh live pass:
+  - normal top-level help currently leads with `Get started:  idlewatch quickstart --no-tui`
+  - normal `install-agent --help` currently leads with `Set up now:              idlewatch quickstart --no-tui`
+  - install-before-setup currently says `Finish setup: idlewatch quickstart --no-tui`
+  - global npm postinstall currently says `Set up this device:` then `idlewatch quickstart --no-tui`
+  - true `npx` top-level help currently leads with `Get started:  npx idlewatch quickstart --no-tui`
+  - true `npx` `install-agent --help` currently leads with `Set up now:                npx idlewatch quickstart --no-tui`
+  - standalone macOS custom-label install-before-setup currently says `Finish setup:` then `idlewatch quickstart --no-tui`
+  - meanwhile the rest of the scoped lane still feels in-shape in the same pass:
+    - saved setup + reconfigure still keep device identity continuity explicit inline (`Device ID: ... kept from original setup for continuity`) and metric toggles visible in `status`
+    - config reload/apply guidance still stays predictable when background mode is already on (`Apply saved config:  re-run idlewatch install-agent to apply the saved config`)
+    - local-only `--test-publish` still stays intentionally lightweight
+    - uninstall still remains short, truthful, and reversible
+    - true-`npx` saved setup/status surfaces still keep one-off actions literal while background mode stays on the explicit durable-install handoff
+
+### Prioritized findings
+#### [x] P1 — highest-visibility setup handoffs have regressed back to leading with `quickstart --no-tui` instead of plain `quickstart`
+**Why this matters:** This is small, but it lands in the exact “what should I run first?” moment. `--no-tui` is the right fallback, not the headline. Leading with it makes the product feel more technical and more implementation-shaped than necessary, especially because this lane had already converged on the calmer pattern and the QA log has been verifying that shape for multiple cycles.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js --help`
+3. Run `node bin/idlewatch-agent.js install-agent --help`
+4. Run `npm_config_global=true node scripts/postinstall.mjs`
+5. With a stubbed non-running `launchctl`, run `HOME="$TMPHOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+6. In true `npx` context, run:
+   - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+   - `HOME="$TMPHOME3" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+7. With a stubbed non-running `launchctl` and custom label, run `HOME="$TMPHOME4" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+8. Observe that all of those setup-first surfaces currently headline `quickstart --no-tui` rather than plain `quickstart`
+
+**Acceptance checks**
+- Normal top-level help should lead with `Get started:  idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- Normal `install-agent --help` should lead with `Set up now: idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback, and should keep `After setup: idlewatch install-agent`
+- Install-before-setup recovery should say `Finish setup: idlewatch quickstart`, with `idlewatch quickstart --no-tui` preserved as the secondary fallback rather than the headline step
+- Global npm postinstall should lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback
+- True-`npx` top-level help should lead with `Get started:  npx idlewatch quickstart`, with `npx idlewatch quickstart --no-tui` one line below as the fallback
+- True-`npx` `install-agent --help` should lead with `Set up now: npx idlewatch quickstart`, with the existing durable-install handoff unchanged:
+  - `Install once: npm install -g idlewatch`
+  - `Turn on background mode: idlewatch install-agent`
+  - `Run now: npx idlewatch run`
+- Standalone macOS install-before-setup should lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback, while keeping the custom-label install hint literally runnable
+- No auth, ingest, packaging, device identity, metric persistence, reload semantics, or major launch-agent behavior changes should be introduced beyond this setup-handoff copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:58 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real setup-handoff friendliness regression from a fresh live pass
+
 ## Cycle R727 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
