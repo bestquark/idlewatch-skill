@@ -29608,3 +29608,24 @@ This pass stayed intentionally tiny: one interactive setup validation polish fix
 - Reworded the packaged macOS install script’s no-setup branch to print only `quickstart --no-tui` for the setup step, both when `idlewatch` is on PATH and when the app binary path is shown directly.
 - Updated the matching regression assertions in `test/macos-launch-agent-scripts.test.mjs`.
 - Re-ran the full packaged launch-agent script regression file and a live fake-app shell spot check.
+
+## Cycle R526 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny global-install postinstall polish fix in the installer/CLI lane.
+- `scripts/postinstall.mjs` had drifted back to showing bare `idlewatch quickstart` first, then a second `--no-tui` fallback line.
+- The postinstall handoff now keeps one calmer setup command: `idlewatch quickstart --no-tui`.
+- This removes one unnecessary choice right after `npm install -g idlewatch` while keeping the rest of the durable-install guidance unchanged.
+- Background/install behavior, saved-config handling, and the now-working telemetry path remain unchanged.
+
+### R526 spot-check coverage
+- [x] `node --test test/postinstall.test.mjs`
+
+### Prioritized findings
+#### [x] L151 — global npm postinstall now sticks to the calmer single `idlewatch quickstart --no-tui` setup command
+**Why it matters:** This is tiny, but it lands in the exact scan-first moment where someone finishes a global install and just wants one obvious next step. The rest of the current product already converged on `quickstart --no-tui` as the neatest text-first setup path. Letting postinstall drift back to bare `quickstart` plus a second fallback line reintroduced one avoidable decision.
+
+**What shipped**
+- Reworded `scripts/postinstall.mjs` so the setup handoff now prints only `idlewatch quickstart --no-tui`.
+- Updated `test/postinstall.test.mjs` so the regression coverage now rejects the old bare-`quickstart` + fallback pair.
+- Re-ran the focused postinstall regression file locally and confirmed it still passes cleanly.
