@@ -1332,6 +1332,56 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R659 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny npm-install handoff inconsistency in the live global postinstall output.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: the live global `npm install -g idlewatch` postinstall handoff still leads with the more technical `idlewatch quickstart --no-tui` command instead of the calmer plain `idlewatch quickstart` that the rest of the installer/CLI now prefers. Nothing functional is broken, but this lands in the exact durable-install moment where the product should feel least technical and most welcoming. The main CLI, standalone macOS installer, and the broader product direction already want the friendlier shape; the npm install path should match.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live global-install postinstall repro:
+  - `HOME="$TMPHOME" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh source/global-style install-before-setup spot checks with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+- [x] Fresh standalone macOS install-script spot check with a stubbed `launchctl` and temporary app bundle:
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$TMPHOME2/Applications/IdleWatch.app" bash scripts/install-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - global postinstall currently prints:
+    - `Set up this device:`
+    - `idlewatch quickstart --no-tui`
+    - `Optional on macOS:`
+    - `idlewatch install-agent   # turn on background mode`
+    - `idlewatch menubar         # menu bar app`
+  - meanwhile the main CLI install-before-setup path still keeps the broader setup/status flow calm and literal
+  - and the standalone macOS installer already follows the nicer pattern:
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - saved setup + reconfigure still keep device identity continuity explicit inline and metric toggles visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight
+  - true `npx` still correctly keeps one-off commands literal while background mode stays on the explicit durable-install handoff
+
+### Prioritized findings
+#### [x] P1 — live global npm postinstall still leads with the more technical `quickstart --no-tui` instead of the calmer plain `quickstart`
+**Why this matters:** This is tiny, but it is exactly the kind of first impression seam people feel more than they consciously notice. The durable install path is one of the most important trust-building moments in the product. Leading with the nicest default setup command there removes a little intimidation without changing any behavior.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `HOME="$TMPHOME" npm_config_global=true node scripts/postinstall.mjs`
+3. Observe that the current handoff leads with `idlewatch quickstart --no-tui`
+4. Compare that with the calmer standalone installer handoff, which already leads with plain `idlewatch quickstart` and keeps `--no-tui` one line below as the fallback
+
+**Acceptance checks**
+- In the live global npm-install postinstall output, the first setup hint should be `idlewatch quickstart`
+- That same postinstall surface should still keep `idlewatch quickstart --no-tui` visible as a secondary plain-text fallback one line below
+- The existing `Optional on macOS` handoff should remain unchanged and low-noise (`install-agent`, `menubar`)
+- Main CLI, true-`npx`, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics should remain untouched beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 12:40 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real global npm-install setup-handoff inconsistency from a fresh live pass
+
 ## Cycle R658 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny setup-handoff inconsistency in the main CLI and logged it from a fresh live pass.
