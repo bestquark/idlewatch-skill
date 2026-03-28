@@ -39,16 +39,18 @@
 - **Severity:** ✅ Verified - config path printed at startup
 ---
 
-## Cycle Status: Cycle 95 - COMPLETE ✅
+## Cycle Status: Cycle 96 - COMPLETE ✅
 
-**Finding:** Re-ran the top logged installer/CLI polish concern in the live checkout and did not reproduce another product-facing issue worth shipping.
-- The previously logged true-`npx` command-literalness concern no longer reproduces in the current checkout
-- One-off setup/run/configure hints stay literally runnable as `npx idlewatch ...`
+**Finding:** Re-ran the exact current installer/CLI polish scope in the live checkout and did not surface another product-facing issue worth shipping.
+- Install-before-setup still stays truthful and low-noise (`Background integration installed`, then `stays off for now`)
+- Saved setup + reconfigure still keep device identity continuity and metric persistence visible inline
+- Global npm-install handoff still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary
+- One-off setup/run/configure hints still stay literally runnable as `npx idlewatch ...`
 - The durable background-mode handoff still stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`
-- Custom saved-config setup/status still point at the actual configured env path
-- The right move this cycle was to log the clean verification pass and avoid speculative churn that might disturb the now-working telemetry path
+- Uninstall remains a calm reversible off-ramp, and the now-working telemetry path stayed untouched
+- The right move this cycle was to log the clean verification pass and avoid speculative churn that might disturb the working setup/install path
 
-**Last updated:** Friday, March 27th, 2026 — 8:20 PM (America/Toronto)
+**Last updated:** Friday, March 27th, 2026 — 9:50 PM (America/Toronto)
 ---
 
 ## Next Polish Cycle
