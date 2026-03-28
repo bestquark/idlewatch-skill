@@ -1,3 +1,56 @@
+## Cycle R693 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real setup-handoff friendliness regression on the highest-visibility help surfaces.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: the main help and durable-background help surfaces have drifted back to leading with the more technical `quickstart --no-tui` command as the headline setup handoff. Nothing functional is broken, and the one-off/durable split still stays correct, but this is one of the first product surfaces people scan before they copy their first command. The calmer direction elsewhere in the product is already better: lead with plain `quickstart`, then keep `quickstart --no-tui` one line below as the literal plain-text fallback.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] Fresh normal help spot check currently prints:
+  - `Get started:  idlewatch quickstart --no-tui`
+- [x] Fresh true-`npx` help spot check currently prints:
+  - `Get started:  npx idlewatch quickstart --no-tui`
+- [x] Fresh normal `install-agent --help` spot check currently prints:
+  - `Set up now:              idlewatch quickstart --no-tui`
+- [x] Fresh true-`npx` `install-agent --help` spot check currently prints:
+  - `Set up now:                npx idlewatch quickstart --no-tui`
+- [x] Fresh global npm-install postinstall spot check still shows the calmer desired product shape:
+  - `idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Observed in the same live pass:
+  - install-before-setup runtime still stays truthful and low-noise
+  - saved setup + reconfigure still keep device identity continuity and metric-toggle persistence visible inline
+  - true-`npx` runtime/setup/status/configure still keep one-off commands literal while the durable background-mode handoff stays separate on `npm install -g idlewatch`, then `idlewatch install-agent`
+  - uninstall still stays short, truthful, and reversible
+
+### Prioritized findings
+#### [x] P1 — top-level help and `install-agent --help` have drifted back to the harsher `quickstart --no-tui` headline instead of leading with plain `quickstart`
+**Why this matters:** This is tiny, but it lands right at the “what should I run first?” moment. Leading with the more technical fallback makes setup feel slightly noisier and more implementation-shaped than the rest of the product. The friendlier plain `quickstart` command is already the chosen direction in the global npm-install handoff; the highest-visibility help surfaces should match it.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js --help`
+3. Run `node bin/idlewatch-agent.js install-agent --help`
+4. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+5. Run `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+6. Observe that these help surfaces currently lead with `quickstart --no-tui` instead of plain `quickstart`
+
+**Acceptance checks**
+- Normal top-level help should lead with `Get started:  idlewatch quickstart`
+- True-`npx` top-level help should lead with `Get started:  npx idlewatch quickstart`
+- Normal `install-agent --help` should lead with `Set up now: idlewatch quickstart`
+- True-`npx` `install-agent --help` should lead with `Set up now: npx idlewatch quickstart`
+- Those same help surfaces should still keep the literal `quickstart --no-tui` fallback visible one line below when helpful, rather than deleting the fallback entirely
+- The existing one-off/durable split should remain unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable background mode stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- No auth, ingest, packaging, launch-agent, or saved-config semantic changes should be introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:32 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real setup-handoff friendliness regression from a fresh live pass
+
 ## Cycle R691 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one last tiny wording seam in the install-before-setup recovery copy and shipped the smallest useful fix.
