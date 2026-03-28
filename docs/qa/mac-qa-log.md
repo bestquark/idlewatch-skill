@@ -1,3 +1,47 @@
+## Cycle R711 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny side-by-side/custom-label setup-handoff seam in the standalone macOS install-before-setup flow.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: in the standalone macOS side-by-side/custom-label install path, the no-saved-setup handoff now correctly preserves the custom label in the uninstall off-ramp, but it still drops that same label in the earlier `Turn on background mode after setup` hint. That is directionally fine for the default label, but it stops being literally runnable in the exact copy/paste moment where the script already knows it is operating on a side-by-side label like `com.idlewatch.agent.qa`. If the install summary is explicitly scoped to that custom label, the next-step command should not quietly drift back to the default launch-agent identity.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Created a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+- [x] Created a temporary app bundle containing `Contents/MacOS/IdleWatch`
+- [x] Ran the standalone side-by-side/custom-label install-before-setup flow:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+- [x] Observed the install summary currently prints:
+  - `Service: gui/501/com.idlewatch.agent.qa`
+  - `Turn on background mode after setup:` then `idlewatch install-agent`
+- [x] Observed the same scoped lane still feels calm elsewhere in the same live pass:
+  - normal help still leads with plain `quickstart`
+  - install-before-setup in the main CLI still stays truthful and low-noise
+  - saved setup + reconfigure still keep device identity continuity and metric toggles visible inline
+  - local-only `--test-publish` still stays intentionally lightweight
+  - true-`npx` still keeps one-off commands literal while durable background mode stays on the explicit install handoff
+  - standalone macOS custom-label uninstall now correctly preserves `IDLEWATCH_LAUNCH_AGENT_LABEL=...` in its reinstall hint
+
+### Prioritized findings
+#### [x] P1 — standalone macOS custom-label install-before-setup still drops the custom launch-agent label in the `Turn on background mode after setup` hint
+**Why this matters:** This is tiny, but it lands in the exact “okay, finish setup, then turn this same side-by-side install back on” moment. If the install summary already knows it just wired up `com.idlewatch.agent.qa`, the follow-up command should keep pointing at that same install identity instead of quietly drifting back to the default label.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+3. Create a temporary app bundle containing `Contents/MacOS/IdleWatch`
+4. Run `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+5. Observe that the install summary currently says `Turn on background mode after setup:` followed by bare `idlewatch install-agent` even though the same summary is explicitly operating on `com.idlewatch.agent.qa`
+
+**Acceptance checks**
+- In the standalone macOS install script’s custom-label no-saved-setup path, the `Turn on background mode after setup` hint should preserve the same `IDLEWATCH_LAUNCH_AGENT_LABEL=...` prefix needed to turn that same side-by-side install back on later
+- The default-label install path should keep the calmer bare `idlewatch install-agent` hint
+- The surrounding `Finish setup`, `Run now`, and `Check` handoffs should remain unchanged and low-noise
+- No auth, ingest, packaging, telemetry-path, or major launch-agent behavior changes should be introduced beyond this install-hint literalness polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real standalone macOS custom-label install-before-setup handoff seam from a fresh live pass
+
 ## Cycle R710 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped the smallest useful fix for the last still-real standalone macOS custom-label reinstall-hint seam.
