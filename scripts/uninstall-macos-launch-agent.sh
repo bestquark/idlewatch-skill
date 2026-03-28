@@ -37,8 +37,10 @@ if launchctl print "$PLIST_ID" >/dev/null 2>&1; then
   launchctl bootout "$PLIST_ID" || true
 fi
 
+PLIST_STATUS_LINE="No plist was installed at $PLIST_PATH"
 if [[ -f "$PLIST_PATH" ]]; then
   rm -f "$PLIST_PATH"
+  PLIST_STATUS_LINE="Removed plist: $PLIST_PATH"
 fi
 
 CONFIG_STATUS_WORD="stays at"
@@ -51,7 +53,7 @@ if [[ ! -d "$LOG_DIR" ]]; then
 fi
 
 echo "✅ Background mode turned off."
-echo "   Removed plist: $PLIST_PATH"
+echo "   $PLIST_STATUS_LINE"
 echo "   Saved config $CONFIG_STATUS_WORD $CONFIG_ENV_PATH"
 echo "   Logs $LOG_STATUS_WORD $LOG_DIR"
 echo "   Turn background mode back on later with $REINSTALL_HINT."

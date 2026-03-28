@@ -330,8 +330,10 @@ test('packaged macOS uninstall script stays truthful when setup was never saved'
 
     const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, /No plist was installed at .*Library\/LaunchAgents\/com\.idlewatch\.agent\.plist/)
     assert.match(uninstall.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
     assert.match(uninstall.stdout, /Logs would go in .*Library\/Logs\/IdleWatch/)
+    assert.doesNotMatch(uninstall.stdout, /Removed plist: .*Library\/LaunchAgents\/com\.idlewatch\.agent\.plist/)
     assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
     assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
   } finally {
