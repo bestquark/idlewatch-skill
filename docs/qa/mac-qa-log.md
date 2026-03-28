@@ -1,3 +1,72 @@
+## Cycle R717 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny headline-consistency seam in the true-`npx` durable-install help surface.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the true-`npx` `install-agent --help` screen now has the right calm framing and the right durable-install body copy, but its title line still says `npx idlewatch install-agent — Turn on background mode after setup (macOS)`. On that same screen, the very next section correctly says `Background mode needs a durable install.` and routes the user through `npm install -g idlewatch`, then `idlewatch install-agent`. Nothing functional is broken, but this first line slightly understates the durable-install prerequisite in exactly the copy/paste-heavy trust moment where the product should sound most internally consistent.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh normal help + lifecycle spot checks with a stubbed `launchctl` still keep the installed path calm and truthful:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js --test-publish`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh true-`npx` help/setup/status/configure spot checks with explicit npm-exec env vars:
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Fresh global npm-install postinstall spot check:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Fresh standalone macOS side-by-side install/uninstall spot checks with a stubbed `launchctl`, temporary app bundle, and custom label:
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_APP_PATH="$APP" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/install-macos-launch-agent.sh`
+  - `HOME="$TMPHOME3" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" IDLEWATCH_LAUNCH_AGENT_LABEL='com.idlewatch.agent.qa' bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the same live pass:
+  - installed help still correctly says `idlewatch install-agent — Turn on background mode after setup (macOS)`
+  - true-`npx` top-level help still correctly says `install-agent     Turn on background mode after durable install`
+  - but true-`npx` `install-agent --help` currently opens with:
+    - `npx idlewatch install-agent — Turn on background mode after setup (macOS)`
+    - then immediately says `Background mode needs a durable install.`
+    - and keeps the correct durable handoff:
+      - `Install once:              npm install -g idlewatch`
+      - `Turn on background mode:   idlewatch install-agent`
+  - saved setup + reconfigure still keep device identity continuity explicit inline and metric toggles visible in `status`
+  - local-only `--test-publish` still stays intentionally lightweight
+  - install-before-setup, uninstall, global postinstall, and standalone macOS side-by-side script flows still feel neat and low-noise
+
+### Prioritized findings
+#### [x] P1 — true-`npx` `install-agent --help` title still says `after setup` even though the same help surface correctly explains that background mode needs a durable install
+**Why this matters:** This is tiny, but it is exactly the sort of internal wording mismatch that makes a polished setup feel a little less deliberate than it is. The body is already right; the title is the only remaining place on this screen that still sounds like plain installed mode.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `HOME="$TMPHOME2" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+3. Observe that the title currently says `npx idlewatch install-agent — Turn on background mode after setup (macOS)`
+4. Observe that the same screen immediately says `Background mode needs a durable install.` and correctly routes the user through `npm install -g idlewatch`, then `idlewatch install-agent`
+
+**Acceptance checks**
+- In true `npx` context, `install-agent --help` should keep the calm command-title/usage framing added in the previous pass
+- That same title should match the durable-install truth already used elsewhere on the screen, e.g. `Turn on background mode after durable install` or equivalent wording
+- The existing literal commands should remain unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- No auth, ingest, packaging, launch-agent, or config-behavior changes should be introduced beyond this headline-consistency polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` durable-install help-title consistency seam from a fresh live pass
+
 ## Cycle R716 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped the smallest useful fix for the last tiny true-`npx` durable-help framing seam.
