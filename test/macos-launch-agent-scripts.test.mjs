@@ -101,7 +101,14 @@ test('packaged macOS install script keeps the no-setup status hint config-first'
   try {
     fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
     writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
-    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 1
+fi
+exit 0
+`)
     writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
 
     const env = {
@@ -113,6 +120,8 @@ test('packaged macOS install script keeps the no-setup status hint config-first'
 
     const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /✅ Background integration installed\./)
+    assert.doesNotMatch(install.stdout, /✅ Background mode installed\./)
     assert.match(install.stdout, /Setup isn't saved yet, so background mode stays off for now\./)
     assert.match(install.stdout, /\bidlewatch quickstart\b/)
     assert.match(install.stdout, /\bidlewatch quickstart --no-tui\b\s+# plain text fallback/)

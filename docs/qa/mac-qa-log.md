@@ -1112,44 +1112,42 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 ## Cycle R638 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS install script.
+Fresh installer/CLI polish pass found one tiny remaining truthfulness seam in the standalone macOS install script and shipped the smallest useful fix.
 
 ### Priority call
-One low-risk polish issue still cleared the bar: `scripts/install-macos-launch-agent.sh` still opens with `✅ Background mode installed.` even in the install-before-setup path where the very next line correctly says `Setup isn't saved yet, so background mode stays off for now.` Nothing functional is broken, but this is exactly the kind of tiny contradiction that makes a reversible setup flow feel slightly less trustworthy than the calmer CLI path. The right fix should be tiny and product-shaped: keep the same flow, but make the headline say what actually happened — background integration was installed, while background mode is still waiting for saved setup.
+One low-risk polish issue still cleared the bar: `scripts/install-macos-launch-agent.sh` still opened with `✅ Background mode installed.` even in the install-before-setup path where the very next line correctly said `Setup isn't saved yet, so background mode stays off for now.` Nothing functional was broken, but this was exactly the kind of tiny contradiction that makes a reversible setup flow feel slightly less trustworthy than the calmer CLI path. The right fix was tiny and product-shaped: keep the same flow, but make the headline say what actually happened — background integration was installed, while background mode is still waiting for saved setup.
+
+### What changed
+- [x] Changed the standalone macOS install-script no-setup headline from `✅ Background mode installed.` to `✅ Background integration installed.`
+- [x] Kept the rest of the no-setup handoff unchanged (`Finish setup`, `Run now`, `Start background mode after setup`, and the quick `status` hint)
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left saved-setup install paths, launch-agent behavior, packaging shape, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Fresh standalone install-script repro with a stubbed `launchctl` and fake app bundle:
-  - `HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" ./scripts/install-macos-launch-agent.sh`
-- [x] Observed in the live pass:
-  - standalone install script currently says:
-    - `✅ Background mode installed.`
-    - `Setup isn't saved yet, so background mode stays off for now.`
-    - `Finish setup:` then `idlewatch quickstart`
-    - `Run now:` then `idlewatch run`
-    - `Start background mode after setup:` then `idlewatch install-agent`
-- [x] This still leaves the rest of the no-setup handoff calm and useful; the issue is just the slightly over-claimed opening line
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone install-script no-setup handoff now prints:
+  - `✅ Background integration installed.`
+  - `Setup isn't saved yet, so background mode stays off for now.`
+  - `Finish setup:` then `idlewatch quickstart`
+  - `Run now:` then `idlewatch run`
+  - `Start background mode after setup:` then `idlewatch install-agent`
+- [x] Confirmed saved-setup install paths still keep the existing `✅ Background mode installed.` / `✅ Background mode refreshed.` wording
 
 ### Prioritized findings
-#### [x] P1 — standalone macOS install script currently overstates success by saying `Background mode installed` even when setup is still missing
-**Why this matters:** This is tiny, but it lands in the first install-before-setup moment where someone decides whether they are done. The rest of the script already tells the truth. Keeping the headline equally truthful would make the whole handoff feel cleaner and more trustworthy.
+#### [x] P1 — standalone macOS install script now keeps the install-before-setup headline truthful
+**Why this mattered:** This is tiny, but it lands in the first install-before-setup moment where someone decides whether they are done. The rest of the script already told the truth. Keeping the headline equally truthful makes the whole handoff feel cleaner and more trustworthy without adding any new steps.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout` / `enable`
-3. Create a fake app bundle at `~/Applications/IdleWatch.app/Contents/MacOS/IdleWatch`
-4. Run `HOME="$TMPHOME" PATH="$FAKEBIN:$PATH" ./scripts/install-macos-launch-agent.sh`
-5. Observe that the script currently opens with `✅ Background mode installed.` while the next line says `Setup isn't saved yet, so background mode stays off for now.`
+**Acceptance checks**
+- The standalone macOS install script no longer implies that background mode is already on when no saved setup exists yet
+- The opening confirmation stays short and low-noise while reading truthfully alongside `Setup isn't saved yet, so background mode stays off for now.`
+- The rest of the no-setup handoff remains unchanged and minimal (`Finish setup`, `Run now`, then `Start background mode after setup`)
+- Saved-setup install paths remain unchanged
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced beyond this wording truthfulness fix
 
-**Acceptance criteria**
-- The standalone macOS install script should not imply that background mode is already on when no saved setup exists yet
-- The opening confirmation should stay short and low-noise, but read truthfully alongside `Setup isn't saved yet, so background mode stays off for now.`
-- The rest of the no-setup handoff should remain unchanged and minimal (`Finish setup`, `Run now`, then `Start background mode after setup`)
-- Saved-setup install paths should remain unchanged
-- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
-
-**Last updated:** Friday, March 27th, 2026 — 10:25 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny standalone macOS install-script truthfulness seam from a fresh live pass
+**Last updated:** Friday, March 27th, 2026 — 10:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS install-script truthfulness fix
 
 
 ## Cycle R637 Status: COMPLETE ✅

@@ -182,7 +182,11 @@ fi
 if [[ $WAS_ALREADY_LOADED -eq 1 ]]; then
   echo "✅ Background mode refreshed."
 else
-  echo "✅ Background mode installed."
+  if [[ $HAS_SAVED_CONFIG -eq 1 ]]; then
+    echo "✅ Background mode installed."
+  else
+    echo "✅ Background integration installed."
+  fi
 fi
 echo "   Service: $PLIST_ID"
 echo "   Plist:   $PLIST_PATH"
