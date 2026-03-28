@@ -76,6 +76,9 @@ exit 0
     assert.match(secondInstall.stdout, /✅ Background mode refreshed\./)
     assert.doesNotMatch(secondInstall.stdout, /LaunchAgent already loaded\./)
 
+    fs.mkdirSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch'), { recursive: true })
+    fs.writeFileSync(path.join(tempHome, 'Library', 'Logs', 'IdleWatch', 'idlewatch.out.log'), 'retained log\n', 'utf8')
+
     const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(uninstall.status, 0, uninstall.stderr)
     assert.match(uninstall.stdout, /✅ Background mode turned off\./)
@@ -335,6 +338,48 @@ test('packaged macOS uninstall script stays truthful when setup was never saved'
     assert.match(uninstall.stdout, /Logs would go in .*Library\/Logs\/IdleWatch/)
     assert.doesNotMatch(uninstall.stdout, /Removed plist: .*Library\/LaunchAgents\/com\.idlewatch\.agent\.plist/)
     assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
+test('packaged macOS uninstall script says logs would go there after install-before-setup only created the shared log folder', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-install-before-setup-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-install-before-setup-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 1
+fi
+exit 0
+`)
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, /✅ Background integration installed\./)
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, /Saved config would live at .*\.idlewatch\/idlewatch\.env/)
+    assert.match(uninstall.stdout, /Logs would go in .*Library\/Logs\/IdleWatch/)
     assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })

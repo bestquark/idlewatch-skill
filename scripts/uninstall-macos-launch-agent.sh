@@ -50,6 +50,13 @@ if [[ ! -f "$CONFIG_ENV_PATH" ]]; then
 fi
 if [[ ! -d "$LOG_DIR" ]]; then
   LOG_STATUS_WORD="would go in"
+else
+  shopt -s nullglob
+  log_dir_entries=("$LOG_DIR"/*)
+  shopt -u nullglob
+  if [[ ${#log_dir_entries[@]} -eq 0 ]]; then
+    LOG_STATUS_WORD="would go in"
+  fi
 fi
 
 echo "✅ Background mode turned off."

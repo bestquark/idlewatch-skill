@@ -1112,47 +1112,46 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 ## Cycle R644 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script.
+Fresh installer/CLI polish pass found one tiny remaining off-ramp truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
 
 ### Priority call
-One low-risk polish issue still cleared the bar: after the standalone macOS install-before-setup path, `scripts/uninstall-macos-launch-agent.sh` still says `Logs stay in ...` even when the only thing that exists is the shared log folder created up front by install scaffolding. Nothing functional is broken, but this lands in the same calm reversible `never mind` moment where the main CLI already learned to stay stricter about truthfulness. Product taste is better if the standalone script matches that standard and only says logs `stay` when there is actual retained log state worth describing.
+One low-risk polish issue still cleared the bar: after the standalone macOS install-before-setup path, `scripts/uninstall-macos-launch-agent.sh` still said `Logs stay in ...` even when the only thing that existed was the shared log folder created up front by install scaffolding. Nothing functional was broken, but this landed in the same calm reversible `never mind` moment where the main CLI had already learned to stay stricter about truthfulness. Product taste is better if the standalone script matches that standard and only says logs `stay` when there is actual retained log state worth describing.
+
+### What changed
+- [x] Tightened `scripts/uninstall-macos-launch-agent.sh` so the standalone uninstall summary only says `Logs stay in ...` when the log directory contains actual retained entries
+- [x] Kept the calmer `Logs would go in ...` wording for install-before-setup off-ramps where install scaffolding only created the shared log folder
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs` for the standalone install-before-setup round trip
+- [x] Kept the existing `Saved config would live at ...` truthfulness behavior intact for no-setup states
+- [x] Left setup, reconfigure, launch-agent behavior, packaging shape, auth/ingest, and the now-working telemetry path unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Fresh standalone macOS install-before-setup round trip with a stubbed `launchctl` and temporary HOME:
-  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/install-macos-launch-agent.sh`
-  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/uninstall-macos-launch-agent.sh`
-- [x] Observed in the live pass:
-  - install says `✅ Background integration installed.` and `Setup isn't saved yet, so background mode stays off for now.`
-  - uninstall then says:
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh standalone macOS install-before-setup round trip with a stubbed `launchctl` and temporary HOME now says:
+  - install: `✅ Background integration installed.` and `Setup isn't saved yet, so background mode stays off for now.`
+  - uninstall:
     - `✅ Background mode turned off.`
     - `Removed plist: .../Library/LaunchAgents/com.idlewatch.agent.plist`
     - `Saved config would live at .../.idlewatch/idlewatch.env`
-    - `Logs stay in .../Library/Logs/IdleWatch`
-- [x] Confirmed the temporary HOME contains the log folder but no saved setup, and this path was reached without any actual retained telemetry/setup state beyond install scaffolding
+    - `Logs would go in .../Library/Logs/IdleWatch`
+- [x] Confirmed paths with real retained log files still keep the calmer `Logs stay in ...` wording
 - [x] The core CLI polish lane still stayed clean in the same pass: install-before-setup remained truthful, saved setup + reconfigure kept device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` stayed intentionally lightweight, and npm/`npx` handoffs remained literal
 
 ### Prioritized findings
-#### [x] P1 — standalone macOS uninstall script still says `Logs stay in ...` after install-before-setup when the folder exists only because install scaffolding created it
-**Why this matters:** This is tiny, but it is exactly the kind of slightly-too-optimistic off-ramp wording that makes a polished uninstall feel less trustworthy than the main CLI. In this path, the user never finished setup; they just installed then backed out. Saying where logs *would* go until a real retained log target exists reads cleaner and more literal.
+#### [x] P1 — standalone macOS uninstall script now stays truthful after install-before-setup when the shared log folder exists only because install scaffolding created it
+**Why this mattered:** This is tiny, but it is exactly the kind of slightly-too-optimistic off-ramp wording that makes a polished uninstall feel less trustworthy than the main CLI. In this path, the user never finished setup; they just installed then backed out. Saying where logs *would* go until a real retained log target exists reads cleaner and more literal.
 
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Use a fresh temporary HOME plus a stub `launchctl` that exits 1 for `print` and succeeds for `bootstrap` / `bootout` / `enable`
-3. Run `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/install-macos-launch-agent.sh`
-4. Without saving setup, run `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/uninstall-macos-launch-agent.sh`
-5. Observe that uninstall currently says `Logs stay in .../Library/Logs/IdleWatch` even though this round trip only created the shared log folder during install scaffolding
-
-**Acceptance criteria**
-- In the standalone macOS install-before-setup off-ramp, uninstall should not imply retained logs exist just because the shared log folder was created during install scaffolding
-- That path should say `Logs would go in ...` until a real retained log target exists
-- Paths with real retained logs should keep the calmer existing `Logs stay in ...` wording
-- The existing truthful `Saved config would live at ...` copy should remain intact for no-setup states
-- The reinstall handoff should stay short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
-- No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
+**Acceptance checks**
+- In the standalone macOS install-before-setup off-ramp, uninstall no longer implies retained logs exist just because the shared log folder was created during install scaffolding
+- That path now says `Logs would go in ...` until a real retained log target exists
+- Paths with real retained logs still keep the calmer existing `Logs stay in ...` wording
+- The existing truthful `Saved config would live at ...` copy remains intact for no-setup states
+- The reinstall handoff stays short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
+- No auth, ingest, packaging, or launch-agent behavior changes were introduced beyond this wording truthfulness fix
 
 **Last updated:** Friday, March 27th, 2026 — 10:55 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny standalone macOS uninstall-script retained-log truthfulness seam from a fresh install-before-setup round trip
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall-script retained-log truthfulness fix for install-before-setup off-ramps
 
 ## Cycle R643 Status: COMPLETE ✅
 
