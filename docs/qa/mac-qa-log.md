@@ -1,3 +1,52 @@
+## Cycle R667 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny true-`npx` TTY help/runtime seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: in a real TTY `npx` / `npm exec` context, the true-`npx` `install-agent --help` and install-before-setup runtime surfaces already led with the calmer plain `npx idlewatch quickstart`, but they still printed a dangling `# plain text fallback` line underneath even though there was no `--no-tui` fallback to show in that TTY path. Nothing functional was broken, but this landed in the exact copy/paste moment where the product should feel least damaged or technical. The right fix was tiny: only print the fallback line when there is an actual `--no-tui` fallback command to show.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Suppressed the dangling fallback line in the true-`npx` `install-agent --help` TTY surface when the primary command is already plain `npx idlewatch quickstart`
+- [x] Matched the real install-before-setup runtime recovery output to that same conditional fallback behavior in true-`npx` TTY mode
+- [x] Left the existing one-off/durable split unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable install stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs` for TTY true-`npx` help/runtime output
+- [x] Left main CLI, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` help repro in a TTY:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh live true-`npx` runtime repro in a TTY:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent`
+- [x] Observed the live TTY pass now prints:
+  - `Set up now:                npx idlewatch quickstart`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] Observed the dangling standalone `# plain text fallback` line is gone in that true-`npx` TTY path
+
+### Prioritized findings
+#### [x] P1 — true-`npx` TTY durable-install help/runtime no longer print a dangling fallback comment when there is no fallback command to show
+**Why this mattered:** This is tiny, but it lands right where someone copies the next command verbatim. A bare fallback comment with no fallback command above it reads like formatting damage, not intentional guidance.
+
+**Acceptance checks**
+- In the true `npx` `install-agent --help` TTY surface, the first setup hint still says `npx idlewatch quickstart`
+- That same TTY help surface no longer prints a dangling `# plain text fallback` line when there is no `--no-tui` fallback command to show
+- The real install-agent runtime recovery output now matches that same conditional fallback behavior in TTY true-`npx` mode
+- The existing one-off/durable split remains unchanged and literal:
+  - one-off actions stay on `npx idlewatch ...`
+  - durable install stays on `npm install -g idlewatch`, then `idlewatch install-agent`
+- `Run now: npx idlewatch run` remains unchanged
+- Main CLI, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics remain untouched beyond this output polish
+
+**Last updated:** Saturday, March 28th, 2026 — 1:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` TTY fallback-line cleanup fix
+
 ## Cycle R666 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny true-`npx` durable-install help regression in the live checkout.

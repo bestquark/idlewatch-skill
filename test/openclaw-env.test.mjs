@@ -1172,6 +1172,63 @@ test('install-agent help in npx context points straight to the durable path', ()
   assert.doesNotMatch(run.stdout, /npx idlewatch install-agent — Install background LaunchAgent \(macOS\)/)
 })
 
+test('install-agent help/runtime in npx TTY mode omit the fallback comment when there is no fallback command', { skip: process.platform !== 'darwin' }, () => {
+  const npxEnv = {
+    ...process.env,
+    PATH: process.env.PATH,
+    npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+    npm_command: 'exec',
+    npm_lifecycle_event: 'npx',
+    npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+  }
+
+  const help = spawnSync('script', ['-q', '/dev/null', process.execPath, BIN, 'install-agent', '--help'], {
+    env: npxEnv,
+    encoding: 'utf8',
+    timeout: 10000
+  })
+
+  assert.equal(help.status, 0, help.stderr)
+  assert.match(help.stdout, /Set up now:\s+npx idlewatch quickstart/)
+  assert.match(help.stdout, /Install once:\s+npm install -g idlewatch/)
+  assert.match(help.stdout, /Run now:\s+npx idlewatch run/)
+  assert.doesNotMatch(help.stdout, /# plain text fallback/)
+  assert.doesNotMatch(help.stdout, /npx idlewatch quickstart --no-tui/)
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-tty-runtime-'))
+  const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-tty-runtime-bin-'))
+
+  try {
+    fs.writeFileSync(path.join(fakeBinDir, 'launchctl'), `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 1
+fi
+if [[ "$cmd" == "bootstrap" || "$cmd" == "enable" || "$cmd" == "bootout" || "$cmd" == "disable" || "$cmd" == "kickstart" ]]; then
+  exit 0
+fi
+exit 0
+`, { mode: 0o755 })
+
+    const runtime = spawnSync('script', ['-q', '/dev/null', process.execPath, BIN, 'install-agent'], {
+      env: { ...npxEnv, HOME: tempDir, PATH: `${fakeBinDir}:${process.env.PATH}` },
+      encoding: 'utf8',
+      timeout: 15000
+    })
+
+    assert.notEqual(runtime.status, 0)
+    assert.match(runtime.stdout, /Set up now:\s+npx idlewatch quickstart/)
+    assert.match(runtime.stdout, /Install once:\s+npm install -g idlewatch/)
+    assert.match(runtime.stdout, /Run now:\s+npx idlewatch run/)
+    assert.doesNotMatch(runtime.stdout, /# plain text fallback/)
+    assert.doesNotMatch(runtime.stdout, /npx idlewatch quickstart --no-tui/)
+  } finally {
+    rmSync(fakeBinDir, { recursive: true, force: true })
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
 test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {

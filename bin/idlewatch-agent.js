@@ -361,10 +361,13 @@ function installAgentHelpText() {
     : ''
 
   if (invocation.kind === 'npx') {
+    const npxFallbackLine = quickstartFallbackCommand
+      ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
+      : ''
+
     return `Background mode needs a durable install.
 
-Set up now:                ${quickstartPrimaryCommand}
-                           ${quickstartFallbackCommand}   # plain text fallback
+Set up now:                ${quickstartPrimaryCommand}${npxFallbackLine}
 Install once:              npm install -g idlewatch
 Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
 
@@ -1394,7 +1397,9 @@ const subcommandPromise = (async () => {
       console.error('Background mode needs a durable install.')
       console.error('')
       console.error(`Set up now:                ${inferCliCommand('quickstart')}`)
-      console.error(`                           ${inferCliCommand('quickstart --no-tui')}   # plain text fallback`)
+      if (!process.stdin.isTTY) {
+        console.error(`                           ${inferCliCommand('quickstart --no-tui')}   # plain text fallback`)
+      }
       console.error('Install once:              npm install -g idlewatch')
       console.error(`Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}`)
       console.error('')
