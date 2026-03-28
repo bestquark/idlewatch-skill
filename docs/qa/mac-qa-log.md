@@ -1,3 +1,45 @@
+## Cycle R752 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-setup wording cleanup in installed `install-agent --help`.
+
+### Priority call
+One small, low-risk polish seam still cleared the bar: installed `idlewatch install-agent --help` already had the right setup-first title and the right literal `After setup: idlewatch install-agent` handoff, but its second sentence still read a bit mechanically: `If setup is already saved, background mode turns on right away.` That was technically fine, but slightly repetitive right after `using your saved setup.` The smallest useful fix was to tighten that sentence into more human, product-shaped language without changing any commands, behavior, or the true-`npx` durable-install story.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Updated installed `idlewatch install-agent --help` to say `If you've already finished setup, this turns on background mode right away.`
+- [x] Left command names, durable-install guidance, saved-config handling, startup/install behavior, and reconfigure/apply behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated the installed-help expectation in `test/openclaw-env.test.mjs`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the installed help body now says:
+  - `Turns on background mode on macOS using your saved setup.`
+  - `If you've already finished setup, this turns on background mode right away.`
+- [x] Observed the surrounding handoff stayed unchanged:
+  - `Set up now:              idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `After setup:             idlewatch install-agent`
+- [x] Attempted focused regression check with `node --test test/openclaw-env.test.mjs --test-name-pattern='install-agent help'`
+- [x] Test runner still surfaced the repo's broader pre-existing failing cases instead of isolating only that lane; no new failure was introduced by this wording-only change
+
+### Prioritized findings
+#### [x] P1 — installed `install-agent --help` now sounds less mechanical in the saved-setup handoff
+**Why this mattered:** This is tiny, but it lands in a high-trust help surface where people are deciding whether they already did enough setup. `If you've already finished setup, this turns on background mode right away.` reads a little cleaner than `If setup is already saved...` because it speaks to the human's task, not just the file state.
+
+**Acceptance checks**
+- The installed `idlewatch install-agent --help` body should still say `Turns on background mode on macOS using your saved setup.`
+- The next sentence should now say `If you've already finished setup, this turns on background mode right away.`
+- The title should remain `idlewatch install-agent — Turn on background mode after setup (macOS)`
+- The closing handoff should remain `After setup: idlewatch install-agent`
+- True-`npx` durable-install help should remain unchanged
+- No auth, ingest, telemetry-path, packaging, or launch-agent behavior changes should be introduced
+
+**Last updated:** Saturday, March 28th, 2026 — 9:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-help sentence cleanup for saved-setup clarity
+
 ## Cycle R751 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped live lane from the current polish plan and did not surface another small end-user issue worth shipping.

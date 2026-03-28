@@ -383,7 +383,7 @@ Run now:                   ${inferCliCommand('run')}`
 Usage:  ${installAgentHelpCommand}
 
 Turns on background mode on macOS using your saved setup.
-If setup is already saved, background mode turns on right away.
+If you've already finished setup, this turns on background mode right away.
 
 ${quickstartSetupLinesInstalled}
 After setup:             ${installAgentHelpCommand}`
