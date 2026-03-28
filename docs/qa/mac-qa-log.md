@@ -33873,3 +33873,39 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 - [x] Background/install behavior and telemetry behavior stay unchanged
 
 **Last updated:** Saturday, March 28th, 2026 — 6:45 AM (America/Toronto)
+
+---
+
+## Round 670 — packaged/global setup handoff re-polish
+
+### Outcome
+- Shipped one small regression fix that was still worth it in the install/setup lane.
+- The packaged macOS install script and global npm postinstall had drifted back to a two-command setup block (`quickstart`, then `quickstart --no-tui`) plus older `Turn on background mode` wording.
+- Those scan-first install surfaces now go back to one calmer setup command: `quickstart --no-tui`.
+- The follow-up install wording is now a little more literal too: `Start background mode after setup`.
+- Telemetry, auth, ingest, and runtime behavior stayed untouched.
+
+### R670 spot-check coverage
+- [x] `node --test test/postinstall.test.mjs test/macos-launch-agent-scripts.test.mjs`
+
+### Prioritized findings
+#### [x] L156 — packaged/global install handoffs again keep one calm `quickstart --no-tui` step and more literal start wording
+**Why it matters:** This is tiny, but it lands exactly where someone just installed IdleWatch and wants the shortest next action that will work. Showing both `quickstart` and `quickstart --no-tui` reintroduced an unnecessary choice, and `Turn on background mode after setup` sounded a bit more like a fresh enable step than a post-setup start.
+
+**What shipped**
+- Reworded `scripts/postinstall.mjs` so the global install handoff now prints only `idlewatch quickstart --no-tui`.
+- Reworded `scripts/postinstall.mjs` so the macOS follow-up now says `start background mode after setup`.
+- Reworded `scripts/install-macos-launch-agent.sh` so the packaged install-before-setup handoff now prints only one setup step: `quickstart --no-tui`.
+- Reworded the same packaged install handoff from `Turn on background mode after setup` to `Start background mode after setup`.
+- Updated focused regression coverage in `test/postinstall.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`.
+
+**Acceptance checks**
+- [x] Global npm `postinstall` now says `idlewatch quickstart --no-tui`
+- [x] Global npm `postinstall` no longer prints `idlewatch quickstart` plus a second `# plain text fallback` line
+- [x] Global npm `postinstall` now says `idlewatch install-agent   # start background mode after setup`
+- [x] Packaged macOS install-before-setup now says `Finish setup: ... quickstart --no-tui`
+- [x] Packaged macOS install-before-setup no longer prints a second `# plain text fallback` line
+- [x] Packaged macOS install-before-setup now says `Start background mode after setup:`
+- [x] Existing packaged/runtime behavior stays unchanged aside from wording
+
+**Last updated:** Saturday, March 28th, 2026 — 7:25 AM (America/Toronto)
