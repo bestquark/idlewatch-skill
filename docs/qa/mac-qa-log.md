@@ -1861,6 +1861,46 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R687 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny global-install postinstall setup-handoff regression in the live checkout and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the global npm-install postinstall handoff had drifted back to leading with only the more technical `idlewatch quickstart --no-tui` command again. Nothing functional was broken, but this first durable-install surface had slipped behind the calmer setup-first shape already used across the main CLI, true-`npx`, and the standalone macOS install script. The right fix was tiny: lead with plain `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` one line below as the literal plain-text fallback, and leave the rest of the postinstall handoff unchanged.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored the friendlier global npm-install postinstall setup handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui   # plain text fallback` one line below as the literal fallback
+- [x] Left the macOS durable background handoff unchanged (`idlewatch install-agent   # turn on background mode after setup`)
+- [x] Updated focused regression coverage in `test/postinstall.test.mjs`
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check scripts/postinstall.mjs`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `HOME="$TMPHOME" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed the live pass now prints:
+  - `Set up this device:`
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Optional on macOS:`
+    - `idlewatch install-agent   # turn on background mode after setup`
+    - `idlewatch menubar         # menu bar app`
+
+### Prioritized findings
+#### [x] P1 — global postinstall now matches the calmer setup-first handoff used everywhere else
+**Why this mattered:** This is tiny, but it lands in the exact moment where someone has just finished the durable install and is deciding what to do next. Leading with the nicest default command makes that first handoff feel calmer and more consistent without adding a single new option or step.
+
+**Acceptance checks**
+- Global npm-install postinstall now says `idlewatch quickstart` first
+- The same surface keeps `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- The macOS background-mode hint stays `idlewatch install-agent   # turn on background mode after setup`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 3:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny global postinstall setup-handoff polish fix
+
 ## Cycle R686 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real higher-priority true-`npx` command-literalness regression in the live checkout.
