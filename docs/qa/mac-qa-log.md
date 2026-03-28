@@ -1,3 +1,41 @@
+## Cycle R652 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny remaining setup-handoff seam in the standalone macOS install script’s packaged-app fallback and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: in the standalone macOS install script’s no-CLI fallback when `idlewatch` is not on `PATH` yet, the product still led with the more technical `.../Contents/MacOS/IdleWatch quickstart --no-tui` command even though the rest of the installer/CLI has already converged on the friendlier plain `quickstart` first, with `--no-tui` kept as a fallback. Nothing functional was broken, but this landed in the exact packaged-app setup moment where the product should feel least technical. The right fix was tiny: keep the packaged-binary path literal, but lead with `quickstart` and keep `quickstart --no-tui` one line below as the plain-text fallback.
+
+### What changed
+- [x] Reworked the standalone macOS install script’s no-CLI packaged-app setup handoff to lead with `.../Contents/MacOS/IdleWatch quickstart`
+- [x] Kept `.../Contents/MacOS/IdleWatch quickstart --no-tui` visible as a secondary plain-text fallback
+- [x] Left the rest of the packaged-app handoff unchanged (`run`, `install-agent`, and `status`)
+- [x] Updated focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left setup, reconfigure, launch-agent behavior, packaging shape, auth/ingest, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the packaged-app no-CLI install-script handoff now prints:
+  - `.../Contents/MacOS/IdleWatch quickstart`
+  - `.../Contents/MacOS/IdleWatch quickstart --no-tui   # plain text fallback`
+  - `.../Contents/MacOS/IdleWatch run`
+  - `.../Contents/MacOS/IdleWatch install-agent`
+  - `.../Contents/MacOS/IdleWatch status   See your saved config, background mode state, and last publish result`
+
+### Prioritized findings
+#### [x] P1 — packaged-app no-CLI install handoff now leads with the friendlier setup command while keeping the literal plain-text fallback one line below
+**Why this mattered:** This is tiny, but it lands in one of the most fragile setup moments: the app is installed, `idlewatch` is not on `PATH`, and the product is already asking the user to copy packaged-binary commands literally. Leading with the nicest setup command there makes the packaged fallback feel just as welcoming as the nicer CLI path without changing any behavior.
+
+**Acceptance checks**
+- The standalone macOS install script no-CLI fallback now leads with the packaged-binary `quickstart` command
+- The same fallback still keeps the packaged-binary `quickstart --no-tui` command visible as a secondary plain-text fallback
+- The surrounding packaged-binary `run`, `install-agent`, and `status` handoffs remain unchanged
+- No auth, ingest, packaging, or telemetry-path behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Friday, March 27th, 2026 — 11:35 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny packaged-app install-script setup-handoff polish fix
+
 ## Cycle R651 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact current scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

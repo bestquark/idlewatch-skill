@@ -212,7 +212,8 @@ else
     echo "Check:"
     echo "   idlewatch status   See your saved config, background mode state, and last publish result"
   else
-    echo "   $BIN_PATH quickstart --no-tui"
+    echo "   $BIN_PATH quickstart"
+    echo "   $BIN_PATH quickstart --no-tui   # plain text fallback"
     echo ""
     echo "Run now:"
     echo "   $BIN_PATH run"
