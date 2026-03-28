@@ -1624,6 +1624,45 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R675 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny first-run true-`npx` setup-handoff seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: first-run `status` in a real true-`npx` context still led with only the more technical `npx idlewatch quickstart --no-tui` command, even though the rest of the installer/CLI already preferred the calmer plain `npx idlewatch quickstart` first and kept `--no-tui` one line below as the plain-text fallback. Nothing functional was broken, but this landed in the exact “I just ran it once, what do I do next?” moment where the product should feel least technical and most copy-safe.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the shared first-run setup hint helper so non-TTY true-`npx` status now leads with `npx idlewatch quickstart`
+- [x] Kept `npx idlewatch quickstart --no-tui` visible one line below as the plain-text fallback in that same first-run true-`npx` status surface
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left install-agent help/runtime, saved-setup status, launch-agent semantics, auth/ingest behavior, packaging, and telemetry unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live true-`npx` first-run status repro:
+  - `HOME="$TMPHOME" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Observed the live pass now prints:
+  - `Get started:  npx idlewatch quickstart`
+  - `               npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Focused `node --test` sign-off was attempted, but the Node test runner still showed the previously logged sticky behavior in this environment; verification for this tiny patch used syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — first-run true-`npx` `status` now matches the calmer setup-first handoff already used elsewhere
+**Why this mattered:** This is tiny, but it lands right where someone copies the next command verbatim after a one-off run. Leading with the friendlier setup command makes the first-run `status` screen feel more polished without changing behavior or blurring the one-off vs durable install split.
+
+**Acceptance checks**
+- First-run true-`npx` `status` now leads with `npx idlewatch quickstart`
+- That same surface still keeps `npx idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- The old single-line `Get started: npx idlewatch quickstart --no-tui` copy is gone from this path
+- Non-`npx` first-run status stays on the calmer `idlewatch quickstart` + fallback shape
+- Install-agent help/runtime, saved-setup status, launch-agent behavior, auth/ingest behavior, packaging, and the telemetry path remain untouched beyond this output polish
+
+**Last updated:** Saturday, March 28th, 2026 — 2:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` first-run status setup-handoff polish fix
+
 ## Cycle R674 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the remaining scope from the polish plan in the live checkout, including the standalone macOS install/uninstall script surfaces, and did not surface another small product-facing issue worth shipping.

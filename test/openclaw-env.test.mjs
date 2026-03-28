@@ -3231,7 +3231,9 @@ test('status command preserves one-off command hints under npm exec env', () => 
     })
 
     assert.equal(run.status, 0, run.stderr)
-    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
+    assert.match(run.stdout, /Get started:\s+npx idlewatch quickstart(?:\s|$)/)
+    assert.match(run.stdout, /npx idlewatch quickstart --no-tui\s+# plain text fallback/)
+    assert.doesNotMatch(run.stdout, /Get started:\s+npx idlewatch quickstart --no-tui/)
     assert.doesNotMatch(run.stdout, /Get started:\s+idlewatch quickstart(?:\s|$)/)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })

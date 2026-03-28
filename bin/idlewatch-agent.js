@@ -159,16 +159,14 @@ function preferredRecoveryCommand(command = 'configure') {
 }
 
 function preferredPrimarySetupCommand(command = 'quickstart') {
-  const invocation = detectCliInvocation()
-  if (!process.stdin.isTTY && invocation.kind !== 'npx') {
+  if (!process.stdin.isTTY) {
     return preferredProductCommand(command)
   }
   return preferredHelpSetupCommand(command)
 }
 
 function preferredSetupFallbackCommand(command = 'quickstart') {
-  const invocation = detectCliInvocation()
-  if (!process.stdin.isTTY && invocation.kind !== 'npx') {
+  if (!process.stdin.isTTY) {
     return preferredProductCommand(`${command} --no-tui`)
   }
   return ''
