@@ -1,3 +1,44 @@
+## Cycle R612 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny saved-config handoff fix for setup output files outside the default env path.
+
+### Priority call
+One small, real usability seam still cleared the bar: if setup wrote a saved config to a custom file via `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE`, the immediate success/failure follow-up commands on that same screen still behaved like the default env path was the active one. Nothing about telemetry, auth, ingest, or background-mode behavior was broken, but the exact copy-paste commands shown right after setup could quietly point back at the wrong saved config.
+
+### What changed
+- Kept the existing setup/reconfigure/background-mode flow intact; no new options, no wording sprawl
+- Added one tiny helper in `bin/idlewatch-agent.js` to temporarily render follow-up commands in the context of the config file that setup just saved
+- Reused that helper for both post-setup success next steps and post-setup failure retry/redo guidance
+- Added focused regression coverage in `test/openclaw-env.test.mjs` for custom `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE` success/failure handoffs
+- Left the working telemetry path, auth/ingest behavior, packaging, and launch-agent semantics unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live local `quickstart --no-tui` spot check with `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE="$CUSTOM"` now shows:
+  - `Config: ~/alt/idlewatch.env`
+  - `Run now:     IDLEWATCH_CONFIG_ENV_PATH='…/alt/idlewatch.env' idlewatch run`
+  - `Turn on background mode: IDLEWATCH_CONFIG_ENV_PATH='…/alt/idlewatch.env' idlewatch install-agent`
+- [x] Fresh live failed cloud `quickstart` spot check with the same `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE="$CUSTOM"` now shows:
+  - `Retry:  IDLEWATCH_CONFIG_ENV_PATH='…/alt/idlewatch.env' node bin/idlewatch-agent.js --once`
+  - `Redo:   IDLEWATCH_CONFIG_ENV_PATH='…/alt/idlewatch.env' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] Focused `node --test` slices were not used for sign-off because the Node test runner remains sticky in this environment; verification for this tiny patch used syntax checks plus direct live repro/verification instead
+
+### Prioritized findings
+#### [x] P1 — setup now keeps custom saved-config follow-up commands literal when setup saves outside the default env path
+**Why this mattered:** This is exactly the kind of tiny saved-config paper cut that makes setup feel less trustworthy than it should. If IdleWatch just told someone it saved config at a custom path, the next commands on that same screen should keep pointing at that exact file without making them mentally reconstruct the env prefix themselves.
+
+**Acceptance checks**
+- Local setup saved to a custom `IDLEWATCH_ENROLL_OUTPUT_ENV_FILE` now keeps `Run now` on `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch run`
+- The same success surface now keeps the background-mode follow-up on `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch install-agent`
+- Failed setup verification now keeps both `Retry` and `Redo` on the same saved custom config path
+- The wording stays short, literal, and low-noise instead of introducing new flags or extra explanation
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:55 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny custom saved-config setup handoff fix
+
 ## Cycle R611 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny custom-saved-config command-literalness fix in the true-`npx` / durable-background handoff.

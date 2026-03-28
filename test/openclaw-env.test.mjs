@@ -789,6 +789,7 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
   const rejectServer = path.join(tempRoot, 'reject-server.mjs')
   const customEnvFile = path.join(tempRoot, 'custom.env')
   const port = 47932
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customEnvFile)}`
 
   fs.writeFileSync(rejectServer, `
     import http from 'node:http'
@@ -828,10 +829,45 @@ test('quickstart failure uses custom-path-aware retry copy when setup saved conf
 
     assert.notEqual(run.status, 0)
     assert.match(run.stderr, /Setup saved, but the test sample failed to publish/)
-    assert.ok(run.stderr.includes(`Retry:  ${SOURCE_CMD} --once`), 'should show source-checkout retry command')
-    assert.ok(run.stderr.includes(`Redo:   ${SOURCE_CMD} quickstart --no-tui`), 'should show source-checkout quickstart redo command')
+    assert.ok(run.stderr.includes(`Retry:  ${expectedPrefix} ${SOURCE_CMD} --once`), 'should keep retry copy on the saved custom config path')
+    assert.ok(run.stderr.includes(`Redo:   ${expectedPrefix} ${SOURCE_CMD} quickstart --no-tui`), 'should keep redo copy on the saved custom config path')
+    assert.doesNotMatch(run.stderr, new RegExp(`Retry:\\s+${escapeRegex(SOURCE_CMD)} --once`))
   } finally {
     serverProc.kill('SIGTERM')
+    rmSync(tempHome, { recursive: true, force: true })
+    rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('quickstart success keeps follow-up commands literal when setup saved config outside the default path', () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-success-home-'))
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-quickstart-custom-success-root-'))
+  const customEnvFile = path.join(tempRoot, 'configs', 'idlewatch custom.env')
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customEnvFile)}`
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'quickstart', '--no-tui'], {
+      env: {
+        ...process.env,
+        HOME: tempHome,
+        PATH: process.env.PATH,
+        IDLEWATCH_ENROLL_NON_INTERACTIVE: '1',
+        IDLEWATCH_ENROLL_MODE: 'local',
+        IDLEWATCH_ENROLL_DEVICE_NAME: 'Custom Output Box',
+        IDLEWATCH_ENROLL_MONITOR_TARGETS: 'cpu,memory',
+        IDLEWATCH_ENROLL_OUTPUT_ENV_FILE: customEnvFile,
+        IDLEWATCH_OPENCLAW_USAGE: 'off'
+      },
+      encoding: 'utf8'
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, new RegExp(`Config:\\s+${escapeRegex(formatHomeRelative(tempHome, customEnvFile))}`))
+    assert.match(run.stdout, new RegExp(`Run now:\\n\\s+${escapeRegex(expectedPrefix)} idlewatch run\\s+Run in the foreground`))
+    assert.match(run.stdout, new RegExp(`For background mode:\\n\\s+${escapeRegex(expectedPrefix)} idlewatch install-agent\\s+Turn on background mode`))
+    assert.doesNotMatch(run.stdout, /Run now:\n\s+idlewatch run\s+Run in the foreground/)
+    assert.doesNotMatch(run.stdout, /For background mode:\n\s+idlewatch install-agent\s+Turn on background mode/)
+  } finally {
     rmSync(tempHome, { recursive: true, force: true })
     rmSync(tempRoot, { recursive: true, force: true })
   }

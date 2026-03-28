@@ -101,6 +101,35 @@ function withCustomConfigEnv(command) {
   return prefix ? `${prefix} ${command}` : command
 }
 
+function withSavedConfigCommandContext(envFilePath, fn) {
+  if (typeof fn !== 'function') return undefined
+
+  const resolvedEnvFile = envFilePath ? path.resolve(envFilePath) : ''
+  const defaultResolved = path.resolve(path.join(idlewatchDataDir(), 'idlewatch.env'))
+  if (!resolvedEnvFile || resolvedEnvFile === defaultResolved) {
+    return fn()
+  }
+
+  const previous = Object.prototype.hasOwnProperty.call(process.env, 'IDLEWATCH_CONFIG_ENV_PATH')
+    ? process.env.IDLEWATCH_CONFIG_ENV_PATH
+    : undefined
+  const previousResolved = previous ? resolveEnvPath(previous) : ''
+  if (previousResolved === resolvedEnvFile) {
+    return fn()
+  }
+
+  process.env.IDLEWATCH_CONFIG_ENV_PATH = envFilePath
+  try {
+    return fn()
+  } finally {
+    if (previous === undefined) {
+      delete process.env.IDLEWATCH_CONFIG_ENV_PATH
+    } else {
+      process.env.IDLEWATCH_CONFIG_ENV_PATH = previous
+    }
+  }
+}
+
 function inferCliCommand(command = '') {
   const { base } = detectCliInvocation()
   return withCustomConfigEnv(command ? `${base} ${command}` : base)
@@ -1564,7 +1593,9 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
           console.log(`\n   ✓ First sample published to idlewatch.com.`)
           console.log(`   Your device should appear on the dashboard within a few seconds.`)
         }
-        printSetupNextSteps({ isReconfigure, launchAgentState })
+        withSavedConfigCommandContext(result.outputEnvFile, () => {
+          printSetupNextSteps({ isReconfigure, launchAgentState })
+        })
         process.exit(0)
       }
 
@@ -1589,8 +1620,10 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       for (const line of commonFixes) {
         console.error(line)
       }
-      console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
-      console.error(`   Redo:   ${preferredSetupCommand(isReconfigure ? 'configure' : 'quickstart')}`)
+      withSavedConfigCommandContext(result.outputEnvFile, () => {
+        console.error(`\n   Retry:  ${inferCliCommand('--once')}`)
+        console.error(`   Redo:   ${preferredSetupCommand(isReconfigure ? 'configure' : 'quickstart')}`)
+      })
       process.exit(onceRun.status ?? 1)
     } catch (err) {
       if (String(err?.message || '') === 'setup_cancelled') {
