@@ -262,7 +262,7 @@ function backgroundInstallCommandForInvocation(invocation = detectCliInvocation(
 
 function backgroundInstallHelpCommand(invocation = detectCliInvocation()) {
   if (invocation.kind === 'source' || invocation.kind === 'npx') {
-    return 'idlewatch install-agent'
+    return withCustomConfigEnv('idlewatch install-agent')
   }
   return inferCliCommand('install-agent')
 }
@@ -335,6 +335,7 @@ Turn on background mode: ${installAgentHelpCommand}`
 function uninstallAgentHelpText() {
   const invocation = detectCliInvocation()
   const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
+  const backgroundInstallHelp = backgroundInstallHelpCommand(invocation)
   const retainedLocalLogPath = resolvePersistedLocalLogPath()
   const retainedLocalLogSummary = retainedLocalLogPath
     ? `Local log stays at ${formatPathForHelp(retainedLocalLogPath)} when local logging is on, so you can re-enable background mode later.`
@@ -347,7 +348,7 @@ Usage:  ${uninstallAgentHelpCommand}
 
 Turns off background mode on macOS.
 If background mode is already off, this still keeps the saved config and local logs in place.
-Turn background mode back on later with idlewatch install-agent.`
+Turn background mode back on later with ${backgroundInstallHelp}.`
   }
 
   return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
@@ -357,7 +358,7 @@ Usage:  ${uninstallAgentHelpCommand}
 Turns off background mode on macOS.
 Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
 ${retainedLocalLogSummary}
-Turn background mode back on later with idlewatch install-agent.`
+Turn background mode back on later with ${backgroundInstallHelp}.`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {

@@ -762,6 +762,41 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R618 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny custom-saved-config off-ramp fix in uninstall help.
+
+### Priority call
+One small but clearly product-facing saved-config seam still cleared the bar: `uninstall-agent` runtime already kept the configured `IDLEWATCH_CONFIG_ENV_PATH=...` prefix in its "turn background mode back on later" handoff, but `uninstall-agent --help` still dropped that prefix and fell back to bare `idlewatch install-agent`. Nothing core was broken, yet this was exactly the kind of copy/paste mismatch that makes a custom saved-config setup feel slightly less trustworthy on the reversible off-ramp.
+
+### What changed
+- Reused the existing background-install help command helper inside `uninstallAgentHelpText()` so the uninstall help handoff now preserves the custom saved-config env prefix when a non-default env path is active
+- Kept the default-path experience unchanged; only genuine custom saved-config setups gain the env-prefixed reinstall command
+- Left launch-agent behavior, auth, ingest, packaging, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live custom-config uninstall-help spot check now shows:
+  - `Saved config stays at ~/configs/idlewatch custom.env when setup has been saved.`
+  - `Turn background mode back on later with IDLEWATCH_CONFIG_ENV_PATH='…/idlewatch custom.env' idlewatch install-agent.`
+- [x] Observed: the uninstall off-ramp now stays copy-safe in help as well as runtime instead of quietly dropping back to the default-config install command
+- [x] Focused `node --test` slices remain sticky in this environment, so this pass used syntax validation plus direct live repro/verification for the changed help surface
+
+### Prioritized findings
+#### [x] P1 — uninstall help now keeps the custom saved-config reinstall command literally runnable
+**Why this mattered:** This is tiny, but it lands in the exact reversible-off-ramp moment where someone checks whether their setup will stay easy to re-enable later. If runtime already preserves the custom saved-config prefix, help should not quietly drop it and imply the default config instead.
+
+**Acceptance checks**
+- With a non-default `IDLEWATCH_CONFIG_ENV_PATH`, `uninstall-agent --help` now keeps the same env-prefixed `idlewatch install-agent` handoff
+- Default-path uninstall help remains unchanged and does not gain extra env-var noise
+- The uninstall runtime off-ramp remains unchanged and still keeps the same truthful custom-path reinstall command
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced
+
+**Last updated:** Friday, March 27th, 2026 — 8:25 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny custom-saved-config uninstall-help off-ramp fix
+
 ## Cycle R617 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the requested setup/install/status lane in the live checkout, including the highest-risk combined `true-npx + custom saved-config path` handoff, and did not surface another small product-facing issue worth shipping.

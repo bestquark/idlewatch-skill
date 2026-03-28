@@ -1346,6 +1346,7 @@ test('uninstall-agent help reassures that config and logs are kept', () => {
 test('uninstall-agent --help reflects a configured custom saved-config path', () => {
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-help-custom-config-'))
   const customConfigPath = path.join(tempDir, 'configs', 'idlewatch-custom.env')
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${shellQuote(customConfigPath)}`
 
   try {
     const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
@@ -1356,7 +1357,9 @@ test('uninstall-agent --help reflects a configured custom saved-config path', ()
 
     assert.equal(run.status, 0, run.stderr)
     assert.ok(run.stdout.includes('Saved config stays at ~/configs/idlewatch-custom.env when setup has been saved.'), 'help should show the configured saved-config path')
+    assert.match(run.stdout, new RegExp(`Turn background mode back on later with ${escapeRegex(expectedPrefix)} idlewatch install-agent\\.`))
     assert.doesNotMatch(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env when setup has been saved\./)
+    assert.doesNotMatch(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
