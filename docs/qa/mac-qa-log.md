@@ -1,43 +1,43 @@
 ## Cycle R722 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one still-real tiny wording consistency seam in the saved-config `install-agent` success path.
+Fresh installer/CLI polish pass found one still-real tiny wording consistency seam in the saved-config `install-agent` success path and shipped the smallest useful fix.
 
 ### Priority call
-One low-risk polish issue clearly still clears the bar: when saved setup already exists but the launch agent ends up installed and not running yet, the success summary still says `Start background mode: idlewatch install-agent`. Nothing functional is broken and the command itself is correct, but this lands in a copy/paste-heavy trust moment and feels slightly noisier than the calmer wording the rest of the product has already converged on: `Turn on background mode`.
+One low-risk polish issue clearly still cleared the bar: when saved setup already exists but the launch agent ends up installed and not running yet, the success summary still said `Start background mode: idlewatch install-agent`. Nothing functional was broken and the command itself was already correct, but this lands in a copy/paste-heavy trust moment and felt slightly noisier than the calmer wording the rest of the product had already converged on: `Turn on background mode`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the saved-config `install-agent` installed-but-not-running success label from `Start background mode` to `Turn on background mode`
+- [x] Kept the literal command unchanged: `idlewatch install-agent`
+- [x] Left the surrounding saved-config summary, `Check`, and `Remove` lines unchanged and low-noise
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Created a fake `launchctl` shim that succeeds for install actions but keeps `print` returning non-zero so the saved-config `install-agent` flow lands in the installed-but-not-running branch
-- [x] Ran non-interactive local setup:
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Saved Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-- [x] Ran the saved-config install flow:
-  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-- [x] Observed the installed-but-not-running success summary currently prints:
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `node --test --test-name-pattern='install-agent uses the calmer product command when load succeeds but launchd reports it is not running|status shows the calmer background-mode hint when setup is saved and launchd is installed but not running' test/openclaw-env.test.mjs`
+- [x] Observed the installed-but-not-running success summary now prints:
   - `✅ Background mode installed.`
   - `Saved config is ready, but background mode is installed and not running yet.`
-  - `Start background mode:  idlewatch install-agent`
-- [x] Observed nearby surfaces in the same checkout still use the calmer standardized wording:
+  - `Turn on background mode:  idlewatch install-agent`
+- [x] Observed nearby surfaces stay aligned on the same calmer wording:
   - saved `status`: `Turn on background mode:  idlewatch install-agent`
   - saved setup success: `idlewatch install-agent   Turn on background mode`
   - help/install/uninstall surfaces already say `Turn on background mode ...`
 
 ### Prioritized findings
-#### [x] P1 — saved-config `install-agent` success still says `Start background mode` in one installed-but-not-running branch while the rest of the product already says `Turn on background mode`
-**Why this matters:** This is tiny, but it lands right after a successful background install attempt, where the CLI should feel especially deliberate and internally consistent. The command is already correct; the remaining issue is pure product taste and wording consistency.
-
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for `bootstrap`, `bootout`, `enable`, and `disable`
-3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Saved Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
-4. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
-5. Observe that the installed-but-not-running success summary currently says `Start background mode: idlewatch install-agent`
-6. Compare that with the surrounding saved-setup `status`, setup success, and help surfaces that already say `Turn on background mode`
+#### [x] P1 — saved-config `install-agent` installed-but-not-running success now says `Turn on background mode`, matching the rest of the product
+**Why this mattered:** This is tiny, but it lands right after a successful background install attempt, where the CLI should feel especially deliberate and internally consistent. The command was already correct; the remaining issue was pure product taste and wording consistency.
 
 **Acceptance checks**
-- In the saved-config `install-agent` success path where background mode ends up installed but not running yet, the next-step label should say `Turn on background mode: idlewatch install-agent`
-- The literal command should remain unchanged (`idlewatch install-agent`)
-- The surrounding saved-config summary, `Check`, and `Remove` lines should remain unchanged and low-noise
-- No auth, ingest, packaging, launch-agent semantics, device-identity persistence, metric persistence, or test-publish behavior changes should be introduced beyond this wording consistency polish
+- In the saved-config `install-agent` success path where background mode ends up installed but not running yet, the next-step label now says `Turn on background mode: idlewatch install-agent`
+- The literal command remains unchanged (`idlewatch install-agent`)
+- The surrounding saved-config summary, `Check`, and `Remove` lines remain unchanged and low-noise
+- No auth, ingest, packaging, launch-agent semantics, device-identity persistence, metric persistence, or test-publish behavior changes were introduced beyond this wording consistency polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:58 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny saved-config `install-agent` installed-but-not-running wording consistency fix
 
 **Last updated:** Saturday, March 28th, 2026 — 6:48 AM (America/Toronto)  
 **Status:** COMPLETE ✅ - logged one still-real installed-but-not-running `install-agent` wording seam from a fresh live pass

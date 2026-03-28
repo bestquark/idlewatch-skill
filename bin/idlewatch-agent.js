@@ -1504,7 +1504,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       } else {
         console.log(`✅ Background mode ${alreadyLoaded ? 'refreshed' : 'installed'}.`)
         console.log('   Saved config is ready, but background mode is installed and not running yet.')
-        console.log(`   Start background mode:  ${installAgentCommand}`)
+        console.log(`   Turn on background mode:  ${installAgentCommand}`)
       }
       console.log(`   Saved config: ${formatPathForHelp(envFile)}`)
       console.log(`   Check:        ${statusCommand}   See your saved config, background mode state, and last publish result`)

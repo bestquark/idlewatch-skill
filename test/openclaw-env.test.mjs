@@ -2086,7 +2086,7 @@ test('install-agent does not claim background is running when launchd still repo
     assert.match(install.stdout, /✅ Background mode installed\./)
     assert.match(install.stdout, /Saved config is ready, but background mode is installed and not running yet\./)
     assert.match(install.stdout, /Remove:\s+.*uninstall-agent\s+\(safe — only turns background mode off\)/)
-    assert.ok(install.stdout.includes('Start background mode:  idlewatch install-agent') || install.stdout.includes('Start background mode:     idlewatch install-agent'), 'should keep the installed-not-running hint explicit about starting background mode on the calmer product command')
+    assert.ok(install.stdout.includes('Turn on background mode:  idlewatch install-agent') || install.stdout.includes('Turn on background mode:     idlewatch install-agent'), 'should keep the installed-not-running hint explicit about turning on background mode on the calmer product command')
     assert.ok(install.stdout.includes('Check:        idlewatch status   See your saved config, background mode state, and last publish result'), 'should keep the saved-config follow-up on the calmer product command with the same config-first hint used elsewhere')
     assert.ok(install.stdout.includes('Remove:       idlewatch uninstall-agent  (safe — only turns background mode off)'), 'should keep the off-ramp on the calmer product command')
     assert.ok(!install.stdout.includes(`Re-enable:    ${SOURCE_CMD} install-agent`), 'should not frame an already-installed agent like a fresh re-enable')
