@@ -12,6 +12,19 @@ No new installer/CLI polish issues identified in scope. All items from the curre
 
 ### Repository state
 - Working tree: Clean on main branch
-- Latest commit: `docs: update QA log cycle R779 — no issues found` (R780 being this completion)
+- Latest commit: `docs: update QA log cycle R780 — stable, no issues found`
 
 **Last updated:** Saturday, March 28th, 2026 — 3:15 PM (America/Toronto)
+
+---
+
+## Next Polish Cycle
+
+Run next when QA monitoring surfaces new UX friction points or user feedback highlights setup/reconfigure seams.
+
+When to run next:
+- New polish issues identified in QA monitoring
+- User feedback highlights UX friction points
+- Config/behavior changes requested
+
+**Recommended frequency:** Bi-weekly during active development phases
