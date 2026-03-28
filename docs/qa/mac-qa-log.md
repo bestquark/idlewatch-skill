@@ -1332,6 +1332,44 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R657 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny main-CLI install follow-up inconsistency and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the main CLI’s `install-agent` follow-up already pointed to `idlewatch status`, but unlike the standalone macOS installer it still stopped there without saying what that check is actually useful for. Nothing functional was broken, but this lands in the exact install/setup handoff moment where a tiny bit of product guidance removes guesswork. The right fix was tiny: keep the same literal `status` command, but add the same calm `saved config / background mode / last publish result` hint already used in the standalone installer.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the main CLI `install-agent` follow-up copy in the two install surfaces that print `Check:`
+- [x] Reused the same low-noise description already used by the standalone macOS installer: `See your saved config, background mode state, and last publish result`
+- [x] Left setup, reconfigure, auth/ingest, packaging, launch-agent behavior, and command shapes unchanged
+- [x] Updated focused regression expectations in `test/openclaw-env.test.mjs`
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live install-before-setup spot check with a stubbed `launchctl` now prints:
+  - `Check:        idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Fresh live saved-config installed-not-running spot check with a stubbed `launchctl` now prints:
+  - `Check:        idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Confirmed the surrounding handoff stayed minimal and literal (`Finish setup`, `Run now`, `Start background mode after setup`, `Remove`)
+
+### Prioritized findings
+#### [x] P1 — main CLI install follow-up now matches the calmer config-first `Check:` hint already used by the standalone macOS installer
+**Why this mattered:** This is tiny, but it lands in exactly the moment where someone asks “okay, what does `status` show me?” Matching the standalone installer removes a little uncertainty without adding any new options, branching, or behavior.
+
+**Acceptance checks**
+- The main CLI install-before-setup flow still points to literal `idlewatch status`
+- That same surface now also says it shows the saved config, background mode state, and last publish result
+- The saved-config installed-not-running install flow now keeps that same `Check:` hint for consistency
+- The surrounding commands remain unchanged and copy-safe
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 12:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny main-CLI install follow-up clarity fix
+
 ## Cycle R656 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

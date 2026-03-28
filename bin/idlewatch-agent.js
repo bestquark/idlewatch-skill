@@ -1438,7 +1438,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Start background mode after setup:  ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
-      console.log(`   Check:        ${preferredProductCommand('status')}`)
+      console.log(`   Check:        ${preferredProductCommand('status')}   See your saved config, background mode state, and last publish result`)
       console.log(`   Remove:       ${preferredProductCommand('uninstall-agent')}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
@@ -1463,7 +1463,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
         console.log(`   Start background mode:  ${installAgentCommand}`)
       }
       console.log(`   Saved config: ${formatPathForHelp(envFile)}`)
-      console.log(`   Check:        ${statusCommand}`)
+      console.log(`   Check:        ${statusCommand}   See your saved config, background mode state, and last publish result`)
       console.log(`   Remove:       ${uninstallAgentCommand}  (safe — only turns background mode off)`)
       if (targetKind === 'source-script') {
         console.log('   Background mode will refresh onto a durable idlewatch install automatically if one is available later.')
