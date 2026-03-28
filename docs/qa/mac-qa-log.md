@@ -1110,6 +1110,47 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R647 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the exact current scope from the polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
+
+### Priority call
+No new polish issue cleared the bar this cycle. The current checkout still feels calm in the places most likely to create setup friction: install-before-setup stays truthful instead of pretending background mode is already on, saved setup + reconfigure still keep device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` remains intentionally lightweight, uninstall stays a clean reversible off-ramp, global npm install still leads with the friendlier `idlewatch quickstart`, and true-`npx` still keeps one-off commands literal while background mode stays on the explicit durable-install handoff.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live source/global-style spot checks with a stubbed `launchctl`:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js status`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME1" node bin/idlewatch-agent.js uninstall-agent`
+  - `HOME="$TMPHOME2" PATH="$FAKEBIN:/usr/bin:/bin:/opt/homebrew/bin:$PATH" bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Fresh true-`npx` help spot check with explicit npm-exec env vars:
+  - `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' HOME="$TMPHOME2" node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh global-install postinstall spot check:
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed in the live pass:
+  - install-before-setup still says `✅ Background integration installed.` and keeps the honest `Setup isn't saved yet, so background mode stays off for now.` handoff
+  - follow-up `status` still keeps `Background: installed but waiting for setup` instead of sounding like a broken install
+  - main CLI uninstall still keeps the calmer `Saved config would live at ...` / `Local logs would go in ...` off-ramp when setup was never saved
+  - standalone macOS uninstall still stays literal in a clean home (`No plist was installed at ...`, then `Saved config would live at ...`, `Logs would go in ...`)
+  - true `npx` help still keeps the one-off/durable split literal (`npx idlewatch quickstart --no-tui`, then `npm install -g idlewatch`, then `idlewatch install-agent`)
+  - global npm-install handoff still leads with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` kept secondary as a plain-text fallback
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found in scope after a fresh live pass
+**Why this matters:** This lane is about removing friction, not manufacturing activity. When the current product already feels minimal, copy-safe, and trustworthy across setup, uninstall, and install-path handoffs, the right move is to log the clean verification pass and avoid speculative churn.
+
+**Acceptance checks**
+- Install-before-setup remains truthful and low-noise
+- Follow-up `status` still preserves installed-but-waiting memory cleanly
+- Main CLI and standalone macOS uninstall both keep the reversible off-ramp short and literal in no-setup states
+- Global npm-install handoff still leads with `idlewatch quickstart`, with `--no-tui` kept secondary
+- True-`npx` help still keeps one-off commands literal while background mode stays on the explicit durable-install handoff
+- No auth, ingest, packaging, or major launch-agent behavior changes were introduced in this verification-only pass
+
+**Last updated:** Friday, March 27th, 2026 — 11:10 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the requested polish lane and confirmed no additional product change was needed
+
 ## Cycle R646 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one tiny remaining retained-log truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
