@@ -1,3 +1,47 @@
+## Cycle R766 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one tiny installed-help wording seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk issue still cleared the bar: installed `idlewatch install-agent --help` was already truthful, but its two body lines still repeated the same idea a bit too mechanically (`using your saved setup` / `this turns on background mode right away`). That help surface sits right in a copy/paste-heavy trust moment. The smallest useful fix was to keep the same commands and behavior while making the wording calmer and less repetitive.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened installed `install-agent --help` from `Turns on background mode on macOS using your saved setup.` to `Turns on background mode on macOS with your saved setup.`
+- [x] Tightened the follow-up line from `If you've already finished setup, this turns on background mode right away.` to `If you've already finished setup, this works right away.`
+- [x] Updated the focused installed-help expectation in `test/openclaw-env.test.mjs`
+- [x] Left setup flow, saved-config handling, background/install behavior, and true-`npx` durable-install guidance unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `bin/idlewatch-agent.js`
+- [x] Updated `test/openclaw-env.test.mjs`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed installed help now says:
+  - `Turns on background mode on macOS with your saved setup.`
+  - `If you've already finished setup, this works right away.`
+- [x] Observed the surrounding handoff stayed unchanged:
+  - `Set up now:              idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+  - `After setup:             idlewatch install-agent`
+- [x] Observed the older more repetitive wording is gone from that touched surface:
+  - `Turns on background mode on macOS using your saved setup.`
+  - `If you've already finished setup, this turns on background mode right away.`
+
+### Prioritized findings
+#### [x] P1 — installed `install-agent --help` now reads a little more like a product and a little less like an implementation note
+**Why this mattered:** This is tiny, but it lands in one of the first help screens people use when deciding whether setup is already “done enough.” The command story was already correct; the remaining friction was sentence shape. Tightening it keeps the surface calmer without adding new steps, branches, or options.
+
+**Acceptance checks**
+- Installed `idlewatch install-agent --help` now says `Turns on background mode on macOS with your saved setup.`
+- Its next line now says `If you've already finished setup, this works right away.`
+- The title, setup-first handoff, fallback command, and `After setup: idlewatch install-agent` line remain unchanged
+- No auth, ingest, packaging, launch-agent semantics, or telemetry-path behavior changes were introduced beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 10:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny installed-help wording cleanup for smoother setup-first reading
+
 ## Cycle R765 Status: COMPLETE ✅
 
 Fresh scoped installer/CLI polish pass reran the exact lanes from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.
