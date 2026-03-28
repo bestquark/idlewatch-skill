@@ -360,7 +360,7 @@ function installAgentHelpText() {
     : ''
 
   if (invocation.kind === 'npx') {
-    return `${installAgentHelpCommand} — Turn on background mode after setup (macOS)
+    return `${installAgentHelpCommand} — Turn on background mode after durable install
 
 Usage:  ${installAgentHelpCommand}
 

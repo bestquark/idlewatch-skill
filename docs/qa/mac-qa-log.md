@@ -1,3 +1,50 @@
+## Cycle R718 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the smallest useful fix for one final true-`npx` durable-help headline consistency seam.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the true-`npx` `install-agent --help` screen already had the right calm framing and the right durable-install body copy, but its title line still said `after setup` instead of matching the durable-install truth already stated immediately below. Nothing functional was broken; this was just a tiny first-line mismatch in a copy/paste-heavy trust moment. The right fix was to make the title say the same thing the screen already meant.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the true-`npx` `install-agent --help` title from `Turn on background mode after setup (macOS)` to `Turn on background mode after durable install`
+- [x] Kept the existing durable-install body copy and literal commands unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] `node --test --test-name-pattern='install-agent help in npx mode keeps calm help framing and durable install guidance' test/openclaw-env.test.mjs`
+- [x] Observed the true-`npx` help surface now opens with:
+  - `npx idlewatch install-agent — Turn on background mode after durable install`
+  - `Usage:  npx idlewatch install-agent`
+  - then the existing durable-install guidance
+
+### Prioritized findings
+#### [x] P1 — true-`npx` `install-agent --help` title now matches the durable-install truth already used everywhere else on that same screen
+**Why this mattered:** This is tiny, but it lands in the exact “does this CLI feel deliberate?” moment. Matching the headline to the body removes one more little trust wobble without adding behavior, words, or steps.
+
+**Acceptance checks**
+- In true `npx` context, `install-agent --help` now starts with `npx idlewatch install-agent — Turn on background mode after durable install`
+- The existing literal commands remain unchanged:
+  - `npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui`
+  - `npm install -g idlewatch`
+  - `idlewatch install-agent`
+  - `npx idlewatch run`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this help-title polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` durable-help headline consistency fix
+
 ## Cycle R717 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny headline-consistency seam in the true-`npx` durable-install help surface.

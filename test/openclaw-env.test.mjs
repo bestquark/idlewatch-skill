@@ -1168,7 +1168,7 @@ test('install-agent help in npx context points straight to the durable path', ()
   })
 
   assert.equal(run.status, 0, run.stderr)
-  assert.match(run.stdout, /^npx idlewatch install-agent — Turn on background mode after setup \(macOS\)/)
+  assert.match(run.stdout, /^npx idlewatch install-agent — Turn on background mode after durable install/)
   assert.match(run.stdout, /Usage:\s+npx idlewatch install-agent/)
   assert.match(run.stdout, /Background mode needs a durable install\./)
   assert.match(run.stdout, /Set up now:\s+npx idlewatch quickstart(?:\s|$)/)
