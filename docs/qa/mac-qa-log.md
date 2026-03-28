@@ -1332,6 +1332,58 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R661 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny setup-handoff inconsistency in the main CLI’s non-TTY install-before-setup path.
+
+### Priority call
+One low-risk polish issue clearly still clears the bar: the main CLI’s install-before-setup and immediate follow-up `status` surfaces still lead with the more technical `idlewatch quickstart --no-tui` command in the common non-TTY path, even though the rest of the installer/CLI now prefers the calmer plain `idlewatch quickstart` first and keeps `--no-tui` as a secondary plain-text fallback. Nothing functional is broken, but this lands in the exact first-run setup moment where the product should feel least technical. The standalone macOS installer and global npm postinstall already follow the friendlier pattern; the main CLI should match.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh source/global-style install-before-setup repro with a stubbed `launchctl` and clean temporary HOME:
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+  - `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+- [x] Fresh source readback confirmed the main CLI still uses a single TTY-sensitive setup hint in these paths:
+  - `preferredHelpSetupCommand('quickstart')` inside the install-before-setup flow
+  - `preferredSetupCommand('quickstart')` inside first-run `status`
+- [x] Fresh comparison check of the calmer surfaces already shipped elsewhere:
+  - `scripts/postinstall.mjs`
+  - `scripts/install-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - install-before-setup currently says `Finish setup: idlewatch quickstart --no-tui`
+  - first follow-up `status` currently says `Finish setup:  idlewatch quickstart --no-tui`
+  - meanwhile `scripts/postinstall.mjs` already leads with:
+    - `idlewatch quickstart`
+    - `idlewatch quickstart --no-tui   # plain text fallback`
+  - and the standalone macOS installer already uses that same calmer two-line setup handoff in both the CLI-friendly and packaged-app fallback paths
+  - saved setup + reconfigure still keep device identity continuity explicit inline and metric toggles visible in `status`
+  - local-only `--test-publish` remains intentionally lightweight
+  - true `npx` still correctly keeps one-off commands literal while background mode stays on the explicit durable-install handoff
+
+### Prioritized findings
+#### [x] P1 — main CLI non-TTY install-before-setup and first follow-up `status` still lead with the more technical `quickstart --no-tui` instead of the calmer plain `quickstart`
+**Why this matters:** This is tiny, but it is exactly the sort of product-taste seam people feel more than they consciously notice. The product has already converged on a nicer setup default everywhere else. Keeping the main CLI on the older, more technical command in the non-TTY path makes the most important first-run handoff feel slightly harsher than necessary.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
+3. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js install-agent`
+4. Observe the install-before-setup handoff currently leads with `Finish setup: idlewatch quickstart --no-tui`
+5. Run `PATH="$FAKEBIN:$PATH" HOME="$TMPHOME" node bin/idlewatch-agent.js status`
+6. Observe the first follow-up `status` currently repeats `Finish setup:  idlewatch quickstart --no-tui`
+7. Compare that with the calmer postinstall / standalone install-script handoffs that already lead with plain `idlewatch quickstart` and keep `--no-tui` one line below as the fallback
+
+**Acceptance checks**
+- In the main CLI install-before-setup path, the first setup hint should be `idlewatch quickstart`
+- That same main-CLI surface should still keep `idlewatch quickstart --no-tui` visible as a secondary plain-text fallback one line below
+- The immediate follow-up first-run `status` should match that same calmer two-line setup-handoff shape
+- `Run now`, `Start background mode after setup`, `Check`, `Remove`, and the current non-TTY-safe behavior should remain otherwise unchanged and low-noise
+- Global npm-install, true-`npx`, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics should remain untouched beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 12:30 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real main-CLI non-TTY setup-handoff inconsistency from a fresh live pass
+
 ## Cycle R660 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny global npm-install setup-handoff fix in the live postinstall output.
