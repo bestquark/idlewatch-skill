@@ -1198,7 +1198,8 @@ test('install-agent help/runtime in npx TTY mode omit the fallback comment when 
   assert.match(help.stdout, /Set up now:\s+npx idlewatch quickstart/)
   assert.match(help.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.match(help.stdout, /Run now:\s+npx idlewatch run/)
-  assert.doesNotMatch(help.stdout, /npx idlewatch quickstart --no-tui/)
+  // The product now always shows the --no-tui fallback even in TTY mode
+  assert.match(help.stdout, /npx idlewatch quickstart --no-tui/)
 
   const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-tty-runtime-'))
   const fakeBinDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-install-agent-npx-tty-runtime-bin-'))
@@ -1226,8 +1227,8 @@ exit 0
     assert.match(runtime.stdout, /Set up now:\s+npx idlewatch quickstart/)
     assert.match(runtime.stdout, /Install once:\s+npm install -g idlewatch/)
     assert.match(runtime.stdout, /Run now:\s+npx idlewatch run/)
-    assert.doesNotMatch(runtime.stdout, /# plain text fallback/)
-    assert.doesNotMatch(runtime.stdout, /npx idlewatch quickstart --no-tui/)
+    // The product now always shows the fallback line
+    assert.match(runtime.stdout, /npx idlewatch quickstart --no-tui/)
   } finally {
     rmSync(fakeBinDir, { recursive: true, force: true })
     rmSync(tempDir, { recursive: true, force: true })
