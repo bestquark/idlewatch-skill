@@ -159,14 +159,12 @@ function preferredRecoveryCommand(command = 'configure') {
 }
 
 function preferredPrimarySetupCommand(command = 'quickstart') {
-  if (!process.stdin.isTTY) {
-    return preferredProductCommand(`${command} --no-tui`)
-  }
-  return preferredHelpSetupCommand(command)
+  return preferredProductCommand(command)
 }
 
 function preferredSetupFallbackCommand(command = 'quickstart') {
-  return ''
+  if (process.stdin.isTTY) return ''
+  return preferredProductCommand(`${command} --no-tui`)
 }
 
 function preferredProductCommand(command = '') {
@@ -349,12 +347,8 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentHelpCommand = preferredProductCommand('install-agent')
-  const quickstartPrimaryCommand = invocation.kind === 'npx'
-    ? inferCliCommand(process.stdin.isTTY ? 'quickstart' : 'quickstart --no-tui')
-    : preferredPrimarySetupCommand('quickstart')
-  const quickstartFallbackCommand = invocation.kind === 'npx'
-    ? ''
-    : preferredSetupFallbackCommand('quickstart')
+  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
   const quickstartFallbackLine = quickstartFallbackCommand
     ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
     : ''
@@ -1396,7 +1390,11 @@ const subcommandPromise = (async () => {
     if (invocation.kind === 'npx') {
       console.error('Background mode needs a durable install.')
       console.error('')
-      console.error(`Set up now:                ${inferCliCommand(process.stdin.isTTY ? 'quickstart' : 'quickstart --no-tui')}`)
+      console.error(`Set up now:                ${preferredPrimarySetupCommand('quickstart')}`)
+      const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
+      if (quickstartFallbackCommand) {
+        console.error(`                           ${quickstartFallbackCommand}   # plain text fallback`)
+      }
       console.error('Install once:              npm install -g idlewatch')
       console.error(`Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}`)
       console.error('')
@@ -1575,13 +1573,8 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const expectedConfigFile = enrollmentOutputEnvFilePath()
       if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
         console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
-        const invocation = detectCliInvocation()
-        const quickstartPrimaryCommand = invocation.kind === 'npx'
-          ? inferCliCommand(process.stdin.isTTY ? 'quickstart' : 'quickstart --no-tui')
-          : preferredPrimarySetupCommand('quickstart')
-        const quickstartFallbackCommand = invocation.kind === 'npx'
-          ? ''
-          : preferredSetupFallbackCommand('quickstart')
+        const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+        const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
         console.error(`Start with ${quickstartPrimaryCommand}.`)
         if (quickstartFallbackCommand) {
           console.error(`           ${quickstartFallbackCommand}   # plain text fallback`)

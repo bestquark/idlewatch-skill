@@ -1861,6 +1861,55 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R685 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real higher-priority non-TTY setup-handoff regression in the live checkout and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the live setup-first help surfaces had drifted back to leading with the more technical `quickstart --no-tui` command in non-TTY mode again. Nothing functional was broken, but this landed in the exact copy/paste moment where the product should feel most welcoming and least assumption-heavy. The calmer product split this lane had already converged on is: lead with plain `quickstart`, keep `quickstart --no-tui` one line below as the literal plain-text fallback, and preserve the separate durable background handoff in true-`npx` mode.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored the calmer non-TTY setup-command shape across the shared CLI helpers so top-level help now leads with `quickstart` again
+- [x] Restored the same two-line `quickstart` + `quickstart --no-tui   # plain text fallback` handoff in true-`npx` `install-agent --help` and install-before-setup runtime
+- [x] Kept one-off `npx` run/configure commands literal and left the durable background handoff unchanged (`npm install -g idlewatch`, then `idlewatch install-agent`)
+- [x] Updated focused assertions in `test/openclaw-env.test.mjs` to match the restored product shape
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live normal help spot check now shows:
+  - `Get started:  idlewatch quickstart`
+  - `idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Fresh live true-`npx` help spot check now shows:
+  - `Get started:  npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui   # plain text fallback`
+- [x] Fresh live true-`npx` `install-agent --help` and install-before-setup runtime now both show:
+  - `Set up now:                npx idlewatch quickstart`
+  - `npx idlewatch quickstart --no-tui   # plain text fallback`
+  - `Install once:              npm install -g idlewatch`
+  - `Turn on background mode:   idlewatch install-agent`
+  - `Run now:                   npx idlewatch run`
+- [x] Fresh live true-`npx` `quickstart --no-tui`, `status`, and `configure --no-tui` still keep the one-off/durable split literal and calm
+- [x] Focused `node --test` slices were not used for sign-off because the Node test runner still hangs intermittently in this environment; this tiny pass was verified with syntax checks plus direct live repros instead
+
+### Prioritized findings
+#### [x] P1 — non-TTY help/install surfaces now lead with the nicer setup command again while keeping the literal plain-text fallback one line below
+**Why this mattered:** This is tiny, but it lands exactly where someone decides whether the setup flow feels neat or overly technical. Leading with the nicest default command and keeping the literal fallback right underneath removes friction without adding any new behavior.
+
+**Acceptance checks**
+- Normal non-TTY top-level help now says `Get started: idlewatch quickstart`
+- The same help surface keeps `idlewatch quickstart --no-tui   # plain text fallback` one line below
+- True-`npx` non-TTY top-level help now says `Get started: npx idlewatch quickstart`
+- True-`npx` `install-agent --help` and install-before-setup runtime now say `Set up now: npx idlewatch quickstart`
+- Those same true-`npx` surfaces keep `npx idlewatch quickstart --no-tui   # plain text fallback` one line below
+- True-`npx` `Run now: npx idlewatch run` and the durable background handoff remain unchanged
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 2:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny shared setup-handoff fix that restores the calmer `quickstart`-first non-TTY product shape
+
 ## Cycle R681 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact remaining scope from the polish plan in the live checkout after the postinstall wording cleanup and did not surface another small product-facing issue worth shipping.
