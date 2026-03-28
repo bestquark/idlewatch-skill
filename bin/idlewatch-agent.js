@@ -380,10 +380,18 @@ Set up now:              ${quickstartPrimaryCommand}${quickstartFallbackLine}
 Turn on background mode: ${installAgentHelpCommand}`
 }
 
+function durableBackgroundModeRestoreHint(invocation = detectCliInvocation()) {
+  const backgroundInstallHelp = backgroundInstallHelpCommand(invocation)
+  if (invocation.kind === 'npx') {
+    return `install once with npm install -g idlewatch, then run ${backgroundInstallHelp}`
+  }
+  return backgroundInstallHelp
+}
+
 function uninstallAgentHelpText() {
   const invocation = detectCliInvocation()
   const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
-  const backgroundInstallHelp = backgroundInstallHelpCommand(invocation)
+  const backgroundInstallHelp = durableBackgroundModeRestoreHint(invocation)
   const retainedLocalLogPath = resolvePersistedLocalLogPath()
   const retainedLocalLogSummary = retainedLocalLogPath
     ? `Local log stays at ${formatPathForHelp(retainedLocalLogPath)} when local logging is on, so you can re-enable background mode later.`
@@ -1531,10 +1539,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const localLogPath = resolvePersistedLocalLogPath()
       console.log('Background mode is already off.')
       printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
-      console.log(`   Turn background mode back on later with ${backgroundInstallCommandForInvocation(invocation)}.`)
-      if (invocation.kind === 'npx') {
-        console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
-      }
+      console.log(`   Turn background mode back on later with ${durableBackgroundModeRestoreHint(invocation)}.`)
       process.exit(0)
     }
 
@@ -1550,10 +1555,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ Background mode turned off.')
     printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
-    console.log(`   Turn background mode back on later with ${backgroundInstallCommandForInvocation(invocation)}.`)
-    if (invocation.kind === 'npx') {
-      console.log('   Background mode still belongs to the durable install, not this one-off npx run.')
-    }
+    console.log(`   Turn background mode back on later with ${durableBackgroundModeRestoreHint(invocation)}.`)
     process.exit(0)
   }
 

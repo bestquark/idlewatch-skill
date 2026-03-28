@@ -1,3 +1,46 @@
+## Cycle R708 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny true-`npx` uninstall off-ramp seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: in true `npx` use, both `uninstall-agent --help` and the real uninstall runtime still ended with bare `idlewatch install-agent`. That wording was directionally correct, but it stopped one step short in the exact copy/paste moment where the product should stay most literal. A one-off `npx` user may not have the durable `idlewatch` command installed yet, so the off-ramp should say the whole quiet truth: install once with `npm install -g idlewatch`, then run `idlewatch install-agent`.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Added one tiny helper in `bin/idlewatch-agent.js` so uninstall help/runtime can render the durable background-mode restore hint consistently
+- [x] Tightened the true-`npx` `uninstall-agent --help` handoff to say `install once with npm install -g idlewatch, then run idlewatch install-agent`
+- [x] Matched the real true-`npx` uninstall runtime output to that same literally runnable durable-install handoff
+- [x] Dropped the extra `Background mode still belongs to the durable install...` line because the new one-line handoff already says the useful part more directly
+- [x] Added focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left non-`npx` uninstall wording, saved-config retention summaries, launch-agent behavior, auth/ingest behavior, packaging, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh true-`npx` uninstall help repro now prints:
+  - `Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent.`
+- [x] Fresh true-`npx` uninstall runtime repro with a stubbed `launchctl` now prints:
+  - `Background mode is already off.`
+  - retained saved-config/local-log summary lines
+  - `Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent.`
+- [x] Observed the old less-literal handoff is gone in that true-`npx` uninstall path:
+  - `Turn background mode back on later with idlewatch install-agent.`
+
+### Prioritized findings
+#### [x] P1 — true-`npx` uninstall now keeps the durable restore path literally runnable instead of assuming `idlewatch` already exists
+**Why this mattered:** This is tiny, but it lands at exactly the “okay, how do I turn this back on later?” moment after a one-off run. If the user came in through `npx`, the off-ramp should not quietly assume they already have the durable CLI installed.
+
+**Acceptance checks**
+- In true `npx` context, `uninstall-agent --help` now says `Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent.`
+- In that same true `npx` context, the real uninstall runtime output now uses that same literally runnable durable-install handoff
+- The extra explanatory `one-off npx run` sentence is gone because the command hint itself already carries the needed context
+- Non-`npx` uninstall help/runtime remains unchanged and low-noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this uninstall handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 6:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` uninstall durable-restore-handoff fix
+
 ## Cycle R707 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.

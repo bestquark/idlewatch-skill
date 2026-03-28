@@ -1236,7 +1236,7 @@ exit 0
   }
 })
 
-test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
+test('uninstall-agent help in npx context keeps the durable off-ramp literally runnable (help surface)', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
       ...process.env,
@@ -1255,7 +1255,7 @@ test('uninstall-agent help in npx context stays simple and matches the real off-
   assert.match(run.stdout, /Usage:\s+npx idlewatch uninstall-agent/)
   assert.match(run.stdout, /Turns off background mode on macOS\./)
   assert.match(run.stdout, /If background mode is already off, this still keeps the saved config and local logs in place\./)
-  assert.match(run.stdout, /Turn background mode back on later with idlewatch install-agent\./)
+  assert.match(run.stdout, /Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent\./)
   assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.doesNotMatch(run.stdout, /^Background mode needs a durable install\./)
   assert.doesNotMatch(run.stdout, /Turn it back on later with the durable install:/)
@@ -1564,7 +1564,7 @@ test('uninstall-agent --help reflects a saved custom local log path from a custo
   }
 })
 
-test('uninstall-agent help in npx context stays simple and matches the real off-ramp', () => {
+test('uninstall-agent help in npx context keeps the durable off-ramp literally runnable (duplicate coverage)', () => {
   const run = spawnSync(process.execPath, [BIN, 'uninstall-agent', '--help'], {
     env: {
       ...process.env,
@@ -1587,6 +1587,50 @@ test('uninstall-agent help in npx context stays simple and matches the real off-
   assert.doesNotMatch(run.stdout, /Install once:\s+npm install -g idlewatch/)
   assert.doesNotMatch(run.stdout, /^Background mode needs a durable install\./)
   assert.doesNotMatch(run.stdout, /Turn it back on later with the durable install:/)
+})
+
+test('uninstall-agent runtime in npx context keeps the durable restore path literal', () => {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'idlewatch-uninstall-agent-runtime-npx-'))
+  const configDir = path.join(tempDir, '.idlewatch')
+  const logDir = path.join(configDir, 'logs')
+
+  fs.mkdirSync(logDir, { recursive: true })
+  writeFileSync(path.join(configDir, 'idlewatch.env'), [
+    'IDLEWATCH_DEVICE_NAME=Kitchen Mac',
+    'IDLEWATCH_DEVICE_ID=kitchen-mac',
+    'IDLEWATCH_MONITOR_TARGETS=cpu,memory',
+    `IDLEWATCH_LOCAL_LOG_PATH=${path.join(logDir, 'kitchen-mac.ndjson')}`
+  ].join('\n') + '\n')
+  writeFileSync(path.join(logDir, 'kitchen-mac.ndjson'), '')
+
+  try {
+    const run = spawnSync(process.execPath, [BIN, 'uninstall-agent'], {
+      env: {
+        ...process.env,
+        HOME: tempDir,
+        PATH: process.env.PATH,
+        npm_execpath: '/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js',
+        npm_command: 'exec',
+        npm_lifecycle_event: 'npx',
+        npm_config_user_agent: 'npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false'
+      },
+      encoding: 'utf8',
+      timeout: 10000
+    })
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.match(run.stdout, /Background mode is already off\./)
+    assert.match(run.stdout, /Saved config stays at ~\/\.idlewatch\/idlewatch\.env/)
+    assert.match(run.stdout, /Local log stays at ~\/\.idlewatch\/logs\/kitchen-mac\.ndjson/)
+    assert.match(run.stdout, /Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent\./)
+    assert.doesNotMatch(run.stdout, /Background mode still belongs to the durable install, not this one-off npx run\./)
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
 })
 
 test('uninstall-agent runtime keeps the retained-data summary truthful when setup was never saved', () => {
