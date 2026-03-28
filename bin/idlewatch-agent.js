@@ -354,9 +354,11 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentHelpCommand = preferredProductCommand('install-agent')
-  const quickstartCommand = preferredHelpSetupCommand('quickstart')
-  const quickstartPrimaryCommand = inferCliCommand('quickstart')
-  const quickstartFallbackCommand = inferCliCommand('quickstart --no-tui')
+  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
+  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
+  const quickstartFallbackLine = quickstartFallbackCommand
+    ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
+    : ''
 
   if (invocation.kind === 'npx') {
     return `Background mode needs a durable install.
@@ -376,7 +378,7 @@ Usage:  ${installAgentHelpCommand}
 Turns on background mode on macOS.
 If setup is already saved, background mode turns on right away.
 
-Set up now:              ${quickstartCommand}
+Set up now:              ${quickstartPrimaryCommand}${quickstartFallbackLine}
 Turn on background mode: ${installAgentHelpCommand}`
 }
 

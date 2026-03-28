@@ -1332,6 +1332,45 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R665 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped one tiny main-CLI `install-agent --help` setup-handoff consistency fix in the live checkout.
+
+### Priority call
+One low-risk polish issue clearly still cleared the bar: the non-`npx` `install-agent --help` surface still led with only the more technical `idlewatch quickstart --no-tui` command even though the rest of the installer/CLI now preferred the calmer plain `idlewatch quickstart` first and kept `--no-tui` one line below as a plain-text fallback. Nothing functional was broken, but this landed in the exact “how do I turn on background mode?” moment where the product should feel least technical. The right fix was tiny: lead with plain `quickstart`, keep `quickstart --no-tui` one line below, and leave the rest of the durable install help unchanged.
+
+### What changed
+- [x] Reworked the non-`npx` `install-agent --help` handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- [x] Left the durable background-mode handoff unchanged and literal on `idlewatch install-agent`
+- [x] Updated focused regression expectations in `test/openclaw-env.test.mjs`
+- [x] Left main CLI runtime flows, true-`npx`, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, launch-agent semantics, and the now-working telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --check test/openclaw-env.test.mjs`
+- [x] Fresh live help repro:
+  - `node bin/idlewatch-agent.js install-agent --help`
+- [x] Observed the live pass now prints:
+  - `Set up now:              idlewatch quickstart`
+  - `                           idlewatch quickstart --no-tui   # plain text fallback`
+  - `Turn on background mode: idlewatch install-agent`
+- [x] Focused `node --test ... --test-name-pattern "install-agent --help"` was attempted, but the Node test runner stayed sticky in this environment before producing a useful result; sign-off used syntax validation plus direct live repro/verification for this tiny help-surface patch
+
+### Prioritized findings
+#### [x] P1 — non-`npx` `install-agent --help` now matches the calmer setup-first handoff already used elsewhere
+**Why this mattered:** This is tiny, but it lands right where someone scans for the next command. Leading with the friendlier setup command makes the help surface easier to skim and keeps product taste consistent without changing behavior.
+
+**Acceptance checks**
+- In the non-`npx` `install-agent --help` surface, the first setup hint now says `idlewatch quickstart`
+- That same help surface still keeps `idlewatch quickstart --no-tui` visible one line below as a plain-text fallback
+- `Turn on background mode: idlewatch install-agent` remains unchanged
+- Main CLI runtime flows, true-`npx`, global npm-install, standalone macOS installer, auth/ingest behavior, packaging, and launch-agent semantics remain untouched beyond this help-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 1:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny non-`npx` install-agent help setup-handoff polish fix
+
 ## Cycle R664 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass shipped one tiny true-`npx` durable-install help/setup friendliness fix in the live checkout.
