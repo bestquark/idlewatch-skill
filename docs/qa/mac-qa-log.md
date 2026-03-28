@@ -1,3 +1,47 @@
+## Cycle R774 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real setup-story regression in the current checkout.
+
+### Priority call
+One medium-severity product-taste issue clearly still clears the bar: several first-scan setup/install surfaces have drifted back to presenting `--no-tui` as the headline path instead of the plain `quickstart` flow the rest of this lane had converged on. Nothing functional appears broken, but this makes setup feel more technical and more implementation-shaped than it needs to in exactly the moments where users decide whether the product is simple. The drift is visible in normal help, installed `install-agent --help`, and global npm postinstall.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Fresh live setup/help spot checks from the current checkout:
+  - `node bin/idlewatch-agent.js --help`
+  - `node bin/idlewatch-agent.js install-agent --help`
+  - `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed in that live pass:
+  - top-level help currently ends with `Get started:  idlewatch quickstart --no-tui`
+  - installed `install-agent --help` currently says `Set up now:              idlewatch quickstart --no-tui`
+  - global npm postinstall currently says:
+    - `idlewatch quickstart --no-tui`
+    - `idlewatch install-agent   # start background mode after setup`
+  - meanwhile those same surfaces should feel calmer and more product-shaped:
+    - plain `idlewatch quickstart` should lead
+    - `idlewatch quickstart --no-tui` should stay visible, but as the explicit plain-text fallback
+    - the durable handoff should keep the calmer `turn on background mode` wording instead of `start background mode`
+
+### Prioritized findings
+#### [x] P1 — setup-first help/install surfaces have regressed back to a `--no-tui`-first story, and global npm postinstall has drifted back to slightly noisier background-mode wording
+**Why this matters:** This is small, but it lands in the exact first impression surfaces that shape trust. `--no-tui` is a useful fallback, not the headline experience. Leading with it makes the setup story feel more technical than the actual product needs to. The `start background mode after setup` wording also reads a little noisier than the calmer `turn on background mode after setup` phrasing already used elsewhere in this lane.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Run `node bin/idlewatch-agent.js --help`
+3. Run `node bin/idlewatch-agent.js install-agent --help`
+4. Run `npm_config_global=true node scripts/postinstall.mjs`
+5. Observe that those setup-first surfaces currently headline `idlewatch quickstart --no-tui`, and that postinstall currently says `start background mode after setup`
+
+**Acceptance checks**
+- Top-level help should lead with `Get started:  idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the plain-text fallback
+- Installed `install-agent --help` should say `Set up now: idlewatch quickstart`, with `idlewatch quickstart --no-tui` one line below as the fallback, and should keep `After setup: idlewatch install-agent`
+- Global npm postinstall should lead with `idlewatch quickstart`, keep `idlewatch quickstart --no-tui` secondary, and say `idlewatch install-agent   # turn on background mode after setup`
+- No auth, ingest, device identity, metric persistence, config-reload semantics, or major launch-agent behavior changes are needed beyond this setup-copy polish
+
+**Last updated:** Saturday, March 28th, 2026 — 11:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real setup/install-path regression from a fresh live pass
+
 ## Cycle R773 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from `idlewatch-cron-polish-plan.md` and did not surface another small end-user issue worth shipping.
