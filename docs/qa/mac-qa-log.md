@@ -36206,3 +36206,44 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 - [x] Saved-config, install/start behavior, and telemetry behavior stay unchanged
 
 **Last updated:** Saturday, March 28th, 2026 — 9:35 AM (America/Toronto)
+
+---
+
+## Cycle R673 Status: CLOSED ✅
+
+### Outcome
+- Shipped one tiny but still-worth-it setup/install polish fix in the non-interactive lane.
+- A few scan-first setup handoffs had drifted back to a two-choice block (`quickstart`, then `quickstart --no-tui`) even though these were already explicitly text-first moments.
+- Those surfaces now go back to one calmer copy-safe setup command: `quickstart --no-tui`.
+- The packaged/global install handoff also now uses the slightly more literal `start background mode after setup` wording.
+- Telemetry, auth, ingest, and runtime behavior stayed untouched.
+
+### R673 spot-check coverage
+- [x] `node --test test/postinstall.test.mjs test/macos-launch-agent-scripts.test.mjs --test-name-pattern='postinstall|packaged macOS install script'`
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx node bin/idlewatch-agent.js install-agent --help`
+- [x] Clean-home install-before-setup runtime + follow-up `status` spot check with stubbed `launchctl`
+
+### Prioritized findings
+#### [x] L159 — text-first setup handoffs again keep one obvious `quickstart --no-tui` command
+**Why it matters:** This is tiny, but it lands exactly where setup taste matters most: a user is scanning for the shortest command that will work right now. In those already headless/text-first moments, showing both `quickstart` and `quickstart --no-tui` reintroduces one unnecessary decision.
+
+**What shipped**
+- Reworded main non-interactive help/recovery surfaces in `bin/idlewatch-agent.js` so `Get started`, `Finish setup`, and the true-`npx` durable-install help now point straight to `quickstart --no-tui`.
+- Reworded `scripts/postinstall.mjs` so global npm install now prints only `idlewatch quickstart --no-tui`.
+- Reworded `scripts/install-macos-launch-agent.sh` so the packaged install-before-setup handoff also prints only one setup step.
+- Tightened the packaged/global macOS follow-up wording from `turn on background mode after setup` to `start background mode after setup`.
+- Updated focused regression coverage in `test/postinstall.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`.
+
+**Acceptance checks**
+- [x] Main `--help` now says `Get started:  idlewatch quickstart --no-tui`
+- [x] True-`npx` `install-agent --help` now says `Set up now:                npx idlewatch quickstart --no-tui`
+- [x] Install-before-setup runtime now says `Finish setup: idlewatch quickstart --no-tui`
+- [x] Follow-up `status` after install-before-setup now says `Finish setup:  idlewatch quickstart --no-tui`
+- [x] Global npm `postinstall` now says `idlewatch quickstart --no-tui`
+- [x] Packaged macOS install-before-setup now says `Finish setup: ... quickstart --no-tui`
+- [x] Packaged/global install handoffs no longer print a second `# plain text fallback` line
+- [x] Packaged/global install wording now says `start background mode after setup`
+- [x] Telemetry behavior stayed unchanged
+
+**Last updated:** Saturday, March 28th, 2026 — 11:05 AM (America/Toronto)
