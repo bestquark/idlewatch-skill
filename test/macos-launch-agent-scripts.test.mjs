@@ -332,13 +332,16 @@ test('packaged macOS uninstall script names a custom saved config path when one 
   const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
   const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
   const customConfigPath = path.join(tempHome, 'Library', 'Application Support', 'IdleWatch QA', 'idlewatch.env')
+  const customLocalLogPath = path.join(tempHome, '.idlewatch', 'logs', 'qa-script-box-metrics.ndjson')
 
   try {
     fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
     writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
     writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
     fs.mkdirSync(path.dirname(customConfigPath), { recursive: true })
-    fs.writeFileSync(customConfigPath, 'IDLEWATCH_DEVICE_NAME=QA Box\n', 'utf8')
+    fs.mkdirSync(path.dirname(customLocalLogPath), { recursive: true })
+    fs.writeFileSync(customConfigPath, `IDLEWATCH_DEVICE_NAME=QA Box\nIDLEWATCH_LOCAL_LOG_PATH=${customLocalLogPath}\n`, 'utf8')
+    fs.writeFileSync(customLocalLogPath, '{"cpu":42}\n', 'utf8')
 
     const env = {
       ...process.env,
@@ -351,7 +354,9 @@ test('packaged macOS uninstall script names a custom saved config path when one 
     const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
     assert.equal(uninstall.status, 0, uninstall.stderr)
     assert.match(uninstall.stdout, new RegExp(`Saved config stays at ${customConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.match(uninstall.stdout, new RegExp(`Local log stay[s]? at ${customLocalLogPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
     assert.doesNotMatch(uninstall.stdout, /Saved config stays at .*\.idlewatch\/idlewatch\.env/)
+    assert.doesNotMatch(uninstall.stdout, /Logs stay in .*Library\/Logs\/IdleWatch/)
   } finally {
     fs.rmSync(fakeBinDir, { recursive: true, force: true })
     fs.rmSync(tempHome, { recursive: true, force: true })

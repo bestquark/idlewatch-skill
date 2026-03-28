@@ -45,10 +45,34 @@ fi
 
 CONFIG_STATUS_WORD="stays at"
 LOG_STATUS_WORD="stay in"
-if [[ ! -f "$CONFIG_ENV_PATH" ]]; then
+LOG_PATH_LABEL="Logs"
+LOG_PATH_VALUE="$LOG_DIR"
+SAVED_LOCAL_LOG_PATH=""
+if [[ -f "$CONFIG_ENV_PATH" ]]; then
+  while IFS= read -r config_line; do
+    case "$config_line" in
+      IDLEWATCH_LOCAL_LOG_PATH=*)
+        SAVED_LOCAL_LOG_PATH="${config_line#IDLEWATCH_LOCAL_LOG_PATH=}"
+        SAVED_LOCAL_LOG_PATH="${SAVED_LOCAL_LOG_PATH%\"}"
+        SAVED_LOCAL_LOG_PATH="${SAVED_LOCAL_LOG_PATH#\"}"
+        SAVED_LOCAL_LOG_PATH="${SAVED_LOCAL_LOG_PATH%\'}"
+        SAVED_LOCAL_LOG_PATH="${SAVED_LOCAL_LOG_PATH#\'}"
+        break
+        ;;
+    esac
+  done < "$CONFIG_ENV_PATH"
+else
   CONFIG_STATUS_WORD="would live at"
 fi
-if [[ ! -d "$LOG_DIR" ]]; then
+
+if [[ -n "$SAVED_LOCAL_LOG_PATH" ]]; then
+  LOG_PATH_LABEL="Local log"
+  LOG_PATH_VALUE="$SAVED_LOCAL_LOG_PATH"
+  LOG_STATUS_WORD="stays at"
+  if [[ ! -f "$SAVED_LOCAL_LOG_PATH" ]]; then
+    LOG_STATUS_WORD="would go at"
+  fi
+elif [[ ! -d "$LOG_DIR" ]]; then
   LOG_STATUS_WORD="would go in"
 else
   shopt -s nullglob
@@ -62,5 +86,5 @@ fi
 echo "✅ Background mode turned off."
 echo "   $PLIST_STATUS_LINE"
 echo "   Saved config $CONFIG_STATUS_WORD $CONFIG_ENV_PATH"
-echo "   Logs $LOG_STATUS_WORD $LOG_DIR"
+echo "   $LOG_PATH_LABEL $LOG_STATUS_WORD $LOG_PATH_VALUE"
 echo "   Turn background mode back on later with $REINSTALL_HINT."

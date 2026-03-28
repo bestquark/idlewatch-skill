@@ -1,45 +1,40 @@
 ## Cycle R697 Status: COMPLETE ✅
 
-Fresh installer/CLI polish pass found one still-real tiny off-ramp truthfulness seam in the standalone macOS uninstall script.
+Fresh installer/CLI polish pass found one still-real tiny off-ramp truthfulness seam in the standalone macOS uninstall script and shipped the smallest useful fix.
 
 ### Priority call
-One low-risk polish issue clearly still clears the bar: the standalone `scripts/uninstall-macos-launch-agent.sh` flow still decides its retained-log wording from the launch-agent stdout/stderr directory (`~/Library/Logs/IdleWatch`) instead of the saved local telemetry log path. In a real local-only setup with a saved telemetry file like `~/.idlewatch/logs/qa-script-box-metrics.ndjson`, uninstall currently says `Logs would go in .../Library/Logs/IdleWatch` even though a real retained telemetry log already exists. Nothing about auth, ingest, packaging, or the now-working telemetry path is broken; this is just a tiny uninstall-summary truthfulness gap on one product-facing off-ramp.
+One low-risk polish issue clearly still cleared the bar: the standalone `scripts/uninstall-macos-launch-agent.sh` flow still decided its retained-log wording from the launch-agent stdout/stderr directory (`~/Library/Logs/IdleWatch`) instead of the saved local telemetry log path. In a real local-only setup with a saved telemetry file like `~/.idlewatch/logs/qa-script-box-metrics.ndjson`, uninstall could say `Logs would go in .../Library/Logs/IdleWatch` even though a real retained telemetry log already existed. Nothing about auth, ingest, packaging, or the now-working telemetry path was broken; this was just a tiny uninstall-summary truthfulness gap on one product-facing off-ramp.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Taught the standalone macOS uninstall script to read `IDLEWATCH_LOCAL_LOG_PATH` from the saved config it already reports
+- [x] When a saved local telemetry log path exists, the script now surfaces that real retained file path as `Local log stays at ...`
+- [x] Kept the calmer existing fallback wording for the shared launch-agent log directory when no saved local telemetry path exists
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left reinstall hints, plist removal behavior, auth/ingest behavior, packaging, and launch-agent semantics unchanged
 
 ### Verification evidence
 - [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-- [x] Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
-- [x] Create a temporary app bundle with `Contents/MacOS/IdleWatch`
-- [x] Save a real local-only config at `~/.idlewatch/idlewatch.env` with `IDLEWATCH_LOCAL_LOG_PATH=$HOME/.idlewatch/logs/qa-script-box-metrics.ndjson`
-- [x] Create the retained telemetry file at `~/.idlewatch/logs/qa-script-box-metrics.ndjson`
-- [x] Run:
-  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/usr/sbin:/sbin" IDLEWATCH_APP_PATH="$APP" bash scripts/install-macos-launch-agent.sh`
-  - `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/usr/sbin:/sbin" bash scripts/uninstall-macos-launch-agent.sh`
-- [x] Observed current uninstall output still says:
-  - `Saved config stays at .../.idlewatch/idlewatch.env`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Observed the standalone macOS uninstall path now keeps the saved-config story truthful in the retained-local-log case:
+  - `Saved config stays at .../idlewatch.env`
+  - `Local log stays at .../.idlewatch/logs/qa-script-box-metrics.ndjson`
+- [x] Observed the no-saved-local-log fallback still stays calm and unchanged:
   - `Logs would go in .../Library/Logs/IdleWatch`
-- [x] Observed in the same repro: the main CLI uninstall path is already calmer and more truthful here (`Local log stays at .../.idlewatch/logs/qa-script-box-metrics.ndjson`), so this looks like a standalone-script drift rather than a broader product decision
 
 ### Prioritized findings
-#### [x] P1 — standalone macOS uninstall still points at the launch-agent log directory instead of the retained telemetry log path
-**Why this matters:** This is tiny, but it lands in the exact "did uninstall keep my local history?" moment. The current wording quietly implies there is no retained log yet, even when a real telemetry file already exists. That makes the standalone off-ramp feel slightly less trustworthy than the main CLI.
-
-**Exact repro**
-1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
-2. Create a fake `launchctl` shim that exits 1 for `print` and succeeds for `bootstrap` / `bootout`
-3. Create a temporary HOME and app bundle with `Contents/MacOS/IdleWatch`
-4. Save `~/.idlewatch/idlewatch.env` with `IDLEWATCH_LOCAL_LOG_PATH=$HOME/.idlewatch/logs/qa-script-box-metrics.ndjson`
-5. Create the retained telemetry file at `~/.idlewatch/logs/qa-script-box-metrics.ndjson`
-6. Run `HOME="$TMPHOME" PATH="$FAKEBIN:/usr/bin:/bin:/usr/sbin:/sbin" bash scripts/uninstall-macos-launch-agent.sh`
-7. Observe that uninstall still says `Logs would go in .../Library/Logs/IdleWatch` instead of surfacing the retained telemetry log path
+#### [x] P1 — standalone macOS uninstall now surfaces the retained telemetry log path instead of drifting back to the launch-agent log directory
+**Why this mattered:** This is tiny, but it lands in the exact "did uninstall keep my local history?" moment. Surfacing the real retained telemetry path makes the standalone off-ramp feel as trustworthy as the main CLI without adding any new choices or noise.
 
 **Acceptance checks**
-- The standalone macOS uninstall script should read the saved config path it already reports and, when local logging is configured, surface the real retained telemetry path rather than the agent stdout/stderr directory
-- With an existing saved local telemetry log file, uninstall should say the log stays at that file path (or equivalent truthful retained-path wording)
-- With no saved local telemetry path, the script can keep the calmer fallback wording for the launch-agent log directory
-- The reinstall hint, plist removal behavior, auth/ingest behavior, packaging, and launch-agent semantics should remain unchanged beyond this uninstall-summary truthfulness polish
+- The standalone macOS uninstall script now reads the saved config path it already reports and, when local logging is configured, surfaces the real retained telemetry path rather than the agent stdout/stderr directory
+- With an existing saved local telemetry log file, uninstall now says the local log stays at that file path
+- With no saved local telemetry path, the script keeps the calmer fallback wording for the launch-agent log directory
+- The reinstall hint, plist removal behavior, auth/ingest behavior, packaging, and launch-agent semantics remain unchanged beyond this uninstall-summary truthfulness polish
 
-**Last updated:** Saturday, March 28th, 2026 — 4:08 AM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one still-real standalone macOS uninstall retained-log truthfulness seam from a fresh live pass
+**Last updated:** Saturday, March 28th, 2026 — 4:15 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall retained-log truthfulness fix
 
 ## Cycle R696 Status: COMPLETE ✅
 
