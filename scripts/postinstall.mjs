@@ -25,7 +25,8 @@ try {
 if (shouldPrintInstallHandoff()) {
   console.log('')
   console.log('  Set up this device:')
-  console.log('    idlewatch quickstart --no-tui')
+  console.log('    idlewatch quickstart')
+  console.log('    idlewatch quickstart --no-tui   # plain text fallback')
   console.log('')
   console.log('  Optional on macOS:')
   console.log('    idlewatch install-agent   # turn on background mode after setup')

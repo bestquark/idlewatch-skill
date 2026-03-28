@@ -1,3 +1,43 @@
+## Cycle R706 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny setup-handoff friendliness seam in the global npm postinstall copy and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: `scripts/postinstall.mjs` had drifted back to leading with the more technical `idlewatch quickstart --no-tui` command in the global-install handoff. Nothing functional was broken, but this is one of the first copy/paste moments after a durable install, and the calmer product shape everywhere else in this lane was already better: lead with plain `idlewatch quickstart`, then keep `idlewatch quickstart --no-tui` one line below as the plain-text fallback.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Reworked the global npm postinstall handoff to lead with `idlewatch quickstart`
+- [x] Kept `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- [x] Left the durable background-mode and menubar follow-ups unchanged and low-noise
+- [x] Updated focused regression coverage in `test/postinstall.test.mjs`
+- [x] Left auth/ingest behavior, packaging shape, saved-config handling, launch-agent semantics, and install-path splitting unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --test test/postinstall.test.mjs`
+- [x] `npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed the global install handoff now prints:
+  - `Set up this device:` then `idlewatch quickstart`
+  - one line below: `idlewatch quickstart --no-tui   # plain text fallback`
+  - `Optional on macOS:` then `idlewatch install-agent   # turn on background mode after setup`
+  - `idlewatch menubar         # menu bar app`
+- [x] Observed the old harsher headline is gone:
+  - `Set up this device:` then `idlewatch quickstart --no-tui`
+
+### Prioritized findings
+#### [x] P1 — global npm postinstall now leads with the friendlier setup command while keeping the literal plain-text fallback one line below
+**Why this mattered:** This is tiny, but it lands at the exact “what should I run first?” moment after a durable install. Leading with the nicer default removes friction without adding behavior, options, or extra words.
+
+**Acceptance checks**
+- The global npm postinstall handoff now leads with `idlewatch quickstart`
+- That same surface still keeps `idlewatch quickstart --no-tui` visible one line below as the plain-text fallback
+- The macOS follow-ups for `idlewatch install-agent` and `idlewatch menubar` remain unchanged and low-noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this setup-handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 5:20 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny global npm postinstall setup-handoff friendliness fix
+
 ## Cycle R705 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and did not surface another small product-facing issue worth shipping.
