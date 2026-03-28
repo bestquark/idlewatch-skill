@@ -1861,6 +1861,77 @@ No new polish issue cleared the bar this cycle. The highest-risk seams from this
 
 **Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 
+## Cycle R688 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real higher-priority true-`npx` command-literalness regression in the live checkout.
+
+### Priority call
+One low-risk polish issue still clearly clears the bar: the live true-`npx` quickstart/status/configure success surfaces have drifted back to plain `idlewatch ...` commands again, even though the surrounding true-`npx` help surfaces are already correctly keeping one-off commands literal. Nothing functional is broken, but this lands exactly where people copy commands verbatim after setup succeeds. In one-off `npx` use, `Run now` and `Change` should stay literally runnable as `npx idlewatch ...`, while the durable background-mode handoff remains the separate explicit `npm install -g idlewatch`, then `idlewatch install-agent` path.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+- [x] Fresh normal CLI spot checks with a stubbed `launchctl` still keep the durable-install path calm and truthful:
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js --help`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent --help`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js install-agent`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Polish Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js status`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js --test-publish`
+  - `HOME="$HOME1" PATH="$FAKEBIN:$PATH" node bin/idlewatch-agent.js uninstall-agent`
+- [x] Fresh true-`npx` help spot checks still keep the one-off/durable split correct:
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js --help`
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] Fresh true-`npx` lifecycle spot checks reproduced the regression in the live checkout:
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box' IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA NPX Box Renamed' IDLEWATCH_ENROLL_MONITOR_TARGETS='memory' node bin/idlewatch-agent.js configure --no-tui`
+  - `HOME="$HOME2" PATH="$FAKEBIN:$PATH" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js status`
+- [x] Fresh global-install postinstall spot check still keeps the calmer durable-install handoff:
+  - `HOME="$HOME3" npm_config_global=true node scripts/postinstall.mjs`
+- [x] Observed in the live pass:
+  - true-`npx` top-level help currently stays correct:
+    - `Get started:  npx idlewatch quickstart`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+  - true-`npx` `install-agent --help` currently stays correct:
+    - `Set up now:                npx idlewatch quickstart`
+    - `npx idlewatch quickstart --no-tui   # plain text fallback`
+    - `Install once:              npm install -g idlewatch`
+    - `Turn on background mode:   idlewatch install-agent`
+    - `Run now:                   npx idlewatch run`
+  - but true-`npx` `quickstart --no-tui` success currently regresses to:
+    - `Run now:` then `idlewatch run   Run in the foreground`
+    - `For background mode:` then `idlewatch install-agent   Turn on background mode`
+  - true-`npx` saved-setup `status` currently regresses to:
+    - `Change:   idlewatch configure --no-tui`
+    - `Run now:  idlewatch run`
+    - `Turn on background mode:  idlewatch install-agent`
+  - true-`npx` `configure --no-tui` currently repeats the same plain-`idlewatch` next steps in that same one-off context
+  - the normal installed CLI, install-before-setup truthfulness, device ID continuity, metric-toggle persistence, local-only `--test-publish`, uninstall messaging, and global npm-install postinstall messaging all stayed calm in the same pass
+
+### Prioritized findings
+#### [x] P1 — true-`npx` quickstart/status/configure success surfaces have regressed back to plain `idlewatch ...` next steps
+**Why this matters:** This is tiny, but it lands exactly where people copy commands verbatim after the product just told them setup succeeded. In true one-off `npx` use, showing `idlewatch run` or `idlewatch configure --no-tui` quietly assumes a durable install that may not exist yet. The calmer split already used elsewhere is the right one: one-off actions stay literally runnable as `npx idlewatch ...`, while durable background mode remains a separate explicit handoff.
+
+**Exact repro**
+1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+2. Create a fake `launchctl` shim that exits non-zero for `print` and succeeds for install/uninstall actions
+3. Run the true-`npx` commands listed above with explicit npm-exec env vars
+4. Observe that the true-`npx` help surfaces stay correct, but the post-setup `quickstart --no-tui`, `status`, and `configure --no-tui` next-step surfaces drift back to plain `idlewatch ...` commands instead of one-off-safe `npx idlewatch ...` commands
+
+**Acceptance checks**
+- In a true `npx` context, `quickstart --no-tui` success should say `Run now: npx idlewatch run`
+- In that same true `npx` context, saved-setup `status` should say `Change: npx idlewatch configure --no-tui`
+- In that same true `npx` context, saved-setup `status` should say `Run now: npx idlewatch run`
+- In that same true `npx` context, `configure --no-tui` should keep the same one-off-safe `npx idlewatch ...` next steps
+- The durable background-mode handoff should stay separate and explicit (`npm install -g idlewatch`, then `idlewatch install-agent`) rather than pretending plain `idlewatch ...` is already available
+- No auth, ingest, packaging, or major launch-agent behavior changes should be introduced beyond this output/context fix
+
+**Last updated:** Saturday, March 28th, 2026 — 4:10 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - logged one still-real true-`npx` post-setup command-literalness regression from a fresh live pass
+
 ## Cycle R687 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass found one still-real tiny global-install postinstall setup-handoff regression in the live checkout and shipped the smallest useful fix.
