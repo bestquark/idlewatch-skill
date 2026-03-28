@@ -1,3 +1,41 @@
+## Cycle R699 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny wording seam in the standalone macOS uninstall script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the standalone `scripts/uninstall-macos-launch-agent.sh` flow said `Local log would go at ...` when setup had already saved a local telemetry file path but that file did not exist yet. Nothing functional was broken and the saved-config handling was already correct; this was purely a wording seam in a calm off-ramp moment. `would go at` read awkwardly and more implementation-shaped than the rest of the product.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the standalone macOS uninstall wording from `Local log would go at ...` to `Local log would go to ...` when a saved local telemetry path exists but the file has not been created yet
+- [x] Kept the existing calmer `Local log stays at ...` wording when the saved local telemetry file really exists
+- [x] Kept the existing `Logs would go in ...` directory wording for the shared launch-agent log folder fallback
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, reinstall hints, and saved-config behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh standalone uninstall spot check with a saved-but-not-yet-created local telemetry path now prints:
+  - `Saved config stays at .../.idlewatch/idlewatch.env`
+  - `Local log would go to .../.idlewatch/logs/qa-script-box-metrics.ndjson`
+- [x] Observed the old awkward wording is gone:
+  - `Local log would go at ...`
+
+### Prioritized findings
+#### [x] P1 — standalone macOS uninstall now keeps the missing-saved-log wording readable when a saved local telemetry file path exists but the file does not yet
+**Why this mattered:** This is tiny, but it lands in the exact “did uninstall keep the right local log target?” moment. The script already knew the correct saved path; the only problem was that the fallback pre-file wording sounded clunkier than the rest of the product. Tightening it keeps the off-ramp neat and trustworthy without adding any new behavior.
+
+**Acceptance checks**
+- When the standalone macOS uninstall script sees a saved `IDLEWATCH_LOCAL_LOG_PATH` whose file does not exist yet, it now says `Local log would go to ...`
+- The existing `Local log stays at ...` wording remains unchanged when that saved file already exists
+- The existing `Logs would go in ...` directory fallback remains unchanged when no saved local telemetry path exists
+- No auth, ingest, packaging, launch-agent, reinstall-hint, or telemetry-path behavior changes were introduced beyond this wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 4:30 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS uninstall missing-log wording polish fix
+
 ## Cycle R698 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and still did not surface another small product-facing issue worth shipping.

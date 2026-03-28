@@ -70,7 +70,7 @@ if [[ -n "$SAVED_LOCAL_LOG_PATH" ]]; then
   LOG_PATH_VALUE="$SAVED_LOCAL_LOG_PATH"
   LOG_STATUS_WORD="stays at"
   if [[ ! -f "$SAVED_LOCAL_LOG_PATH" ]]; then
-    LOG_STATUS_WORD="would go at"
+    LOG_STATUS_WORD="would go to"
   fi
 elif [[ ! -d "$LOG_DIR" ]]; then
   LOG_STATUS_WORD="would go in"

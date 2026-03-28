@@ -396,6 +396,40 @@ test('packaged macOS uninstall script stays truthful when setup was never saved'
   }
 })
 
+test('packaged macOS uninstall script keeps missing saved local log paths readable', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-missing-local-log-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-missing-local-log-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const savedConfigPath = path.join(tempHome, '.idlewatch', 'idlewatch.env')
+  const missingLocalLogPath = path.join(tempHome, '.idlewatch', 'logs', 'qa-script-box-metrics.ndjson')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, '#!/usr/bin/env bash\nexit 0\n')
+    fs.mkdirSync(path.dirname(savedConfigPath), { recursive: true })
+    fs.writeFileSync(savedConfigPath, `IDLEWATCH_DEVICE_NAME=QA Box\nIDLEWATCH_LOCAL_LOG_PATH=${missingLocalLogPath}\n`, 'utf8')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath
+    }
+
+    const uninstall = spawnSync('bash', [UNINSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(uninstall.status, 0, uninstall.stderr)
+    assert.match(uninstall.stdout, new RegExp(`Saved config stays at ${savedConfigPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.match(uninstall.stdout, new RegExp(`Local log would go to ${missingLocalLogPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
+    assert.doesNotMatch(uninstall.stdout, /Local log would go at /)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS uninstall script says logs would go there after install-before-setup only created the shared log folder', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-install-before-setup-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-uninstall-install-before-setup-bin-'))
