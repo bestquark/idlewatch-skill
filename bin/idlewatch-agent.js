@@ -353,11 +353,9 @@ function deviceIdentityPreservedAcrossRename(deviceName, deviceId) {
 function installAgentHelpText() {
   const invocation = detectCliInvocation()
   const installAgentHelpCommand = preferredProductCommand('install-agent')
-  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
-  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-  const quickstartFallbackLine = quickstartFallbackCommand
-    ? `\n                           ${quickstartFallbackCommand}   # plain text fallback`
-    : ''
+  const quickstartSetupCommand = process.stdin.isTTY
+    ? preferredPrimarySetupCommand('quickstart')
+    : preferredHelpSetupCommand('quickstart')
 
   if (invocation.kind === 'npx') {
     return `${installAgentHelpCommand} — Turn on background mode after durable install
@@ -366,7 +364,7 @@ Usage:  ${installAgentHelpCommand}
 
 Background mode needs a durable install.
 
-Set up now:                ${quickstartPrimaryCommand}${quickstartFallbackLine}
+Set up now:                ${quickstartSetupCommand}
 Install once:              npm install -g idlewatch
 Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}
 
@@ -380,7 +378,7 @@ Usage:  ${installAgentHelpCommand}
 Turns on background mode on macOS.
 If setup is already saved, background mode turns on right away.
 
-Set up now:              ${quickstartPrimaryCommand}${quickstartFallbackLine}
+Set up now:              ${quickstartSetupCommand}
 After setup:             ${installAgentHelpCommand}`
 }
 
@@ -524,11 +522,9 @@ function printHelp() {
   const commandLines = commands
     .map(([name, summary]) => `  ${name.padEnd(commandWidth)}   ${summary}`)
     .join('\n')
-  const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
-  const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-  const quickstartFallbackLine = quickstartFallbackCommand
-    ? `\n               ${quickstartFallbackCommand}   # plain text fallback`
-    : ''
+  const quickstartSetupCommand = process.stdin.isTTY
+    ? preferredPrimarySetupCommand('quickstart')
+    : preferredHelpSetupCommand('quickstart')
   console.log(`${cliBase}
 
 Usage:  ${cliBase} <command> [options]
@@ -543,7 +539,7 @@ Options:
   --help                  Show this help
   --help-env              Show all environment variables
 
-Get started:  ${quickstartPrimaryCommand}${quickstartFallbackLine}`)
+Get started:  ${quickstartSetupCommand}`)
 }
 
 function printHelpEnv() {
@@ -1408,11 +1404,10 @@ const subcommandPromise = (async () => {
     if (invocation.kind === 'npx') {
       console.error('Background mode needs a durable install.')
       console.error('')
-      console.error(`Set up now:                ${preferredPrimarySetupCommand('quickstart')}`)
-      const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-      if (quickstartFallbackCommand) {
-        console.error(`                           ${quickstartFallbackCommand}   # plain text fallback`)
-      }
+      const setupNowCommand = process.stdin.isTTY
+        ? preferredPrimarySetupCommand('quickstart')
+        : preferredHelpSetupCommand('quickstart')
+      console.error(`Set up now:                ${setupNowCommand}`)
       console.error('Install once:              npm install -g idlewatch')
       console.error(`Turn on background mode:   ${backgroundInstallHelpCommand(invocation)}`)
       console.error('')
@@ -1474,11 +1469,10 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     if (!shouldStartImmediately) {
       console.log('✅ Background integration installed.')
       console.log("   Setup isn't saved yet, so background mode stays off for now.")
-      console.log(`   Finish setup: ${preferredPrimarySetupCommand('quickstart')}`)
-      const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
-      if (setupFallbackCommand) {
-        console.log(`                 ${setupFallbackCommand}   # plain text fallback`)
-      }
+      const finishSetupCommand = process.stdin.isTTY
+        ? preferredPrimarySetupCommand('quickstart')
+        : preferredHelpSetupCommand('quickstart')
+      console.log(`   Finish setup: ${finishSetupCommand}`)
       console.log(`   Run now:      ${preferredProductCommand('run')}`)
       console.log(`   Turn on background mode after setup: ${preferredProductCommand('install-agent')}`)
       console.log(`   Config path:  ${formatPathForHelp(envFile)}`)
@@ -1585,12 +1579,10 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const expectedConfigFile = enrollmentOutputEnvFilePath()
       if (isReconfigure && args.has('--no-tui') && !fs.existsSync(expectedConfigFile)) {
         console.error(`IdleWatch is not set up yet. No saved config was found at ${formatPathForHelp(expectedConfigFile)}.`)
-        const quickstartPrimaryCommand = preferredPrimarySetupCommand('quickstart')
-        const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
-        console.error(`Start with ${quickstartPrimaryCommand}.`)
-        if (quickstartFallbackCommand) {
-          console.error(`           ${quickstartFallbackCommand}   # plain text fallback`)
-        }
+        const quickstartSetupCommand = process.stdin.isTTY
+          ? preferredPrimarySetupCommand('quickstart')
+          : preferredHelpSetupCommand('quickstart')
+        console.error(`Start with ${quickstartSetupCommand}.`)
         process.exit(1)
       }
 
@@ -2093,11 +2085,10 @@ if (statusRequested) {
     const launchAgent = process.platform === 'darwin' ? probeOwnedLaunchAgentState() : null
     const setupWaitingForInstalledBackground = launchAgent?.state === 'installed-not-loaded'
     const setupLabel = setupWaitingForInstalledBackground ? 'Finish setup' : 'Get started'
-    console.log(`  ${setupLabel}:  ${preferredPrimarySetupCommand('quickstart')}`)
-    const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
-    if (setupFallbackCommand) {
-      console.log(`               ${setupFallbackCommand}   # plain text fallback`)
-    }
+    const setupCommand = process.stdin.isTTY
+      ? preferredPrimarySetupCommand('quickstart')
+      : preferredHelpSetupCommand('quickstart')
+    console.log(`  ${setupLabel}:  ${setupCommand}`)
     if (setupWaitingForInstalledBackground) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
     }

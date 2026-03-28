@@ -33409,3 +33409,42 @@ No new polish issue cleared the bar this cycle. The current checkout still feels
 - [x] Background/install behavior and telemetry behavior stay unchanged
 
 **Last updated:** Saturday, March 28th, 2026 — 4:17 AM (America/Toronto)
+
+## Cycle R669 Status: CLOSED ✅
+
+### Outcome
+- Restored one tiny but real headless setup-handoff polish regression in the live checkout.
+- A few non-interactive installer/help/setup-recovery surfaces had drifted back to showing two setup commands again (`quickstart`, then `quickstart --no-tui` as a fallback).
+- Those scan-first text-only moments now go back to one obvious copy-safe command: `quickstart --no-tui`.
+- This keeps setup/reconfigure/install guidance calmer and lower-friction without touching auth, ingest, packaging shape, or the now-working telemetry path.
+
+### R669 spot-check coverage
+- [x] `node bin/idlewatch-agent.js --help`
+- [x] `HOME="$(mktemp -d)" node bin/idlewatch-agent.js status`
+- [x] `HOME="$(mktemp -d)" npm_execpath=/opt/homebrew/lib/node_modules/npm/bin/npm-cli.js npm_command=exec npm_lifecycle_event=npx npm_config_user_agent='npm/11.9.0 node/v25.6.1 darwin arm64 workspaces/false' node bin/idlewatch-agent.js install-agent --help`
+- [x] `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 IDLEWATCH_ENROLL_DEVICE_NAME='QA Box' IDLEWATCH_ENROLL_MODE=local IDLEWATCH_ENROLL_MONITOR_TARGETS='cpu,memory' node bin/idlewatch-agent.js quickstart --no-tui`
+- [x] `HOME="$(mktemp -d)" IDLEWATCH_ENROLL_NON_INTERACTIVE=1 node bin/idlewatch-agent.js configure --no-tui`
+- [x] `node --test test/postinstall.test.mjs test/macos-launch-agent-scripts.test.mjs --test-name-pattern 'postinstall|packaged macOS install script'`
+
+### Prioritized findings
+#### [x] L155 — non-interactive setup/install handoffs again keep one obvious `quickstart --no-tui` command
+**Why it matters:** This is tiny, but it lands exactly in the copy-paste moment where product taste matters most. Once the product already knows it is in a text-first/non-interactive setup moment, showing both `quickstart` and `quickstart --no-tui` adds one avoidable decision and makes the flow feel noisier than it needs to.
+
+**What shipped**
+- Reworded `bin/idlewatch-agent.js` so non-interactive `--help`, first-run `status`, install-before-setup, and no-saved-config recovery hints now point to one command: `quickstart --no-tui`.
+- Kept true one-off `npx` guidance literally runnable as `npx idlewatch quickstart --no-tui`.
+- Reworded `scripts/postinstall.mjs` so the global install handoff again prints only `idlewatch quickstart --no-tui`.
+- Reworded `scripts/install-macos-launch-agent.sh` so packaged install-before-setup guidance now also sticks to one `quickstart --no-tui` command.
+- Updated focused regression coverage in `test/postinstall.test.mjs` and `test/macos-launch-agent-scripts.test.mjs`.
+
+**Acceptance checks**
+- [x] Main `--help` now says `Get started:  idlewatch quickstart --no-tui`
+- [x] First-run `status` now says `Get started:  idlewatch quickstart --no-tui`
+- [x] `install-agent --help` in true `npx` mode now says `Set up now:                npx idlewatch quickstart --no-tui`
+- [x] `configure --no-tui` with no saved setup now says `Start with idlewatch quickstart --no-tui.`
+- [x] Global npm `postinstall` now says `idlewatch quickstart --no-tui`
+- [x] Packaged macOS install-before-setup now says `Finish setup: ... quickstart --no-tui`
+- [x] The same text-first surfaces no longer print a second `# plain text fallback` line
+- [x] Background/install behavior and telemetry behavior stay unchanged
+
+**Last updated:** Saturday, March 28th, 2026 — 6:45 AM (America/Toronto)
