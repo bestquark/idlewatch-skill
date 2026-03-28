@@ -1131,8 +1131,8 @@ One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch
 - [x] The core CLI polish lane still stayed clean in the same pass: install-before-setup remained truthful, saved setup + reconfigure kept device identity continuity and metric-toggle persistence visible inline, local-only `--test-publish` stayed intentionally lightweight, and npm/`npx` handoffs remained literal
 
 ### Prioritized findings
-#### [ ] P1 — standalone macOS uninstall script still says `Logs stay in ...` when no retained log folder exists yet
-**Why this matters:** This is tiny, but it is exactly the kind of needless over-claim that makes an uninstall/off-ramp feel less trustworthy than the rest of the product. If setup/logs do not exist yet, the script should say where logs *would* go rather than implying it preserved something.
+#### [x] P1 — standalone macOS uninstall script still says `Logs stay in ...` when no retained log folder exists yet
+**Why this matters:** This looked worth checking because it would have been exactly the kind of needless over-claim that makes an uninstall/off-ramp feel less trustworthy than the rest of the product. A fresh live repro in the current checkout no longer reproduces it: the script already says where logs *would* go when the retained log folder does not exist.
 
 **Exact repro**
 1. `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
@@ -1151,8 +1151,41 @@ One low-risk polish issue still cleared the bar: `scripts/uninstall-macos-launch
 - The reinstall handoff should stay short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
 - No auth, ingest, packaging, or launch-agent behavior changes should be introduced beyond this wording truthfulness fix
 
-**Last updated:** Friday, March 27th, 2026 — 10:32 PM (America/Toronto)  
-**Status:** COMPLETE ✅ - logged one tiny standalone macOS uninstall-script retained-log truthfulness seam from a fresh live pass
+**Last updated:** Friday, March 27th, 2026 — 10:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the clean-home uninstall repro in the current checkout and confirmed the retained-log truthfulness issue is no longer present
+
+## Cycle R641 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass reran the highest-priority remaining item from the QA log before touching code and found that the live checkout already behaves correctly.
+
+### Priority call
+No new fix cleared the bar this cycle. The highest-priority remaining QA note — the standalone macOS uninstall-script claim that logs "stay" in a fresh no-setup / no-log home — no longer reproduces in the current checkout. The live script already says `Saved config would live ...` and `Logs would go in ...` in that clean-state path, which is the calmer, more truthful behavior we want. The right move this cycle was to avoid churn, keep the working installer path intact, and log the verification pass.
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/uninstall-macos-launch-agent.sh`
+- [x] Fresh standalone macOS uninstall-script no-setup repro from a clean temporary HOME:
+  - `HOME="$TMPHOME" PATH=/usr/bin:/bin:/opt/homebrew/bin:$PATH bash scripts/uninstall-macos-launch-agent.sh`
+- [x] Observed in the live pass:
+  - `✅ Background mode turned off.`
+  - `No plist was installed at .../Library/LaunchAgents/com.idlewatch.agent.plist`
+  - `Saved config would live at .../.idlewatch/idlewatch.env`
+  - `Logs would go in .../Library/Logs/IdleWatch`
+  - `Turn background mode back on later with idlewatch install-agent.`
+- [x] Confirmed the rest of the requested polish lane remained untouched; no auth, ingest, packaging, launch-agent, or telemetry-path changes were made in this verification-only pass
+
+### Prioritized findings
+#### [x] P0 — no new product-facing installer/CLI polish issue found after rechecking the highest-priority remaining QA note
+**Why this matters:** This lane is about reducing friction, not manufacturing activity. When the highest-priority remaining item turns out to be stale and the working product already says the calmer, more truthful thing, the right move is to log the clean verification and stop.
+
+**Acceptance checks**
+- The standalone macOS uninstall script still says `Saved config would live at ...` in a fresh no-setup home
+- That same clean-state path still says `Logs would go in ...` instead of implying logs were preserved
+- The reinstall handoff remains short and unchanged: `Turn background mode back on later with idlewatch install-agent.`
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced in this verification-only pass
+
+**Last updated:** Friday, March 27th, 2026 — 10:40 PM (America/Toronto)  
+**Status:** COMPLETE ✅ - reran the highest-priority remaining QA item and confirmed no code change was needed
 
 ## Cycle R639 Status: COMPLETE ✅
 
