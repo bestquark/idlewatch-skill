@@ -38,10 +38,20 @@ fi
 
 PLIST_PATH="$PLIST_ROOT/$PLIST_LABEL.plist"
 CONFIG_ENV_PATH="${IDLEWATCH_CONFIG_ENV_PATH:-$HOME/.idlewatch/idlewatch.env}"
+DEFAULT_CONFIG_ENV_PATH="$HOME/.idlewatch/idlewatch.env"
 HAS_SAVED_CONFIG=0
 if [[ -f "$CONFIG_ENV_PATH" ]]; then
   HAS_SAVED_CONFIG=1
 fi
+
+with_config_command() {
+  local command="$1"
+  if [[ "$CONFIG_ENV_PATH" != "$DEFAULT_CONFIG_ENV_PATH" ]]; then
+    printf 'IDLEWATCH_CONFIG_ENV_PATH=%q %s\n' "$CONFIG_ENV_PATH" "$command"
+  else
+    printf '%s\n' "$command"
+  fi
+}
 
 xml_escape() {
   printf '%s' "$1" \
@@ -200,28 +210,28 @@ else
   echo "Setup isn't saved yet, so background mode stays off for now."
   echo "Finish setup:"
   if command -v idlewatch >/dev/null 2>&1; then
-    echo "   idlewatch quickstart"
-    echo "   idlewatch quickstart --no-tui   # plain text fallback"
+    printf '   %s\n' "$(with_config_command 'idlewatch quickstart')"
+    printf '   %s   # plain text fallback\n' "$(with_config_command 'idlewatch quickstart --no-tui')"
     echo ""
     echo "Run now:"
-    echo "   idlewatch run"
+    printf '   %s\n' "$(with_config_command 'idlewatch run')"
     echo ""
     echo "Turn on background mode after setup:"
-    echo "   idlewatch install-agent"
+    printf '   %s\n' "$(with_config_command 'idlewatch install-agent')"
     echo ""
     echo "Check:"
-    echo "   idlewatch status   See your saved config, background mode state, and last publish result"
+    printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command 'idlewatch status')"
   else
-    echo "   $BIN_PATH quickstart"
-    echo "   $BIN_PATH quickstart --no-tui   # plain text fallback"
+    printf '   %s\n' "$(with_config_command "$BIN_PATH quickstart")"
+    printf '   %s   # plain text fallback\n' "$(with_config_command "$BIN_PATH quickstart --no-tui")"
     echo ""
     echo "Run now:"
-    echo "   $BIN_PATH run"
+    printf '   %s\n' "$(with_config_command "$BIN_PATH run")"
     echo ""
     echo "Turn on background mode after setup:"
-    echo "   $BIN_PATH install-agent"
+    printf '   %s\n' "$(with_config_command "$BIN_PATH install-agent")"
     echo ""
     echo "Check:"
-    echo "   $BIN_PATH status   See your saved config, background mode state, and last publish result"
+    printf '   %s   See your saved config, background mode state, and last publish result\n' "$(with_config_command "$BIN_PATH status")"
   fi
 fi

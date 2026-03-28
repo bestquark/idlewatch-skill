@@ -141,6 +141,50 @@ exit 0
   }
 })
 
+test('packaged macOS install script keeps custom saved-config handoffs literal before setup', { skip: process.platform !== 'darwin' }, () => {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-no-setup-home-'))
+  const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-custom-no-setup-bin-'))
+  const fakeLaunchctl = path.join(fakeBinDir, 'launchctl')
+  const fakeAppPath = path.join(tempHome, 'Applications', 'IdleWatch.app')
+  const fakeAppBin = path.join(fakeAppPath, 'Contents', 'MacOS', 'IdleWatch')
+  const customConfigPath = path.join(tempHome, 'Library', 'Application Support', 'IdleWatch QA', 'idlewatch.env')
+  const expectedPrefix = `IDLEWATCH_CONFIG_ENV_PATH=${customConfigPath.replace(/ /g, '\\ ')}`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  try {
+    fs.mkdirSync(path.dirname(fakeAppBin), { recursive: true })
+    writeExecutable(fakeAppBin, '#!/usr/bin/env bash\nexit 0\n')
+    writeExecutable(fakeLaunchctl, `#!/usr/bin/env bash
+set -euo pipefail
+cmd="\${1:-}"
+if [[ "$cmd" == "print" ]]; then
+  exit 1
+fi
+exit 0
+`)
+    writeExecutable(path.join(fakeBinDir, 'idlewatch'), '#!/usr/bin/env bash\nexit 0\n')
+
+    const env = {
+      ...process.env,
+      HOME: tempHome,
+      PATH: `${fakeBinDir}:${process.env.PATH}`,
+      IDLEWATCH_APP_PATH: fakeAppPath,
+      IDLEWATCH_CONFIG_ENV_PATH: customConfigPath
+    }
+
+    const install = spawnSync('bash', [INSTALL_SCRIPT], { env, encoding: 'utf8', timeout: 15000 })
+    assert.equal(install.status, 0, install.stderr)
+    assert.match(install.stdout, new RegExp(`Finish setup:\\s+${expectedPrefix} idlewatch quickstart`))
+    assert.match(install.stdout, new RegExp(`${expectedPrefix} idlewatch quickstart --no-tui\\s+# plain text fallback`))
+    assert.match(install.stdout, new RegExp(`Run now:\\s+${expectedPrefix} idlewatch run`))
+    assert.match(install.stdout, new RegExp(`Turn on background mode after setup:\\s+${expectedPrefix} idlewatch install-agent`))
+    assert.match(install.stdout, new RegExp(`Check:\\s+${expectedPrefix} idlewatch status\\s+See your saved config, background mode state, and last publish result`))
+    assert.doesNotMatch(install.stdout, /Finish setup:\s+idlewatch quickstart(?:\s|$)/)
+  } finally {
+    fs.rmSync(fakeBinDir, { recursive: true, force: true })
+    fs.rmSync(tempHome, { recursive: true, force: true })
+  }
+})
+
 test('packaged macOS install script shows the exact refresh command when idlewatch is not on PATH yet', { skip: process.platform !== 'darwin' }, () => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-cli-home-'))
   const fakeBinDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idlewatch-macos-launch-agent-no-cli-bin-'))

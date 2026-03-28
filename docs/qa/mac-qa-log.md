@@ -1,3 +1,43 @@
+## Cycle R696 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny custom-saved-config handoff seam in the standalone macOS install script and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the standalone `scripts/install-macos-launch-agent.sh` flow already respected `IDLEWATCH_CONFIG_ENV_PATH` for the actual background install, but its no-saved-setup follow-up commands still printed bare `idlewatch ...` or packaged-binary commands. That meant the exact next-step copy after install-before-setup could quietly drift back to the default config path in custom saved-config setups. Nothing about auth, ingest, packaging shape, or the now-working telemetry path was broken; this was just a tiny saved-config handling gap on one copy/paste-heavy setup surface.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Taught the standalone macOS install script to prefix its no-setup `quickstart`, `quickstart --no-tui`, `run`, `install-agent`, and `status` handoffs with `IDLEWATCH_CONFIG_ENV_PATH=...` when a custom saved-config path is configured
+- [x] Kept the default-path experience unchanged and low-noise
+- [x] Added focused regression coverage in `test/macos-launch-agent-scripts.test.mjs`
+- [x] Left auth/ingest behavior, launch-agent semantics, packaged-app fallback shape, and durable background-mode behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `bash -n scripts/install-macos-launch-agent.sh`
+- [x] `node --test test/macos-launch-agent-scripts.test.mjs`
+- [x] Fresh standalone macOS install-script no-setup spot check with a custom `IDLEWATCH_CONFIG_ENV_PATH` now prints literal follow-ups like:
+  - `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch quickstart`
+  - `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch quickstart --no-tui   # plain text fallback`
+  - `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch run`
+  - `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch install-agent`
+  - `IDLEWATCH_CONFIG_ENV_PATH=... idlewatch status   See your saved config, background mode state, and last publish result`
+- [x] Observed: the normal default-path no-setup handoff stays unchanged and calm
+- [x] Observed: the packaged-app fallback keeps the same product shape, now with the same custom saved-config literalness when needed
+
+### Prioritized findings
+#### [x] P1 — standalone macOS install-before-setup handoffs now stay on the configured saved-config path instead of quietly drifting back to the default path
+**Why this mattered:** This is tiny, but it lands in the exact “I just installed background integration; what do I run next?” moment. If the script already knows the real saved-config path it is wiring into launchd, the immediate setup/run/status follow-ups should keep pointing at that same path without making the user reconstruct the env prefix themselves.
+
+**Acceptance checks**
+- In the standalone macOS install script’s no-saved-setup path, custom saved-config setups now keep `quickstart`, `quickstart --no-tui`, `run`, `install-agent`, and `status` literally runnable with `IDLEWATCH_CONFIG_ENV_PATH=...`
+- Default-path setups remain unchanged and low-noise
+- The standalone packaged-app fallback keeps the same product shape and now stays equally literal for custom saved-config setups
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this saved-config handoff polish
+
+**Last updated:** Saturday, March 28th, 2026 — 3:55 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny standalone macOS custom-saved-config handoff fix
+
 ## Cycle R695 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan in the live checkout and still did not surface another small product-facing issue worth shipping.
