@@ -1,3 +1,41 @@
+## Cycle R738 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one still-real tiny true-`npx` uninstall off-ramp wording seam and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the true-`npx` uninstall help/runtime off-ramp said `Turn background mode back on later with install once with ...`, which was technically understandable but clunky in exactly the copy/paste moment that should feel calm and literal. Nothing functional was broken and the durable-install guidance itself was already correct; the remaining issue was just the awkward sentence shape.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Added one tiny helper in `bin/idlewatch-agent.js` so uninstall help/runtime can render the background-mode restore sentence cleanly per invocation style
+- [x] Tightened the true-`npx` uninstall help/runtime wording from `Turn background mode back on later with install once with ...` to `Turn background mode back on later: install once with ...`
+- [x] Kept the installed/non-`npx` uninstall wording unchanged (`Turn background mode back on later with idlewatch install-agent.`)
+- [x] Updated focused regression coverage in `test/openclaw-env.test.mjs`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and the telemetry path unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] `node --check bin/idlewatch-agent.js`
+- [x] `node --test --test-name-pattern='uninstall-agent help in npx context keeps the durable off-ramp literally runnable|uninstall-agent runtime in npx context keeps the durable restore path literal' test/openclaw-env.test.mjs`
+- [x] Fresh true-`npx` uninstall help now prints:
+  - `Turn background mode back on later: install once with npm install -g idlewatch, then run idlewatch install-agent.`
+- [x] Fresh true-`npx` uninstall runtime now prints that same calmer off-ramp sentence after the retained-config/local-log summary
+- [x] Observed the old clunkier sentence shape is gone from the touched true-`npx` uninstall surfaces:
+  - `Turn background mode back on later with install once with npm install -g idlewatch, then run idlewatch install-agent.`
+
+### Prioritized findings
+#### [x] P1 — true-`npx` uninstall now keeps the durable off-ramp literally runnable without the awkward `with install once with ...` wording seam
+**Why this mattered:** This is tiny, but it lands in the exact “okay, how do I turn this back on later?” moment after a one-off run. The command guidance was already correct; the remaining friction was pure sentence shape.
+
+**Acceptance checks**
+- In true `npx` context, `uninstall-agent --help` now says `Turn background mode back on later: install once with npm install -g idlewatch, then run idlewatch install-agent.`
+- In that same true `npx` context, the real uninstall runtime output now uses that same calmer off-ramp sentence
+- Installed/non-`npx` uninstall wording remains unchanged and low-noise
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this uninstall off-ramp wording polish
+
+**Last updated:** Saturday, March 28th, 2026 — 7:45 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny true-`npx` uninstall off-ramp wording polish fix
+
 ## Cycle R737 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the scoped lane from the current polish plan in the live checkout and did not surface another small user-facing issue worth shipping.

@@ -397,6 +397,13 @@ function durableBackgroundModeRestoreHint(invocation = detectCliInvocation()) {
   return backgroundInstallHelp
 }
 
+function durableBackgroundModeRestoreSentence(invocation = detectCliInvocation()) {
+  if (invocation.kind === 'npx') {
+    return `Turn background mode back on later: ${durableBackgroundModeRestoreHint(invocation)}.`
+  }
+  return `Turn background mode back on later with ${durableBackgroundModeRestoreHint(invocation)}.`
+}
+
 function uninstallAgentHelpText() {
   const invocation = detectCliInvocation()
   const uninstallAgentHelpCommand = preferredProductCommand('uninstall-agent')
@@ -413,7 +420,7 @@ Usage:  ${uninstallAgentHelpCommand}
 
 Turns off background mode on macOS.
 If background mode is already off, this still keeps the saved config and local logs in place.
-Turn background mode back on later with ${backgroundInstallHelp}.`
+${durableBackgroundModeRestoreSentence(invocation)}`
   }
 
   return `${uninstallAgentHelpCommand} — Turn off background mode (macOS)
@@ -423,7 +430,7 @@ Usage:  ${uninstallAgentHelpCommand}
 Turns off background mode on macOS.
 Saved config stays at ${formatPathForHelp(defaultPersistedEnvFilePath())} when setup has been saved.
 ${retainedLocalLogSummary}
-Turn background mode back on later with ${backgroundInstallHelp}.`
+${durableBackgroundModeRestoreSentence(invocation)}`
 }
 
 function printSetupNextSteps({ isReconfigure, launchAgentState }) {
@@ -1551,7 +1558,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
       const localLogPath = resolvePersistedLocalLogPath()
       console.log('Background mode is already off.')
       printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
-      console.log(`   Turn background mode back on later with ${durableBackgroundModeRestoreHint(invocation)}.`)
+      console.log(`   ${durableBackgroundModeRestoreSentence(invocation)}`)
       process.exit(0)
     }
 
@@ -1567,7 +1574,7 @@ ${programArguments.map(arg => `    <string>${escapeXml(arg)}</string>`).join('\n
     const localLogPath = resolvePersistedLocalLogPath()
     console.log('✅ Background mode turned off.')
     printUninstallRetentionSummary({ envFile, dataDir, localLogPath, assumeExisting: false })
-    console.log(`   Turn background mode back on later with ${durableBackgroundModeRestoreHint(invocation)}.`)
+    console.log(`   ${durableBackgroundModeRestoreSentence(invocation)}`)
     process.exit(0)
   }
 
