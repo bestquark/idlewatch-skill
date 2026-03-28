@@ -1,3 +1,47 @@
+## Cycle R742 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass shipped the last still-real docs-level setup-path consistency fix in the README.
+
+### Priority call
+One low-risk polish issue still clearly cleared the bar: the product itself had already converged on the calmer shape of leading with plain `quickstart` and keeping `--no-tui` as the explicit fallback, but the README still headlined `quickstart --no-tui` in a few first-scan install and quickstart moments. Nothing functional was broken; this was a docs-only product-taste seam in one of the highest-visibility setup surfaces.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Restored the README install section to lead with `npx idlewatch quickstart`, with `npx idlewatch quickstart --no-tui` one block below as the plain-text fallback
+- [x] Restored the README quickstart section to lead with `idlewatch quickstart`, with `idlewatch quickstart --no-tui` one block below as the plain-text fallback
+- [x] Tightened the surrounding wording to call `--no-tui` the plain-text fallback instead of the default setup shape
+- [x] Restored the background-mode section to point one-off setup at plain `npx idlewatch quickstart`, with `--no-tui` kept visible as the fallback
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `README.md`
+- [x] Observed the README install section now leads with:
+  - `npx idlewatch quickstart`
+  - then `npx idlewatch quickstart --no-tui  # plain text fallback`
+- [x] Observed the README quickstart section now leads with:
+  - `idlewatch quickstart`
+  - then `idlewatch quickstart --no-tui  # plain text fallback`
+- [x] Observed the README background-mode section now says:
+  - `Use npx idlewatch quickstart for one-off setup or foreground testing.`
+  - `Use npx idlewatch quickstart --no-tui if you want the plain-text fallback.`
+- [x] Observed the old more technical headline commands are gone from those first-scan setup spots:
+  - `npx idlewatch quickstart --no-tui` as the main install command
+  - `idlewatch quickstart --no-tui` as the main quickstart command
+
+### Prioritized findings
+#### [x] P1 — README setup docs now match the calmer `quickstart`-first product shape already used by the actual CLI and install surfaces
+**Why this mattered:** This is small, but it lands in the exact “what should I run first?” moment. Leading docs with the fallback command made setup feel slightly more technical than the product itself. Restoring plain `quickstart` first keeps the docs aligned with the calmer runtime experience.
+
+**Acceptance checks**
+- README install and quickstart sections now lead with plain `idlewatch quickstart` / `npx idlewatch quickstart`
+- `--no-tui` remains visible, but as the explicit plain-text fallback rather than the headline command
+- The existing clarity about config persistence, `install-agent`, one-off `npx` usage, and local/cloud mode remains intact
+- No auth, ingest, packaging, launch-agent, or runtime behavior changes were introduced beyond this docs-only polish
+
+**Last updated:** Saturday, March 28th, 2026 — 8:25 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny README setup-path consistency fix
+
 ## Cycle R741 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the live runtime lane and found one remaining docs-level install-path clarity seam worth tracking, but no new CLI/runtime change that cleared the bar.
