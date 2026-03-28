@@ -44,7 +44,7 @@ idlewatch configure --no-tui
 
 Saved changes apply next time IdleWatch starts. If background mode is already on, re-run `idlewatch install-agent` to apply the saved config.
 
-Use `--no-tui` for simple prompts any time you want the simplest plain-text setup path.
+Use `--no-tui` any time you want the simplest plain-text setup path.
 
 ## Verify & run
 
@@ -58,8 +58,8 @@ idlewatch run                 # start continuous collection
 ## Background mode (macOS)
 
 Use `npx idlewatch quickstart` for one-off setup or foreground testing.
-Use `npx idlewatch quickstart --no-tui` if you want the plain-text fallback.
-For background mode:
+Or use `npx idlewatch quickstart --no-tui` if you want the plain-text fallback.
+For durable background mode, install once, then turn it on:
 
 ```bash
 npm install -g idlewatch  # install once

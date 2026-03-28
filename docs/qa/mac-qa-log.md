@@ -1,3 +1,40 @@
+## Cycle R746 Status: COMPLETE ✅
+
+Fresh installer/CLI polish pass found one last tiny docs-level wording seam in the setup/reconfigure handoff and shipped the smallest useful fix.
+
+### Priority call
+One low-risk polish issue still cleared the bar: the runtime product had already converged on a calm sequential story for one-off vs durable setup, plus predictable “apply saved config” guidance, but the README background/reconfigure wording still read a little flatter and slightly more implementation-shaped than the CLI itself. Nothing functional was broken; this was a docs-only product-taste seam in a high-visibility setup surface.
+
+### What changed
+- [x] Kept the now-working telemetry path untouched
+- [x] Tightened the README reconfigure note so `--no-tui` reads like a simple optional plain-text path instead of extra setup ceremony
+- [x] Tightened the README background-mode section to use the calmer sequential wording: one-off `npx` first, then `For durable background mode, install once, then turn it on:`
+- [x] Left auth/ingest behavior, packaging, launch-agent semantics, saved-config handling, and runtime install behavior unchanged
+
+### Verification evidence
+- [x] `cd /Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+- [x] Updated `README.md`
+- [x] Observed the Quickstart section now says:
+  - `Saved changes apply next time IdleWatch starts. If background mode is already on, re-run idlewatch install-agent to apply the saved config.`
+  - `Use --no-tui any time you want the simplest plain-text setup path.`
+- [x] Observed the Background mode section now says:
+  - `Use npx idlewatch quickstart for one-off setup or foreground testing.`
+  - `Or use npx idlewatch quickstart --no-tui if you want the plain-text fallback.`
+  - `For durable background mode, install once, then turn it on:`
+- [x] Observed the touched README copy now matches the calmer runtime product shape more closely without adding any new options or steps
+
+### Prioritized findings
+#### [x] P1 — README setup/reconfigure wording now matches the calmer sequential product shape already used by the actual CLI
+**Why this mattered:** This is tiny, but it lands in the exact “what should I do next?” scan path. The commands were already correct; the remaining friction was sentence shape. Making the docs read more like the product reduces a little avoidable setup noise without touching behavior.
+
+**Acceptance checks**
+- README background-mode guidance now explicitly reads as a sequence: one-off `npx` path first, then durable install/turn-on
+- README reconfigure note keeps the saved-config/apply guidance explicit while making `--no-tui` feel like an optional plain-text path rather than the headline experience
+- No auth, ingest, packaging, launch-agent, or telemetry-path behavior changes were introduced beyond this docs-only polish
+
+**Last updated:** Saturday, March 28th, 2026 — 9:05 AM (America/Toronto)  
+**Status:** COMPLETE ✅ - shipped one tiny README setup/reconfigure wording polish fix
+
 ## Cycle R745 Status: COMPLETE ✅
 
 Fresh installer/CLI polish pass reran the exact scoped lane from the current polish plan and did not surface another small end-user issue worth shipping.
