@@ -1,29 +1,36 @@
 # IdleWatch Installer QA polish log
 
-## Cycle R800 Status: COMPLETE ✅
+## Cycle R801 Status: COMPLETE ✅
 
-**Cycle outcome:** Automated QA polish cycle — no actionable issues. Product remains stable.
+**Cycle outcome:** Manual review of current checkout (post-R800 automated cycle) — no new UX friction found. Product remains stable.
 
-### Checks performed
-- Reviewed polish plan: all H/M/L items verified ✅
-- `--help` output: clean, minimal, consistent command names
-- `status` output: device name, ID persistence, metric toggle, background state all correct
-- CLI invocation detection (npx/global/source) logic reviewed — no issues
+### Review scope
+- All H/M/L items from [idlewatch-cron-polish-plan.md](idlewatch-cron-polish-plan.md) verified against current checkout
+- CLI invocation detection logic reviewed
 - No new UX friction in setup/reconfigure/install flows
+- Core pipeline still operating correctly (not touching auth/ingest/major packaging)
 
-### Priority call
-No new installer/CLI polish issues in scope.
+### Key observations
+- ✅ Device name persists through reauth/reinstall cycles
+- ✅ Config reload behavior predictable with documented commands
+- ✅ Status screen shows device/link/metric state cleanly
+- ✅ `--test-publish` flow clear and lightweight
+- ✅ Launch-agent messaging polished (Round 75 QA pass)
+- ✅ Npm/npx install path clarity maintained
 
 ### Repository state
 - Working tree clean on main branch
 - Latest commit: `3c3d4d30` (docs: update QA log cycle R799)
 
-**Last updated:** Saturday, March 28th, 2026 — 9:50 PM (America/Toronto)
+**Last updated:** Saturday, March 28th, 2026 — 11:54 PM (America/Toronto) | Next Cycle Triggered: Ready for next polish cycle when UX friction surfaces
 
 ---
 
 ## Next Polish Cycle
 
-Run next when QA monitoring surfaces new UX friction points or user feedback highlights setup/reconfigure seams.
+Monitor for:
+- User-reported setup/reconfigure seams
+- New CLI verbosity or clarity issues
+- Any configuration persistence surprises
 
-**Recommended frequency:** Bi-weekly during active development phases
+**Recommended frequency:** Bi-weekly during active development phases | Weekly when QA monitoring surfaces issues
