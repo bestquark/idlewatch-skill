@@ -9,19 +9,10 @@ Status: **COMPLETE ✅**
 
 All items from `idlewatch-cron-polish-plan.md` verified stable in post-R800 manual review.
 
-### Key Findings
-
-- **Device name persistence:** Working correctly through reauth/reinstall cycles
-- **Config reload behavior:** Documented and predictable
-- **Status screen:** Shows device/link/metric state cleanly (M1 verified)
-- **Test publish flow:** Clear, lightweight `--test-publish` flag works as intended (M2 verified)
-- **Launch-agent UX:** Polished messaging confirmed from Round 75 QA pass (L2 verified)
-- **Npm/npx clarity:** Install path remains intuitive
-
 ### Priority Items Status
 
 | Item | Status | Evidence |
-|------|--------|----------|
+|------|--|--|
 | H1: Device name persistence | ✅ Stable | v0.2.0 verified R798-R800 |
 | H2: Config reload predictability | ✅ Stable | Documented commands available |
 | M1: Status screen display | ✅ Verified | Visible in v0.2.0 |
@@ -35,4 +26,19 @@ Ready for QA monitoring cycle R802
 
 ---
 
-*Auto-generated during idlewatch QA polish lane*
+**Cycle R801 Status:** COMPLETE ✅  
+All items verified stable. No critical or high-severity issues found.
+
+**Summary:**
+- Device name persistence: Working correctly through reauth/reinstall cycles (H1)
+- Config reload behavior: Documented and predictable (H2)
+- Status screen display: Shows device/link/metric state cleanly (M1)
+- Test publish flow: Clear, lightweight `--test-publish` flag works as intended (M2)
+- Success confirmation: Clear device name/status messages visible in output (M3)
+- Test publish errors: Formatted API key validation provided (M4)
+
+**Cycle R802 Triggered:** Ready for next monitoring cycle.
+
+---
+
+*Auto-generated during IdleWatch Installer QA polish cycle R801*
