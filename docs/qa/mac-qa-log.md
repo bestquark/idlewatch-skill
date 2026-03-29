@@ -19,39 +19,25 @@
 
 ### New Findings
 
-#### P3-01: Duplicate `parseEnvValue`/`normalizeEnvKey` definitions
+#### P3-01: Duplicate `parseEnvValue`/`normalizeEnvKey` definitions ✅ Fixed
 
 - **Severity:** P3 (code hygiene, no user impact)
 - **Location:** `bin/idlewatch-agent.js:616-641` and `src/enrollment.js:286-311`
 - **Issue:** Both files define identical `parseEnvValue()` and `normalizeEnvKey()` functions independently. If one drifts, config parsing could silently differ between enrollment and runtime.
-- **Repro:** `grep -n 'function parseEnvValue\|function normalizeEnvKey' bin/idlewatch-agent.js src/enrollment.js`
-- **Fix:** Extract to a shared `src/env-parse.js` module and import in both files.
-- **Acceptance:** Only one definition of each function exists in the codebase (excluding `dist/`).
+- **Fix:** Extracted to shared `src/env-parse.js` module; both files now import from it.
+- **Verified:** `grep -rn 'function parseEnvValue\|function normalizeEnvKey' bin/ src/` → only `src/env-parse.js`.
 
-#### P3-02: Status "Get started" fallback line off-by-one alignment
+#### P3-02: Status "Get started" fallback line off-by-one alignment ✅ Fixed
 
 - **Severity:** P3 (cosmetic)
-- **Location:** `bin/idlewatch-agent.js:2124`
-- **Issue:** When status shows "Get started" (12 chars + colon + spaces = 16 visible chars before the command), the fallback `--no-tui` line uses 17 chars of indent, creating a 1-space misalignment.
-- **Repro:** `node bin/idlewatch-agent.js status` (without saved config)
-- **Observed:**
-  ```
-    Get started:  idlewatch quickstart
-                   idlewatch quickstart --no-tui   # plain text fallback
-  ```
-- **Expected:** Both lines should align at the same column.
-- **Fix:** Adjust indent string from `'                 '` to `'                '` (16 chars), or compute it dynamically from the label width.
-- **Acceptance:** Both command lines start at the same column in `status` output regardless of label ("Get started" vs "Finish setup").
+- **Fix:** Indent now computed dynamically from label width in both `status` and `--help`.
+- **Verified:** `idlewatch status` shows both lines aligned at the same column.
 
-#### P3-03: Dry-run "555% overflow" phrasing may alarm users
+#### P3-03: Dry-run "555% overflow" phrasing may alarm users ✅ Fixed
 
 - **Severity:** P3 (UX copy)
-- **Location:** Dry-run summary line
-- **Issue:** `100%+ context used (555% overflow)` reads like something is broken. For a monitoring tool, this is just a data point about OpenClaw usage, but "overflow" sounds like an error.
-- **Repro:** `node bin/idlewatch-agent.js --dry-run`
-- **Observed:** `OpenClaw: gpt-5.4, 100%+ context used (555% overflow), 151,280 tok/min`
-- **Suggestion:** Consider "555% of context window" or "5.5× context window" — factual without alarm.
-- **Acceptance:** Dry-run summary uses neutral phrasing for high context usage values.
+- **Fix:** Changed to `5.5× context window` — factual, neutral, no alarm.
+- **Verified:** Values >100% now render as `N.N× context window` instead of `overflow`.
 
 ### Cycle Summary
 
