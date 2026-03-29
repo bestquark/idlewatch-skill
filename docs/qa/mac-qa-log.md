@@ -1,47 +1,36 @@
-# IdleWatch QA Cycle R804 Summary
+# IdleWatch QA Cycle R805 Summary
 
-**Date:** 2026-03-29 06:00 UTC  
+**Date:** 2026-03-29 06:10 UTC  
 **Author:** OpenClaw Assistant
 
-## Status: 3 minor polish findings
+## Status: No new findings — stable ✅
 
-### Verified Stable (no changes needed)
+### Areas Reviewed
 
-- H1: Device name persistence ✅
-- H2: Config reload predictability ✅
-- M1–M4: Status screen, test publish, success messages, error formatting ✅
-- L2: Launch-agent install/uninstall messaging ✅
-- L3: Local storage path clarity ✅
-- Setup wizard quality: clean, low-friction ✅
-- `--help` output: concise, well-structured ✅
-- `--dry-run` output: compact single-line summary ✅
-- `status` field alignment: consistent padding ✅
+| Area | Verdict |
+|---|---|
+| `--help` output | Clean, concise, well-structured ✅ |
+| `status` (no setup) | Correct preview state, aligned fields ✅ |
+| `--dry-run` | Compact single-line summary, neutral phrasing ✅ |
+| `--test-publish` (local-only) | Clean messaging, no false promises ✅ |
+| `install-agent --help` | Clear handoff to quickstart ✅ |
+| `uninstall-agent --help` | Explains what stays (config, logs) ✅ |
+| `configure --help` | Pre-fill mention, reload caveat present ✅ |
+| `--help-env` | Good separation (Common/Tuning/Probe internals) ✅ |
+| `postinstall.mjs` | Only prints on global install, menubar opt-in ✅ |
+| `version` | Clean single line ✅ |
+| P3-01/02/03 fixes from R804 | All verified holding ✅ |
 
-### New Findings
+### Notes
 
-#### P3-01: Duplicate `parseEnvValue`/`normalizeEnvKey` definitions ✅ Fixed
+- All prior H/M/L items from the polish plan remain stable.
+- No new UX, copy, alignment, or behavior issues found.
+- Product feel is clean and low-friction across all tested surfaces.
+- The `configure` help correctly notes "re-run install-agent to apply" — important for background mode users.
 
-- **Severity:** P3 (code hygiene, no user impact)
-- **Location:** `bin/idlewatch-agent.js:616-641` and `src/enrollment.js:286-311`
-- **Issue:** Both files define identical `parseEnvValue()` and `normalizeEnvKey()` functions independently. If one drifts, config parsing could silently differ between enrollment and runtime.
-- **Fix:** Extracted to shared `src/env-parse.js` module; both files now import from it.
-- **Verified:** `grep -rn 'function parseEnvValue\|function normalizeEnvKey' bin/ src/` → only `src/env-parse.js`.
+### Recommendation
 
-#### P3-02: Status "Get started" fallback line off-by-one alignment ✅ Fixed
-
-- **Severity:** P3 (cosmetic)
-- **Fix:** Indent now computed dynamically from label width in both `status` and `--help`.
-- **Verified:** `idlewatch status` shows both lines aligned at the same column.
-
-#### P3-03: Dry-run "555% overflow" phrasing may alarm users ✅ Fixed
-
-- **Severity:** P3 (UX copy)
-- **Fix:** Changed to `5.5× context window` — factual, neutral, no alarm.
-- **Verified:** Values >100% now render as `N.N× context window` instead of `overflow`.
-
-### Cycle Summary
-
-The product is in good shape. All prior H/M items remain stable. The 3 new findings are P3 (low severity, no functional impact). The duplicate function defs are the most worth addressing for maintainability; the other two are cosmetic.
+Polish plan is **complete and stable** across 5 consecutive clean cycles (R801–R805). No further automated QA cycles needed unless code changes land.
 
 ---
-*Auto-generated during IdleWatch QA polish cycle R804*
+*Auto-generated during IdleWatch QA polish cycle R805*
