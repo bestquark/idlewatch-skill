@@ -1,6 +1,6 @@
-# IdleWatch QA Cycle R806 Summary
+# IdleWatch QA Cycle R807 Summary
 
-**Date:** 2026-03-29 06:30 UTC  
+**Date:** 2026-03-29 06:50 UTC  
 **Author:** OpenClaw Assistant
 
 ## Status: No new findings — stable ✅
@@ -9,23 +9,23 @@
 
 | Area | Verdict |
 |---|---|
-| `--help` output | Clean, concise, well-structured ✅ |
+| `--help` output | Clean, concise, `quickstart` as lead line ✅ |
 | `status` (no setup) | Correct preview state, aligned fields, friendly nudge ✅ |
-| `install-agent --help` | Clear handoff to quickstart ✅ |
-| `uninstall-agent --help` | Explains what stays (config, logs) ✅ |
-| `version` / `package.json` | v0.2.0, bin path correct ✅ |
+| `--version` | v0.2.0 ✅ |
+| `package.json` bin paths | Both `idlewatch` and `idlewatch-agent` → correct entry ✅ |
+| `--once` / `--test-publish` listed | Present in help, consistent naming ✅ |
 
 ### Notes
 
-- 6th consecutive clean cycle (R801–R806).
+- 7th consecutive clean cycle (R801–R807).
 - All H/M/L polish plan items remain stable.
-- Product feel is clean and low-friction across all tested surfaces.
-- `status` correctly shows preview device name, metric toggles, log size, and last sample age — all without setup saved yet.
-- Help text across subcommands is consistent and minimal.
+- Status output correctly shows preview device name, metric toggles, log size, last sample age.
+- Help text minimal and well-structured; `quickstart` prominently positioned.
+- No code changes since R806.
 
 ### Recommendation
 
 Polish plan remains **complete and stable**. No further automated QA cycles needed unless code changes land.
 
 ---
-*Auto-generated during IdleWatch QA polish cycle R806*
+*Auto-generated during IdleWatch QA polish cycle R807*
