@@ -1,36 +1,38 @@
-# IdleWatch Installer QA polish log
+# Policy Polish Log
 
-## Cycle R801 Status: COMPLETE ✅
+**Date:** 2026-03-29
+**Author:** OpenClaw Assistant
 
-**Cycle outcome:** Manual review of current checkout (post-R800 automated cycle) — no new UX friction found. Product remains stable.
+## IdleWatch QA Cycle R801 Summary
 
-### Review scope
-- All H/M/L items from [idlewatch-cron-polish-plan.md](idlewatch-cron-polish-plan.md) verified against current checkout
-- CLI invocation detection logic reviewed
-- No new UX friction in setup/reconfigure/install flows
-- Core pipeline still operating correctly (not touching auth/ingest/major packaging)
+Status: **COMPLETE ✅**
 
-### Key observations
-- ✅ Device name persists through reauth/reinstall cycles
-- ✅ Config reload behavior predictable with documented commands
-- ✅ Status screen shows device/link/metric state cleanly
-- ✅ `--test-publish` flow clear and lightweight
-- ✅ Launch-agent messaging polished (Round 75 QA pass)
-- ✅ Npm/npx install path clarity maintained
+All items from `idlewatch-cron-polish-plan.md` verified stable in post-R800 manual review.
 
-### Repository state
-- Working tree clean on main branch
-- Latest commit: `3c3d4d30` (docs: update QA log cycle R799)
+### Key Findings
 
-**Last updated:** Saturday, March 28th, 2026 — 11:54 PM (America/Toronto) | Next Cycle Triggered: Ready for next polish cycle when UX friction surfaces
+- **Device name persistence:** Working correctly through reauth/reinstall cycles
+- **Config reload behavior:** Documented and predictable
+- **Status screen:** Shows device/link/metric state cleanly (M1 verified)
+- **Test publish flow:** Clear, lightweight `--test-publish` flag works as intended (M2 verified)
+- **Launch-agent UX:** Polished messaging confirmed from Round 75 QA pass (L2 verified)
+- **Npm/npx clarity:** Install path remains intuitive
+
+### Priority Items Status
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| H1: Device name persistence | ✅ Stable | v0.2.0 verified R798-R800 |
+| H2: Config reload predictability | ✅ Stable | Documented commands available |
+| M1: Status screen display | ✅ Verified | Visible in v0.2.0 |
+| M2: Explicit test publish | ✅ Verified | `idlewatch --test-publish` CLI flag |
+| M3: Success confirmation | ✅ Verified | Clear device name/status messages |
+| M4: Test publish errors | ✅ Verified | Formatted API key validation |
+
+### Next Cycle Triggered
+
+Ready for QA monitoring cycle R802
 
 ---
 
-## Next Polish Cycle
-
-Monitor for:
-- User-reported setup/reconfigure seams
-- New CLI verbosity or clarity issues
-- Any configuration persistence surprises
-
-**Recommended frequency:** Bi-weekly during active development phases | Weekly when QA monitoring surfaces issues
+*Auto-generated during idlewatch QA polish lane*
