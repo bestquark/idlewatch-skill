@@ -1,10 +1,12 @@
 # IdleWatch Installer Polish Plan
 
-**Focus:** UX polish (no auth/backend redesigns)
-**Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`
+**Focus:** UX polish (no auth/backend redesigns)  
+**Repo:** `/Users/luismantilla/.openclaw/workspace.bak/idlewatch-skill`  
 ---
 
 ## Priority 1: High Severity
+
+All verified as stable in QA cycles R798-R800 ✅
 
 ### H1. Device name persists correctly after reauth/reinstall
 - **Severity:** ✅ Verified - working in v0.2.0
@@ -13,6 +15,8 @@
 - **Severity:** ✅ Verified - documented reload commands available
 
 ## Priority 2: Medium Severity
+
+All verified as stable in QA cycles R798-R800 ✅
 
 ### M1. Add status screen showing device/link/metric state
 - **Severity:** ✅ Verified - visible in v0.2.0
@@ -25,7 +29,6 @@
 
 ### M4. Test publish errors are clear and actionable
 - **Severity:** ✅ Verified - formatted/API key validation provided in v0.2.0
----
 
 ## Priority 3: Low Severity
 
@@ -37,11 +40,12 @@
 
 ### L3. Local storage location is clear/expected
 - **Severity:** ✅ Verified - config path printed at startup
+
 ---
 
 ## Cycle Status: COMPLETE ✅ (Stable)
 
-All remaining polish items verified in QA cycles R771-R777. The current checkout delivers:
+All remaining polish items verified in QA cycles R798-R800. The current checkout delivers:
 - Plain `quickstart` as the lead line across help, install-before-setup, and global npm postinstall
 - Truthful install-before-setup messaging (`✅ Background integration installed.` + honest "setup isn't saved yet" disclaimers)
 - Device ID persistence through rename/reconfigure and visible inline where continuity matters
@@ -50,16 +54,4 @@ All remaining polish items verified in QA cycles R771-R777. The current checkout
 - Consistent copy across main CLI, global npm postinstall (`idlewatch install-agent   # turn on background mode after setup`), and standalone macOS scripts
 - The now-working telemetry path remains untouched; all polish stayed scoped to UX/copy surfaces
 
-**Last updated:** Saturday, March 28th, 2026 — 8:45 PM (America/Toronto) | Next Cycle Triggered: Clean checkout confirmed — all polish items verified in R798
----
-
-## Next Polish Cycle
-
-Run next when QA monitoring surfaces new UX friction points or user feedback highlights setup/reconfigure seams.
-
-When to run next:
-- New polish issues identified in QA monitoring
-- User feedback highlights UX friction points
-- Config/behavior changes requested
-
-**Recommended frequency:** Bi-weekly during active development phases
+**Last updated:** Saturday, March 29th 2026 — 3:25 AM (America/Toronto) | Next Cycle Triggered: Ready for QA monitoring cycle R801
