@@ -1,22 +1,24 @@
 # IdleWatch Installer QA polish log
 
-## Cycle R799 Status: COMPLETE ✅
+## Cycle R800 Status: COMPLETE ✅
 
-**Cycle outcome:** Automated QA polish cycle completed — no actionable issues. Product remains stable.
+**Cycle outcome:** Automated QA polish cycle — no actionable issues. Product remains stable.
 
 ### Checks performed
-- Reviewed polish plan: all H/M/L items still verified ✅
-- QA log R798 clean — no regressions or new friction points
-- No new UX issues identified in setup/reconfigure/install flows
+- Reviewed polish plan: all H/M/L items verified ✅
+- `--help` output: clean, minimal, consistent command names
+- `status` output: device name, ID persistence, metric toggle, background state all correct
+- CLI invocation detection (npx/global/source) logic reviewed — no issues
+- No new UX friction in setup/reconfigure/install flows
 
 ### Priority call
-No new installer/CLI polish issues in scope. All items from the current polish plan confirmed working.
+No new installer/CLI polish issues in scope.
 
 ### Repository state
-- Working tree: Clean on main branch
-- Latest commit: `docs: update QA log cycle R798 — stable, no issues found`
+- Working tree clean on main branch
+- Latest commit: `3c3d4d30` (docs: update QA log cycle R799)
 
-**Last updated:** Saturday, March 28th, 2026 — 9:05 PM (America/Toronto)
+**Last updated:** Saturday, March 28th, 2026 — 9:50 PM (America/Toronto)
 
 ---
 
