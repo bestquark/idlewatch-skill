@@ -1,6 +1,6 @@
-# IdleWatch QA Cycle R805 Summary
+# IdleWatch QA Cycle R806 Summary
 
-**Date:** 2026-03-29 06:10 UTC  
+**Date:** 2026-03-29 06:30 UTC  
 **Author:** OpenClaw Assistant
 
 ## Status: No new findings — stable ✅
@@ -10,27 +10,22 @@
 | Area | Verdict |
 |---|---|
 | `--help` output | Clean, concise, well-structured ✅ |
-| `status` (no setup) | Correct preview state, aligned fields ✅ |
-| `--dry-run` | Compact single-line summary, neutral phrasing ✅ |
-| `--test-publish` (local-only) | Clean messaging, no false promises ✅ |
+| `status` (no setup) | Correct preview state, aligned fields, friendly nudge ✅ |
 | `install-agent --help` | Clear handoff to quickstart ✅ |
 | `uninstall-agent --help` | Explains what stays (config, logs) ✅ |
-| `configure --help` | Pre-fill mention, reload caveat present ✅ |
-| `--help-env` | Good separation (Common/Tuning/Probe internals) ✅ |
-| `postinstall.mjs` | Only prints on global install, menubar opt-in ✅ |
-| `version` | Clean single line ✅ |
-| P3-01/02/03 fixes from R804 | All verified holding ✅ |
+| `version` / `package.json` | v0.2.0, bin path correct ✅ |
 
 ### Notes
 
-- All prior H/M/L items from the polish plan remain stable.
-- No new UX, copy, alignment, or behavior issues found.
+- 6th consecutive clean cycle (R801–R806).
+- All H/M/L polish plan items remain stable.
 - Product feel is clean and low-friction across all tested surfaces.
-- The `configure` help correctly notes "re-run install-agent to apply" — important for background mode users.
+- `status` correctly shows preview device name, metric toggles, log size, and last sample age — all without setup saved yet.
+- Help text across subcommands is consistent and minimal.
 
 ### Recommendation
 
-Polish plan is **complete and stable** across 5 consecutive clean cycles (R801–R805). No further automated QA cycles needed unless code changes land.
+Polish plan remains **complete and stable**. No further automated QA cycles needed unless code changes land.
 
 ---
-*Auto-generated during IdleWatch QA polish cycle R805*
+*Auto-generated during IdleWatch QA polish cycle R806*
