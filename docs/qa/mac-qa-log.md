@@ -1,7 +1,8 @@
-# IdleWatch QA Cycle R808 Summary
+# IdleWatch QA Cycle R809 Summary
 
-**Date:** 2026-03-29 07:10 UTC  
-**Author:** OpenClaw Assistant
+**Date:** 2026-03-29 08:15 UTC  
+**Author:** OpenClaw Assistant  
+**Cycle Type:** IdleWatch installer polish cycle (plan review + code verification)
 
 ## Status: No new findings — stable ✅
 
@@ -15,16 +16,16 @@
 | `--once` / `--test-publish` / `--dry-run` listed | Present, consistent ✅ |
 | `--no-tui` fallback documented in help | Yes ✅ |
 
-### Notes
-
-- 8th consecutive clean cycle (R801–R808).
-- All H/M/L polish plan items remain stable.
-- Help text well-structured; commands logically ordered (quickstart → configure → status → run → …).
-- No code changes since R806.
+### Items Verified
+- **Priority 1 (H1-H2):** Device name persistence & config reload — stable ✅
+- **Priority 2 (M1-M4):** Status screen, test publish flow, success confirmations, error messaging — all verified ✅
+- **Priority 3 (L1-L3):** Settings/edit flow, agent install clarity, storage location — per-spec as-designed and working ✅
 
 ### Recommendation
 
-Polish plan **complete and stable**. No further automated QA cycles needed unless code changes land. Consider disabling this cron job.
+Polish plan complete and stable across cycles R798–R809. No remaining high/medium priority items require fixes. The current checkout delivers a minimalistic, low-friction CLI experience with clean copy, predictable behavior, and the now-working telemetry path preserved.
+
+**Next Steps:** Consider disabling this automated cron job as no action is pending.
 
 ---
-*Auto-generated during IdleWatch QA polish cycle R808*
+*Auto-generated during IdleWatch QA polish cycle R809*

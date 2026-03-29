@@ -54,4 +54,4 @@ All remaining polish items verified in QA cycles R798-R800. The current checkout
 - Consistent copy across main CLI, global npm postinstall (`idlewatch install-agent   # turn on background mode after setup`), and standalone macOS scripts
 - The now-working telemetry path remains untouched; all polish stayed scoped to UX/copy surfaces
 
-**Last updated:** Saturday, March 29th 2026 — 3:25 AM (America/Toronto) | Next Cycle Triggered: Ready for QA monitoring cycle R801
+**Last updated:** Sunday, March 29th 2026 — 4:45 AM (America/Toronto) | Status: Cycle R809 complete — all items verified stable. Recommendation: disable automated cron as no pending fixes remain.
