@@ -14,6 +14,7 @@ import { memUsedPct, memoryPressureDarwin } from '../src/memory.js'
 import { thermalSampleDarwin } from '../src/thermal.js'
 import { deriveUsageFreshness } from '../src/usage-freshness.js'
 import { deriveUsageAlert } from '../src/usage-alert.js'
+import { parseEnvValue, normalizeEnvKey } from '../src/env-parse.js'
 import { loadLastGoodUsageSnapshot, persistLastGoodUsageSnapshot } from '../src/openclaw-cache.js'
 import { DAY_WINDOW_MS, loadOpenClawActivitySummary } from '../src/openclaw-activity.js'
 import { runEnrollmentWizard } from '../src/enrollment.js'
@@ -544,8 +545,9 @@ function printHelp() {
     .join('\n')
   const quickstartSetupCommand = preferredPrimarySetupCommand('quickstart')
   const quickstartFallbackCommand = preferredSetupFallbackCommand('quickstart')
+  const getStartedIndent = ' '.repeat('Get started:  '.length)
   const getStartedLines = quickstartFallbackCommand
-    ? `Get started:  ${quickstartSetupCommand}\n              ${quickstartFallbackCommand}   # plain text fallback`
+    ? `Get started:  ${quickstartSetupCommand}\n${getStartedIndent}${quickstartFallbackCommand}   # plain text fallback`
     : `Get started:  ${quickstartSetupCommand}`
   console.log(`${cliBase}
 
@@ -612,31 +614,6 @@ Firebase / emulator:
 }
 
 const require = createRequire(import.meta.url)
-
-function parseEnvValue(rawValue) {
-  const value = String(rawValue || '').trim()
-  if (!value) return ''
-
-  const quotedWithCommentMatch = value.match(/^(['"])([\s\S]*)\1(?:\s+#.*)?$/)
-  if (quotedWithCommentMatch) {
-    return quotedWithCommentMatch[2]
-  }
-
-  const inlineCommentIndex = value.search(/\s+#/)
-  if (inlineCommentIndex >= 0) {
-    return value.slice(0, inlineCommentIndex).trim()
-  }
-
-  return value
-}
-
-function normalizeEnvKey(rawKey) {
-  const key = String(rawKey || '')
-    .replace(/^\uFEFF/, '')
-    .trim()
-    .replace(/^export\s+/, '')
-  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : ''
-}
 
 function parseEnvFileToObject(envFilePath) {
   const raw = fs.readFileSync(envFilePath, 'utf8')
@@ -2120,9 +2097,11 @@ if (statusRequested) {
     const setupLabel = setupWaitingForInstalledBackground ? 'Finish setup' : 'Get started'
     const setupPrimaryCommand = preferredPrimarySetupCommand('quickstart')
     const setupFallbackCommand = preferredSetupFallbackCommand('quickstart')
+    const labelPad = setupLabel.length + ':'.length
+    const indent = ' '.repeat(2 + labelPad + 2)
     console.log(`  ${setupLabel}:  ${setupPrimaryCommand}`)
     if (setupFallbackCommand) {
-      console.log(`                 ${setupFallbackCommand}   # plain text fallback`)
+      console.log(`${indent}${setupFallbackCommand}   # plain text fallback`)
     }
     if (setupWaitingForInstalledBackground) {
       console.log(`  Run now:       ${preferredProductCommand('run')}`)
@@ -3045,7 +3024,7 @@ function summarizeSample(row, { verbose = false } = {}) {
   if (row.openclawModel) oclawParts.push(row.openclawModel)
   if (row.openclawPercentUsed != null) {
     const pctLabel = row.openclawPercentUsed > 100
-      ? `100%+ context used (${Math.round(row.openclawPercentUsed)}% overflow)`
+      ? `${(row.openclawPercentUsed / 100).toFixed(1)}× context window`
       : `${Math.round(row.openclawPercentUsed)}% context used`
     oclawParts.push(pctLabel)
   }

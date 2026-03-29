@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline/promises'
+import { parseEnvValue, normalizeEnvKey } from './env-parse.js'
 
 async function questionOrCancel(rl, prompt) {
   const answer = await rl.question(prompt)
@@ -281,31 +282,6 @@ function bundledTuiBinaryPath() {
   const arch = process.arch
   const ext = platform === 'win32' ? '.exe' : ''
   return path.join(PACKAGE_ROOT, 'tui', 'bin', `${platform}-${arch}`, `idlewatch-setup${ext}`)
-}
-
-function parseEnvValue(rawValue) {
-  const value = String(rawValue || '').trim()
-  if (!value) return ''
-
-  const quotedWithCommentMatch = value.match(/^(['"])([\s\S]*)\1(?:\s+#.*)?$/)
-  if (quotedWithCommentMatch) {
-    return quotedWithCommentMatch[2]
-  }
-
-  const inlineCommentIndex = value.search(/\s+#/)
-  if (inlineCommentIndex >= 0) {
-    return value.slice(0, inlineCommentIndex).trim()
-  }
-
-  return value
-}
-
-function normalizeEnvKey(rawKey) {
-  const key = String(rawKey || '')
-    .replace(/^\uFEFF/, '')
-    .trim()
-    .replace(/^export\s+/, '')
-  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : ''
 }
 
 function parseEnrollmentResultFromEnvFile(outputEnvFile, { configDir, fallbackDeviceName }) {
