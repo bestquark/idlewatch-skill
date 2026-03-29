@@ -1,34 +1,61 @@
-# IdleWatch QA Cycle R803 Summary
+# IdleWatch QA Cycle R804 Summary
 
-**Date:** 2026-03-29 05:31 UTC  
+**Date:** 2026-03-29 06:00 UTC  
 **Author:** OpenClaw Assistant
 
-## Status: COMPLETE ✅
+## Status: 3 minor polish findings
 
-Per `idlewatch-cron-polish-plan.md`, **all remaining polish items are verified stable** across QA cycles R798-R802. Cycle R803 confirms continued stability with no new issues requiring intervention.
+### Verified Stable (no changes needed)
 
-### Prioritized Fix Status
+- H1: Device name persistence ✅
+- H2: Config reload predictability ✅
+- M1–M4: Status screen, test publish, success messages, error formatting ✅
+- L2: Launch-agent install/uninstall messaging ✅
+- L3: Local storage path clarity ✅
+- Setup wizard quality: clean, low-friction ✅
+- `--help` output: concise, well-structured ✅
+- `--dry-run` output: compact single-line summary ✅
+- `status` field alignment: consistent padding ✅
 
-| Item | Status | Evidence |
-|------|--|--|
-| H1: Device name persistence | ✅ Stable | v0.2.0 verified R798-R802, confirmed via `idlewatch status` showing "Leptons-Mini" |
-| H2: Config reload predictability | ✅ Stable | Documented commands available (`configure`, `install-agent`) |
-| M1: Status screen display | ✅ Verified | Visible in v0.2.0, shows device/link/metric state clearly |
-| M2: Explicit test publish | ✅ Verified | `idlewatch --test-publish` flag works as intended |
-| M3: Success confirmation | ✅ Verified | Clear device name/status messages visible in output |
-| M4: Test publish errors | ✅ Verified | `--once` runs in local-only mode; API key validation not triggered until cloud publishing is explicitly required |
+### New Findings
 
-### Cycle R803 Findings
+#### P3-01: Duplicate `parseEnvValue`/`normalizeEnvKey` definitions
 
-- **All high-priority items already working** in current checkout (v0.2.0)
-- **No new UX issues found** requiring implementation during this cycle
-- Product taste criteria maintained: minimalistic flows, clear messaging, no unnecessary friction
-- Setup wizard quality remains clean and low-friction
-- Config persistence/reload behavior predictable across all user paths
+- **Severity:** P3 (code hygiene, no user impact)
+- **Location:** `bin/idlewatch-agent.js:616-641` and `src/enrollment.js:286-311`
+- **Issue:** Both files define identical `parseEnvValue()` and `normalizeEnvKey()` functions independently. If one drifts, config parsing could silently differ between enrollment and runtime.
+- **Repro:** `grep -n 'function parseEnvValue\|function normalizeEnvKey' bin/idlewatch-agent.js src/enrollment.js`
+- **Fix:** Extract to a shared `src/env-parse.js` module and import in both files.
+- **Acceptance:** Only one definition of each function exists in the codebase (excluding `dist/`).
 
-### Recommended Action
+#### P3-02: Status "Get started" fallback line off-by-one alignment
 
-The codebase continues to meet QA polish standards. Ready for continued monitoring in cycle R804.
+- **Severity:** P3 (cosmetic)
+- **Location:** `bin/idlewatch-agent.js:2124`
+- **Issue:** When status shows "Get started" (12 chars + colon + spaces = 16 visible chars before the command), the fallback `--no-tui` line uses 17 chars of indent, creating a 1-space misalignment.
+- **Repro:** `node bin/idlewatch-agent.js status` (without saved config)
+- **Observed:**
+  ```
+    Get started:  idlewatch quickstart
+                   idlewatch quickstart --no-tui   # plain text fallback
+  ```
+- **Expected:** Both lines should align at the same column.
+- **Fix:** Adjust indent string from `'                 '` to `'                '` (16 chars), or compute it dynamically from the label width.
+- **Acceptance:** Both command lines start at the same column in `status` output regardless of label ("Get started" vs "Finish setup").
+
+#### P3-03: Dry-run "555% overflow" phrasing may alarm users
+
+- **Severity:** P3 (UX copy)
+- **Location:** Dry-run summary line
+- **Issue:** `100%+ context used (555% overflow)` reads like something is broken. For a monitoring tool, this is just a data point about OpenClaw usage, but "overflow" sounds like an error.
+- **Repro:** `node bin/idlewatch-agent.js --dry-run`
+- **Observed:** `OpenClaw: gpt-5.4, 100%+ context used (555% overflow), 151,280 tok/min`
+- **Suggestion:** Consider "555% of context window" or "5.5× context window" — factual without alarm.
+- **Acceptance:** Dry-run summary uses neutral phrasing for high context usage values.
+
+### Cycle Summary
+
+The product is in good shape. All prior H/M items remain stable. The 3 new findings are P3 (low severity, no functional impact). The duplicate function defs are the most worth addressing for maintainability; the other two are cosmetic.
 
 ---
-*Auto-generated during IdleWatch QA polish cycle R803*
+*Auto-generated during IdleWatch QA polish cycle R804*
